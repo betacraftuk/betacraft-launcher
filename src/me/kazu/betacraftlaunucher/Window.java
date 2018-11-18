@@ -13,8 +13,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import com.google.common.base.CharMatcher;
-
 public class Window extends JFrame implements ActionListener{
 
 	JButton play, about, admin;

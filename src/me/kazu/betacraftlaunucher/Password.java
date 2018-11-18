@@ -23,7 +23,7 @@ public class Password extends JFrame implements ActionListener{
 
 	public Password() {
 		setSize(311, 116);
-		setTitle("Betacraft Launcher Java 1.4");
+		setTitle("Betacraft Launcher Preview 1");
 		setLayout(null);
 		setLocationRelativeTo(null);
 		setResizable(false);
@@ -33,7 +33,7 @@ public class Password extends JFrame implements ActionListener{
 
 		next = new JButton("Dalej");
 		exit = new JButton();
-		pass = new JTextField("tytusgrubyhui");
+		pass = new JTextField();
 		text = new JLabel("Has³o");
 
 		next.setBounds(120, 70, 75, 20);
