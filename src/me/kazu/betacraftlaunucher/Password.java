@@ -64,12 +64,7 @@ public class Password extends JFrame implements ActionListener{
 			public void change() {
 				if (pass.getText().length() >= 15){
 					JOptionPane.showMessageDialog(null, "Za d³ugie has³o!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
-					Runnable setPassword = new Runnable() {
-						public void run() {
-							pass.setText("");
-						}
-					};
-					SwingUtilities.invokeLater(setPassword);
+					Window.setTextInField(pass, "");
 				}
 			}
 		});

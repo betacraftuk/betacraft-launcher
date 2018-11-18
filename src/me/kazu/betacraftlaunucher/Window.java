@@ -70,15 +70,9 @@ public class Window extends JFrame implements ActionListener{
 			}
 
 			public void change() {
-				if (nick.getText().length() >= 16){
-					JOptionPane.showMessageDialog(null, "Maksymalna d³ugoœæ nicku to 15 znaków!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
-					Runnable setPassword = new Runnable() {
-						public void run() {
-							nick.setText("");
-						}
-
-					};
-					SwingUtilities.invokeLater(setPassword);
+				if (nick.getText().length() > 16){
+					JOptionPane.showMessageDialog(null, "Maksymalna d³ugoœæ nicku to 16 znaków!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
+					Window.setTextInField(nick, "");
 				}
 			}
 		});
@@ -105,8 +99,9 @@ public class Window extends JFrame implements ActionListener{
 				JOptionPane.showMessageDialog(null, "Nick musi zawieraæ wiêcej ni¿ 3 znaki. Wyd³u¿ swój nick!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
-			boolean ASCII = CharMatcher.ASCII.matchesAllOf(nick.getText());
-			if (!ASCII || nick.getText().contains(" ") || nick.getText().contains("&") || nick.getText().contains("#") || nick.getText().contains("@") || nick.getText().contains("!") || nick.getText().contains("$") || nick.getText().contains("%") || nick.getText().contains("^") || nick.getText().contains("*") || nick.getText().contains("(") || nick.getText().contains(")") || nick.getText().contains("+") || nick.getText().contains("=") || nick.getText().contains("'") || nick.getText().contains("\"") || nick.getText().contains(";") || nick.getText().contains(":") || nick.getText().contains(".") || nick.getText().contains(",") || nick.getText().contains(">") || nick.getText().contains("<") || nick.getText().contains("/") || nick.getText().contains("?") || nick.getText().contains("|") || nick.getText().contains("\\") || nick.getText().contains("]") || nick.getText().contains("[") || nick.getText().contains("{") || nick.getText().contains("}") || nick.getText().contains("~") || nick.getText().contains("`") || nick.getText().contains("€") /* precz z komun¹ */) {
+			String nickk = nick.getText().replaceAll("[^\\x00-\\x7F]", "");
+			Window.setTextInField(nick, nickk);
+			if (nick.getText().contains(" ") || nick.getText().contains("&") || nick.getText().contains("#") || nick.getText().contains("@") || nick.getText().contains("!") || nick.getText().contains("$") || nick.getText().contains("%") || nick.getText().contains("^") || nick.getText().contains("*") || nick.getText().contains("(") || nick.getText().contains(")") || nick.getText().contains("+") || nick.getText().contains("=") || nick.getText().contains("'") || nick.getText().contains("\"") || nick.getText().contains(";") || nick.getText().contains(":") || nick.getText().contains(".") || nick.getText().contains(",") || nick.getText().contains(">") || nick.getText().contains("<") || nick.getText().contains("/") || nick.getText().contains("?") || nick.getText().contains("|") || nick.getText().contains("\\") || nick.getText().contains("]") || nick.getText().contains("[") || nick.getText().contains("{") || nick.getText().contains("}") || nick.getText().contains("~") || nick.getText().contains("`") || nick.getText().contains("€") /* precz z komun¹ */) {
 				JOptionPane.showMessageDialog(null, "Nick nie mo¿e zawieraæ polskich znaków, spacji oraz znaków typu &, # i tym podobnych.", "UWAGA!", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
@@ -117,5 +112,14 @@ public class Window extends JFrame implements ActionListener{
 		} else if (source == admin) {
 			pw.setVisible(true);
 		}
+	}
+
+	public static void setTextInField(final JTextField field, final String toSet) {
+		Runnable set = new Runnable() {
+			public void run() {
+				field.setText(toSet);
+			}
+		};
+		SwingUtilities.invokeLater(set);
 	}
 }
