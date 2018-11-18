@@ -15,7 +15,7 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class Password extends JFrame implements ActionListener{
+public class Password extends JFrame implements ActionListener {
 
 	JButton next, exit;
 	JLabel text;
@@ -23,7 +23,6 @@ public class Password extends JFrame implements ActionListener{
 
 	public Password() {
 		setSize(311, 116);
-		setTitle("Betacraft Launcher Preview 1");
 		setLayout(null);
 		setLocationRelativeTo(null);
 		setResizable(false);
@@ -34,11 +33,11 @@ public class Password extends JFrame implements ActionListener{
 		next = new JButton("Dalej");
 		exit = new JButton();
 		pass = new JTextField();
-		text = new JLabel("Has³o");
+		text = new JLabel("Has³o:");
 
 		next.setBounds(120, 70, 75, 20);
 		exit.setBounds(260, 10, 32, 31);
-		pass.setBounds(93, 50, 131, 20);
+		pass.setBounds(93, 50, 135, 20);
 		text.setBounds(55, 45, 45, 30);
 
 		add(next);
@@ -78,7 +77,7 @@ public class Password extends JFrame implements ActionListener{
 			if (!pass.getText().equalsIgnoreCase(peanus)) {
 				JOptionPane.showMessageDialog(null, "Niepoprawne has³o!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
 			} else if (pass.getText().equalsIgnoreCase(peanus)) {
-				Launcher.Download("admin_"); // admin
+				Launcher.Download("admin_" + Window.chosen_version); // admin
 			}
 		}
 		if (source == exit) {

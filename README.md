@@ -2,7 +2,7 @@
 
 Java edition of Betacraft Launcher
 
-Launcher for modded, Minecraft beta server BetaCraft 1.7.3.
+Launcher for Minecraft beta server BetaCraft 1.6.6.
 
 FEATURES:
 (coming soon)

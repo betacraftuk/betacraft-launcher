@@ -13,7 +13,15 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class Window extends JFrame implements ActionListener{
+public class Window extends JFrame implements ActionListener {
+
+	static String[] versions = new String[]{"1.0", "1.0_01", "1.0.2", "1.1_01", "1.1_02",
+			"1.2", "1.2_01", "1.2_02", "1.3", "1.3_01", "1.4", "1.4_01", "1.5",
+			"1.5_01", "1.6", "1.6.1", "1.6.2", "1.6.3", "1.6.4", "1.6.5", "1.6.6",
+			"1.7", "1.7_01", "1.7.2", "1.7.3", "1.8", "1.8.1"};
+	static String[] other_versions = new String[] {"1.6-build3", "1.8-pre1", "1.8-pre2",
+			"1.9-pre1", "1.9-pre2", "1.9-pre3", "1.9-pre4", "1.9-pre5", "1.9-pre6"};
+	public static String chosen_version = "1.6.6";
 
 	JButton play, about, admin;
 	JLabel kazu, nicktext;
@@ -21,9 +29,9 @@ public class Window extends JFrame implements ActionListener{
 
 	public Window()
 	{
-		// TODO obrazki, przegladarka
+		// TODO autoupdate, obrazki, przegladarka
 		setSize(800, 450);
-		setTitle("Betacraft Launcher Java 1.4");
+		setTitle("Betacraft Launcher " + Launcher.VERSION);
 		setLayout(null);
 		setLocationRelativeTo(null);
 		setResizable(false);
@@ -31,15 +39,15 @@ public class Window extends JFrame implements ActionListener{
 		play = new JButton("Graj");
 		about = new JButton("About");
 		admin = new JButton("Admin");
-		kazu = new JLabel("Launcher zosta³ zrobiony przez Kazu");
-		nicktext = new JLabel("Nick");
+		kazu = new JLabel("Launcher zosta³ napisany przez techników BetaCrafta");
+		nicktext = new JLabel("Nick:");
 
 		play.setBounds(300, 340, 195, 36);
 		nick.setBounds(337, 310, 120, 23);
-		kazu.setBounds(15, 370, 210, 30);
+		kazu.setBounds(15, 380, 310, 30);
 		about.setBounds(750, 380, 22, 19);
-		nicktext.setBounds(300, 311, 25, 19);
-		admin.setBounds(15, 10, 21, 79);
+		nicktext.setBounds(300, 311, 35, 19);
+		admin.setBounds(15, 10, 21, 21);
 
 		add(play);
 		add(nick);
@@ -103,7 +111,7 @@ public class Window extends JFrame implements ActionListener{
 				JOptionPane.showMessageDialog(null, "Nick nie mo¿e zawieraæ polskich znaków, spacji oraz znaków typu &, # i tym podobnych.", "UWAGA!", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
-			Launcher.Download("_"); // gracz
+			Launcher.Download("_" + chosen_version); // gracz
 		} else if (source == about) {
 			ab.setVisible(true);
 			
