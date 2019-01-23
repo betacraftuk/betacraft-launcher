@@ -1,4 +1,4 @@
-package me.kazu.betacraftlaunucher;
+package org.betacraft.launcher;
 
 import java.awt.Graphics;
 import java.awt.Image;

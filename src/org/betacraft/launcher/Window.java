@@ -1,4 +1,4 @@
-package me.kazu.betacraftlaunucher;
+package org.betacraft.launcher;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
@@ -23,7 +23,7 @@ public class Window extends JFrame implements ActionListener {
 			"1.9-pre1", "1.9-pre2", "1.9-pre3", "1.9-pre4", "1.9-pre5", "1.9-pre6"};
 	public static String chosen_version = "1.6.6";
 
-	JButton play, about, admin;
+	JButton play, about, options;
 	JLabel kazu, nicktext;
 	static JTextField nick = new JTextField();
 
@@ -35,30 +35,29 @@ public class Window extends JFrame implements ActionListener {
 		setLayout(null);
 		setLocationRelativeTo(null);
 		setResizable(false);
-
+		
 		play = new JButton("Graj");
 		about = new JButton("About");
-		admin = new JButton("Admin");
 		kazu = new JLabel("Launcher zosta³ napisany przez techników BetaCrafta");
 		nicktext = new JLabel("Nick:");
+		options = new JButton("Opcje");
 
 		play.setBounds(300, 340, 195, 36);
 		nick.setBounds(337, 310, 120, 23);
 		kazu.setBounds(15, 380, 310, 30);
 		about.setBounds(750, 380, 22, 19);
 		nicktext.setBounds(300, 311, 35, 19);
-		admin.setBounds(15, 10, 21, 21);
+		options.setBounds(50, 350, 70, 19);
 
 		add(play);
 		add(nick);
 		add(kazu);
 		add(about);
 		add(nicktext);
-		add(admin);
+		add(options);
 
 		play.addActionListener(this); // this - sluchaczem zdarzen jest cala ramka
 		about.addActionListener(this);
-		admin.addActionListener(this);
 
 		kazu.setForeground(new Color(61, 60, 68));
 		nicktext.setForeground(Color.BLACK);
@@ -87,10 +86,8 @@ public class Window extends JFrame implements ActionListener {
 	public static void main(String[] args) {
 		Window w = new Window();
 		About ab = new About();
-		Password pw = new Password();
 		w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		ab.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		pw.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		w.setVisible(true);
 	}
 
@@ -98,7 +95,6 @@ public class Window extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		About ab = new About();
-		Password pw = new Password();
 		
 		if (source == play) {
 			if (nick.getText().length() < 3) {
@@ -114,9 +110,6 @@ public class Window extends JFrame implements ActionListener {
 			Launcher.Download("_" + chosen_version); // gracz
 		} else if (source == about) {
 			ab.setVisible(true);
-			
-		} else if (source == admin) {
-			pw.setVisible(true);
 		}
 	}
 

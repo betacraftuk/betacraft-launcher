@@ -1,4 +1,4 @@
-package me.kazu.betacraftlaunucher;
+package org.betacraft.launcher;
 
 import java.io.File;
 
@@ -27,10 +27,6 @@ public class Launcher {
 		File appdata = new File(System.getenv("APPDATA") + "\\.betacraft\\bin\\versions\\" + version);
 		appdata.mkdirs();
 		
-		
-	}
-
-	public static void Fix() {
 		
 	}
 
