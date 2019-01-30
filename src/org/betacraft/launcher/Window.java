@@ -39,7 +39,7 @@ public class Window extends JFrame implements ActionListener {
 		
 		play = new JButton("Graj");
 		about = new JButton("About");
-		kazu = new JLabel("Launcher zosta� napisany przez technik�w BetaCrafta");
+		kazu = new JLabel("Launcher został napisany przez techników BetaCrafta");
 		nicktext = new JLabel("Nick:");
 		options = new JButton("Opcje");
 
@@ -77,7 +77,7 @@ public class Window extends JFrame implements ActionListener {
 
 			public void change() {
 				if (nick.getText().length() > 16){
-					JOptionPane.showMessageDialog(null, "Maksymalna d�ugo�� nicku to 16 znak�w!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(null, "Maksymalna długość nicku to 16 znaków!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
 					Window.setTextInField(nick, "");
 				}
 			}
@@ -101,13 +101,13 @@ public class Window extends JFrame implements ActionListener {
 		
 		if (source == play) {
 			if (nick.getText().length() < 3) {
-				JOptionPane.showMessageDialog(null, "Nick musi zawiera� wi�cej ni� 3 znaki. Wyd�u� sw�j nick!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Nick musi zawierać więcej niż 3 znaki. Wydłuż swój nick!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
 			String nickk = nick.getText().replaceAll("[^\\x00-\\x7F]", "");
 			Window.setTextInField(nick, nickk);
-			if (nick.getText().contains(" ") || nick.getText().contains("&") || nick.getText().contains("#") || nick.getText().contains("@") || nick.getText().contains("!") || nick.getText().contains("$") || nick.getText().contains("%") || nick.getText().contains("^") || nick.getText().contains("*") || nick.getText().contains("(") || nick.getText().contains(")") || nick.getText().contains("+") || nick.getText().contains("=") || nick.getText().contains("'") || nick.getText().contains("\"") || nick.getText().contains(";") || nick.getText().contains(":") || nick.getText().contains(".") || nick.getText().contains(",") || nick.getText().contains(">") || nick.getText().contains("<") || nick.getText().contains("/") || nick.getText().contains("?") || nick.getText().contains("|") || nick.getText().contains("\\") || nick.getText().contains("]") || nick.getText().contains("[") || nick.getText().contains("{") || nick.getText().contains("}") || nick.getText().contains("~") || nick.getText().contains("`") || nick.getText().contains("�") /* precz z komun� */) {
-				JOptionPane.showMessageDialog(null, "Nick nie mo�e zawiera� polskich znak�w, spacji oraz znak�w typu &, # i tym podobnych.", "UWAGA!", JOptionPane.WARNING_MESSAGE);
+			if (nick.getText().contains(" ") || nick.getText().contains("&") || nick.getText().contains("#") || nick.getText().contains("@") || nick.getText().contains("!") || nick.getText().contains("$") || nick.getText().contains("%") || nick.getText().contains("^") || nick.getText().contains("*") || nick.getText().contains("(") || nick.getText().contains(")") || nick.getText().contains("+") || nick.getText().contains("=") || nick.getText().contains("'") || nick.getText().contains("\"") || nick.getText().contains(";") || nick.getText().contains(":") || nick.getText().contains(".") || nick.getText().contains(",") || nick.getText().contains(">") || nick.getText().contains("<") || nick.getText().contains("/") || nick.getText().contains("?") || nick.getText().contains("|") || nick.getText().contains("\\") || nick.getText().contains("]") || nick.getText().contains("[") || nick.getText().contains("{") || nick.getText().contains("}") || nick.getText().contains("~") || nick.getText().contains("`") || nick.getText().contains("€") /* precz z komuną */) {
+				JOptionPane.showMessageDialog(null, "Nick nie może zawierać polskich znaków, spacji oraz znaków typu &, # i tym podobnych.", "UWAGA!", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
 			Launcher.Download("_" + chosen_version); // gracz
