@@ -4,6 +4,7 @@ import java.io.File;
 
 public class Launcher {
 	public static String VERSION = "Preview 1";
+	public static String OS = System.getProperty("os.name").toLowerCase();
 
 	public static void LaunchGame(String username) {
 		
@@ -14,7 +15,7 @@ public class Launcher {
 			System.out.println("Pobieram client dla gracza...");
 
 			String version = ver.substring(1);
-			// tutaj bêdzie kod pobierania
+			// tutaj bï¿½dzie kod pobierania
 			
 
 			

@@ -15,18 +15,19 @@ import javax.swing.event.DocumentListener;
 
 public class Window extends JFrame implements ActionListener {
 
-	static String[] versions = new String[]{"1.0", "1.0_01", "1.0.2", "1.1_01", "1.1_02",
-			"1.2", "1.2_01", "1.2_02", "1.3", "1.3_01", "1.4", "1.4_01", "1.5",
+	static String[] versions = new String[]{"1.0", "1.0_01", "1.0.2", "1.1a", "1.1b", "1.1_01", "1.1_02",
+			"1.2", "1.2_01", "1.2_02", "1.3a", "1.3b", "1.3_01", "1.4a", "1.4b", "1.4_01", "1.5",
 			"1.5_01", "1.6", "1.6.1", "1.6.2", "1.6.3", "1.6.4", "1.6.5", "1.6.6",
 			"1.7", "1.7_01", "1.7.2", "1.7.3", "1.8", "1.8.1"};
-	static String[] other_versions = new String[] {"1.6-build3", "1.8-pre1", "1.8-pre2",
-			"1.9-pre1", "1.9-pre2", "1.9-pre3", "1.9-pre4", "1.9-pre5", "1.9-pre6"};
+	static String[] other_versions = new String[] {"1.6-build3", "1.8-pre1a", "1.8-pre1b", "1.8-pre2",
+			"1.9-pre1", "1.9-pre2", "1.9-pre3a", "1.9-pre3b", "1.9-pre4b", "1.9-pre5", "1.9-pre6"};
 	public static String chosen_version = "1.6.6";
 
 	JButton play, about, options;
 	JLabel kazu, nicktext;
 	static JTextField nick = new JTextField();
 	static About currentAbout = null;
+	public static Window window = null;
 
 	public Window()
 	{
@@ -85,11 +86,22 @@ public class Window extends JFrame implements ActionListener {
 	}
 	
 	public static void main(String[] args) {
-		Window w = new Window();
+		window = new Window();
 		About ab = new About();
-		w.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		ab.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		w.setVisible(true);
+		window.setVisible(true);
+		try {
+			Release.initVersions();
+		} catch (Exception ex) {
+			System.out.println("FATALNY ERROR:");
+			ex.printStackTrace();
+		}
+	}
+
+	public static void quit() {
+		window.setVisible(false);
+		window.dispose();
 	}
 
 	@Override
