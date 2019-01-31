@@ -15,7 +15,7 @@ public class Launcher {
 			System.out.println("Pobieram client dla gracza...");
 
 			String version = ver.substring(1);
-			// tutaj b�dzie kod pobierania
+			// tutaj bedzie kod pobierania
 			
 
 			

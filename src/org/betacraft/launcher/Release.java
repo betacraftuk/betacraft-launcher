@@ -19,54 +19,53 @@ public class Release {
 			URL url = new URL("https://betacraft.ovh/version_index");
 
 			Scanner s = new Scanner(url.openStream());
-	        String line = null;
+			String line = null;
 
-	        String folder = null;
-            if (OS.isLinux()) {
-            	folder = System.getProperty("user.home") + "/.betacraft/";
-            } else if (OS.isiOS()) {
-            	folder = System.getProperty("user.home") + "/Application Support/betacraft/";
-            } else if (OS.isWindows()) {
-            	folder = System.getenv("APPDATA") + "/.betacraft/";
-            } else {
-            	System.out.println("Your system is not supported. Quitting.");
-            	s.close();
-            	Window.quit();
-            	return;
-            }
-            System.out.println(folder);
-            File betacraft = new File(folder);
-            betacraft.mkdirs();
+			String folder = null;
+			if (OS.isLinux()) {
+				folder = System.getProperty("user.home") + "/.betacraft/";
+			} else if (OS.isiOS()) {
+				folder = System.getProperty("user.home") + "/Application Support/betacraft/";
+			} else if (OS.isWindows()) {
+				folder = System.getenv("APPDATA") + "/.betacraft/";
+			} else {
+				System.out.println("Your system is not supported. Quitting.");
+				s.close();
+				Window.quit();
+				return;
+			}
+			System.out.println(folder);
+			File betacraft = new File(folder);
+			betacraft.mkdirs();
 
-            BufferedWriter writer = null;
+			BufferedWriter writer = null;
 
-            try {
-                writer = new BufferedWriter(new OutputStreamWriter(
-                      new FileOutputStream(folder + "version_index"), "utf-8"));
-                for (int i = 0; i < 250; i++) {
-    	        	if (s.hasNextLine()) {
-    	        		line = s.nextLine();
-    	        		if (!line.equalsIgnoreCase("null")) {
-    		        		String[] split = line.split("~");
-    			            Release version = new Release(split[0], split[1], null);
-    			            versions.add(version);
+			try {
+				writer = new BufferedWriter(new OutputStreamWriter(
+						new FileOutputStream(folder + "version_index"), "utf-8"));
+				for (int i = 0; i < 250; i++) {
+					if (s.hasNextLine()) {
+						line = s.nextLine();
+						if (!line.equalsIgnoreCase("null")) {
+							String[] split = line.split("~");
+							Release version = new Release(split[0], split[1], null);
+							versions.add(version);
 
-    			            // zapisz wersje na kompie, w razie jakby ktos chcial uzywac launchera offline
-    			            writer.write(line);
-    			            writer.newLine();
+							// zapisz wersje na kompie, w razie jakby ktos chcial uzywac launchera offline
+							writer.write(line);
+							writer.newLine();
 
-    			            // dodaj kod ktory doda te wersje do listy w ramce (ktorej jeszcze nie ma xD)
-    		        	}
-    	        	}
-    	        }
-                
-            } catch (Exception ex) {
-                
-            } finally {
-               try {writer.close();} catch (Exception ex) {}
-            }
-	        
-	        s.close();
+							// dodaj kod ktory doda te wersje do listy w ramce (ktorej jeszcze nie ma xD)
+						}
+					}
+				}
+			} catch (Exception ex) {
+				
+			} finally {
+				try {writer.close();} catch (Exception ex) {}
+			}
+
+			s.close();
 		} catch (UnknownHostException ex) {
 			System.out.println("Brak połączenia z internetem! (albo serwer padł)");
 			// TODO kod na offline wlaczanie
