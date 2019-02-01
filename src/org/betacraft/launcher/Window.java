@@ -25,7 +25,7 @@ public class Window extends JFrame implements ActionListener {
 
 	JButton play, about, options;
 	JLabel kazu, nicktext;
-	static JTextField nick = new JTextField();
+	static JTextField nick = null;
 	static About currentAbout = null;
 	public static Window window = null;
 
@@ -37,19 +37,20 @@ public class Window extends JFrame implements ActionListener {
 		setLayout(null);
 		setLocationRelativeTo(null);
 		setResizable(false);
-		
+
+		nick = new JTextField(Launcher.getLastlogin());
 		play = new JButton("Graj");
 		about = new JButton("About");
-		kazu = new JLabel("Launcher został napisany przez techników BetaCrafta");
+		kazu = new JLabel("Launcher został napisany przez KazuGod i Morestecka");
 		nicktext = new JLabel("Nick:");
 		options = new JButton("Opcje");
 
 		play.setBounds(300, 340, 195, 36);
 		nick.setBounds(337, 310, 120, 23);
-		kazu.setBounds(15, 380, 310, 30);
+		kazu.setBounds(15, 380, 390, 30);
 		about.setBounds(750, 380, 22, 19);
 		nicktext.setBounds(300, 311, 35, 19);
-		options.setBounds(50, 350, 70, 19);
+		options.setBounds(50, 350, 120, 19);
 
 		add(play);
 		add(nick);
@@ -63,6 +64,13 @@ public class Window extends JFrame implements ActionListener {
 
 		kazu.setForeground(new Color(61, 60, 68));
 		nicktext.setForeground(Color.BLACK);
+
+		play.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Launcher.write(Launcher.getBetacraft() + "lastlogin", new String[] {nick.getText()});
+			}
+		});
 
 		nick.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -79,8 +87,15 @@ public class Window extends JFrame implements ActionListener {
 			public void change() {
 				if (nick.getText().length() > 16){
 					JOptionPane.showMessageDialog(null, "Maksymalna długość nicku to 16 znaków!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
-					Window.setTextInField(nick, "");
+					Window.setTextInField(nick, nick.getText().substring(0, 16));
 				}
+			}
+		});
+		this.addWindowListener(new java.awt.event.WindowAdapter() {
+			@Override
+			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+				Launcher.write(Launcher.getBetacraft() + "lastlogin", new String[] {nick.getText()});
+				System.exit(0);
 			}
 		});
 	}
@@ -91,6 +106,7 @@ public class Window extends JFrame implements ActionListener {
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		ab.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setVisible(true);
+		Launcher.checkForUpdate();
 		try {
 			Release.initVersions();
 		} catch (Exception ex) {
@@ -122,7 +138,7 @@ public class Window extends JFrame implements ActionListener {
 				JOptionPane.showMessageDialog(null, "Nick nie może zawierać polskich znaków, spacji oraz znaków typu &, # i tym podobnych.", "UWAGA!", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
-			Launcher.Download("_" + chosen_version); // gracz
+			Launcher.download(chosen_version);
 		} else if (source == about) {
 			currentAbout.setVisible(true);
 		}

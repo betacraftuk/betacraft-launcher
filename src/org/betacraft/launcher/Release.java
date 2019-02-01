@@ -1,10 +1,6 @@
 package org.betacraft.launcher;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.LinkedList;
@@ -21,57 +17,43 @@ public class Release {
 			Scanner s = new Scanner(url.openStream());
 			String line = null;
 
-			String folder = null;
-			if (OS.isLinux()) {
-				folder = System.getProperty("user.home") + "/.betacraft/";
-			} else if (OS.isiOS()) {
-				folder = System.getProperty("user.home") + "/Application Support/betacraft/";
-			} else if (OS.isWindows()) {
-				folder = System.getenv("APPDATA") + "/.betacraft/";
-			} else {
-				System.out.println("Your system is not supported. Quitting.");
-				s.close();
-				Window.quit();
-				return;
-			}
-			System.out.println(folder);
-			File betacraft = new File(folder);
-			betacraft.mkdirs();
+			String folder = Launcher.getBetacraft();
+			String[] filecontent = new String[16384]; // 4096 x 4
+			int i = 0;
 
-			BufferedWriter writer = null;
-
-			try {
-				writer = new BufferedWriter(new OutputStreamWriter(
-						new FileOutputStream(folder + "version_index"), "utf-8"));
-				for (int i = 0; i < 250; i++) {
-					if (s.hasNextLine()) {
-						line = s.nextLine();
-						if (!line.equalsIgnoreCase("null")) {
-							String[] split = line.split("~");
-							Release version = new Release(split[0], split[1], null);
-							versions.add(version);
-
-							// zapisz wersje na kompie, w razie jakby ktos chcial uzywac launchera offline
-							writer.write(line);
-							writer.newLine();
-
-							// dodaj kod ktory doda te wersje do listy w ramce (ktorej jeszcze nie ma xD)
-						}
-					}
+			while (s.hasNextLine()) {
+				line = s.nextLine();
+				if (line.equalsIgnoreCase("")) {
+					continue;
+				} if (line.startsWith("launcher:")) {
+					continue;
 				}
-			} catch (Exception ex) {
-				
-			} finally {
-				try {writer.close();} catch (Exception ex) {}
+				if (i == 16383) {
+					System.out.println("String array overflow. Skipping.");
+					continue;
+				}
+				System.out.println(line);
+				filecontent[i] = line;
+				String[] split = line.split("~");
+				Release release = null;
+				if (split[0].contains("w")) {
+					release = new Prerelease(split[0], split[1], null);
+				} else {
+					release = new Release(split[0], split[1], null);
+				}
+				versions.add(release);
+				i++;
 			}
+			// zapisz liste wersji offline
+			Launcher.write(folder + "version_index", filecontent);
 
 			s.close();
 		} catch (UnknownHostException ex) {
-			System.out.println("Brak połączenia z internetem! (albo serwer padł)");
+			System.out.println("Brak połączenia z internetem! (albo serwer padł) ");
 			// TODO kod na offline wlaczanie
 		} catch (Exception ex) {
-			System.out.println("FATALNY ERROR");
-			System.out.println("podczas pobierania listy wersji:");
+			System.out.println("KRYTYCZNY BŁĄD!");
+			System.out.println("podczas pobierania listy wersji: ");
 			ex.printStackTrace();
 		}
 	}
