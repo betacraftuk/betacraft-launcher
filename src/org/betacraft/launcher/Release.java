@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Release {
-	public static List<Release> versions = new LinkedList<Release>(); // 400 powinno byc bezpiecznym numerem
+	public static List<Release> versions = new LinkedList<Release>();
 
 	public static void initVersions() throws IOException {
 		try {
@@ -19,7 +19,7 @@ public class Release {
 
 			String folder = Launcher.getBetacraft();
 			String[] filecontent = new String[400];
-			int i = 0;
+			int i = 1;
 
 			while (s.hasNextLine()) {
 				line = s.nextLine();
@@ -36,7 +36,7 @@ public class Release {
 				filecontent[i] = line;
 				String[] split = line.split("~");
 				Release release = null;
-				if (split[0].contains("pre") || split[0].contains("tb3")) {
+				if (split[0].contains("pre") || split[0].contains("test_build")) {
 					release = new Prerelease(split[0], split[1], null);
 				} else {
 					release = new Release(split[0], split[1], null);
@@ -113,7 +113,7 @@ public class Release {
 			return this.name + " (Seecret Saturday)";
 		}
 		if (this.name.equalsIgnoreCase("inf-20100630b")) {
-			return this.name + " (Alpha 1.0.0)";
+			return this.name + " (Alpha v1.0.0)";
 		}
 		if (this.name.equalsIgnoreCase("a1.2.0")) {
 			return this.name + " (Halloween Update)";
