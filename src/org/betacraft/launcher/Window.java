@@ -3,6 +3,8 @@ package org.betacraft.launcher;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -15,18 +17,12 @@ import javax.swing.event.DocumentListener;
 
 public class Window extends JFrame implements ActionListener {
 
-	static String[] versions = new String[]{"1.0", "1.0_01", "1.0.2", "1.1a", "1.1b", "1.1_01", "1.1_02",
-			"1.2", "1.2_01", "1.2_02", "1.3a", "1.3b", "1.3_01", "1.4a", "1.4b", "1.4_01", "1.5",
-			"1.5_01", "1.6", "1.6.1", "1.6.2", "1.6.3", "1.6.4", "1.6.5", "1.6.6",
-			"1.7", "1.7_01", "1.7.2", "1.7.3", "1.8", "1.8.1"};
-	static String[] other_versions = new String[] {"1.6-build3", "1.8-pre1a", "1.8-pre1b", "1.8-pre2",
-			"1.9-pre1", "1.9-pre2", "1.9-pre3a", "1.9-pre3b", "1.9-pre4b", "1.9-pre5", "1.9-pre6"};
-	public static String chosen_version = "1.6.6";
+	public static String chosen_version = "b1.6.6";
 
 	JButton play, about, options;
 	JLabel kazu, nicktext;
 	static JTextField nick = null;
-	static About currentAbout = null;
+	static Wersja currentAbout = null;
 	public static Window window = null;
 
 	public Window()
@@ -40,7 +36,7 @@ public class Window extends JFrame implements ActionListener {
 
 		nick = new JTextField(Launcher.getLastlogin());
 		play = new JButton("Graj");
-		about = new JButton("About");
+		about = new JButton("Zmień wersję");
 		kazu = new JLabel("Launcher został napisany przez KazuGod i Morestecka");
 		nicktext = new JLabel("Nick:");
 		options = new JButton("Opcje");
@@ -68,7 +64,7 @@ public class Window extends JFrame implements ActionListener {
 		play.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Launcher.write(Launcher.getBetacraft() + "lastlogin", new String[] {nick.getText()});
+				Launcher.write(Launcher.getBetacraft() + "lastlogin", new String[] {nick.getText()}, false);
 			}
 		});
 
@@ -94,7 +90,8 @@ public class Window extends JFrame implements ActionListener {
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 			@Override
 			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-				Launcher.write(Launcher.getBetacraft() + "lastlogin", new String[] {nick.getText()});
+				Launcher.write(Launcher.getBetacraft() + "lastlogin", new String[] {nick.getText()}, false);
+				Logger.a("Dezaktywacja...");
 				System.exit(0);
 			}
 		});
@@ -102,16 +99,20 @@ public class Window extends JFrame implements ActionListener {
 	
 	public static void main(String[] args) {
 		window = new Window();
-		About ab = new About();
-		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		ab.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		window.setVisible(true);
-		Launcher.checkForUpdate();
 		try {
 			Release.initVersions();
 		} catch (Exception ex) {
-			System.out.println("FATALNY ERROR:");
-			ex.printStackTrace();
+			Logger.a("FATALNY ERROR: ");
+			Logger.a(ex.toString());
+		}
+		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		window.setVisible(true);
+		Launcher.checkForUpdate();
+		String[] array = Launcher.read(Launcher.getBetacraft() + "launcher.settings");
+		if (array == null) {
+			chosen_version = "c0.0.13a_03";
+		} else {
+			chosen_version = array[0].split(":")[1];
 		}
 	}
 
@@ -124,7 +125,7 @@ public class Window extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		if (currentAbout == null) {
-			currentAbout = new About();
+			currentAbout = new Wersja();
 		}
 		
 		if (source == play) {
@@ -138,7 +139,27 @@ public class Window extends JFrame implements ActionListener {
 				JOptionPane.showMessageDialog(null, "Nick nie może zawierać polskich znaków, spacji oraz znaków typu &, # i tym podobnych.", "UWAGA!", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
-			Launcher.download(chosen_version);
+			play.setText("Pobieram " + chosen_version + "...");
+			play.setEnabled(false);
+
+			Timer timer = new Timer();
+			try {
+				timer.schedule(new TimerTask() {
+					public void run() {
+						Launcher.download(Launcher.getVerLink(chosen_version), Launcher.getVerFolder(), chosen_version + ".jar");
+						if (!Launcher.getVerDownloaded(chosen_version)) {
+							JOptionPane.showMessageDialog(null, "Brak połączenia z internetem. Nie można pobrać tej wersji.", "Brak połączenia", JOptionPane.ERROR_MESSAGE);
+						} else {
+							// TODO kod wlaczania
+						}
+						
+						play.setText("Graj");
+						play.setEnabled(true);
+					}
+				}, 10);
+			} catch (Exception ex) {
+				
+			}
 		} else if (source == about) {
 			currentAbout.setVisible(true);
 		}

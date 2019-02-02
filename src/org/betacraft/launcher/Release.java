@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Scanner;
 
 public class Release {
-	public static List<Release> versions = new LinkedList<Release>();
+	public static List<Release> versions = new LinkedList<Release>(); // 400 powinno byc bezpiecznym numerem
 
 	public static void initVersions() throws IOException {
 		try {
@@ -18,7 +18,7 @@ public class Release {
 			String line = null;
 
 			String folder = Launcher.getBetacraft();
-			String[] filecontent = new String[16384]; // 4096 x 4
+			String[] filecontent = new String[400];
 			int i = 0;
 
 			while (s.hasNextLine()) {
@@ -28,15 +28,15 @@ public class Release {
 				} if (line.startsWith("launcher:")) {
 					continue;
 				}
-				if (i == 16383) {
-					System.out.println("String array overflow. Skipping.");
+				if (i == 400) {
+					Logger.a("String array overflow. Skipping.");
 					continue;
 				}
-				System.out.println(line);
+				Logger.a("Rejestrowanie wersji " + line);
 				filecontent[i] = line;
 				String[] split = line.split("~");
 				Release release = null;
-				if (split[0].contains("w")) {
+				if (split[0].contains("pre") || split[0].contains("tb3")) {
 					release = new Prerelease(split[0], split[1], null);
 				} else {
 					release = new Release(split[0], split[1], null);
@@ -45,15 +45,15 @@ public class Release {
 				i++;
 			}
 			// zapisz liste wersji offline
-			Launcher.write(folder + "version_index", filecontent);
+			Launcher.write(folder + "version_index", filecontent, false);
 
 			s.close();
 		} catch (UnknownHostException ex) {
-			System.out.println("Brak połączenia z internetem! (albo serwer padł) ");
+			Logger.a("Brak połączenia z internetem! (albo serwer padł) ");
 			// TODO kod na offline wlaczanie
 		} catch (Exception ex) {
-			System.out.println("KRYTYCZNY BŁĄD!");
-			System.out.println("podczas pobierania listy wersji: ");
+			Logger.a("KRYTYCZNY BŁĄD!");
+			Logger.a("podczas pobierania listy wersji: ");
 			ex.printStackTrace();
 		}
 	}
@@ -78,5 +78,49 @@ public class Release {
 
 	public String[] getDescription() {
 		return this.desc.split("`");
+	}
+
+	@Override
+	public String toString() {
+		if (this.name.equalsIgnoreCase("inf-20100618")) {
+			return this.name + " (Seecret Friday 1)";
+		}
+		if (this.name.equalsIgnoreCase("inf-20100625b")) {
+			return this.name + " (Seecret Friday 2)";
+		}
+		if (this.name.equalsIgnoreCase("a1.0.1")) {
+			return this.name + " (Seecret Friday 3)";
+		}
+		if (this.name.equalsIgnoreCase("a1.0.4")) {
+			return this.name + " (Seecret Friday 4)";
+		}
+		if (this.name.equalsIgnoreCase("a1.0.6")) {
+			return this.name + " (Seecret Friday 5)";
+		}
+		if (this.name.equalsIgnoreCase("a1.0.11")) {
+			return this.name + " (Seecret Friday 6)";
+		}
+		if (this.name.equalsIgnoreCase("a1.0.14a")) {
+			return this.name + " (Seecret Friday 7)";
+		}
+		if (this.name.equalsIgnoreCase("a1.0.17")) {
+			return this.name + " (Seecret Friday 8)";
+		}
+		if (this.name.equalsIgnoreCase("a1.1.0a")) {
+			return this.name + " (Seecret Friday 9)";
+		}
+		if (this.name.equalsIgnoreCase("a1.1.1")) {
+			return this.name + " (Seecret Saturday)";
+		}
+		if (this.name.equalsIgnoreCase("inf-20100630b")) {
+			return this.name + " (Alpha 1.0.0)";
+		}
+		if (this.name.equalsIgnoreCase("a1.2.0")) {
+			return this.name + " (Halloween Update)";
+		}
+		if (this.name.equalsIgnoreCase("b1.8")) {
+			return this.name + " (Adventure Update)";
+		}
+		return this.name;
 	}
 }
