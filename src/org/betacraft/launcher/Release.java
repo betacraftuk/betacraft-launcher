@@ -1,5 +1,6 @@
 package org.betacraft.launcher;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.net.UnknownHostException;
@@ -15,47 +16,59 @@ public class Release {
 			URL url = new URL("https://betacraft.ovh/version_index");
 
 			Scanner s = new Scanner(url.openStream());
-			String line = null;
-
-			String folder = Launcher.getBetacraft();
-			String[] filecontent = new String[400];
-			int i = 1;
-
-			while (s.hasNextLine()) {
-				line = s.nextLine();
-				if (line.equalsIgnoreCase("")) {
-					continue;
-				} if (line.startsWith("launcher:")) {
-					continue;
-				}
-				if (i == 400) {
-					Logger.a("String array overflow. Skipping.");
-					continue;
-				}
-				Logger.a("Rejestrowanie wersji " + line);
-				filecontent[i] = line;
-				String[] split = line.split("~");
-				Release release = null;
-				if (split[0].contains("pre") || split[0].contains("test_build")) {
-					release = new Prerelease(split[0], split[1], null);
-				} else {
-					release = new Release(split[0], split[1], null);
-				}
-				versions.add(release);
-				i++;
-			}
-			// zapisz liste wersji offline
-			Launcher.write(folder + "version_index", filecontent, false);
+			scan(s, true);
 
 			s.close();
 		} catch (UnknownHostException ex) {
 			Logger.a("Brak połączenia z internetem! (albo serwer padł) ");
-			// TODO kod na offline wlaczanie
+
+			try {
+				Scanner fileScanner = new Scanner(new File(Launcher.getBetacraft() + "version_index"));
+				scan(fileScanner, false);
+
+				fileScanner.close();
+			} catch (Exception ex1) {
+				Logger.a("Nie udało się zainicjować wersji z dysku!");
+				Logger.a(ex1.getMessage());
+				ex.printStackTrace();
+			}
 		} catch (Exception ex) {
 			Logger.a("KRYTYCZNY BŁĄD!");
 			Logger.a("podczas pobierania listy wersji: ");
+			Logger.a(ex.getMessage());
 			ex.printStackTrace();
 		}
+	}
+
+	private static void scan(Scanner scanner, boolean save) {
+		String line = null;
+
+		String folder = Launcher.getBetacraft();
+		String[] filecontent = new String[400];
+		int i = 1;
+
+		while (scanner.hasNextLine()) {
+			line = scanner.nextLine();
+			if (line.equalsIgnoreCase("")) continue;
+			if (line.startsWith("launcher:")) continue;
+			if (i == 400) {
+				Logger.a("String array overflow. Skipping.");
+				continue;
+			}
+			Logger.a("Rejestrowanie wersji " + line);
+			if (save) filecontent[i] = line;
+			String[] split = line.split("~");
+			Release release = null;
+			if (split[0].contains("pre") || split[0].contains("test_build")) {
+				release = new Prerelease(split[0], split[1], null);
+			} else {
+				release = new Release(split[0], split[1], null);
+			}
+			versions.add(release);
+			i++;
+		}
+		// zapisz liste wersji offline
+		if (save) Launcher.write(folder + "version_index", filecontent, false);
 	}
 
 	private String name;

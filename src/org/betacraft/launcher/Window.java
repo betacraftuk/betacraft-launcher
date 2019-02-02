@@ -1,8 +1,11 @@
 package org.betacraft.launcher;
 
+import java.applet.AppletContext;
+import java.applet.AppletStub;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -15,7 +18,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class Window extends JFrame implements ActionListener {
+public class Window extends JFrame implements ActionListener, AppletStub {
 
 	public static String chosen_version = "b1.6.6";
 
@@ -103,7 +106,8 @@ public class Window extends JFrame implements ActionListener {
 			Release.initVersions();
 		} catch (Exception ex) {
 			Logger.a("FATALNY ERROR: ");
-			Logger.a(ex.toString());
+			Logger.a(ex.getMessage());
+			ex.printStackTrace();
 		}
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setVisible(true);
@@ -124,7 +128,7 @@ public class Window extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
-		if (currentAbout == null) {
+		if (source == about && currentAbout == null) {
 			currentAbout = new Wersja();
 		}
 		
@@ -139,17 +143,19 @@ public class Window extends JFrame implements ActionListener {
 				JOptionPane.showMessageDialog(null, "Nick nie może zawierać polskich znaków, spacji oraz znaków typu &, # i tym podobnych.", "UWAGA!", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
-			play.setText("Pobieram " + chosen_version + "...");
+			play.setText(chosen_version + "...");
 			play.setEnabled(false);
 
 			Timer timer = new Timer();
 			try {
 				timer.schedule(new TimerTask() {
 					public void run() {
-						Launcher.download(Launcher.getVerLink(chosen_version), Launcher.getVerFolder(), chosen_version + ".jar");
 						if (!Launcher.getVerDownloaded(chosen_version)) {
-							JOptionPane.showMessageDialog(null, "Brak połączenia z internetem. Nie można pobrać tej wersji.", "Brak połączenia", JOptionPane.ERROR_MESSAGE);
+							if (!Launcher.download(Launcher.getVerLink(chosen_version), Launcher.getVerFolder(), chosen_version + ".jar")) {
+								JOptionPane.showMessageDialog(null, "Brak połączenia z internetem. Nie można pobrać tej wersji.", "Brak połączenia", JOptionPane.ERROR_MESSAGE);
+							}
 						} else {
+							new Launcher().LaunchGame("1024", nick.getText());
 							// TODO kod wlaczania
 						}
 						
@@ -172,5 +178,35 @@ public class Window extends JFrame implements ActionListener {
 			}
 		};
 		SwingUtilities.invokeLater(set);
+	}
+
+	@Override
+	public void appletResize(int width, int height) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public AppletContext getAppletContext() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public URL getCodeBase() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public URL getDocumentBase() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String getParameter(String name) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
