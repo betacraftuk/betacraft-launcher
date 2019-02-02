@@ -1,11 +1,8 @@
 package org.betacraft.launcher;
 
-import java.applet.AppletContext;
-import java.applet.AppletStub;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URL;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -18,7 +15,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class Window extends JFrame implements ActionListener, AppletStub {
+public class Window extends JFrame implements ActionListener {
 
 	public static String chosen_version = "b1.6.6";
 
@@ -30,7 +27,6 @@ public class Window extends JFrame implements ActionListener, AppletStub {
 
 	public Window()
 	{
-		// TODO autoupdate, obrazki, przegladarka
 		setSize(800, 450);
 		setTitle("Betacraft Launcher " + Launcher.VERSION);
 		setLayout(null);
@@ -38,11 +34,11 @@ public class Window extends JFrame implements ActionListener, AppletStub {
 		setResizable(false);
 
 		nick = new JTextField(Launcher.getLastlogin());
-		play = new JButton("Graj");
-		about = new JButton("Zmień wersję");
-		kazu = new JLabel("Launcher został napisany przez KazuGod i Morestecka");
+		play = new JButton("Play");
+		about = new JButton("Change version");
+		kazu = new JLabel("Launcher was made by KazuGod & Moresteck");
 		nicktext = new JLabel("Nick:");
-		options = new JButton("Opcje");
+		options = new JButton("Options");
 
 		play.setBounds(300, 340, 195, 36);
 		nick.setBounds(337, 310, 120, 23);
@@ -85,7 +81,7 @@ public class Window extends JFrame implements ActionListener, AppletStub {
 
 			public void change() {
 				if (nick.getText().length() > 16){
-					JOptionPane.showMessageDialog(null, "Maksymalna długość nicku to 16 znaków!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(null, "Maksymalna dlugosc nicku to 16 znakow!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
 					Window.setTextInField(nick, nick.getText().substring(0, 16));
 				}
 			}
@@ -134,13 +130,13 @@ public class Window extends JFrame implements ActionListener, AppletStub {
 		
 		if (source == play) {
 			if (nick.getText().length() < 3) {
-				JOptionPane.showMessageDialog(null, "Nick musi zawierać więcej niż 3 znaki. Wydłuż swój nick!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Nick musi zawierac wiecej niz 3 znaki. Wydluz swoj nick!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
 			String nickk = nick.getText().replaceAll("[^\\x00-\\x7F]", "");
 			Window.setTextInField(nick, nickk);
 			if (nick.getText().contains(" ") || nick.getText().contains("&") || nick.getText().contains("#") || nick.getText().contains("@") || nick.getText().contains("!") || nick.getText().contains("$") || nick.getText().contains("%") || nick.getText().contains("^") || nick.getText().contains("*") || nick.getText().contains("(") || nick.getText().contains(")") || nick.getText().contains("+") || nick.getText().contains("=") || nick.getText().contains("'") || nick.getText().contains("\"") || nick.getText().contains(";") || nick.getText().contains(":") || nick.getText().contains(".") || nick.getText().contains(",") || nick.getText().contains(">") || nick.getText().contains("<") || nick.getText().contains("/") || nick.getText().contains("?") || nick.getText().contains("|") || nick.getText().contains("\\") || nick.getText().contains("]") || nick.getText().contains("[") || nick.getText().contains("{") || nick.getText().contains("}") || nick.getText().contains("~") || nick.getText().contains("`") || nick.getText().contains("€") /* precz z komuną */) {
-				JOptionPane.showMessageDialog(null, "Nick nie może zawierać polskich znaków, spacji oraz znaków typu &, # i tym podobnych.", "UWAGA!", JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Nick nie moze zawieraa polskich znakow, spacji oraz znakow typu &, # i tym podobnych.", "UWAGA!", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
 			play.setText(chosen_version + "...");
@@ -152,7 +148,7 @@ public class Window extends JFrame implements ActionListener, AppletStub {
 					public void run() {
 						if (!Launcher.getVerDownloaded(chosen_version)) {
 							if (!Launcher.download(Launcher.getVerLink(chosen_version), Launcher.getVerFolder(), chosen_version + ".jar")) {
-								JOptionPane.showMessageDialog(null, "Brak połączenia z internetem. Nie można pobrać tej wersji.", "Brak połączenia", JOptionPane.ERROR_MESSAGE);
+								JOptionPane.showMessageDialog(null, "Brak polaczenia z internetem. Nie mozna pobrac tej wersji.", "Brak polaczenia", JOptionPane.ERROR_MESSAGE);
 							}
 						} else {
 							new Launcher().LaunchGame("1024", nick.getText());
@@ -178,35 +174,5 @@ public class Window extends JFrame implements ActionListener, AppletStub {
 			}
 		};
 		SwingUtilities.invokeLater(set);
-	}
-
-	@Override
-	public void appletResize(int width, int height) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public AppletContext getAppletContext() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public URL getCodeBase() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public URL getDocumentBase() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getParameter(String name) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

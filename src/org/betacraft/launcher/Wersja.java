@@ -22,7 +22,7 @@ public class Wersja extends JFrame {
 		Logger.a("Otwarto okno wyboru wersji.");
 		setSize(282, 386);
 		setLayout(null);
-		setTitle("Wybór wersji");
+		setTitle("Wybor wersji");
 		setLocationRelativeTo(null);
 		setResizable(false);
 		setVisible(true);

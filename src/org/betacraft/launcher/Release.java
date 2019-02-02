@@ -1,3 +1,4 @@
+
 package org.betacraft.launcher;
 
 import java.io.File;
@@ -20,7 +21,7 @@ public class Release {
 
 			s.close();
 		} catch (UnknownHostException ex) {
-			Logger.a("Brak połączenia z internetem! (albo serwer padł) ");
+			Logger.a("Brak polaczenia z internetem! (albo serwer padł) ");
 
 			try {
 				Scanner fileScanner = new Scanner(new File(Launcher.getBetacraft() + "version_index"));
@@ -28,12 +29,12 @@ public class Release {
 
 				fileScanner.close();
 			} catch (Exception ex1) {
-				Logger.a("Nie udało się zainicjować wersji z dysku!");
+				Logger.a("Nie udalo sie zainicjowac wersji z dysku!");
 				Logger.a(ex1.getMessage());
 				ex.printStackTrace();
 			}
 		} catch (Exception ex) {
-			Logger.a("KRYTYCZNY BŁĄD!");
+			Logger.a("KRYTYCZNY BLAD!");
 			Logger.a("podczas pobierania listy wersji: ");
 			Logger.a(ex.getMessage());
 			ex.printStackTrace();
