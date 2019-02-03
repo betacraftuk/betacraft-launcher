@@ -136,7 +136,7 @@ public class Window extends JFrame implements ActionListener {
 			String nickk = nick.getText().replaceAll("[^\\x00-\\x7F]", "");
 			Window.setTextInField(nick, nickk);
 			if (nick.getText().contains(" ") || nick.getText().contains("&") || nick.getText().contains("#") || nick.getText().contains("@") || nick.getText().contains("!") || nick.getText().contains("$") || nick.getText().contains("%") || nick.getText().contains("^") || nick.getText().contains("*") || nick.getText().contains("(") || nick.getText().contains(")") || nick.getText().contains("+") || nick.getText().contains("=") || nick.getText().contains("'") || nick.getText().contains("\"") || nick.getText().contains(";") || nick.getText().contains(":") || nick.getText().contains(".") || nick.getText().contains(",") || nick.getText().contains(">") || nick.getText().contains("<") || nick.getText().contains("/") || nick.getText().contains("?") || nick.getText().contains("|") || nick.getText().contains("\\") || nick.getText().contains("]") || nick.getText().contains("[") || nick.getText().contains("{") || nick.getText().contains("}") || nick.getText().contains("~") || nick.getText().contains("`") || nick.getText().contains("€") /* precz z komuną */) {
-				JOptionPane.showMessageDialog(null, "Nick nie moze zawieraa polskich znakow, spacji oraz znakow typu &, # i tym podobnych.", "UWAGA!", JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Nick nie moze zawierac polskich znakow, spacji oraz znakow typu &, # i tym podobnych.", "UWAGA!", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
 			play.setText(chosen_version + "...");
@@ -155,7 +155,7 @@ public class Window extends JFrame implements ActionListener {
 							// TODO kod wlaczania
 						}
 						
-						play.setText("Graj");
+						play.setText("Play");
 						play.setEnabled(true);
 					}
 				}, 10);

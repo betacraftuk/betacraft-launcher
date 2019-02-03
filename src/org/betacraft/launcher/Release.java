@@ -21,7 +21,7 @@ public class Release {
 
 			s.close();
 		} catch (UnknownHostException ex) {
-			Logger.a("Brak polaczenia z internetem! (albo serwer padł) ");
+			Logger.a("Brak polaczenia z internetem! (albo serwer padl) ");
 
 			try {
 				Scanner fileScanner = new Scanner(new File(Launcher.getBetacraft() + "version_index"));

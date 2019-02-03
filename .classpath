@@ -3,5 +3,20 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="podmieniacz"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/home/moresteck/.betacraft/bin/lwjgl_util.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/home/moresteck/.betacraft/bin/natives"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/moresteck/.betacraft/bin/jinput.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/home/moresteck/.betacraft/bin/natives"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/moresteck/.betacraft/bin/lwjgl.jar">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="/home/moresteck/.betacraft/bin/natives"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
