@@ -59,9 +59,8 @@ public class Wersja extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				Release ver = (Release) list.getSelectedValue();
 				Window.chosen_version = ver.getName();
-				Launcher.write(Launcher.getBetacraft() + "launcher.settings", new String[] {"version:" + ver.getName()}, false);
+				Launcher.setProperty(Launcher.getBetacraft() + "launcher.settings", "version", ver.getName());
 				setVisible(false);
-
 			}
 		});
 	}

@@ -5,8 +5,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -14,6 +12,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.lang.reflect.Constructor;
@@ -29,28 +28,22 @@ import java.util.Scanner;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecutor;
-
 public class Launcher {
 	public static String VERSION = "Preview 1";
 	int sessions = 0;
 
 	public void LaunchGame(String ram, String username) {
-		File launchwrapper = new File(getBetacraft() + "bin", "launchwrapper-1.5.jar");
-		if (!launchwrapper.exists()) {
-			download("https://libraries.minecraft.net/net/minecraft/launchwrapper/1.5/launchwrapper-1.5.jar", new File(getBetacraft() + "bin/"), "launchwrapper-1.5.jar");
-		}
 		try {
-			//String file = getBetacraft() + "versions/" +  Window.chosen_version + ".jar";
 			String retrocraft = " -Dhttp.proxyHost=classic.retrocraft.net -Dhttp.proxyPort=80 -Djava.util.Arrays.useLegacyMergeSort=true";
-			String libpath = "-Djava.library.path=\"" + getBetacraft() + "bin/natives\"";
+			String libpath = "-Djava.library.path=" + getBetacraft() + "bin/natives";
 			if (Window.chosen_version.startsWith("c") || Window.chosen_version.startsWith("in")) {
 				libpath = libpath + retrocraft;
 			}
 			applyVersion();
 			String jars = getBetacraft() + "bin/minecraft.jar:" + getBetacraft() + "bin/lwjgl.jar:" + getBetacraft() + "bin/lwjgl_util.jar:" + getBetacraft() + "bin/jinput.jar";
-			String line = "java -Xms1024m -Xmx1024m -cp " + jars + " " + libpath + " net.minecraft.client.Minecraft " + username + " " + sessions;
+			String line = " -Xmx1024m -cp " + jars + " " + libpath + " net.minecraft.client.Minecraft " + username + " " + sessions;
+			// dla Windows musi byc javaw, inaczej odpali sie cmd.exe
+			line = OS.isWindows() ? (line = "javaw" + line) : (line = "java" + line);
 
 			if (Window.chosen_version.startsWith("a1.0.5") || Window.chosen_version.startsWith("a1.0.2") || Window.chosen_version.startsWith("a1.0.1") || 
 					Window.chosen_version.startsWith("a1.0.4") || Window.chosen_version.startsWith("a1.0.3")) {
@@ -79,60 +72,61 @@ public class Launcher {
 				final Applet result = jarClass.newInstance();
 
 				for (final Field field : jarClass.getDeclaredFields()) {
-		            final String name = field.getType().getName();
-		            if (!name.contains("awt") && !name.contains("java")) {
-		                Field fileField = null;
-		                final Class<?> clazz = loader.loadClass(name);
-		                for (final Field field1 : clazz.getDeclaredFields()) {
-		                    if (Modifier.isStatic(field1.getModifiers()) && field1.getType().getName().equals("java.io.File")) {
-		                        fileField = field1;
-		                    }
-		                }
-		                if (fileField != null) {
-		                    fileField.setAccessible(true);
-		                    fileField.set(null, new File(getBetacraft()));
-		                    break;
-		                }
-		            }
-		        }
+					final String name = field.getType().getName();
+					if (!name.contains("awt") && !name.contains("java")) {
+						Field fileField = null;
+						final Class<?> clazz = loader.loadClass(name);
+						for (final Field field1 : clazz.getDeclaredFields()) {
+							if (Modifier.isStatic(field1.getModifiers()) && field1.getType().getName().equals("java.io.File")) {
+								fileField = field1;
+							}
+						}
+						if (fileField != null) {
+							fileField.setAccessible(true);
+							fileField.set(null, new File(getBetacraft()));
+							break;
+						}
+					}
+				}
 
 				final Frame launcherFrameFake = new Frame();
-		        launcherFrameFake.setTitle("Minecraft");
-		        launcherFrameFake.setBackground(Color.BLACK);
-		        final JPanel panel = new JPanel();
-		        launcherFrameFake.setLayout(new BorderLayout());
-		        panel.setPreferredSize(new Dimension(854, 480));
-		        launcherFrameFake.add(panel, "Center");
-		        launcherFrameFake.pack();
-		        launcherFrameFake.setLocationRelativeTo(null);
-		        launcherFrameFake.setVisible(true);
+				launcherFrameFake.setTitle("Minecraft");
+				launcherFrameFake.setBackground(Color.BLACK);
+				final JPanel panel = new JPanel();
+				launcherFrameFake.setLayout(new BorderLayout());
+				panel.setPreferredSize(new Dimension(854, 480));
+				launcherFrameFake.add(panel, "Center");
+				launcherFrameFake.pack();
+				launcherFrameFake.setLocationRelativeTo(null);
+				launcherFrameFake.setVisible(true);
 				AlphaStub stub = new AlphaStub(username, Integer.toString(sessions));
 				result.setStub(stub);
 				stub.setLayout(new BorderLayout());
 				stub.add(result, "Center");
 				stub.validate();
 				launcherFrameFake.removeAll();
-		        launcherFrameFake.setLayout(new BorderLayout());
-		        launcherFrameFake.add(stub, "Center");
-		        launcherFrameFake.validate();
+				launcherFrameFake.setLayout(new BorderLayout());
+				launcherFrameFake.add(stub, "Center");
+				launcherFrameFake.validate();
 				result.init();
 				result.start();
-		        loader.close();
+				loader.close();
 				return;
 			}
-			CommandLine commandLine = CommandLine.parse(line);
-			DefaultExecutor executor = new DefaultExecutor();
-			executor.setExitValue(1);
-			executor.execute(commandLine);
+			Process process = Runtime.getRuntime().exec(line);
+			InputStream err = process.getErrorStream();
+			InputStreamReader isr = new InputStreamReader(err);
+			BufferedReader br = new BufferedReader(isr);
+			String line1;
+			while ((line1 = br.readLine()) != null) {
+				System.out.println(line1);
+			}
 			sessions++;
-			//Window.window.setVisible(false);
-			//Minecraft.main(new String[] {"Moresteck", "1"});
 		} catch (Exception ex) {
 			Logger.a("KRYTYCZNY BLAD");
 			Logger.a("podczas uruchamiania gry: ");
-			//Logger.a(ex.getMessage());
+			Logger.a(ex.getMessage());
 			ex.printStackTrace();
-			//Window.window.setVisible(true);
 		}
 	}
 
@@ -193,11 +187,28 @@ public class Launcher {
 	}
 
 	public static void downloadUpdate() {
+		String update = getUpdate();
 		try {
-			download("https://betacraft.ovh/versions/launcher.jar", new File(getBetacraft()), "betacraft.jar");
-			final String pathToJar = Window.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+			boolean yes = false;
+			int result = JOptionPane.showConfirmDialog(null, "There is a new version of the launcher (" + update + "). Would you like to update?", "Update check", JOptionPane.YES_NO_OPTION);
+			if (result == JOptionPane.YES_OPTION) {
+				Logger.a("Zaakceptowano pobranie aktualizacji " + update);
+				yes = true;
+			} else {
+				Logger.a("Odmowiono pobrania aktualizacji. Launcher dziala w wersji " + VERSION);
+			}
+			if (yes || update.startsWith("!")) { // jezeli jest jakas wazna aktualizacja, to pobierz ja bez zgody :P
+				new Pobieranie(update);
+				download("https://betacraft.ovh/versions/launcher.jar", new File(getBetacraft()), "betacraft.jar");
+				final String pathToJar = Window.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+				File version = new File(getBetacraft(), "betacraft.jar");
+				File dest = new File(pathToJar);
+				Files.copy(version.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				Runtime.getRuntime().exec("java -jar " + pathToJar);
+				Window.quit();
+			}
 		} catch (Exception ex) {
-			
+			Logger.a("Nie udalo sie pobrac aktualizacji!");
 		}
 	}
 
@@ -210,7 +221,7 @@ public class Launcher {
 		} else if (OS.isWindows()) {
 			folder = System.getenv("APPDATA") + "/.betacraft/";
 		} else {
-			Logger.a("Twoj system nie jest wspierany.");
+			Logger.a("Your operating system is not supported.");
 			Window.quit();
 			return null;
 		}
@@ -241,21 +252,17 @@ public class Launcher {
 		}
 	}
 
-	public static void checkForUpdate() {
+	public static boolean checkForUpdate() {
 		String update = getUpdate();
 		if (update == null) {
-			return;
+			return false;
 		}
 		if (!VERSION.equalsIgnoreCase(update)) {
 			Logger.a("Znaleziono aktualizacje (" + update + ").");
-			int result = JOptionPane.showConfirmDialog(null, "Wydano nowa wersje launchera (" + update + "). Czy chcesz pobrac aktualizacje?", "Aktualizacja", JOptionPane.YES_NO_OPTION);
-			if (result == JOptionPane.YES_OPTION) {
-				downloadUpdate();
-			} else {
-				Logger.a("Odmowiono pobrania aktualizacji. Launcher dziala w wersji " + VERSION);
-			}
+			return true;
 		} else {
 			Logger.a("Launcher dziala w wersji " + VERSION + "");
+			return false;
 		}
 	}
 
@@ -292,14 +299,14 @@ public class Launcher {
 
 	public static String[] read(String file) {
 		new File(file);
-		BufferedReader writer = null;
+		BufferedReader reader = null;
 		String[] lines = new String[4096];
 		try {
-			writer = new BufferedReader(new InputStreamReader(
+			reader = new BufferedReader(new InputStreamReader(
 					new FileInputStream(file), "utf-8"));
 			int i = 0;
 			String line = null;
-			while ((line = writer.readLine()) != null) {
+			while ((line = reader.readLine()) != null) {
 				lines[i] = line;
 				i++;
 			}
@@ -310,8 +317,22 @@ public class Launcher {
 			Logger.a(ex.getMessage());
 			ex.printStackTrace();
 		} finally {
-			try {writer.close();} catch (Exception ex) {}
+			try {reader.close();} catch (Exception ex) {}
 		}
 		return null;
+	}
+
+	public static void setProperty(String file, String property, String value) {
+		String[] lines = read(file);
+		String[] newlines = new String[lines.length];
+		for (int i = 0; i < lines.length; i++) {
+			if (lines[i] == null) continue;
+			if (lines[i].startsWith(property + ":")) {
+				newlines[i] = property + ":" + value;
+				continue;
+			}
+			newlines[i] = lines[i];
+		}
+		write(file, newlines, false);
 	}
 }

@@ -23,12 +23,13 @@ public class Window extends JFrame implements ActionListener {
 	JLabel kazu, nicktext;
 	static JTextField nick = null;
 	static Wersja currentAbout = null;
+	static Opcje currentOptions = null;
 	public static Window window = null;
 
 	public Window()
 	{
 		setSize(800, 450);
-		setTitle("Betacraft Launcher " + Launcher.VERSION);
+		setTitle("Betacraft Launcher version " + Launcher.VERSION);
 		setLayout(null);
 		setLocationRelativeTo(null);
 		setResizable(false);
@@ -36,7 +37,7 @@ public class Window extends JFrame implements ActionListener {
 		nick = new JTextField(Launcher.getLastlogin());
 		play = new JButton("Play");
 		about = new JButton("Change version");
-		kazu = new JLabel("Launcher was made by KazuGod & Moresteck");
+		kazu = new JLabel("Betacraft Launcher made by KazuGod & Moresteck");
 		nicktext = new JLabel("Nick:");
 		options = new JButton("Options");
 
@@ -56,6 +57,7 @@ public class Window extends JFrame implements ActionListener {
 
 		play.addActionListener(this); // this - sluchaczem zdarzen jest cala ramka
 		about.addActionListener(this);
+		options.addActionListener(this);
 
 		kazu.setForeground(new Color(61, 60, 68));
 		nicktext.setForeground(Color.BLACK);
@@ -81,7 +83,7 @@ public class Window extends JFrame implements ActionListener {
 
 			public void change() {
 				if (nick.getText().length() > 16){
-					JOptionPane.showMessageDialog(null, "Maksymalna dlugosc nicku to 16 znakow!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(null, "The maxixum amount of characters in a nickname is 16.", "Warning", JOptionPane.WARNING_MESSAGE);
 					Window.setTextInField(nick, nick.getText().substring(0, 16));
 				}
 			}
@@ -107,7 +109,9 @@ public class Window extends JFrame implements ActionListener {
 		}
 		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		window.setVisible(true);
-		Launcher.checkForUpdate();
+		if (Launcher.checkForUpdate()) {
+			Launcher.downloadUpdate();
+		}
 		String[] array = Launcher.read(Launcher.getBetacraft() + "launcher.settings");
 		if (array == null) {
 			chosen_version = "c0.0.13a_03";
@@ -119,6 +123,7 @@ public class Window extends JFrame implements ActionListener {
 	public static void quit() {
 		window.setVisible(false);
 		window.dispose();
+		System.exit(0);
 	}
 
 	@Override
@@ -127,16 +132,21 @@ public class Window extends JFrame implements ActionListener {
 		if (source == about && currentAbout == null) {
 			currentAbout = new Wersja();
 		}
-		
+		if (source == options && currentOptions == null) {
+			currentOptions = new Opcje();
+		}
+		if (source == options) {
+			currentOptions.setVisible(true);
+		}
 		if (source == play) {
 			if (nick.getText().length() < 3) {
-				JOptionPane.showMessageDialog(null, "Nick musi zawierac wiecej niz 3 znaki. Wydluz swoj nick!", "UWAGA!", JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Your nickname must have at least 3 characters.", "Warning", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
 			String nickk = nick.getText().replaceAll("[^\\x00-\\x7F]", "");
 			Window.setTextInField(nick, nickk);
 			if (nick.getText().contains(" ") || nick.getText().contains("&") || nick.getText().contains("#") || nick.getText().contains("@") || nick.getText().contains("!") || nick.getText().contains("$") || nick.getText().contains("%") || nick.getText().contains("^") || nick.getText().contains("*") || nick.getText().contains("(") || nick.getText().contains(")") || nick.getText().contains("+") || nick.getText().contains("=") || nick.getText().contains("'") || nick.getText().contains("\"") || nick.getText().contains(";") || nick.getText().contains(":") || nick.getText().contains(".") || nick.getText().contains(",") || nick.getText().contains(">") || nick.getText().contains("<") || nick.getText().contains("/") || nick.getText().contains("?") || nick.getText().contains("|") || nick.getText().contains("\\") || nick.getText().contains("]") || nick.getText().contains("[") || nick.getText().contains("{") || nick.getText().contains("}") || nick.getText().contains("~") || nick.getText().contains("`") || nick.getText().contains("€") /* precz z komuną */) {
-				JOptionPane.showMessageDialog(null, "Nick nie moze zawierac polskich znakow, spacji oraz znakow typu &, # i tym podobnych.", "UWAGA!", JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Your nickname mustn't contain spaces and any characters like #, @, etc.", "Warning", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
 			play.setText(chosen_version + "...");
@@ -148,7 +158,7 @@ public class Window extends JFrame implements ActionListener {
 					public void run() {
 						if (!Launcher.getVerDownloaded(chosen_version)) {
 							if (!Launcher.download(Launcher.getVerLink(chosen_version), Launcher.getVerFolder(), chosen_version + ".jar")) {
-								JOptionPane.showMessageDialog(null, "Brak polaczenia z internetem. Nie mozna pobrac tej wersji.", "Brak polaczenia", JOptionPane.ERROR_MESSAGE);
+								JOptionPane.showMessageDialog(null, "No Internet connection. Couldn't download the version.", "No connection", JOptionPane.ERROR_MESSAGE);
 							}
 						} else {
 							new Launcher().LaunchGame("1024", nick.getText());
