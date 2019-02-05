@@ -3,6 +3,7 @@ package org.betacraft.launcher;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -65,7 +66,7 @@ public class Window extends JFrame implements ActionListener {
 		play.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Launcher.write(Launcher.getBetacraft() + "lastlogin", new String[] {nick.getText()}, false);
+				Launcher.write(new File(BC.get(), "lastlogin"), new String[] {nick.getText()}, false);
 			}
 		});
 
@@ -91,7 +92,7 @@ public class Window extends JFrame implements ActionListener {
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 			@Override
 			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-				Launcher.write(Launcher.getBetacraft() + "lastlogin", new String[] {nick.getText()}, false);
+				Launcher.write(new File(BC.get(), "lastlogin"), new String[] {nick.getText()}, false);
 				Logger.a("Dezaktywacja...");
 				System.exit(0);
 			}
@@ -99,6 +100,8 @@ public class Window extends JFrame implements ActionListener {
 	}
 	
 	public static void main(String[] args) {
+		new File(BC.get() + "versions/").mkdirs();
+		new File(BC.get() + "bin/natives/").mkdirs();
 		window = new Window();
 		try {
 			Release.initVersions();
@@ -112,11 +115,11 @@ public class Window extends JFrame implements ActionListener {
 		if (Launcher.checkForUpdate()) {
 			Launcher.downloadUpdate();
 		}
-		String[] array = Launcher.read(Launcher.getBetacraft() + "launcher.settings");
-		if (array == null) {
+		String ver = Launcher.getProperty(new File(BC.get(), "launcher.settings"), "version");
+		if (ver.equals("")) {
 			chosen_version = "c0.0.13a_03";
 		} else {
-			chosen_version = array[0].split(":")[1];
+			chosen_version = ver;
 		}
 	}
 
@@ -149,7 +152,7 @@ public class Window extends JFrame implements ActionListener {
 				JOptionPane.showMessageDialog(null, "Your nickname mustn't contain spaces and any characters like #, @, etc.", "Warning", JOptionPane.WARNING_MESSAGE);
 				return;
 			}
-			play.setText(chosen_version + "...");
+			play.setText("Downloading ...");
 			play.setEnabled(false);
 
 			Timer timer = new Timer();
@@ -157,16 +160,18 @@ public class Window extends JFrame implements ActionListener {
 				timer.schedule(new TimerTask() {
 					public void run() {
 						if (!Launcher.getVerDownloaded(chosen_version)) {
-							if (!Launcher.download(Launcher.getVerLink(chosen_version), Launcher.getVerFolder(), chosen_version + ".jar")) {
+							if (!Launcher.download(Launcher.getVerLink(chosen_version), new File(Launcher.getVerFolder(), chosen_version + ".jar"))) {
 								JOptionPane.showMessageDialog(null, "No Internet connection. Couldn't download the version.", "No connection", JOptionPane.ERROR_MESSAGE);
+								return;
 							}
-						} else {
-							new Launcher().LaunchGame("1024", nick.getText());
-							// TODO kod wlaczania
+						}
+						if (!Launcher.nativesDownloaded(false)) {
+							Launcher.nativesDownloaded(true);
 						}
 						
 						play.setText("Play");
 						play.setEnabled(true);
+						new Launcher().LaunchGame(Launcher.getCustomParameters(), nick.getText());
 					}
 				}, 10);
 			} catch (Exception ex) {

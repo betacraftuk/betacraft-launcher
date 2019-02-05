@@ -3,6 +3,7 @@ package org.betacraft.launcher;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -24,13 +25,15 @@ public class Opcje extends JFrame {
 		setResizable(false);
 		setVisible(true);
 
-		JCheckBox retrocraft = new JCheckBox("Use RetroCraft proxy");
-		retrocraft.setSelected(false);
+		final File file = new File(BC.get(), "launcher.settings");
+
+		final JCheckBox retrocraft = new JCheckBox("Use RetroCraft proxy");
+		retrocraft.setSelected(Launcher.getProperty(file, "retrocraft").equals("true") ? true : false);
 		retrocraft.setBounds(10, 10, 330, 20);
 		this.add(retrocraft);
 
-		JCheckBox open = new JCheckBox("Keep the launcher open");
-		open.setSelected(false);
+		final JCheckBox open = new JCheckBox("Keep the launcher open");
+		open.setSelected(Launcher.getProperty(file, "keepopen").equals("true") ? true : false);
 		open.setBounds(10, 30, 330, 20);
 		this.add(open);
 
@@ -38,7 +41,7 @@ public class Opcje extends JFrame {
 		label.setBounds(10, 50, 190, 20);
 		label.setForeground(Color.BLACK);
 		this.add(label);
-		JTextField field = new JTextField();
+		final JTextField field = new JTextField(Launcher.getProperty(file, "launch"));
 		field.setBounds(25, 75, 300, 25);
 		this.add(field);
 
@@ -53,6 +56,9 @@ public class Opcje extends JFrame {
 		OK.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				Launcher.setProperty(file, "launch", field.getText());
+				Launcher.setProperty(file, "retrocraft", retrocraft.isSelected() ? "true" : "false");
+				Launcher.setProperty(file, "keepopen", open.isSelected() ? "true" : "false");
 				setVisible(false);
 			}
 		});

@@ -1,5 +1,6 @@
 package org.betacraft.launcher;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 
 public class Logger {
@@ -18,6 +19,6 @@ public class Logger {
 		String all = "[" + date + "] " + str;
 
 		System.out.println(all);
-		Launcher.write(Launcher.getBetacraft() + "launcher.log", new String[] {all}, true);
+		Launcher.write(new File(BC.get(), "launcher.log"), new String[] {all}, true);
 	}
 }

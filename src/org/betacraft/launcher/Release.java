@@ -24,7 +24,7 @@ public class Release {
 			Logger.a("Brak polaczenia z internetem! (albo serwer padl) ");
 
 			try {
-				Scanner fileScanner = new Scanner(new File(Launcher.getBetacraft() + "version_index"));
+				Scanner fileScanner = new Scanner(new File(BC.get() + "version_index"));
 				scan(fileScanner, false);
 
 				fileScanner.close();
@@ -44,7 +44,7 @@ public class Release {
 	private static void scan(Scanner scanner, boolean save) {
 		String line = null;
 
-		String folder = Launcher.getBetacraft();
+		String folder = BC.get();
 		String[] filecontent = new String[400];
 		int i = 1;
 
@@ -69,7 +69,7 @@ public class Release {
 			i++;
 		}
 		// zapisz liste wersji offline
-		if (save) Launcher.write(folder + "version_index", filecontent, false);
+		if (save) Launcher.write(new File(folder, "version_index"), filecontent, false);
 	}
 
 	private String name;

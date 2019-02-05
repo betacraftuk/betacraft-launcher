@@ -2,6 +2,7 @@ package org.betacraft.launcher;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -59,7 +60,7 @@ public class Wersja extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				Release ver = (Release) list.getSelectedValue();
 				Window.chosen_version = ver.getName();
-				Launcher.setProperty(Launcher.getBetacraft() + "launcher.settings", "version", ver.getName());
+				Launcher.setProperty(new File(BC.get(), "launcher.settings"), "version", ver.getName());
 				setVisible(false);
 			}
 		});
