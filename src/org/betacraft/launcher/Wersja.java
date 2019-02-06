@@ -1,5 +1,6 @@
 package org.betacraft.launcher;
 
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -54,6 +55,8 @@ public class Wersja extends JFrame {
 		OK = new JButton("OK");
 		OK.setBounds(10, 320, 60, 20);
 		add(OK);
+
+		OK.setBackground(Color.LIGHT_GRAY);
 
 		OK.addActionListener(new ActionListener() {
 			@Override

@@ -35,6 +35,7 @@ public class Launcher {
 				jars = BC.get() + "bin\\*";
 			}
 			String line = " " + params + " -cp " + jars + " " + libpath + " net.minecraft.client.Minecraft " + username + " " + sessions;
+			sessions++;
 
 			line = OS.isWindows() ? (line = "javaw" + line) : (line = "java" + line);
 			System.out.println(line);
@@ -113,6 +114,8 @@ public class Launcher {
 				loader.close();
 				return;
 			}*/
+			if (getProperty(new File(BC.get(), "launcher.settings"), "keepon").equals("false")) Window.window.setVisible(false);
+
 			Process process = Runtime.getRuntime().exec(line);
 			InputStream err = process.getErrorStream();
 			InputStreamReader isr = new InputStreamReader(err);
@@ -121,12 +124,13 @@ public class Launcher {
 			while ((line1 = br.readLine()) != null) {
 				System.out.println(line1);
 			}
-			sessions++;
+			Window.window.setVisible(true);
 		} catch (Exception ex) {
 			Logger.a("KRYTYCZNY BLAD");
 			Logger.a("podczas uruchamiania gry: ");
 			Logger.a(ex.getMessage());
 			ex.printStackTrace();
+			Window.window.setVisible(true);
 		}
 	}
 
@@ -352,6 +356,7 @@ public class Launcher {
 			}
 		} catch (Exception ex) {
 			Logger.a("Nie udalo sie pobrac aktualizacji!");
+			ex.printStackTrace();
 		}
 	}
 

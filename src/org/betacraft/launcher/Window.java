@@ -1,12 +1,16 @@
 package org.betacraft.launcher;
 
 import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -20,20 +24,21 @@ public class Window extends JFrame implements ActionListener {
 
 	public static String chosen_version = "b1.6.6";
 
-	JButton play, about, options;
-	JLabel kazu, nicktext;
+	static JButton play, about, options;
+	static JLabel kazu, nicktext;
 	static JTextField nick = null;
 	static Wersja currentAbout = null;
 	static Opcje currentOptions = null;
 	public static Window window = null;
 
-	public Window()
-	{
+	public Window() {
 		setSize(800, 450);
 		setTitle("Betacraft Launcher version " + Launcher.VERSION);
 		setLayout(null);
 		setLocationRelativeTo(null);
 		setResizable(false);
+		Background background = new Background();
+		add(background);
 
 		nick = new JTextField(Launcher.getLastlogin());
 		play = new JButton("Play");
@@ -49,19 +54,18 @@ public class Window extends JFrame implements ActionListener {
 		nicktext.setBounds(300, 311, 35, 19);
 		options.setBounds(50, 350, 120, 19);
 
-		add(play);
-		add(nick);
-		add(kazu);
-		add(about);
-		add(nicktext);
-		add(options);
+		// buttony sa dodawane w Background.paintComponent() aby nie byly pod tlem
 
 		play.addActionListener(this); // this - sluchaczem zdarzen jest cala ramka
 		about.addActionListener(this);
 		options.addActionListener(this);
 
-		kazu.setForeground(new Color(61, 60, 68));
-		nicktext.setForeground(Color.BLACK);
+		kazu.setForeground(Color.LIGHT_GRAY);
+		nicktext.setForeground(Color.WHITE);
+
+		options.setBackground(Color.LIGHT_GRAY);
+		about.setBackground(Color.LIGHT_GRAY);
+		play.setBackground(Color.LIGHT_GRAY);
 
 		play.addActionListener(new ActionListener() {
 			@Override

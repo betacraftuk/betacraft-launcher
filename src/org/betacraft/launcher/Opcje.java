@@ -53,6 +53,9 @@ public class Opcje extends JFrame {
 		checkUpdate.setBounds(140, 320, 180, 20);
 		this.add(checkUpdate);
 
+		OK.setBackground(Color.LIGHT_GRAY);
+		checkUpdate.setBackground(Color.LIGHT_GRAY);
+
 		OK.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
