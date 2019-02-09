@@ -3,7 +3,6 @@ package org.betacraft.launcher;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -14,7 +13,14 @@ import javax.swing.JTextField;
 
 public class Opcje extends JFrame {
 
+	static JCheckBox retrocraft;
+	static JCheckBox open;
+	static JLabel label;
+	static JButton checkUpdate;
 	JButton OK;
+
+	public static String update = "Update check";
+	public static String update_not_found = "Couldn't find any newer version of the launcher.";
 
 	public Opcje() {
 		Logger.a("Otwarto okno opcji.");
@@ -25,19 +31,17 @@ public class Opcje extends JFrame {
 		setResizable(false);
 		setVisible(true);
 
-		final File file = new File(BC.get(), "launcher.settings");
-
-		final JCheckBox retrocraft = new JCheckBox("Use RetroCraft proxy");
-		retrocraft.setSelected(Launcher.getProperty(file, "retrocraft").equals("true") ? true : false);
+		retrocraft = new JCheckBox("Use RetroCraft proxy");
+		retrocraft.setSelected(Launcher.getProperty(Launcher.SETTINGS, "retrocraft").equals("true") ? true : false);
 		retrocraft.setBounds(10, 10, 330, 20);
 		this.add(retrocraft);
 
-		final JCheckBox open = new JCheckBox("Keep the launcher open");
-		open.setSelected(Launcher.getProperty(file, "keepopen").equals("true") ? true : false);
+		open = new JCheckBox("Keep the launcher open");
+		open.setSelected(Launcher.getProperty(Launcher.SETTINGS, "keepopen").equals("true") ? true : false);
 		open.setBounds(10, 30, 330, 20);
 		this.add(open);
 
-		JLabel label = new JLabel("Launch arguments:");
+		label = new JLabel("Launch arguments:");
 		label.setBounds(10, 50, 190, 20);
 		label.setForeground(Color.BLACK);
 		this.add(label);
@@ -50,15 +54,15 @@ public class Opcje extends JFrame {
 		OK.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Launcher.setProperty(file, "launch", "~" + field.getText() + "~");
-				Launcher.setProperty(file, "retrocraft", retrocraft.isSelected() ? "true" : "false");
-				Launcher.setProperty(file, "keepopen", open.isSelected() ? "true" : "false");
+				Launcher.setProperty(Launcher.SETTINGS, "launch", "~" + field.getText() + "~");
+				Launcher.setProperty(Launcher.SETTINGS, "retrocraft", retrocraft.isSelected() ? "true" : "false");
+				Launcher.setProperty(Launcher.SETTINGS, "keepopen", open.isSelected() ? "true" : "false");
 				setVisible(false);
 			}
 		});
 		this.add(OK);
 
-		JButton checkUpdate = new JButton("Check for update");
+		checkUpdate = new JButton("Check for update");
 		checkUpdate.setBounds(140, 320, 180, 20);
 		this.add(checkUpdate);
 
@@ -71,7 +75,7 @@ public class Opcje extends JFrame {
 				if (Launcher.checkForUpdate()) {
 					Launcher.downloadUpdate();
 				} else {
-					JOptionPane.showMessageDialog(null, "Couldn't find any newer version of the launcher.", "Update check", JOptionPane.INFORMATION_MESSAGE);
+					JOptionPane.showMessageDialog(null, update_not_found, update, JOptionPane.INFORMATION_MESSAGE);
 				}
 				try {
 					System.out.println(Window.class.getProtectionDomain().getCodeSource().getLocation().getFile());
@@ -80,5 +84,6 @@ public class Opcje extends JFrame {
 				}
 			}
 		});
+		Lang.apply();
 	}
 }

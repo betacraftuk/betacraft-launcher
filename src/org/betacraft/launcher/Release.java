@@ -44,7 +44,7 @@ public class Release {
 	private static void scan(Scanner scanner, boolean save) {
 		String line = null;
 
-		String folder = BC.get();
+		String folder = BC.get() + "launcher/";
 		String[] filecontent = new String[400];
 		int i = 1;
 
@@ -56,7 +56,7 @@ public class Release {
 				Logger.a("String array overflow. Skipping.");
 				continue;
 			}
-			Logger.a("Rejestrowanie wersji " + line);
+			//Logger.a("Rejestrowanie wersji " + line);
 			if (save) filecontent[i] = line;
 			String[] split = line.split("~");
 			Release release = null;

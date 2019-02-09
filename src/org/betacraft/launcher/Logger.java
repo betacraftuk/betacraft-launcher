@@ -19,6 +19,6 @@ public class Logger {
 		String all = "[" + date + "] " + str;
 
 		System.out.println(all);
-		Launcher.write(new File(BC.get(), "launcher.log"), new String[] {all}, true);
+		Launcher.write(new File(BC.get() + "launcher/", "launcher.log"), new String[] {all}, true);
 	}
 }

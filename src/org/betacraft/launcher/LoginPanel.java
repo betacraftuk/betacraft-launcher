@@ -76,5 +76,6 @@ public class LoginPanel extends JPanel {
 		add(Window.about);
 		add(Window.nicktext);
 		add(Window.options);
+		add(Window.lang);
 	}
 }

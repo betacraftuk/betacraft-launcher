@@ -29,16 +29,19 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class Launcher {
-	public static File SETTINGS = new File(BC.get(), "launcher.settings");
+	public static File SETTINGS = new File(BC.get() + "launcher/", "launcher.settings");
 	public static File LOGIN = new File(BC.get(), "lastlogin");
 
 	public static String chosen_version = "b1.6.6";
-	public static String VERSION = "Preview 3 build 1";
+	public static String VERSION = "Preview 3 build 2";
 	private static URLClassLoader classLoader;
 	int sessions = 0;
 
+	public static String update = "There is a new version of the launcher (%s). Would you like to update?";
+
 	public static void main(String[] args) {
 		new File(BC.get() + "versions/").mkdirs();
+		new File(BC.get() + "launcher/lang").mkdirs();
 		new File(BC.get() + "bin/natives/").mkdirs();
 		new Window();
 		try {
@@ -50,6 +53,7 @@ public class Launcher {
 		}
 		Window.window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Window.window.setVisible(true);
+		Lang.apply();
 		if (Launcher.checkForUpdate()) {
 			Launcher.downloadUpdate();
 		}
@@ -67,7 +71,7 @@ public class Launcher {
 			// java.nio.BufferOverflowException, why?
 			String retrocraft = " -Dhttp.proxyHost=classic.retrocraft.net -Dhttp.proxyPort=80 -Djava.util.Arrays.useLegacyMergeSort=true";
 			String libpath = "-Djava.library.path=" + BC.get() + "bin/natives";
-			if (getProperty(new File(BC.get(), "launcher.settings"), "retrocraft").equals("true")) {
+			if (getProperty(SETTINGS, "retrocraft").equals("true")) {
 				libpath = libpath + retrocraft;
 			}
 			applyVersion();
@@ -171,7 +175,7 @@ public class Launcher {
 				return;
 			}
 			System.out.println(line);
-			if (getProperty(new File(BC.get(), "launcher.settings"), "keepon").equals("false")) Window.window.setVisible(false);
+			if (getProperty(SETTINGS, "keepon").equals("false")) Window.window.setVisible(false);
 
 			Process process = Runtime.getRuntime().exec(line);
 			InputStream err = process.getErrorStream();
@@ -346,7 +350,7 @@ public class Launcher {
 	}
 
 	public static String getCustomParameters() {
-		String params = getProperty(new File(BC.get(), "launcher.settings"), "launch");
+		String params = getProperty(SETTINGS, "launch");
 		
 		return (params.length() >= 2) ? params.substring(1, params.length() - 1) : "";
 	}
@@ -396,7 +400,8 @@ public class Launcher {
 		String update = getUpdate();
 		try {
 			boolean yes = false;
-			int result = JOptionPane.showConfirmDialog(null, "There is a new version of the launcher (" + update + "). Would you like to update?", "Update check", JOptionPane.YES_NO_OPTION);
+			String rr = Launcher.update.replaceAll("%s", update);
+			int result = JOptionPane.showConfirmDialog(null, rr, Opcje.update, JOptionPane.YES_NO_OPTION);
 			if (result == JOptionPane.YES_OPTION) {
 				Logger.a("Zaakceptowano pobranie aktualizacji " + update);
 				yes = true;

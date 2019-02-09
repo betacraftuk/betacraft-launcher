@@ -33,7 +33,7 @@ public class Wersja extends JFrame {
 		setResizable(false);
 		setVisible(true);
 
-		final JButton order = new JButton((Wersja.order == Order.FROM_OLDEST) ? "Sort: from oldest" : "Sort: from newest");
+		final JButton order = new JButton((Wersja.order == Order.FROM_OLDEST) ? Lang.get("sort_oldest") : Lang.get("sort_newest"));
 		order.setBounds(10, 0, 262, 30);
 		order.setBackground(Color.LIGHT_GRAY);
 		add(order);
@@ -42,10 +42,10 @@ public class Wersja extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				if (Wersja.order == Order.FROM_OLDEST) {
 					Wersja.order = Order.FROM_NEWEST;
-					order.setText("Sort: from newest");
+					order.setText(Lang.get("sort_newest"));
 				} else {
 					Wersja.order = Order.FROM_OLDEST;
-					order.setText("Sort: from oldest");
+					order.setText(Lang.get("sort_oldest"));
 				}
 				updateList();
 			}
