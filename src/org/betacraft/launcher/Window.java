@@ -1,16 +1,14 @@
 package org.betacraft.launcher;
 
 import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.File;
-import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -22,23 +20,28 @@ import javax.swing.event.DocumentListener;
 
 public class Window extends JFrame implements ActionListener {
 
-	public static String chosen_version = "b1.6.6";
-
 	static JButton play, about, options;
 	static JLabel kazu, nicktext;
 	static JTextField nick = null;
 	static Wersja currentAbout = null;
 	static Opcje currentOptions = null;
+	static InfoPanel infopanel = null;
+	static LoginPanel loginpanel = null;
 	public static Window window = null;
 
 	public Window() {
+		window = this;
 		setSize(800, 450);
 		setTitle("Betacraft Launcher version " + Launcher.VERSION);
 		setLayout(null);
 		setLocationRelativeTo(null);
 		setResizable(false);
-		Background background = new Background();
-		add(background);
+
+		infopanel = new InfoPanel();
+		add(infopanel);
+
+		loginpanel = new LoginPanel();
+		add(loginpanel);
 
 		nick = new JTextField(Launcher.getLastlogin());
 		play = new JButton("Play");
@@ -47,12 +50,7 @@ public class Window extends JFrame implements ActionListener {
 		nicktext = new JLabel("Nick:");
 		options = new JButton("Options");
 
-		play.setBounds(300, 340, 195, 36);
-		nick.setBounds(337, 310, 120, 23);
-		kazu.setBounds(15, 380, 390, 30);
-		about.setBounds(750, 380, 22, 19);
-		nicktext.setBounds(300, 311, 35, 19);
-		options.setBounds(50, 350, 120, 19);
+		resizeObjects();
 
 		// buttony sa dodawane w Background.paintComponent() aby nie byly pod tlem
 
@@ -101,30 +99,28 @@ public class Window extends JFrame implements ActionListener {
 				System.exit(0);
 			}
 		});
+
+		this.addComponentListener(new ComponentAdapter() {
+		    public void componentResized(ComponentEvent componentEvent) {
+		    	if (componentEvent.getComponent().getSize().width < 800 || componentEvent.getComponent().getSize().height < 450) {
+		    		componentEvent.getComponent().setSize(800, 450);
+		    	}
+		        resizeObjects();
+		    }
+		});
 	}
-	
-	public static void main(String[] args) {
-		new File(BC.get() + "versions/").mkdirs();
-		new File(BC.get() + "bin/natives/").mkdirs();
-		window = new Window();
-		try {
-			Release.initVersions();
-		} catch (Exception ex) {
-			Logger.a("FATALNY ERROR: ");
-			Logger.a(ex.getMessage());
-			ex.printStackTrace();
-		}
-		window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		window.setVisible(true);
-		if (Launcher.checkForUpdate()) {
-			Launcher.downloadUpdate();
-		}
-		String ver = Launcher.getProperty(new File(BC.get(), "launcher.settings"), "version");
-		if (ver.equals("")) {
-			chosen_version = "c0.0.13a_03";
-		} else {
-			chosen_version = ver;
-		}
+
+	public static void resizeObjects() {
+		int width = window.getSize().width / 2; // 400
+		int height = window.getSize().height / 2; // 450
+
+		infopanel.setBounds(0, 0, 800, height + 25 + 40); // 290, 800
+		play.setBounds(((Double)(width * 0.75)).intValue(), 50, 195, 36);
+		nick.setBounds(((Double)(width * 0.84)).intValue(), 20, 120, 24); // 337
+		kazu.setBounds(15, 90, 390, 30);
+		about.setBounds(((Double)(width * 0.13)).intValue(), 39, 150, 20); // 50
+		nicktext.setBounds(((Double)(width * 0.75)).intValue(), 21, 35, 20);
+		options.setBounds(((Double)(width * 0.13)).intValue(), 60, 150, 20);
 	}
 
 	public static void quit() {
@@ -163,8 +159,8 @@ public class Window extends JFrame implements ActionListener {
 			try {
 				timer.schedule(new TimerTask() {
 					public void run() {
-						if (!Launcher.getVerDownloaded(chosen_version)) {
-							if (!Launcher.download(Launcher.getVerLink(chosen_version), new File(Launcher.getVerFolder(), chosen_version + ".jar"))) {
+						if (!Launcher.getVerDownloaded(Launcher.chosen_version)) {
+							if (!Launcher.download(Launcher.getVerLink(Launcher.chosen_version), new File(Launcher.getVerFolder(), Launcher.chosen_version + ".jar"))) {
 								JOptionPane.showMessageDialog(null, "No Internet connection. Couldn't download the version.", "No connection", JOptionPane.ERROR_MESSAGE);
 								return;
 							}

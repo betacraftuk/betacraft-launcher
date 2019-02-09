@@ -21,7 +21,7 @@ public class BC {
 
 	public static String path() {
 		String folder = null;
-		if (OS.isLinux()) {
+		if (OS.isLinux() || OS.isSolaris()) {
 			folder = System.getProperty("user.home") + "/.betacraft/";
 		} else if (OS.isiOS()) {
 			folder = System.getProperty("user.home") + "/Library/Application Support/betacraft/";

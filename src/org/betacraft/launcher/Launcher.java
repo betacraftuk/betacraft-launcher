@@ -1,5 +1,12 @@
 package org.betacraft.launcher;
 
+import java.applet.Applet;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -11,19 +18,53 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
 
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 public class Launcher {
-	public static String VERSION = "Preview 2";
+	public static File SETTINGS = new File(BC.get(), "launcher.settings");
+	public static File LOGIN = new File(BC.get(), "lastlogin");
+
+	public static String chosen_version = "b1.6.6";
+	public static String VERSION = "Preview 3 build 1";
+	private static URLClassLoader classLoader;
 	int sessions = 0;
 
-	public void LaunchGame(String params, String username) {
+	public static void main(String[] args) {
+		new File(BC.get() + "versions/").mkdirs();
+		new File(BC.get() + "bin/natives/").mkdirs();
+		new Window();
 		try {
+			Release.initVersions();
+		} catch (Exception ex) {
+			Logger.a("FATALNY ERROR: ");
+			Logger.a(ex.getMessage());
+			ex.printStackTrace();
+		}
+		Window.window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		Window.window.setVisible(true);
+		if (Launcher.checkForUpdate()) {
+			Launcher.downloadUpdate();
+		}
+		String ver = Launcher.getProperty(SETTINGS, "version");
+		if (ver.equals("")) {
+			chosen_version = "c0.0.13a_03";
+		} else {
+			chosen_version = ver;
+		}
+	}
+
+	public void LaunchGame(String params, final String username) {
+		try {
+			// This is a permanent solution for a1.0.6-b1.3_01 versions crashing (at least on Linux)
+			// java.nio.BufferOverflowException, why?
 			String retrocraft = " -Dhttp.proxyHost=classic.retrocraft.net -Dhttp.proxyPort=80 -Djava.util.Arrays.useLegacyMergeSort=true";
 			String libpath = "-Djava.library.path=" + BC.get() + "bin/natives";
 			if (getProperty(new File(BC.get(), "launcher.settings"), "retrocraft").equals("true")) {
@@ -38,45 +79,39 @@ public class Launcher {
 			sessions++;
 
 			line = OS.isWindows() ? (line = "javaw" + line) : (line = "java" + line);
-			System.out.println(line);
 
-			if (Window.chosen_version.equals("a1.0.5_01") || Window.chosen_version.equals("a1.0.5b") || Window.chosen_version.equals("a1.0.4") ||
-					Window.chosen_version.equals("a1.0.3") || Window.chosen_version.equals("a1.0.2_01") || Window.chosen_version.equals("a1.0.2_02") ||
-					Window.chosen_version.equals("a1.0.1_01") || Window.chosen_version.startsWith("c") || Window.chosen_version.startsWith("in")) {
-				JOptionPane.showMessageDialog(null, "Classic-Alpha 1.0.5_01 versions are not supported at the moment.", "Please wait", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
+			// Classic-Indev 20100130 works on this, but the newer versions come up with java.nio.BufferOverflowException
+			if (chosen_version.equals("a1.0.1") || chosen_version.equals("a1.0.1_01") || chosen_version.startsWith("a1.0.2") || chosen_version.startsWith("a1.0.3") ||
+					chosen_version.startsWith("a1.0.4") || chosen_version.startsWith("a1.0.5") || chosen_version.startsWith("in") || chosen_version.startsWith("c")) {
+			//if (chosen_version != null) {
+				String file = BC.get() + "versions/" + chosen_version + ".jar";
+				String file1 = BC.get() + "bin/lwjgl.jar";
+				String file2 = BC.get() + "bin/lwjgl_util.jar";
+				String file3 = BC.get() + "bin/jinput.jar";
 
-			/*if (Window.chosen_version == null) { // Disable for now
-				line = "java -Xms1024m -Xmx1024m -cp " + BC.get() + "bin/lwjgl.jar:" + BC.get() + "bin/lwjgl_util.jar:" + BC.get() + "bin/jinput.jar";
+				final URL[] url = new URL[4];
+				url[0] = new File(file).toURI().toURL();
+				url[1] = new File(file1).toURI().toURL();
+				url[2] = new File(file2).toURI().toURL();
+				url[3] = new File(file3).toURI().toURL();
 
-				File file = new File(BC.get() + "bin/minecraft.jar");
-				File file1 = new File(BC.get() + "bin/lwjgl.jar");
-				File file2 = new File(BC.get() + "bin/lwjgl_util.jar");
-				File file3 = new File(BC.get() + "bin/jinput.jar");
-				URL[] urls = new URL[4];
+		        if (classLoader == null) {
+		        	classLoader = new URLClassLoader(url);
+		        }
 
-				urls[0] = file.toURI().toURL();
-				urls[1] = file1.toURI().toURL();
-				urls[2] = file2.toURI().toURL();
-				urls[3] = file3.toURI().toURL();
-				URLClassLoader loader = new URLClassLoader(urls);
-				// TODO zaladowac wszystkie classy
+		        final Class<Applet> appletClass;
+				if (chosen_version.startsWith("c")) {
+					appletClass = (Class<Applet>)classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
+				} else {
+					appletClass = (Class<Applet>)classLoader.loadClass("net.minecraft.client.MinecraftApplet");
+				}
+				final Applet applet = appletClass.newInstance();
 
-				Class<Applet> jarClass = (Class<Applet>) loader.loadClass("net.minecraft.client.MinecraftApplet");
-				//loader.loadClass("org.lwjgl.LWJGLUtil");
-
-				Class<? extends Applet> plugin = jarClass.asSubclass(Applet.class);
-
-				Constructor<? extends Applet> constructor = plugin.getConstructor();
-
-				final Applet result = jarClass.newInstance();
-
-				for (final Field field : jarClass.getDeclaredFields()) {
+				/*for (final Field field : appletClass.getDeclaredFields()) {
 					final String name = field.getType().getName();
 					if (!name.contains("awt") && !name.contains("java")) {
 						Field fileField = null;
-						final Class<?> clazz = loader.loadClass(name);
+						final Class<?> clazz = classLoader.loadClass(name);
 						for (final Field field1 : clazz.getDeclaredFields()) {
 							if (Modifier.isStatic(field1.getModifiers()) && field1.getType().getName().equals("java.io.File")) {
 								fileField = field1;
@@ -88,7 +123,18 @@ public class Launcher {
 							break;
 						}
 					}
-				}
+				}*/
+
+				//AlphaStub stub = new AlphaStub(username, Integer.toString(sessions));
+				//sessions++;
+
+				//stub.doo(applet);
+				System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+	            System.setProperty("http.proxyPort", "80");
+	            System.setProperty("http.proxyHost", "classic.retrocraft.net");
+	            System.setProperty("java.library.path", BC.get() + "bin/natives");
+	            System.setProperty("org.lwjgl.librarypath", BC.get() + "bin/natives");
+		        System.setProperty("net.java.games.input.librarypath", BC.get() + "bin/natives");
 
 				final Frame launcherFrameFake = new Frame();
 				launcherFrameFake.setTitle("Minecraft");
@@ -100,20 +146,31 @@ public class Launcher {
 				launcherFrameFake.pack();
 				launcherFrameFake.setLocationRelativeTo(null);
 				launcherFrameFake.setVisible(true);
+				launcherFrameFake.addWindowListener(new WindowAdapter() {
+		            @Override
+		            public void windowClosing(final WindowEvent e) {
+		            	applet.stop();
+		                applet.destroy();
+		                launcherFrameFake.setVisible(false);
+		                launcherFrameFake.dispose();
+		            }
+		        });
 				AlphaStub stub = new AlphaStub(username, Integer.toString(sessions));
-				result.setStub(stub);
+				sessions++;
+				applet.setStub(stub);
 				stub.setLayout(new BorderLayout());
-				stub.add(result, "Center");
+				stub.add(applet, "Center");
 				stub.validate();
 				launcherFrameFake.removeAll();
 				launcherFrameFake.setLayout(new BorderLayout());
 				launcherFrameFake.add(stub, "Center");
 				launcherFrameFake.validate();
-				result.init();
-				result.start();
-				loader.close();
+				applet.init();
+				applet.start();
+				//classLoader.close();
 				return;
-			}*/
+			}
+			System.out.println(line);
 			if (getProperty(new File(BC.get(), "launcher.settings"), "keepon").equals("false")) Window.window.setVisible(false);
 
 			Process process = Runtime.getRuntime().exec(line);
@@ -122,14 +179,14 @@ public class Launcher {
 			BufferedReader br = new BufferedReader(isr);
 			String line1;
 			while ((line1 = br.readLine()) != null) {
-				System.out.println(line1);
+				Logger.a(line1);
 			}
 			Window.window.setVisible(true);
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			Logger.a("KRYTYCZNY BLAD");
 			Logger.a("podczas uruchamiania gry: ");
 			Logger.a(ex.getMessage());
-			ex.printStackTrace();
 			Window.window.setVisible(true);
 		}
 	}
@@ -289,11 +346,13 @@ public class Launcher {
 	}
 
 	public static String getCustomParameters() {
-		return getProperty(new File(BC.get(), "launcher.settings"), "launch");
+		String params = getProperty(new File(BC.get(), "launcher.settings"), "launch");
+		
+		return (params.length() >= 2) ? params.substring(1, params.length() - 1) : "";
 	}
 
 	public static void applyVersion() {
-		File version = new File(getVerFolder(), Window.chosen_version + ".jar");
+		File version = new File(getVerFolder(), chosen_version + ".jar");
 		File dest = new File(BC.get() + "bin", "minecraft.jar");
 		try {
 			dest.createNewFile();

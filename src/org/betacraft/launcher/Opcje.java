@@ -41,12 +41,21 @@ public class Opcje extends JFrame {
 		label.setBounds(10, 50, 190, 20);
 		label.setForeground(Color.BLACK);
 		this.add(label);
-		final JTextField field = new JTextField(Launcher.getProperty(file, "launch"));
+		final JTextField field = new JTextField(Launcher.getCustomParameters());
 		field.setBounds(25, 75, 300, 25);
 		this.add(field);
 
 		OK = new JButton("OK");
 		OK.setBounds(10, 320, 60, 20);
+		OK.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Launcher.setProperty(file, "launch", "~" + field.getText() + "~");
+				Launcher.setProperty(file, "retrocraft", retrocraft.isSelected() ? "true" : "false");
+				Launcher.setProperty(file, "keepopen", open.isSelected() ? "true" : "false");
+				setVisible(false);
+			}
+		});
 		this.add(OK);
 
 		JButton checkUpdate = new JButton("Check for update");
@@ -56,15 +65,6 @@ public class Opcje extends JFrame {
 		OK.setBackground(Color.LIGHT_GRAY);
 		checkUpdate.setBackground(Color.LIGHT_GRAY);
 
-		OK.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Launcher.setProperty(file, "launch", field.getText());
-				Launcher.setProperty(file, "retrocraft", retrocraft.isSelected() ? "true" : "false");
-				Launcher.setProperty(file, "keepopen", open.isSelected() ? "true" : "false");
-				setVisible(false);
-			}
-		});
 		checkUpdate.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
