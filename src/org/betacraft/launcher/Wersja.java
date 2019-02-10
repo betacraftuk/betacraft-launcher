@@ -3,7 +3,6 @@ package org.betacraft.launcher;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
@@ -21,6 +20,7 @@ public class Wersja extends JFrame {
 	static JList list;
 	static DefaultListModel listModel;
 	static JScrollPane listScroller;
+	static JButton orderbutton;
 	JButton OK;
 	static Order order = Order.FROM_OLDEST;
 
@@ -33,19 +33,23 @@ public class Wersja extends JFrame {
 		setResizable(false);
 		setVisible(true);
 
-		final JButton order = new JButton((Wersja.order == Order.FROM_OLDEST) ? Lang.get("sort_oldest") : Lang.get("sort_newest"));
-		order.setBounds(10, 0, 262, 30);
-		order.setBackground(Color.LIGHT_GRAY);
-		add(order);
-		order.addActionListener(new ActionListener() {
+		String name = (Wersja.order == Order.FROM_OLDEST) ? Lang.get("sort_oldest") : Lang.get("sort_newest");
+		if (name.equals("")) {
+			name = Wersja.order == Order.FROM_OLDEST ? "Sort: from oldest" : "Sort: from newest";
+		}
+		orderbutton = new JButton(name);
+		orderbutton.setBounds(10, 0, 262, 30);
+		orderbutton.setBackground(Color.LIGHT_GRAY);
+		add(orderbutton);
+		orderbutton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (Wersja.order == Order.FROM_OLDEST) {
 					Wersja.order = Order.FROM_NEWEST;
-					order.setText(Lang.get("sort_newest"));
+					orderbutton.setText(Lang.get("sort_newest"));
 				} else {
 					Wersja.order = Order.FROM_OLDEST;
-					order.setText(Lang.get("sort_oldest"));
+					orderbutton.setText(Lang.get("sort_oldest"));
 				}
 				updateList();
 			}

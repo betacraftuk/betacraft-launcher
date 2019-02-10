@@ -51,9 +51,9 @@ public class WebsitePanel extends JPanel {
             final JTextPane textPane = new JTextPane();
             textPane.setEditable(false);
             //textPane.setMargin(null);
-            textPane.setBackground(Color.DARK_GRAY);
+            textPane.setBackground(Color.BLACK);
             textPane.setContentType("text/html");
-            textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><br><br><center><h1>Loading update news..</h1></center></font></body></html>");
+            textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><br><br><center><h1>Loading update news...</h1></center></font></body></html>");
             textPane.addHyperlinkListener(EXTERNAL_HYPERLINK_LISTENER);
             new Thread() {
                 public void run() {
@@ -70,7 +70,7 @@ public class WebsitePanel extends JPanel {
             this.scrollPane.setBorder(new MatteBorder(2, 2, 2, 2, Color.BLACK));
             this.scrollPane.setWheelScrollingEnabled(true);
             this.scrollPane.setBounds(30, 20, 750, 250);
-            this.scrollPane.getViewport().getView().setBackground(Color.LIGHT_GRAY);
+            this.scrollPane.getViewport().getView().setBackground(Color.BLACK);
         }
         catch (Exception ex) {
             ex.printStackTrace();

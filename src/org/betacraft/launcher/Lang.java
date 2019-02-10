@@ -17,6 +17,8 @@ import javax.swing.JList;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
+import org.betacraft.launcher.VersionSorter.Order;
+
 public class Lang extends JFrame {
 	public static List<String> locales = new ArrayList<String>();
 
@@ -152,6 +154,7 @@ public class Lang extends JFrame {
 		Wersja wersja = Window.currentAbout;
 		if (wersja != null) {
 			wersja.setTitle(Launcher.getProperty(file, "version_title"));
+			Wersja.orderbutton.setText(Wersja.order == Order.FROM_OLDEST ? Launcher.getProperty(file, "sort_oldest") : Launcher.getProperty(file, "sort_newest"));
 		}
 	}
 }

@@ -33,7 +33,7 @@ public class Launcher {
 	public static File LOGIN = new File(BC.get(), "lastlogin");
 
 	public static String chosen_version = "b1.6.6";
-	public static String VERSION = "Preview 3 build 2";
+	public static String VERSION = "Preview 3 build 3";
 	private static URLClassLoader classLoader;
 	int sessions = 0;
 
@@ -43,6 +43,27 @@ public class Launcher {
 		new File(BC.get() + "versions/").mkdirs();
 		new File(BC.get() + "launcher/lang").mkdirs();
 		new File(BC.get() + "bin/natives/").mkdirs();
+		if (args.length == 2 && args[0].equals("update")) {
+			try {
+				final String pathToJar = args[1];
+				File version = new File(BC.get(), "betacraft.jar$tmp");
+				File dest = new File(pathToJar);
+				Files.copy(version.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				new Runnable() {
+					public void run() {
+						try {
+							Runtime.getRuntime().exec("java -jar " + pathToJar);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}.run();
+				System.exit(0);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				System.exit(0);
+			}
+		}
 		new Window();
 		try {
 			Release.initVersions();
@@ -175,7 +196,9 @@ public class Launcher {
 				return;
 			}
 			System.out.println(line);
-			if (getProperty(SETTINGS, "keepon").equals("false")) Window.window.setVisible(false);
+			if (!getProperty(SETTINGS, "keepon").equals("true")) {
+				Window.window.setVisible(false);
+			}
 
 			Process process = Runtime.getRuntime().exec(line);
 			InputStream err = process.getErrorStream();
@@ -410,12 +433,11 @@ public class Launcher {
 			}
 			if (yes || update.startsWith("!")) { // jezeli jest jakas wazna aktualizacja, to pobierz ja bez zgody :P
 				new Pobieranie(update);
-				download("https://betacraft.ovh/versions/launcher.jar", new File(BC.get(), "betacraft.jar"));
+				download("https://betacraft.ovh/versions/launcher.jar", new File(BC.get(), "betacraft.jar$tmp"));
 				final String pathToJar = Window.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-				File version = new File(BC.get(), "betacraft.jar");
-				File dest = new File(pathToJar);
-				Files.copy(version.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
-				Runtime.getRuntime().exec("java -jar " + pathToJar);
+				//File version = new File(BC.get(), "betacraft.jar$tmp");
+				//File dest = new File(pathToJar);
+				Runtime.getRuntime().exec("java -jar " + BC.get() + "betacraft.jar$tmp" + " org.betacraft.launcher.Launcher update " + pathToJar);
 				Window.quit();
 			}
 		} catch (Exception ex) {
