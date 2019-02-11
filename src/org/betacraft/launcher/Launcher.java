@@ -48,16 +48,20 @@ public class Launcher {
 		new File(BC.get() + "launcher/lang").mkdirs();
 		new File(BC.get() + "bin/natives/").mkdirs();
 		unloadNatives();
-		if (args.length == 2 && args[0].equals("update")) {
+		if (args.length >= 2 && args[0].equals("update")) {
 			try {
-				final String pathToJar = args[1];
+				String pathToJar = "";
+				for (int i = 1; i < args.length; i++) {
+					pathToJar = pathToJar + " " + args[i];
+				}
 				File version = new File(BC.get(), "betacraft.jar$tmp");
 				File dest = new File(pathToJar);
 				Files.copy(version.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				final String path = pathToJar;
 				new Runnable() {
 					public void run() {
 						try {
-							Runtime.getRuntime().exec("java -jar " + pathToJar);
+							Runtime.getRuntime().exec("java -jar " + path);
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
