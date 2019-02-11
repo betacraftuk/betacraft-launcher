@@ -17,7 +17,7 @@ public class Opcje extends JFrame {
 	static JCheckBox open;
 	static JLabel label;
 	static JButton checkUpdate;
-	JButton OK;
+	static JButton OK;
 
 	public static String update = "Update check";
 	public static String update_not_found = "Couldn't find any newer version of the launcher.";

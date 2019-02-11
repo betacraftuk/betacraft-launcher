@@ -52,7 +52,7 @@ public class WebsitePanel extends JPanel {
             textPane.setEditable(false);
             //textPane.setMargin(null);
             textPane.setBackground(Color.BLACK);
-            textPane.setContentType("text/html");
+            textPane.setContentType("text/html;charset=UTF-8");
             textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><br><br><center><h1>Loading update news...</h1></center></font></body></html>");
             textPane.addHyperlinkListener(EXTERNAL_HYPERLINK_LISTENER);
             new Thread() {

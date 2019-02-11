@@ -14,6 +14,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
@@ -37,11 +38,44 @@ public class Lang extends JFrame {
 		setVisible(true);
 
 		try {
-			initLang();
+			if (locales.isEmpty()) initLang();
 		} catch (IOException e1) {
 			e1.printStackTrace();
 			Logger.a(e1);
 		}
+
+		OK = new JButton("OK");
+		OK.setBounds(10, 320, 60, 20);
+		OK.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String lang = (String) list.getSelectedValue();
+				if (!downloaded(lang)) {
+					if (!download(lang)) {
+						return;
+					}
+				}
+				Launcher.setProperty(Launcher.SETTINGS, "language", lang);
+				setVisible(false);
+				apply();
+			}
+		});
+		add(OK);
+
+		OK.setBackground(Color.LIGHT_GRAY);
+	}
+
+	public void initLang() throws IOException {
+		URL url = new URL("https://betacraft.ovh/lang/index.html");
+
+		Scanner scanner = new Scanner(url.openStream());
+		String now;
+		while (scanner.hasNextLine()) {
+			now = scanner.nextLine();
+			if (now.equalsIgnoreCase("")) continue;
+			locales.add(now);
+		}
+		scanner.close();
 
 		int i = 0;
 		int index = 0;
@@ -55,9 +89,11 @@ public class Lang extends JFrame {
 			i++;
 		}
 
+		if (list != null) this.remove(list);
+
 		list = new JList(listModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		list.setBounds(10, 30, 262, 290);
+		//list.setBounds(10, 30, 262, 290);
 		list.setLayoutOrientation(JList.VERTICAL);
 		list.setVisibleRowCount(3);
 		list.setSelectedIndex(index);
@@ -67,38 +103,7 @@ public class Lang extends JFrame {
 		listScroller = new JScrollPane(list);
 		listScroller.setBounds(10, 30, 262, 280);
 		listScroller.setWheelScrollingEnabled(true);
-		getContentPane().add(listScroller);
-
-		OK = new JButton("OK");
-		OK.setBounds(10, 320, 60, 20);
-		OK.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String lang = (String) list.getSelectedValue();
-				if (!downloaded(lang)) {
-					download(lang);
-				}
-				Launcher.setProperty(Launcher.SETTINGS, "language", lang);
-				setVisible(false);
-				apply();
-			}
-		});
-		add(OK);
-
-		OK.setBackground(Color.LIGHT_GRAY);
-	}
-
-	public static void initLang() throws IOException {
-		URL url = new URL("https://betacraft.ovh/lang/index.html");
-
-		Scanner scanner = new Scanner(url.openStream());
-		String now;
-		while (scanner.hasNextLine()) {
-			now = scanner.nextLine();
-			if (now.equalsIgnoreCase("")) continue;
-			locales.add(now);
-		}
-		scanner.close();
+		add(listScroller);
 	}
 
 	public static boolean downloaded(String lang) {
@@ -109,8 +114,13 @@ public class Lang extends JFrame {
 		return false;
 	}
 
-	public static void download(String lang) {
-		Launcher.download("https://betacraft.ovh/lang/" + lang + ".txt", new File(BC.get() + "launcher/lang/", lang + ".txt"));
+	public static boolean download(String lang) {
+		boolean done = Launcher.download("https://betacraft.ovh/lang/" + lang + ".txt", new File(BC.get() + "launcher/lang/", lang + ".txt"));
+		if (!done) {
+			JOptionPane.showMessageDialog(null, "No Internet connection", "Language file download failed!", JOptionPane.ERROR_MESSAGE);
+			Window.quit();
+		}
+		return done;
 	}
 
 	public static String get(String property) {
@@ -119,7 +129,10 @@ public class Lang extends JFrame {
 
 	public static void apply() {
 		String lang = Launcher.getProperty(Launcher.SETTINGS, "language");
-		if (lang.equals("")) return;
+		if (lang.equals("")) {
+			download("English");
+			lang = "English";
+		}
 		File file = new File(BC.get() + "launcher/lang/", lang + ".txt");
 
 		Window.about.setText(Launcher.getProperty(file, "version_button"));

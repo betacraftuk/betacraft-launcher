@@ -21,7 +21,7 @@ public class InfoPanel extends JPanel {
 		//setSize(800, 290);
 		setLayout(null);
 		try {
-			image = ImageIO.read(Launcher.class.getResource("/gui/stone.png")).getScaledInstance(32, 32, 16);
+			image = ImageIO.read(Launcher.class.getResource("/icons/stone.png")).getScaledInstance(32, 32, 16);
 		} catch (IOException e2) {
 			e2.printStackTrace();
 			return;

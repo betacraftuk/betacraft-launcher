@@ -109,7 +109,7 @@ public class Window extends JFrame implements ActionListener {
 			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
 				Launcher.write(new File(BC.get(), "lastlogin"), new String[] {nick.getText()}, false);
 				Logger.a("Dezaktywacja...");
-				System.exit(0);
+				Window.quit();
 			}
 		});
 
@@ -140,6 +140,7 @@ public class Window extends JFrame implements ActionListener {
 	public static void quit() {
 		window.setVisible(false);
 		window.dispose();
+		Launcher.unloadNatives();
 		System.exit(0);
 	}
 

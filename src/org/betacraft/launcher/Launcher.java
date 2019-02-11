@@ -14,35 +14,40 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Scanner;
+import java.util.Vector;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 public class Launcher {
+	public static String currentPath;
 	public static File SETTINGS = new File(BC.get() + "launcher/", "launcher.settings");
 	public static File LOGIN = new File(BC.get(), "lastlogin");
 
 	public static String chosen_version = "b1.6.6";
-	public static String VERSION = "Preview 3 build 3";
-	private static URLClassLoader classLoader;
-	int sessions = 0;
+	public static String VERSION = "1.01";
+	public static Integer sessions = 0;
 
 	public static String update = "There is a new version of the launcher (%s). Would you like to update?";
+	public static URLClassLoader classLoader = null;
+	public static boolean playedOnce = false;
 
 	public static void main(String[] args) {
 		new File(BC.get() + "versions/").mkdirs();
 		new File(BC.get() + "launcher/lang").mkdirs();
 		new File(BC.get() + "bin/natives/").mkdirs();
+		unloadNatives();
 		if (args.length == 2 && args[0].equals("update")) {
 			try {
 				final String pathToJar = args[1];
@@ -66,6 +71,7 @@ public class Launcher {
 		}
 		new Window();
 		try {
+			currentPath = Window.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
 			Release.initVersions();
 		} catch (Exception ex) {
 			Logger.a("FATALNY ERROR: ");
@@ -79,40 +85,47 @@ public class Launcher {
 			Launcher.downloadUpdate();
 		}
 		String ver = Launcher.getProperty(SETTINGS, "version");
-		if (ver.equals("")) {
-			chosen_version = "c0.0.13a_03";
-		} else {
+		if (!ver.equals("")) {
 			chosen_version = ver;
 		}
 	}
 
 	public void LaunchGame(String params, final String username) {
 		try {
-			// This is a permanent solution for a1.0.6-b1.3_01 versions crashing (at least on Linux)
-			// java.nio.BufferOverflowException, why?
-			String retrocraft = " -Dhttp.proxyHost=classic.retrocraft.net -Dhttp.proxyPort=80 -Djava.util.Arrays.useLegacyMergeSort=true";
-			String libpath = "-Djava.library.path=" + BC.get() + "bin/natives";
+			//String retrocraft = " -Dhttp.proxyHost=classic.retrocraft.net -Dhttp.proxyPort=80 -Djava.util.Arrays.useLegacyMergeSort=true";
+			//String libpath = "-Djava.library.path=" + BC.get() + "bin/natives";
 			if (getProperty(SETTINGS, "retrocraft").equals("true")) {
-				libpath = libpath + retrocraft;
+				//libpath = libpath + retrocraft;
+				System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+		        System.setProperty("http.proxyPort", "80");	
+		        System.setProperty("http.proxyHost", "classic.retrocraft.net");
 			}
-			applyVersion();
-			String jars = BC.get() + "bin/minecraft.jar:" + BC.get() + "bin/lwjgl.jar:" + BC.get() + "bin/lwjgl_util.jar:" + BC.get() + "bin/jinput.jar";
+			/*String jars = BC.get() + "bin/minecraft.jar:" + BC.get() + "bin/lwjgl.jar:" + BC.get() + "bin/lwjgl_util.jar:" + BC.get() + "bin/jinput.jar";
 			if (OS.isWindows()) { // windows ty chuju pierdolon, niszczysz mi zycie
 				jars = BC.get() + "bin\\*";
 			}
 			String line = " " + params + " -cp " + jars + " " + libpath + " net.minecraft.client.Minecraft " + username + " " + sessions;
 			sessions++;
 
-			line = OS.isWindows() ? (line = "javaw" + line) : (line = "java" + line);
+			line = OS.isWindows() ? (line = "javaw" + line) : (line = "java" + line);*/
 
-			// Classic-Indev 20100130 works on this, but the newer versions come up with java.nio.BufferOverflowException
-			if (chosen_version.equals("a1.0.1") || chosen_version.equals("a1.0.1_01") || chosen_version.startsWith("a1.0.2") || chosen_version.startsWith("a1.0.3") ||
-					chosen_version.startsWith("a1.0.4") || chosen_version.startsWith("a1.0.5") || chosen_version.startsWith("in") || chosen_version.startsWith("c")) {
-			//if (chosen_version != null) {
+			/*if (chosen_version.equals("a1.0.1") || chosen_version.equals("a1.0.1_01") || chosen_version.startsWith("a1.0.2") || chosen_version.startsWith("a1.0.3") ||
+					chosen_version.startsWith("a1.0.4") || chosen_version.startsWith("a1.0.5") || chosen_version.startsWith("in") || chosen_version.startsWith("c")) {*/
+			if (chosen_version != null) {
+				final String ver = chosen_version;
+				final int session = sessions;
+
+				String nativesPath = BC.get() + "versions/" + chosen_version + sessions;
+				final File natives = new File(nativesPath);
+				natives.mkdirs();
+				applyNatives(ver, session);
 				String file = BC.get() + "versions/" + chosen_version + ".jar";
 				String file1 = BC.get() + "bin/lwjgl.jar";
 				String file2 = BC.get() + "bin/lwjgl_util.jar";
 				String file3 = BC.get() + "bin/jinput.jar";
+
+				System.setProperty("org.lwjgl.librarypath", nativesPath);
+		        System.setProperty("net.java.games.input.librarypath", nativesPath);
 
 				final URL[] url = new URL[4];
 				url[0] = new File(file).toURI().toURL();
@@ -120,46 +133,50 @@ public class Launcher {
 				url[2] = new File(file2).toURI().toURL();
 				url[3] = new File(file3).toURI().toURL();
 
-		        if (classLoader == null) {
-		        	classLoader = new URLClassLoader(url);
-		        }
+				if (playedOnce) {
+					
+				}
+
+				classLoader = null;
+				classLoader = new URLClassLoader(url);
+				playedOnce = true;
 
 		        final Class<Applet> appletClass;
 				if (chosen_version.startsWith("c")) {
-					appletClass = (Class<Applet>)classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
+					appletClass = (Class<Applet>) classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
 				} else {
-					appletClass = (Class<Applet>)classLoader.loadClass("net.minecraft.client.MinecraftApplet");
+					appletClass = (Class<Applet>) classLoader.loadClass("net.minecraft.client.MinecraftApplet");
 				}
 				final Applet applet = appletClass.newInstance();
 
-				/*for (final Field field : appletClass.getDeclaredFields()) {
-					final String name = field.getType().getName();
-					if (!name.contains("awt") && !name.contains("java")) {
-						Field fileField = null;
-						final Class<?> clazz = classLoader.loadClass(name);
-						for (final Field field1 : clazz.getDeclaredFields()) {
-							if (Modifier.isStatic(field1.getModifiers()) && field1.getType().getName().equals("java.io.File")) {
-								fileField = field1;
+				if (chosen_version.startsWith("in") || chosen_version.startsWith("a") || chosen_version.startsWith("b")) {
+					for (final Field field : appletClass.getDeclaredFields()) {
+						final String name = field.getType().getName();
+						if (!name.contains("awt") && !name.contains("java")) {
+							Field fileField = null;
+							final Class<?> clazz = classLoader.loadClass(name);
+							for (final Field field1 : clazz.getDeclaredFields()) {
+								if (Modifier.isStatic(field1.getModifiers()) && field1.getType().getName().equals("java.io.File")) {
+									fileField = field1;
+								}
+							}
+							if (fileField != null) {
+								fileField.setAccessible(true);
+								fileField.set(null, new File(BC.get()));
+								break;
 							}
 						}
-						if (fileField != null) {
-							fileField.setAccessible(true);
-							fileField.set(null, new File(BC.get()));
-							break;
-						}
 					}
-				}*/
+				}
 
 				//AlphaStub stub = new AlphaStub(username, Integer.toString(sessions));
 				//sessions++;
 
 				//stub.doo(applet);
-				System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
-	            System.setProperty("http.proxyPort", "80");
-	            System.setProperty("http.proxyHost", "classic.retrocraft.net");
-	            System.setProperty("java.library.path", BC.get() + "bin/natives");
-	            System.setProperty("org.lwjgl.librarypath", BC.get() + "bin/natives");
-		        System.setProperty("net.java.games.input.librarypath", BC.get() + "bin/natives");
+
+				if (!getProperty(SETTINGS, "keepopen").equals("true")) {
+    				Window.window.setVisible(false);
+    			}
 
 				final Frame launcherFrameFake = new Frame();
 				launcherFrameFake.setTitle("Minecraft");
@@ -178,6 +195,36 @@ public class Launcher {
 		                applet.destroy();
 		                launcherFrameFake.setVisible(false);
 		                launcherFrameFake.dispose();
+		                try {
+							classLoader.close();
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+		                if (!getProperty(SETTINGS, "keepopen").equals("true")) {
+		                	try {
+								final Field field = ClassLoader.class.getDeclaredField("loadedLibraryNames");
+								field.setAccessible(true);
+								final Vector<String> libs = (Vector<String>) field.get(this.getClass().getClassLoader());
+								final String path = natives.getCanonicalPath();
+								for (int i = 0; i < libs.size(); ++i) {
+									final String s = libs.get(i);
+									if (s.startsWith(path)) {
+										libs.remove(i);
+										--i;
+									}
+								}
+							} catch (Exception e1) {
+								e1.printStackTrace();
+							}
+		                	Window.quit();
+		                	//System.exit(0);
+		                	/*try {
+								Runtime.getRuntime().exec("java -jar " + currentPath);
+							} catch (IOException e1) {
+								e1.printStackTrace();
+							}*/
+		    			}
+		                //System.exit(0);
 		            }
 		        });
 				AlphaStub stub = new AlphaStub(username, Integer.toString(sessions));
@@ -192,10 +239,9 @@ public class Launcher {
 				launcherFrameFake.validate();
 				applet.init();
 				applet.start();
-				//classLoader.close();
 				return;
 			}
-			System.out.println(line);
+			/*System.out.println(line);
 			if (!getProperty(SETTINGS, "keepon").equals("true")) {
 				Window.window.setVisible(false);
 			}
@@ -208,7 +254,7 @@ public class Launcher {
 			while ((line1 = br.readLine()) != null) {
 				Logger.a(line1);
 			}
-			Window.window.setVisible(true);
+			Window.window.setVisible(true);*/
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.a("KRYTYCZNY BLAD");
@@ -378,14 +424,85 @@ public class Launcher {
 		return (params.length() >= 2) ? params.substring(1, params.length() - 1) : "";
 	}
 
-	public static void applyVersion() {
-		File version = new File(getVerFolder(), chosen_version + ".jar");
-		File dest = new File(BC.get() + "bin", "minecraft.jar");
+	public static void unloadNatives() {
+		File file = new File(BC.get() + "versions/");
+		String[] entries = file.list();
+		for (String s: entries) {
+		    File currentFile = new File(file.getPath(), s);
+		    if (currentFile.isDirectory()) {
+		    	for (String s1 : currentFile.list()) {
+		    		new File(currentFile.getPath(), s1).delete();
+		    	}
+		    	try {
+					Files.delete(currentFile.toPath());
+				} catch (Exception ex) {}
+		    }
+		}
+	}
+
+	public static void applyNatives(String chosen_version, int session) {
+		File lwjgl;
+		File lwjgl64;
+		File jinput;
+		File jinput64;
+		File openal;
+		File openal64;
+
+		File jinputdx8 = null;
+		File jinputdx864 = null;
+
+		String lwj;
+		String lwj64;
+		String jin;
+		String jin64;
+		String ope;
+		String ope64;
+
+		String jindx = null;
+		String jindx64 = null;
+		if (OS.isLinux() || OS.isSolaris()) {
+			lwj = "liblwjgl.so";
+			lwj64 = "liblwjgl64.so";
+			jin = "libjinput-linux.so";
+			jin64 = "libjinput-linux64.so";
+			ope = "libopenal.so";
+			ope64 = "libopenal64.so";
+		} else if (OS.isWindows()) {
+			lwj = "lwjgl.dll";
+			lwj64 = "lwjgl64.dll";
+			jin = "jinput-raw.dll";
+			jin64 = "jinput-raw_64.dll";
+			ope = "OpenAL32.dll";
+			ope64 = "OpenAL64.dll";
+			jindx = "jinput-dx8.dll";
+			jindx64 = "jinput-dx8_64.dll";
+		} else {
+			System.exit(0);
+			return;
+		}
+		lwjgl = new File(BC.get() + "versions/" + chosen_version + session, lwj);
+		lwjgl64 = new File(BC.get() + "versions/" + chosen_version + session, lwj64);
+		jinput = new File(BC.get() + "versions/" + chosen_version + session, jin);
+		jinput64 = new File(BC.get() + "versions/" + chosen_version + session, jin64);
+		openal = new File(BC.get() + "versions/" + chosen_version + session, ope);
+		openal64 = new File(BC.get() + "versions/" + chosen_version + session, ope64);
+		if (jindx != null) {
+			jinputdx8 = new File(BC.get() + "versions/" + chosen_version + session, jindx);
+			jinputdx864 = new File(BC.get() + "versions/" + chosen_version + session, jindx64);
+		}
+
 		try {
-			dest.createNewFile();
-			Files.copy(version.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(new File(BC.get() + "bin/natives", lwj).toPath(), lwjgl.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(new File(BC.get() + "bin/natives", lwj64).toPath(), lwjgl64.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(new File(BC.get() + "bin/natives", jin).toPath(), jinput.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(new File(BC.get() + "bin/natives", jin64).toPath(), jinput64.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(new File(BC.get() + "bin/natives", ope).toPath(), openal.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(new File(BC.get() + "bin/natives", ope64).toPath(), openal64.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			if (jindx != null) {
+				Files.copy(new File(BC.get() + "bin/natives", jindx).toPath(), jinputdx8.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(new File(BC.get() + "bin/natives", jindx64).toPath(), jinputdx864.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			}
 		} catch (IOException e) {
-			Logger.a("Nie mozna przeniesc " + version.getPath() + " do " + dest.getPath());
 			e.printStackTrace();
 		}
 	}

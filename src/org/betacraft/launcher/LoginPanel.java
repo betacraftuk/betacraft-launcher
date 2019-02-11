@@ -20,7 +20,7 @@ public class LoginPanel extends JPanel {
 		setSize(800, 160); // replace 140 with 450 in case you want to go back
 		setLayout(null);
 		try {
-			image = ImageIO.read(Launcher.class.getResource("/gui/dirt.png")).getScaledInstance(32, 32, 16);
+			image = ImageIO.read(Launcher.class.getResource("/icons/dirt.png")).getScaledInstance(32, 32, 16);
 		} catch (IOException e2) {
 			e2.printStackTrace();
 			return;

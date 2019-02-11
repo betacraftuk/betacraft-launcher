@@ -14,14 +14,14 @@ import javax.swing.ListSelectionModel;
 
 import org.betacraft.launcher.VersionSorter.Order;
 
-public class Wersja extends JFrame {
+public class Wersja extends JFrame implements ActionListener {
 
 	ImageIcon image = new ImageIcon();
 	static JList list;
 	static DefaultListModel listModel;
 	static JScrollPane listScroller;
 	static JButton orderbutton;
-	JButton OK;
+	static JButton OK;
 	static Order order = Order.FROM_OLDEST;
 
 	public Wersja() {
@@ -58,15 +58,7 @@ public class Wersja extends JFrame {
 
 		OK = new JButton("OK");
 		OK.setBounds(10, 320, 60, 20);
-		OK.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Release ver = (Release) list.getSelectedValue();
-				Launcher.chosen_version = ver.getName();
-				Launcher.setProperty(Launcher.SETTINGS, "version", ver.getName());
-				setVisible(false);
-			}
-		});
+		OK.addActionListener(this);
 		add(OK);
 
 		OK.setBackground(Color.LIGHT_GRAY);
@@ -98,5 +90,15 @@ public class Wersja extends JFrame {
 		listScroller.setBounds(10, 30, 262, 290);
 		listScroller.setWheelScrollingEnabled(true);
 		getContentPane().add(listScroller);
+	}
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		if (e.getSource() == OK) {
+			Release ver = (Release) list.getSelectedValue();
+			Launcher.chosen_version = ver.getName();
+			Launcher.setProperty(Launcher.SETTINGS, "version", ver.getName());
+			setVisible(false);
+		}
 	}
 }
