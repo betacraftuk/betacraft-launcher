@@ -36,7 +36,7 @@ public class Launcher {
 	public static File LOGIN = new File(BC.get(), "lastlogin");
 
 	public static String chosen_version = "b1.6.6";
-	public static String VERSION = "1.01";
+	public static String VERSION = "1.02";
 	public static Integer sessions = 0;
 
 	public static String update = "There is a new version of the launcher (%s). Would you like to update?";
