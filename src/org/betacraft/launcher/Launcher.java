@@ -1,12 +1,5 @@
 package org.betacraft.launcher;
 
-import java.applet.Applet;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -14,21 +7,19 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.Vector;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 
 public class Launcher {
 	public static String currentPath;
@@ -36,7 +27,7 @@ public class Launcher {
 	public static File LOGIN = new File(BC.get(), "lastlogin");
 
 	public static String chosen_version = "b1.6.6";
-	public static String VERSION = "1.02";
+	public static String VERSION = "1.03";
 	public static Integer sessions = 0;
 
 	public static String update = "There is a new version of the launcher (%s). Would you like to update?";
@@ -47,6 +38,7 @@ public class Launcher {
 		new File(BC.get() + "versions/").mkdirs();
 		new File(BC.get() + "launcher/lang").mkdirs();
 		new File(BC.get() + "bin/natives/").mkdirs();
+		// TODO fix this somehow for Windows 10 October Update
 		unloadNatives();
 		if (args.length >= 2 && args[0].equals("update")) {
 			try {
@@ -54,33 +46,43 @@ public class Launcher {
 				for (int i = 1; i < args.length; i++) {
 					pathToJar = pathToJar + " " + args[i];
 				}
+				pathToJar = pathToJar.substring(1, pathToJar.length());
 				File version = new File(BC.get(), "betacraft.jar$tmp");
 				File dest = new File(pathToJar);
 				Files.copy(version.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
 				final String path = pathToJar;
-				new Runnable() {
-					public void run() {
-						try {
-							Runtime.getRuntime().exec("java -jar " + path);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				}.run();
+				Runtime.getRuntime().exec("java -jar " + path);
+				//version.delete();
 				System.exit(0);
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				System.exit(0);
 			}
+			return;
 		}
-		new Window();
 		try {
 			currentPath = Window.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+			/*if (args.length == 0) {
+				ArrayList<String> params = new ArrayList<String>();
+				if (OS.isWindows()) {
+					params.add("javaw");
+				} else {
+					params.add("java");
+				}
+				params.add("-classpath");
+				params.add(currentPath);
+				params.add("org.betacraft.launcher.Launcher");
+				params.add("started");
+				ProcessBuilder builder = new ProcessBuilder(params);
+				builder.start();
+				System.exit(0);
+			}*/
+			new Window();
 			Release.initVersions();
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			Logger.a("FATALNY ERROR: ");
 			Logger.a(ex.getMessage());
-			ex.printStackTrace();
 		}
 		Window.window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Window.window.setVisible(true);
@@ -94,15 +96,15 @@ public class Launcher {
 		}
 	}
 
-	public void LaunchGame(String params, final String username) {
+	public void LaunchGame(String customparams, final String username) {
 		try {
 			//String retrocraft = " -Dhttp.proxyHost=classic.retrocraft.net -Dhttp.proxyPort=80 -Djava.util.Arrays.useLegacyMergeSort=true";
 			//String libpath = "-Djava.library.path=" + BC.get() + "bin/natives";
 			if (getProperty(SETTINGS, "retrocraft").equals("true")) {
 				//libpath = libpath + retrocraft;
-				System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
-		        System.setProperty("http.proxyPort", "80");	
-		        System.setProperty("http.proxyHost", "classic.retrocraft.net");
+				//System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+		        //System.setProperty("http.proxyPort", "80");	
+		        //System.setProperty("http.proxyHost", "classic.retrocraft.net");
 			}
 			/*String jars = BC.get() + "bin/minecraft.jar:" + BC.get() + "bin/lwjgl.jar:" + BC.get() + "bin/lwjgl_util.jar:" + BC.get() + "bin/jinput.jar";
 			if (OS.isWindows()) { // windows ty chuju pierdolon, niszczysz mi zycie
@@ -116,155 +118,49 @@ public class Launcher {
 			/*if (chosen_version.equals("a1.0.1") || chosen_version.equals("a1.0.1_01") || chosen_version.startsWith("a1.0.2") || chosen_version.startsWith("a1.0.3") ||
 					chosen_version.startsWith("a1.0.4") || chosen_version.startsWith("a1.0.5") || chosen_version.startsWith("in") || chosen_version.startsWith("c")) {*/
 			if (chosen_version != null) {
-				final String ver = chosen_version;
-				final int session = sessions;
-
-				String nativesPath = BC.get() + "versions/" + chosen_version + sessions;
-				final File natives = new File(nativesPath);
-				natives.mkdirs();
-				applyNatives(ver, session);
-				String file = BC.get() + "versions/" + chosen_version + ".jar";
-				String file1 = BC.get() + "bin/lwjgl.jar";
-				String file2 = BC.get() + "bin/lwjgl_util.jar";
-				String file3 = BC.get() + "bin/jinput.jar";
-
-				System.setProperty("org.lwjgl.librarypath", nativesPath);
-		        System.setProperty("net.java.games.input.librarypath", nativesPath);
-
-				final URL[] url = new URL[4];
-				url[0] = new File(file).toURI().toURL();
-				url[1] = new File(file1).toURI().toURL();
-				url[2] = new File(file2).toURI().toURL();
-				url[3] = new File(file3).toURI().toURL();
-
-				if (playedOnce) {
-					
-				}
-
-				classLoader = null;
-				classLoader = new URLClassLoader(url);
-				playedOnce = true;
-
-		        final Class<Applet> appletClass;
-				if (chosen_version.startsWith("c")) {
-					appletClass = (Class<Applet>) classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
+				String path = BC.get() + "launcher/betacraft_wrapper.jar";
+				ArrayList<String> params = new ArrayList<String>();
+				if (OS.isWindows()) {
+					params.add("javaw");
 				} else {
-					appletClass = (Class<Applet>) classLoader.loadClass("net.minecraft.client.MinecraftApplet");
+					params.add("java");
 				}
-				final Applet applet = appletClass.newInstance();
-
-				if (chosen_version.startsWith("in") || chosen_version.startsWith("a") || chosen_version.startsWith("b")) {
-					for (final Field field : appletClass.getDeclaredFields()) {
-						final String name = field.getType().getName();
-						if (!name.contains("awt") && !name.contains("java")) {
-							Field fileField = null;
-							final Class<?> clazz = classLoader.loadClass(name);
-							for (final Field field1 : clazz.getDeclaredFields()) {
-								if (Modifier.isStatic(field1.getModifiers()) && field1.getType().getName().equals("java.io.File")) {
-									fileField = field1;
-								}
-							}
-							if (fileField != null) {
-								fileField.setAccessible(true);
-								fileField.set(null, new File(BC.get()));
-								break;
-							}
-						}
+				/*if (Launcher.getProperty(Launcher.SETTINGS, "retrocraft").equals("true")) {
+					String retrocraft = "-Dhttp.proxyHost=classic.retrocraft.net -Dhttp.proxyPort=80 -Djava.util.Arrays.useLegacyMergeSort=true";
+					if (chosen_version.startsWith("a") || chosen_version.startsWith("b")) {
+						retrocraft = "-Dhttp.proxyHost=retrocraft.net -Dhttp.proxyPort=80";
 					}
+					customparams = customparams.equals("") ? retrocraft : retrocraft + " " + customparams;
+				}*/
+				if (customparams != null && !customparams.equals("")) {
+					params.add(customparams);
 				}
-
-				//AlphaStub stub = new AlphaStub(username, Integer.toString(sessions));
-				//sessions++;
-
-				//stub.doo(applet);
-
-				if (!getProperty(SETTINGS, "keepopen").equals("true")) {
-    				Window.window.setVisible(false);
-    			}
-
-				final Frame launcherFrameFake = new Frame();
-				launcherFrameFake.setTitle("Minecraft");
-				launcherFrameFake.setBackground(Color.BLACK);
-				final JPanel panel = new JPanel();
-				launcherFrameFake.setLayout(new BorderLayout());
-				panel.setPreferredSize(new Dimension(854, 480));
-				launcherFrameFake.add(panel, "Center");
-				launcherFrameFake.pack();
-				launcherFrameFake.setLocationRelativeTo(null);
-				launcherFrameFake.setVisible(true);
-				launcherFrameFake.addWindowListener(new WindowAdapter() {
-		            @Override
-		            public void windowClosing(final WindowEvent e) {
-		            	applet.stop();
-		                applet.destroy();
-		                launcherFrameFake.setVisible(false);
-		                launcherFrameFake.dispose();
-		                try {
-							classLoader.close();
-						} catch (IOException e1) {
-							e1.printStackTrace();
-						}
-		                if (!getProperty(SETTINGS, "keepopen").equals("true")) {
-		                	try {
-								final Field field = ClassLoader.class.getDeclaredField("loadedLibraryNames");
-								field.setAccessible(true);
-								final Vector<String> libs = (Vector<String>) field.get(this.getClass().getClassLoader());
-								final String path = natives.getCanonicalPath();
-								for (int i = 0; i < libs.size(); ++i) {
-									final String s = libs.get(i);
-									if (s.startsWith(path)) {
-										libs.remove(i);
-										--i;
-									}
-								}
-							} catch (Exception e1) {
-								e1.printStackTrace();
-							}
-		                	Window.quit();
-		                	//System.exit(0);
-		                	/*try {
-								Runtime.getRuntime().exec("java -jar " + currentPath);
-							} catch (IOException e1) {
-								e1.printStackTrace();
-							}*/
-		    			}
-		                //System.exit(0);
-		            }
-		        });
-				AlphaStub stub = new AlphaStub(username, Integer.toString(sessions));
-				sessions++;
-				applet.setStub(stub);
-				stub.setLayout(new BorderLayout());
-				stub.add(applet, "Center");
-				stub.validate();
-				launcherFrameFake.removeAll();
-				launcherFrameFake.setLayout(new BorderLayout());
-				launcherFrameFake.add(stub, "Center");
-				launcherFrameFake.validate();
-				applet.init();
-				applet.start();
+				params.add("-jar");
+				params.add(path);
+				//params.add("org.betacraft.Wrapper");
+				params.add(username + ":" + Integer.toString(sessions) + ":" + chosen_version + ":" + Launcher.getProperty(Launcher.SETTINGS, "retrocraft").equals("true"));
+				params.add(BC.get());
+				// new String[] {"/bin/sh#!/bin/sh " + path, username, Integer.toString(sessions), chosen_version, BC.get()}
+				ProcessBuilder builder = new ProcessBuilder(params);
+				builder.start();
+				/*Process process = builder.start();
+				InputStream err = process.getInputStream();
+				InputStreamReader isr = new InputStreamReader(err);
+				BufferedReader br = new BufferedReader(isr);
+				String line1;
+				while ((line1 = br.readLine()) != null) {
+					Logger.a(line1);
+				}*/
+				if (!Launcher.getProperty(SETTINGS, "keepopen").equals("true")) {
+					Window.quit();
+				}
 				return;
 			}
-			/*System.out.println(line);
-			if (!getProperty(SETTINGS, "keepon").equals("true")) {
-				Window.window.setVisible(false);
-			}
-
-			Process process = Runtime.getRuntime().exec(line);
-			InputStream err = process.getErrorStream();
-			InputStreamReader isr = new InputStreamReader(err);
-			BufferedReader br = new BufferedReader(isr);
-			String line1;
-			while ((line1 = br.readLine()) != null) {
-				Logger.a(line1);
-			}
-			Window.window.setVisible(true);*/
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.a("KRYTYCZNY BLAD");
 			Logger.a("podczas uruchamiania gry: ");
 			Logger.a(ex.getMessage());
-			Window.window.setVisible(true);
 		}
 	}
 
@@ -278,7 +174,8 @@ public class Launcher {
 
 	public static boolean getVerDownloaded(String version) {
 		File file = new File(getVerFolder(), version + ".jar");
-		if (file.exists() && !file.isDirectory()) {
+		File wrapper = new File(BC.get() + "launcher/", "betacraft_wrapper.jar");
+		if (file.exists() && !file.isDirectory() && wrapper.exists() && !wrapper.isDirectory()) {
 			return true;
 		}
 		return false;
@@ -424,8 +321,9 @@ public class Launcher {
 
 	public static String getCustomParameters() {
 		String params = getProperty(SETTINGS, "launch");
-		
-		return (params.length() >= 2) ? params.substring(1, params.length() - 1) : "";
+
+		params = (params.length() >= 2) ? params.substring(1, params.length() - 1) : "";
+		return params;
 	}
 
 	public static void unloadNatives() {
@@ -441,73 +339,6 @@ public class Launcher {
 					Files.delete(currentFile.toPath());
 				} catch (Exception ex) {}
 		    }
-		}
-	}
-
-	public static void applyNatives(String chosen_version, int session) {
-		File lwjgl;
-		File lwjgl64;
-		File jinput;
-		File jinput64;
-		File openal;
-		File openal64;
-
-		File jinputdx8 = null;
-		File jinputdx864 = null;
-
-		String lwj;
-		String lwj64;
-		String jin;
-		String jin64;
-		String ope;
-		String ope64;
-
-		String jindx = null;
-		String jindx64 = null;
-		if (OS.isLinux() || OS.isSolaris()) {
-			lwj = "liblwjgl.so";
-			lwj64 = "liblwjgl64.so";
-			jin = "libjinput-linux.so";
-			jin64 = "libjinput-linux64.so";
-			ope = "libopenal.so";
-			ope64 = "libopenal64.so";
-		} else if (OS.isWindows()) {
-			lwj = "lwjgl.dll";
-			lwj64 = "lwjgl64.dll";
-			jin = "jinput-raw.dll";
-			jin64 = "jinput-raw_64.dll";
-			ope = "OpenAL32.dll";
-			ope64 = "OpenAL64.dll";
-			jindx = "jinput-dx8.dll";
-			jindx64 = "jinput-dx8_64.dll";
-		} else {
-			System.exit(0);
-			return;
-		}
-		lwjgl = new File(BC.get() + "versions/" + chosen_version + session, lwj);
-		lwjgl64 = new File(BC.get() + "versions/" + chosen_version + session, lwj64);
-		jinput = new File(BC.get() + "versions/" + chosen_version + session, jin);
-		jinput64 = new File(BC.get() + "versions/" + chosen_version + session, jin64);
-		openal = new File(BC.get() + "versions/" + chosen_version + session, ope);
-		openal64 = new File(BC.get() + "versions/" + chosen_version + session, ope64);
-		if (jindx != null) {
-			jinputdx8 = new File(BC.get() + "versions/" + chosen_version + session, jindx);
-			jinputdx864 = new File(BC.get() + "versions/" + chosen_version + session, jindx64);
-		}
-
-		try {
-			Files.copy(new File(BC.get() + "bin/natives", lwj).toPath(), lwjgl.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(new File(BC.get() + "bin/natives", lwj64).toPath(), lwjgl64.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(new File(BC.get() + "bin/natives", jin).toPath(), jinput.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(new File(BC.get() + "bin/natives", jin64).toPath(), jinput64.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(new File(BC.get() + "bin/natives", ope).toPath(), openal.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(new File(BC.get() + "bin/natives", ope64).toPath(), openal64.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			if (jindx != null) {
-				Files.copy(new File(BC.get() + "bin/natives", jindx).toPath(), jinputdx8.toPath(), StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(new File(BC.get() + "bin/natives", jindx64).toPath(), jinputdx864.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 	}
 
@@ -532,6 +363,7 @@ public class Launcher {
 			Logger.a("podczas pobierania pliku z " + link + " ");
 			Logger.a(ex.getMessage());
 			ex.printStackTrace();
+			folder.delete();
 			return false;
 		}
 	}
@@ -556,6 +388,7 @@ public class Launcher {
 				new Pobieranie(update);
 				download("https://betacraft.ovh/versions/launcher.jar", new File(BC.get(), "betacraft.jar$tmp"));
 				final String pathToJar = Window.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+				System.out.println(pathToJar);
 				//File version = new File(BC.get(), "betacraft.jar$tmp");
 				//File dest = new File(pathToJar);
 				Runtime.getRuntime().exec("java -jar " + BC.get() + "betacraft.jar$tmp" + " org.betacraft.launcher.Launcher update " + pathToJar);

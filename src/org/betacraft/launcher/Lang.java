@@ -57,7 +57,7 @@ public class Lang extends JFrame {
 				}
 				Launcher.setProperty(Launcher.SETTINGS, "language", lang);
 				setVisible(false);
-				apply();
+				apply(true);
 			}
 		});
 		add(OK);
@@ -128,12 +128,25 @@ public class Lang extends JFrame {
 	}
 
 	public static void apply() {
+		apply(false);
+	}
+
+	public static void apply(boolean all) {
 		String lang = Launcher.getProperty(Launcher.SETTINGS, "language");
 		if (lang.equals("")) {
 			download("English");
 			lang = "English";
 		}
 		File file = new File(BC.get() + "launcher/lang/", lang + ".txt");
+
+		// reset language of the changelog
+		if (all) {
+			Window.infopanel.setVisible(false);
+			Window.window.remove(Window.infopanel);
+			Window.infopanel = null;
+			Window.infopanel = new InfoPanel();
+			Window.window.add(Window.infopanel);
+		}
 
 		Window.about.setText(Launcher.getProperty(file, "version_button"));
 		Window.play.setText(Launcher.getProperty(file, "play_button"));
@@ -152,6 +165,7 @@ public class Lang extends JFrame {
 		Window.no_connection = Launcher.getProperty(file, "no_connection");
 		Window.download_fail = Launcher.getProperty(file, "download_fail");
 		Window.downloading = Launcher.getProperty(file, "downloading");
+		Window.resizeObjects();
 
 		Opcje opcje = Window.currentOptions;
 		Opcje.update = Launcher.getProperty(file, "update_check");

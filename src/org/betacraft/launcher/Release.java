@@ -2,9 +2,11 @@
 package org.betacraft.launcher;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
@@ -13,37 +15,79 @@ public class Release {
 	public static List<Release> versions = new LinkedList<Release>();
 
 	public static void initVersions() throws IOException {
+		File file = new File(BC.get() + "versions/");
+		String[] arra = file.list(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String fileName) {
+				return fileName.endsWith(".jar");
+			}
+		});
+
 		try {
 			URL url = new URL("https://betacraft.ovh/version_index");
 
 			Scanner s = new Scanner(url.openStream());
-			scan(s, true);
+			for (String ver : scan(s, true)) {
+				String[] split = ver.split("~");
+				for (int i = 0; i < arra.length; i++) {
+					if (arra[i] != null && split[0] != null) {
+						if (arra[i].substring(0, arra[i].length() - 4).equals(split[0])) {
+							arra[i] = null;
+						}
+					}
+				}
+				versions.add(new Release(split[0], split[1], null));
+			}
+			for (int i = 0; i < arra.length; i++) {
+				if (arra[i] == null) continue;
+				versions.add(new Release(arra[i].substring(0, arra[i].length() - 4), null, null));
+			}
 
 			s.close();
 		} catch (UnknownHostException ex) {
 			Logger.a("Brak polaczenia z internetem! (albo serwer padl) ");
 
 			try {
-				Scanner fileScanner = new Scanner(new File(BC.get() + "version_index"));
-				scan(fileScanner, false);
+				Scanner fileScanner = new Scanner(new File(BC.get() + "launcher/version_index"));
+				List<String> list = scan(fileScanner, false);
+
+				for (String r: list) {
+					String[] split = r.split("~");
+					boolean y = false;
+					for (int i = 0; i < arra.length; i++) {
+						if (arra[i] != null && split[0] != null) {
+							if (arra[i].substring(0, arra[i].length() - 4).equals(split[0])) {
+								arra[i] = null;
+								y = true;
+							}
+						}
+					}
+					if (!y) continue;
+					versions.add(new Release(split[0], split[1], null));
+				}
+				for (int i = 0; i < arra.length; i++) {
+					if (arra[i] == null) continue;
+					versions.add(new Release(arra[i].substring(0, arra[i].length() - 4), null, null));
+				}
 
 				fileScanner.close();
 			} catch (Exception ex1) {
+				ex1.printStackTrace();
 				Logger.a("Nie udalo sie zainicjowac wersji z dysku!");
 				Logger.a(ex1.getMessage());
-				ex.printStackTrace();
 			}
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			Logger.a("KRYTYCZNY BLAD!");
 			Logger.a("podczas pobierania listy wersji: ");
 			Logger.a(ex.getMessage());
-			ex.printStackTrace();
 		}
 	}
 
-	private static void scan(Scanner scanner, boolean save) {
+	private static List<String> scan(Scanner scanner, boolean save) {
 		String line = null;
 
+		List<String> list = new ArrayList<String>();
 		String folder = BC.get() + "launcher/";
 		String[] filecontent = new String[400];
 		int i = 1;
@@ -57,19 +101,18 @@ public class Release {
 				continue;
 			}
 			//Logger.a("Rejestrowanie wersji " + line);
-			if (save) filecontent[i] = line;
-			String[] split = line.split("~");
-			Release release = null;
-			if (split[0].contains("pre") || split[0].contains("test_build")) {
-				release = new Prerelease(split[0], split[1], null);
-			} else {
-				release = new Release(split[0], split[1], null);
+			if (save) {
+				filecontent[i] = line;
 			}
-			versions.add(release);
+			
+			list.add(line);
 			i++;
 		}
 		// zapisz liste wersji offline
-		if (save) Launcher.write(new File(folder, "version_index"), filecontent, false);
+		if (save) {
+			Launcher.write(new File(folder, "version_index"), filecontent, false);
+		}
+		return list;
 	}
 
 	private String name;

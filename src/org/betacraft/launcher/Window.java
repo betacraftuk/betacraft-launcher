@@ -113,21 +113,21 @@ public class Window extends JFrame implements ActionListener {
 			}
 		});
 
-		this.addComponentListener(new ComponentAdapter() {
+		/*this.addComponentListener(new ComponentAdapter() {
 		    public void componentResized(ComponentEvent componentEvent) {
 		    	if (componentEvent.getComponent().getSize().width < 800 || componentEvent.getComponent().getSize().height < 450) {
 		    		componentEvent.getComponent().setSize(800, 450);
 		    	}
 		        resizeObjects();
 		    }
-		});
+		});*/
 	}
 
 	public static void resizeObjects() {
 		int width = window.getSize().width / 2; // 400
 		int height = window.getSize().height / 2; // 450
 
-		infopanel.setBounds(0, 0, 800, height + 25 + 40); // 290, 800
+		infopanel.setBounds(0, 0, 800, 290); // 290, 800
 		play.setBounds(((Double)(width * 0.75)).intValue(), 50, 195, 36);
 		nick.setBounds(((Double)(width * 0.84)).intValue(), 20, 120, 24); // 337
 		kazu.setBounds(15, 90, 390, 30);
@@ -140,7 +140,6 @@ public class Window extends JFrame implements ActionListener {
 	public static void quit() {
 		window.setVisible(false);
 		window.dispose();
-		Launcher.unloadNatives();
 		System.exit(0);
 	}
 
@@ -181,15 +180,20 @@ public class Window extends JFrame implements ActionListener {
 				timer.schedule(new TimerTask() {
 					public void run() {
 						if (!Launcher.getVerDownloaded(Launcher.chosen_version)) {
+							File wrapper = new File(BC.get() + "launcher/", "betacraft_wrapper.jar");
+							if (!wrapper.exists()) {
+								if (!Launcher.download("https://betacraft.ovh/versions/betacraft_wrapper.jar", wrapper)) {
+									JOptionPane.showMessageDialog(null, no_connection, download_fail, JOptionPane.ERROR_MESSAGE);
+								}
+							}
 							if (!Launcher.download(Launcher.getVerLink(Launcher.chosen_version), new File(Launcher.getVerFolder(), Launcher.chosen_version + ".jar"))) {
 								JOptionPane.showMessageDialog(null, no_connection, download_fail, JOptionPane.ERROR_MESSAGE);
-								return;
 							}
 						}
 						if (!Launcher.nativesDownloaded(false)) {
 							Launcher.nativesDownloaded(true);
 						}
-						
+
 						play.setText(play_lang);
 						play.setEnabled(true);
 						new Launcher().LaunchGame(Launcher.getCustomParameters(), nick.getText());

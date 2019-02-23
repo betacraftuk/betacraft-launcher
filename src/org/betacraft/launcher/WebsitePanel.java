@@ -58,7 +58,7 @@ public class WebsitePanel extends JPanel {
             new Thread() {
                 public void run() {
                     try {
-                        textPane.setPage(new URL("https://betacraft.ovh/versions/changelog.html"));
+                        textPane.setPage(new URL("https://betacraft.ovh/versions/changelog.html?" + Launcher.getProperty(Launcher.SETTINGS, "language")));
                     }
                     catch (Exception ex) {
                         ex.printStackTrace();
