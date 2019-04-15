@@ -1,4 +1,4 @@
-package org.betacraft.launcher;
+	package org.betacraft.launcher;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;

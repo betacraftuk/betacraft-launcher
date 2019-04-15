@@ -21,6 +21,10 @@ import java.util.Scanner;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import club.minnced.discord.rpc.DiscordEventHandlers;
+import club.minnced.discord.rpc.DiscordRPC;
+import club.minnced.discord.rpc.DiscordRichPresence;
+
 public class Launcher {
 	public static String currentPath;
 	public static File SETTINGS = new File(BC.get() + "launcher/", "launcher.settings");
@@ -94,6 +98,25 @@ public class Launcher {
 		if (!ver.equals("")) {
 			chosen_version = ver;
 		}
+        DiscordRPC lib = DiscordRPC.INSTANCE;
+        String applicationId = "567450523603566617";
+        String steamId = "";
+        DiscordEventHandlers handlers = new DiscordEventHandlers();
+        lib.Discord_Initialize(applicationId, handlers, true, steamId);
+        DiscordRichPresence presence = new DiscordRichPresence();
+        presence.startTimestamp = System.currentTimeMillis() / 1000; // epoch second
+        //presence.details = "<details>";
+        presence.state = "Playing on version: " + Launcher.chosen_version;
+        lib.Discord_UpdatePresence(presence);
+        // in a worker thread
+        new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted()) {
+                lib.Discord_RunCallbacks();
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException ignored) {}
+            }
+        }, "RPC-Callback-Handler").start();
 	}
 
 	public void LaunchGame(String customparams, final String username) {
