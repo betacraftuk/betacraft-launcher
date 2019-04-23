@@ -26,7 +26,7 @@ public class Launcher {
 	public static File LOGIN = new File(BC.get(), "lastlogin");
 
 	public static String chosen_version = "b1.7.3";
-	public static String VERSION = "1.03_2";
+	public static String VERSION = "1.03_3";
 	public static Integer sessions = 0;
 
 	public static String update = "There is a new version of the launcher (%s). Would you like to update?";
@@ -62,7 +62,10 @@ public class Launcher {
 		}
 		try {
 		    String p = Window.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-			currentPath = p.substring(1, p.length());
+		    currentPath = p;
+		    if (OS.isWindows()) {
+		        currentPath = currentPath.substring(1, currentPath.length());
+		    }
 			new Window();
 			Release.initVersions();
 		} catch (Exception ex) {
