@@ -25,8 +25,8 @@ public class Launcher {
 	public static File SETTINGS = new File(BC.get() + "launcher/", "launcher.settings");
 	public static File LOGIN = new File(BC.get(), "lastlogin");
 
-	public static String chosen_version = "b1.6.6";
-	public static String VERSION = "1.03_1";
+	public static String chosen_version = "b1.7.3";
+	public static String VERSION = "1.03_2";
 	public static Integer sessions = 0;
 
 	public static String update = "There is a new version of the launcher (%s). Would you like to update?";
@@ -40,7 +40,7 @@ public class Launcher {
 		new File(BC.get() + "bin/natives/").mkdirs();
 		// TODO fix this somehow for Windows 10 October Update
 		unloadNatives();
-		if (args.length >= 2 && args[0].equals("update")) {
+		if (args.length >= 2 && (args[0].equals("update") || (args[0].equals("org.betacraft.launcher.Launcher") && args[1].equals("update")))) {
 			try {
 				String pathToJar = "";
 				for (int i = 1; i < args.length; i++) {
@@ -348,7 +348,7 @@ public class Launcher {
 				download("http://213.32.90.142/versions/launcher.jar", new File(BC.get(), "betacraft.jar$tmp"));
 				final String pathToJar = Window.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
 				System.out.println(pathToJar);
-				Runtime.getRuntime().exec("java -jar " + BC.get() + "betacraft.jar$tmp" + " org.betacraft.launcher.Launcher update " + pathToJar);
+				Runtime.getRuntime().exec("java -jar " + BC.get() + "betacraft.jar$tmp" + " update " + pathToJar);
 				Window.quit();
 			}
 		} catch (Exception ex) {
