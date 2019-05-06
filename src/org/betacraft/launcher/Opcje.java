@@ -13,7 +13,7 @@ import javax.swing.JTextField;
 
 public class Opcje extends JFrame {
 
-	static JCheckBox retrocraft;
+	static JCheckBox proxy;
 	static JCheckBox open;
 	static JLabel label;
 	static JButton checkUpdate;
@@ -31,10 +31,10 @@ public class Opcje extends JFrame {
 		setResizable(false);
 		setVisible(true);
 
-		retrocraft = new JCheckBox("Use RetroCraft proxy");
-		retrocraft.setSelected(Launcher.getProperty(Launcher.SETTINGS, "retrocraft").equals("true") ? true : false);
-		retrocraft.setBounds(10, 10, 330, 20);
-		this.add(retrocraft);
+		proxy = new JCheckBox("Use skin & sound proxy");
+		proxy.setSelected(Launcher.getProperty(Launcher.SETTINGS, "retrocraft").equals("true") ? true : false);
+		proxy.setBounds(10, 10, 330, 20);
+		this.add(proxy);
 
 		open = new JCheckBox("Keep the launcher open");
 		open.setSelected(Launcher.getProperty(Launcher.SETTINGS, "keepopen").equals("true") ? true : false);
@@ -55,7 +55,7 @@ public class Opcje extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Launcher.setProperty(Launcher.SETTINGS, "launch", "~" + field.getText() + "~");
-				Launcher.setProperty(Launcher.SETTINGS, "retrocraft", retrocraft.isSelected() ? "true" : "false");
+				Launcher.setProperty(Launcher.SETTINGS, "proxy", proxy.isSelected() ? "true" : "false");
 				Launcher.setProperty(Launcher.SETTINGS, "keepopen", open.isSelected() ? "true" : "false");
 				setVisible(false);
 			}

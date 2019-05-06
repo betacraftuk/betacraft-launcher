@@ -11,6 +11,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
@@ -18,7 +19,9 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JOptionPane;
@@ -39,8 +42,9 @@ public class Wrapper extends Applet implements AppletStub {
 	private static Applet applet = null;
 	private static int context = 0;
 	private static boolean active = false;
-	public static String wrapper = "1.0_01";
+	public static String wrapper = "1.1";
 	public static String ver_prefix = "";
+	public static List<String> nonOnlineClassic = new ArrayList<String>();
 
 	public static void main(String[] args) {
 		System.out.println("Starting BetacraftWrapper v" + wrapper);
@@ -70,20 +74,16 @@ public class Wrapper extends Applet implements AppletStub {
 			mainFolder = path;
 			params.put("username", info[0]);
 			params.put("sessionid", info[1]);
-			params.put("stand-alone", "true");
+			params.put("stand-alone", "false");
+			params.put("haspaid", "true");
 			System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 			if (info[3].equals("true")) {
-		        System.setProperty("http.proxyPort", "80");
-		        if (info[2].startsWith("c0") || info[2].startsWith("in")) {
-		        	System.setProperty("http.proxyHost", "classic.retrocraft.net");
-		        } else {
-		        	System.setProperty("http.proxyHost", "retrocraft.net");
-		        }
+				System.setProperty("http.proxyHost", "betacraft.ovh");
 			}
 			if (version.startsWith("b1.")) {
 			    ver_prefix = "Beta " + version.substring(1, version.length());
 			} else if (version.startsWith("a1.")) {
-			    ver_prefix = "Alpha " + version.substring(1, version.length());
+			    ver_prefix = "Alpha v" + version.substring(1, version.length());
 			} else if (version.startsWith("inf-20100")) {
 			    ver_prefix = "Infdev " + version.substring(4, version.length());
 			} else if (version.startsWith("in-20")) {
@@ -95,6 +95,20 @@ public class Wrapper extends Applet implements AppletStub {
 			} else {
 			    ver_prefix = version;
 			}
+			if (ver_prefix.startsWith("Classic") && !nonOnlineClassic.contains(version)) {
+				String server = JOptionPane.showInputDialog(null, "Server IP (leave blank if you don't want to play online):", "");
+				String port = "25565";
+				String IP = server;
+				if (IP.contains(":")) {
+					String[] params1 = server.split(":");
+					IP = params1[0];
+					port = params1[1];
+				}
+				if (server != null) {
+					params.put("server", IP);
+					params.put("port", port);
+				}
+			}
 			new Wrapper().play();
 			DiscordRPC lib = DiscordRPC.INSTANCE;
 			String applicationId = "567450523603566617";
@@ -102,7 +116,7 @@ public class Wrapper extends Applet implements AppletStub {
 			lib.Discord_Initialize(applicationId, handlers, true, "");
 			DiscordRichPresence presence = new DiscordRichPresence();
 			presence.startTimestamp = System.currentTimeMillis() / 1000;
-			presence.state = "Minecraft version: " + version;
+			presence.state = info[4] + ": " + version;
 			presence.details = "Nick: " + info[0];
 			lib.Discord_UpdatePresence(presence);
 			new DiscordThread(lib).start();
@@ -210,7 +224,6 @@ public class Wrapper extends Applet implements AppletStub {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
     public void play() {
 		try {
 			String nativesPath = mainFolder + "versions/" + version + session;
@@ -234,21 +247,21 @@ public class Wrapper extends Applet implements AppletStub {
 			classLoader = null;
 			classLoader = new URLClassLoader(url);
 
-	        final Class<?> appletClass;
+	        final Class appletClass;
 			if (version.startsWith("c")) {
-				appletClass = (Class<Applet>) classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
+				appletClass = classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
 			} else if (version.startsWith("rd")) {
-				appletClass = (Class<Applet>) classLoader.loadClass("com.mojang.rubydung.RubyDung");
+				appletClass = classLoader.loadClass("com.mojang.rubydung.RubyDung");
 				Runnable run = (Runnable) appletClass.newInstance();
 				run.run();
 				return;
 			} else if (version.startsWith("mc")) {
-				appletClass = (Class<Applet>) classLoader.loadClass("com.mojang.minecraft.RubyDung");
+				appletClass = classLoader.loadClass("com.mojang.minecraft.RubyDung");
 				Runnable run = (Runnable) appletClass.newInstance();
 				run.run();
 				return;
 			} else {
-				appletClass = (Class<Applet>) classLoader.loadClass("net.minecraft.client.MinecraftApplet");
+				appletClass = classLoader.loadClass("net.minecraft.client.MinecraftApplet");
 			}
 			applet = (Applet) appletClass.newInstance();
 
@@ -257,7 +270,7 @@ public class Wrapper extends Applet implements AppletStub {
 					final String name = field.getType().getName();
 					if (!name.contains("awt") && !name.contains("java")) {
 						Field fileField = null;
-						final Class<?> clazz = classLoader.loadClass(name);
+						final Class clazz = classLoader.loadClass(name);
 						for (final Field field1 : clazz.getDeclaredFields()) {
 							if (Modifier.isStatic(field1.getModifiers()) && field1.getType().getName().equals("java.io.File")) {
 								fileField = field1;
@@ -400,5 +413,37 @@ public class Wrapper extends Applet implements AppletStub {
     	}
     	System.err.println("Client asked for parameter: " + paramName);
     	return null;
+    }
+
+    static {
+    	nonOnlineClassic.add("c0.0.1a");
+    	nonOnlineClassic.add("c0.0.2a");
+    	nonOnlineClassic.add("c0.0.3a");
+    	nonOnlineClassic.add("c0.0.4a");
+    	nonOnlineClassic.add("c0.0.5a");
+    	nonOnlineClassic.add("c0.0.6a");
+    	nonOnlineClassic.add("c0.0.7a");
+    	nonOnlineClassic.add("c0.0.8a");
+    	nonOnlineClassic.add("c0.0.9a");
+    	nonOnlineClassic.add("c0.0.10a");
+    	nonOnlineClassic.add("c0.0.11a");
+    	nonOnlineClassic.add("c0.0.12a-dev");
+    	nonOnlineClassic.add("c0.0.12a");
+    	nonOnlineClassic.add("c0.0.12a_01");
+    	nonOnlineClassic.add("c0.0.12a_02");
+    	nonOnlineClassic.add("c0.0.12a_03");
+    	nonOnlineClassic.add("c0.0.13a-dev");
+    	nonOnlineClassic.add("c0.0.13a");
+    	nonOnlineClassic.add("c0.0.13a_01");
+    	nonOnlineClassic.add("c0.0.13a_02");
+    	nonOnlineClassic.add("c0.0.13a_03");
+    	nonOnlineClassic.add("c0.0.14a");
+    	nonOnlineClassic.add("c0.0.14a_01");
+    	nonOnlineClassic.add("c0.0.14a_02");
+    	nonOnlineClassic.add("c0.0.14a_03");
+    	nonOnlineClassic.add("c0.0.14a_04");
+    	nonOnlineClassic.add("c0.0.14a_06");
+    	nonOnlineClassic.add("c0.0.14a_07");
+    	nonOnlineClassic.add("c0.0.14a_08");
     }
 }

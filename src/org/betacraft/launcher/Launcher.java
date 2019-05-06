@@ -20,16 +20,19 @@ import java.util.Scanner;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 
+import org.betacraft.Wrapper;
+
 public class Launcher {
-	public static String currentPath;
+	public static File currentPath;
 	public static File SETTINGS = new File(BC.get() + "launcher/", "launcher.settings");
 	public static File LOGIN = new File(BC.get(), "lastlogin");
 
 	public static String chosen_version = "b1.7.3";
-	public static String VERSION = "1.03_3";
+	public static String VERSION = "1.04";
 	public static Integer sessions = 0;
 
 	public static String update = "There is a new version of the launcher (%s). Would you like to update?";
+	public static String lang_version = "Version";
 
 	public static URLClassLoader classLoader = null;
 	public static boolean playedOnce = false;
@@ -40,18 +43,38 @@ public class Launcher {
 		new File(BC.get() + "bin/natives/").mkdirs();
 		// TODO fix this somehow for Windows 10 October Update
 		unloadNatives();
-		if (args.length >= 2 && (args[0].equals("update") || (args[0].equals("org.betacraft.launcher.Launcher") && args[1].equals("update")))) {
+		if (args.length > 0 && args[0].equals("wrap")) {
+			String[] split = new String[args.length-1];
+			for (int i = 1; i < args.length; i++) {
+				split[i-1] = args[i];
+			}
+			Wrapper.main(split);
+			return;
+		}
+		if (args.length >= 2 && (args[0].equals("update") || (args[1].equals("update")))) {
 			try {
-				String pathToJar = "";
-				for (int i = 1; i < args.length; i++) {
-					pathToJar = pathToJar + " " + args[i];
+				int e = 1;
+				if (args[1].equals("update")) {
+					e++;
 				}
-				pathToJar = pathToJar.substring(1, pathToJar.length());
+				String pathToJar = "";
+				for (int i = e; i < args.length; i++) {
+					if (pathToJar.equals("")) {
+						pathToJar = args[i];
+					} else {
+						pathToJar = pathToJar + " " + args[i];
+					}
+				}
+				if (pathToJar.startsWith("/")) pathToJar = pathToJar.substring(1, pathToJar.length());
 				File version = new File(BC.get(), "betacraft.jar$tmp");
 				File dest = new File(pathToJar);
 				Files.copy(version.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
 				final String path = pathToJar;
-				Runtime.getRuntime().exec("java -jar " + path);
+				ArrayList<String> pa = new ArrayList<String>();
+				pa.add("java");
+				pa.add("-jar");
+				pa.add(dest.toPath().toString());
+				new ProcessBuilder(pa).start();
 
 				System.exit(1);
 			} catch (Exception ex) {
@@ -62,10 +85,10 @@ public class Launcher {
 		}
 		try {
 		    String p = Window.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-		    currentPath = p;
 		    if (OS.isWindows()) {
-		        currentPath = currentPath.substring(1, currentPath.length());
+		        p = p.substring(1, p.length());
 		    }
+		    currentPath = new File(p);
 			new Window();
 			Release.initVersions();
 		} catch (Exception ex) {
@@ -99,9 +122,9 @@ public class Launcher {
 					params.add(customparams);
 				}
 				params.add("-cp");
-				params.add(currentPath);
+				params.add(BC.get() + "launcher/betacraft_wrapper.jar");
 				params.add("org.betacraft.Wrapper");
-				params.add(username + ":" + Integer.toString(sessions) + ":" + chosen_version + ":" + Launcher.getProperty(Launcher.SETTINGS, "retrocraft").equals("true"));
+				params.add(username + ":" + Integer.toString(sessions) + ":" + chosen_version + ":" + Launcher.getProperty(Launcher.SETTINGS, "retrocraft").equals("true") + ":" + lang_version);
 				params.add(BC.get());
 				ProcessBuilder builder = new ProcessBuilder(params);
 				builder.start();
@@ -136,8 +159,7 @@ public class Launcher {
 
 	public static boolean getVerDownloaded(String version) {
 		File file = new File(getVerFolder(), version + ".jar");
-		//File wrapper = new File(BC.get() + "launcher/", "betacraft_wrapper.jar");
-		if (file.exists() && !file.isDirectory()/* && wrapper.exists() && !wrapper.isDirectory()*/) {
+		if (file.exists() && !file.isDirectory()) {
 			return true;
 		}
 		return false;

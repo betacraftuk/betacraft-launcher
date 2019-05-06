@@ -147,14 +147,15 @@ public class Lang extends JFrame {
 			Window.window.add(Window.infopanel);
 		}
 
-		Window.about.setText(Launcher.getProperty(file, "version_button"));
+		Window.select_version.setText(Launcher.getProperty(file, "version_button"));
 		Window.play.setText(Launcher.getProperty(file, "play_button"));
 		Window.options.setText(Launcher.getProperty(file, "options_button"));
 		Window.window.setTitle(Launcher.getProperty(file, "launcher_title") + Launcher.VERSION);
-		Window.kazu.setText(Launcher.getProperty(file, "credits"));
+		Window.credits.setText(Launcher.getProperty(file, "credits"));
 		Window.nicktext.setText(Launcher.getProperty(file, "nick") + ":");
 
 		Launcher.update = Launcher.getProperty(file, "new_version_found");
+		Launcher.lang_version = Launcher.getProperty(file, "version");
 
 		Window.play_lang = Launcher.getProperty(file, "play_button");
 		Window.max_chars = Launcher.getProperty(file, "max_chars");
@@ -170,7 +171,7 @@ public class Lang extends JFrame {
 		Opcje.update = Launcher.getProperty(file, "update_check");
 		Opcje.update_not_found = Launcher.getProperty(file, "update_not_found");
 		if (opcje != null) {
-			Opcje.retrocraft.setText(Launcher.getProperty(file, "use_retrocraft"));
+			Opcje.proxy.setText(Launcher.getProperty(file, "use_betacraft"));
 			Opcje.label.setText(Launcher.getProperty(file, "launch_arguments") + ":");
 			Opcje.open.setText(Launcher.getProperty(file, "keep_launcher_open"));
 			Opcje.checkUpdate.setText(Launcher.getProperty(file, "check_update_button"));

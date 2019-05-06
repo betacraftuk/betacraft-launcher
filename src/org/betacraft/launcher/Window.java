@@ -4,6 +4,9 @@ import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.nio.file.FileSystemException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -19,9 +22,9 @@ import javax.swing.event.DocumentListener;
 public class Window extends JFrame implements ActionListener {
 
     static JLabel currentver = null;
-	static JButton play, about, options, lang;
-	static JLabel kazu, nicktext;
-	static JTextField nick = null;
+	static JButton play, select_version, options, lang;
+	static JLabel credits, nicktext;
+	static JTextField nick_input = null;
 	static Wersja currentAbout = null;
 	static Opcje currentOptions = null;
 	static Lang currentLang = null;
@@ -52,11 +55,11 @@ public class Window extends JFrame implements ActionListener {
 		loginpanel = new LoginPanel();
 		add(loginpanel);
 
-		nick = new JTextField(Launcher.getLastlogin());
+		nick_input = new JTextField(Launcher.getLastlogin());
 		play = new JButton(play_lang);
 		currentver = new JLabel("");
-		about = new JButton("Change version");
-		kazu = new JLabel("Betacraft Launcher made by KazuGod & Moresteck");
+		select_version = new JButton("Select version");
+		credits = new JLabel("Betacraft Launcher made by KazuGod & Moresteck");
 		nicktext = new JLabel("Nick:");
 		options = new JButton("Options");
 		lang = new JButton("Language");
@@ -66,27 +69,27 @@ public class Window extends JFrame implements ActionListener {
 		// buttony sa dodawane w Background.paintComponent() aby nie byly pod tlem
 
 		play.addActionListener(this); // this - sluchaczem zdarzen jest cala ramka
-		about.addActionListener(this);
+		select_version.addActionListener(this);
 		options.addActionListener(this);
 		lang.addActionListener(this);
 
-		kazu.setForeground(Color.LIGHT_GRAY);
+		credits.setForeground(Color.LIGHT_GRAY);
 		nicktext.setForeground(Color.WHITE);
 		currentver.setForeground(Color.WHITE);
 
 		options.setBackground(Color.LIGHT_GRAY);
-		about.setBackground(Color.LIGHT_GRAY);
+		select_version.setBackground(Color.LIGHT_GRAY);
 		play.setBackground(Color.LIGHT_GRAY);
 		lang.setBackground(Color.LIGHT_GRAY);
 
 		play.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Launcher.write(new File(BC.get(), "lastlogin"), new String[] {nick.getText()}, false);
+				Launcher.write(new File(BC.get(), "lastlogin"), new String[] {nick_input.getText()}, false);
 			}
 		});
 
-		nick.getDocument().addDocumentListener(new DocumentListener() {
+		nick_input.getDocument().addDocumentListener(new DocumentListener() {
 
 			public void changedUpdate(DocumentEvent e) {
 				change();
@@ -99,16 +102,16 @@ public class Window extends JFrame implements ActionListener {
 			}
 
 			public void change() {
-				if (nick.getText().length() > 16){
+				if (nick_input.getText().length() > 16){
 					JOptionPane.showMessageDialog(null, max_chars, warning, JOptionPane.WARNING_MESSAGE);
-					Window.setTextInField(nick, nick.getText().substring(0, 16));
+					Window.setTextInField(nick_input, nick_input.getText().substring(0, 16));
 				}
 			}
 		});
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 			@Override
 			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-				Launcher.write(new File(BC.get(), "lastlogin"), new String[] {nick.getText()}, false);
+				Launcher.write(new File(BC.get(), "lastlogin"), new String[] {nick_input.getText()}, false);
 				Logger.a("Dezaktywacja...");
 				Window.quit();
 			}
@@ -130,9 +133,9 @@ public class Window extends JFrame implements ActionListener {
 
 		infopanel.setBounds(0, 0, 800, 290); // 290, 800
 		play.setBounds(((Double)(width * 0.75)).intValue(), 50, 195, 36);
-		nick.setBounds(((Double)(width * 0.84)).intValue(), 20, 120, 24); // 337
-		kazu.setBounds(15, 90, 390, 30);
-		about.setBounds(((Double)(width * 0.13)).intValue(), 39, 150, 20); // 50
+		nick_input.setBounds(((Double)(width * 0.84)).intValue(), 20, 120, 24); // 337
+		credits.setBounds(15, 90, 390, 30);
+		select_version.setBounds(((Double)(width * 0.13)).intValue(), 39, 150, 20); // 50
 		nicktext.setBounds(((Double)(width * 0.75)).intValue(), 21, 35, 20);
 		options.setBounds(((Double)(width * 0.13)).intValue(), 60, 150, 20);
 		lang.setBounds(600, 60, 150, 20);
@@ -148,7 +151,7 @@ public class Window extends JFrame implements ActionListener {
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
-		if (source == about && currentAbout == null) {
+		if (source == select_version && currentAbout == null) {
 			currentAbout = new Wersja();
 		}
 		if (source == options && currentOptions == null) {
@@ -164,25 +167,33 @@ public class Window extends JFrame implements ActionListener {
 			currentLang.setVisible(true);
 		}
 		if (source == play) {
-			if (nick.getText().length() < 3) {
+			if (nick_input.getText().length() < 3) {
 				JOptionPane.showMessageDialog(null, min_chars, warning, JOptionPane.WARNING_MESSAGE);
 				return;
 			}
-			String nickk = nick.getText().replaceAll("[^\\x00-\\x7F]", "");
-			Window.setTextInField(nick, nickk);
-			if (nick.getText().contains(" ") || nick.getText().contains("&") || nick.getText().contains("#") || nick.getText().contains("@") || nick.getText().contains("!") || nick.getText().contains("$") || nick.getText().contains("%") || nick.getText().contains("^") || nick.getText().contains("*") || nick.getText().contains("(") || nick.getText().contains(")") || nick.getText().contains("+") || nick.getText().contains("=") || nick.getText().contains("'") || nick.getText().contains("\"") || nick.getText().contains(";") || nick.getText().contains(":") || nick.getText().contains(".") || nick.getText().contains(",") || nick.getText().contains(">") || nick.getText().contains("<") || nick.getText().contains("/") || nick.getText().contains("?") || nick.getText().contains("|") || nick.getText().contains("\\") || nick.getText().contains("]") || nick.getText().contains("[") || nick.getText().contains("{") || nick.getText().contains("}") || nick.getText().contains("~") || nick.getText().contains("`") || nick.getText().contains("€") /* precz z komuną */) {
+			String nickk = nick_input.getText().replaceAll("[^\\x00-\\x7F]", "");
+			Window.setTextInField(nick_input, nickk);
+			if (nick_input.getText().contains(" ") || nick_input.getText().contains("&") || nick_input.getText().contains("#") || nick_input.getText().contains("@") || nick_input.getText().contains("!") || nick_input.getText().contains("$") || nick_input.getText().contains("%") || nick_input.getText().contains("^") || nick_input.getText().contains("*") || nick_input.getText().contains("(") || nick_input.getText().contains(")") || nick_input.getText().contains("+") || nick_input.getText().contains("=") || nick_input.getText().contains("'") || nick_input.getText().contains("\"") || nick_input.getText().contains(";") || nick_input.getText().contains(":") || nick_input.getText().contains(".") || nick_input.getText().contains(",") || nick_input.getText().contains(">") || nick_input.getText().contains("<") || nick_input.getText().contains("/") || nick_input.getText().contains("?") || nick_input.getText().contains("|") || nick_input.getText().contains("\\") || nick_input.getText().contains("]") || nick_input.getText().contains("[") || nick_input.getText().contains("{") || nick_input.getText().contains("}") || nick_input.getText().contains("~") || nick_input.getText().contains("`") || nick_input.getText().contains("€") /* precz z komuną */) {
 				JOptionPane.showMessageDialog(null, banned_chars, warning, JOptionPane.WARNING_MESSAGE);
 				return;
 			}
-			play.setText(downloading);
 			play.setEnabled(false);
 
 			Timer timer = new Timer();
 			try {
 				timer.schedule(new TimerTask() {
 					public void run() {
+						play.setText(downloading);
+						File wrapper = new File(BC.get() + "launcher/", "betacraft_wrapper.jar");
+						try {
+							Files.copy(Launcher.currentPath.toPath(), wrapper.toPath(), StandardCopyOption.REPLACE_EXISTING);
+						} catch (FileSystemException ex) {
+						} catch (Exception ex) {
+							ex.printStackTrace();
+							JOptionPane.showMessageDialog(null, "File cannot be copied! Try running with Administrator rights. If that won't help, contact me: @Moresteck#1688", "Error", JOptionPane.ERROR_MESSAGE);
+							return;
+						}
 						if (!Launcher.getVerDownloaded(Launcher.chosen_version)) {
-							//File wrapper = new File(BC.get() + "launcher/", "betacraft_wrapper.jar");
 							for (Release r : Release.versions) {
 							    if (r.getName().equals(Launcher.chosen_version)) {
 							        if (!Launcher.download(Launcher.getVerLink(Launcher.chosen_version), new File(Launcher.getVerFolder(), Launcher.chosen_version + ".jar"))) {
@@ -197,13 +208,13 @@ public class Window extends JFrame implements ActionListener {
 
 						play.setText(play_lang);
 						play.setEnabled(true);
-						new Launcher().LaunchGame(Launcher.getCustomParameters(), nick.getText());
+						new Launcher().LaunchGame(Launcher.getCustomParameters(), nick_input.getText());
 					}
 				}, 10);
 			} catch (Exception ex) {
 				
 			}
-		} else if (source == about) {
+		} else if (source == select_version) {
 			currentAbout.setVisible(true);
 		}
 		Lang.apply();

@@ -56,9 +56,9 @@ public class LoginPanel extends JPanel {
         g.drawImage(this.img, 0, 0, n * 2, n2 * 2, null);
 
 		add(Window.play);
-		add(Window.nick);
-		add(Window.kazu);
-		add(Window.about);
+		add(Window.nick_input);
+		add(Window.credits);
+		add(Window.select_version);
 		add(Window.nicktext);
 		add(Window.options);
 		add(Window.lang);
