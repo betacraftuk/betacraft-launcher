@@ -14,14 +14,13 @@ import javax.swing.JPanel;
  */
 public class InfoPanel extends JPanel {
 	Image image = null;
-	VolatileImage img;
-	Divider div;
+	Image img;
 
 	public InfoPanel() {
 		//setSize(800, 290);
 		setLayout(null);
 		try {
-			image = ImageIO.read(Launcher.class.getResource("/icons/stone.png")).getScaledInstance(32, 32, 16);
+			image = ImageIO.read(Launcher.class.getResource("/icons/stone.png")).getScaledInstance(64, 64, 64);
 		} catch (IOException e2) {
 			e2.printStackTrace();
 			return;
@@ -34,8 +33,8 @@ public class InfoPanel extends JPanel {
 
 		final int w = this.getWidth() / 2;
 		final int h = this.getHeight() / 2;
-		if (this.img == null || this.img.getWidth() != w || this.img.getHeight() != h) {
-			this.img = this.createVolatileImage(w, h);
+		if (this.img == null) {
+			this.img = this.createImage(w, h);
 		}
 		final Graphics g3 = this.img.getGraphics();
 		for (int x = 0; x <= w / 32; ++x) {
@@ -45,12 +44,5 @@ public class InfoPanel extends JPanel {
 		}
 		g3.dispose();
 		g.drawImage(this.img, 0, 0, w * 2, h * 2, null);
-		div = new Divider();
-	}
-
-	class Divider {
-		public Divider() {
-			
-		}
 	}
 }

@@ -3,6 +3,8 @@ package org.betacraft.launcher;
 import java.awt.Color;
 import java.net.URI;
 import java.net.URL;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -47,8 +49,9 @@ public class WebsitePanel extends JPanel {
             textPane.setEditable(false);
             textPane.setBackground(Color.BLACK);
             textPane.setContentType("text/html;charset=UTF-8");
-            String news = Integer.parseInt(System.getProperty("java.version").split("\\.")[1]) > 7 ? "Loading update news..." : "Can't view update news in Java 7 and lower.";
-            textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><br><br><center><h1>" + news + "</h1></center></font></body></html>");
+            String news = Integer.parseInt(System.getProperty("java.version").split("\\.")[1]) > 7 ? Lang.get("cl_loading") : Lang.get("cl_failed");
+            String news1 = "<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + news + "</h1></center></font></body></html>";
+            textPane.setText(news1);
             textPane.addHyperlinkListener(EXTERNAL_HYPERLINK_LISTENER);
             new Thread() {
                 public void run() {
@@ -57,15 +60,23 @@ public class WebsitePanel extends JPanel {
                     }
                     catch (Exception ex) {
                         ex.printStackTrace();
-                        textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><br><br><center><h1>Failed to update news</h1><br>" + ex.toString() + "</center></font></body></html>");
+                        textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + Lang.get("cl_failed") + "</h1><br>" + ex.toString() + "</center></font></body></html>");
                     }
                 }
             }.start();
+            Timer t = new Timer();
+            t.schedule(new TimerTask() {
+            	public void run() {
+            		if (textPane.getText().contains("<font color=\"#808080\"><br><br><br><br><br>")) {
+            			textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + Lang.get("cl_failed") + "</h1><br>" + Lang.get("cl_internet") + "</center></font></body></html>");
+            		}
+            	}
+            }, 600L);
             this.scrollPane = new JScrollPane(textPane);
-            this.scrollPane.setBorder(new MatteBorder(2, 2, 2, 2, Color.BLACK));
+            this.scrollPane.setBorder(new MatteBorder(1, 1, 1, 1, Color.BLACK));
             this.scrollPane.setWheelScrollingEnabled(true);
-            this.scrollPane.setBounds(30, 20, 750, 250);
-            this.scrollPane.getViewport().getView().setBackground(Color.BLACK);
+            this.scrollPane.setBounds(20, 20, 750, 250);
+            //this.scrollPane.getViewport().getView().setBackground(Color.BLACK);
         }
         catch (Exception ex) {
             ex.printStackTrace();

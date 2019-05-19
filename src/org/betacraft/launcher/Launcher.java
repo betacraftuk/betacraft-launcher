@@ -9,12 +9,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Random;
 import java.util.Scanner;
 
 import javax.swing.JFrame;
@@ -25,23 +28,20 @@ import org.betacraft.Wrapper;
 public class Launcher {
 	public static File currentPath;
 	public static File SETTINGS = new File(BC.get() + "launcher/", "launcher.settings");
-	public static File LOGIN = new File(BC.get(), "lastlogin");
 
 	public static String chosen_version = "b1.7.3";
-	public static String VERSION = "1.04";
+	public static String VERSION = "1.05";
 	public static Integer sessions = 0;
 
 	public static String update = "There is a new version of the launcher (%s). Would you like to update?";
 	public static String lang_version = "Version";
 
-	public static URLClassLoader classLoader = null;
-	public static boolean playedOnce = false;
-
 	public static void main(String[] args) {
 		new File(BC.get() + "versions/").mkdirs();
 		new File(BC.get() + "launcher/lang").mkdirs();
 		new File(BC.get() + "bin/natives/").mkdirs();
-		// TODO fix this somehow for Windows 10 October Update
+		Logger.a("Launcher dziala w wersji " + VERSION);
+		// TODO fix this somehow for Windows 10 October Update... or maybe not? :^>
 		unloadNatives();
 		if (args.length > 0 && args[0].equals("wrap")) {
 			String[] split = new String[args.length-1];
@@ -65,7 +65,7 @@ public class Launcher {
 						pathToJar = pathToJar + " " + args[i];
 					}
 				}
-				if (pathToJar.startsWith("/")) pathToJar = pathToJar.substring(1, pathToJar.length());
+				if ((pathToJar.startsWith("//") && !OS.isWindows()) || (pathToJar.startsWith("/") && OS.isWindows())) pathToJar = pathToJar.substring(1, pathToJar.length());
 				File version = new File(BC.get(), "betacraft.jar$tmp");
 				File dest = new File(pathToJar);
 				Files.copy(version.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -99,13 +99,17 @@ public class Launcher {
 		Window.window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Window.window.setVisible(true);
 		Lang.apply();
-		if (Launcher.checkForUpdate()) {
-			Launcher.downloadUpdate();
-		}
 		String ver = Launcher.getProperty(SETTINGS, "version");
 		if (!ver.equals("")) {
 			chosen_version = ver;
 			Window.currentver.setText(ver);
+		}
+		if (new Random().nextInt(1000) == 1) {
+			System.out.println("HASSUS!");
+			new Window2();
+		}
+		if (Launcher.checkForUpdate()) {
+			Launcher.downloadUpdate();
 		}
 	}
 
@@ -121,10 +125,12 @@ public class Launcher {
 				if (customparams != null && !customparams.equals("")) {
 					params.add(customparams);
 				}
+				boolean proxy = Launcher.getProperty(Launcher.SETTINGS, "proxy").equals("true");
+				boolean fullscreen = false;//Launcher.getProperty(Launcher.SETTINGS, "fullscreen").equals("true");
 				params.add("-cp");
 				params.add(BC.get() + "launcher/betacraft_wrapper.jar");
 				params.add("org.betacraft.Wrapper");
-				params.add(username + ":" + Integer.toString(sessions) + ":" + chosen_version + ":" + Launcher.getProperty(Launcher.SETTINGS, "retrocraft").equals("true") + ":" + lang_version);
+				params.add(username + ":" + Integer.toString(sessions) + ":" + chosen_version + ":" + proxy + ":" + fullscreen);
 				params.add(BC.get());
 				ProcessBuilder builder = new ProcessBuilder(params);
 				builder.start();
@@ -417,7 +423,6 @@ public class Launcher {
 			Logger.a("Znaleziono aktualizacje (" + update + ").");
 			return true;
 		} else {
-			Logger.a("Launcher dziala w wersji " + VERSION + "");
 			return false;
 		}
 	}
@@ -429,7 +434,7 @@ public class Launcher {
 			String update = s.nextLine().split(":")[1];
 			s.close();
 			return update;
-		} catch (UnknownHostException ex) {
+		} catch (UnknownHostException | SocketTimeoutException | SocketException ex) {
 			Logger.a("Brak polaczenia z internetem! (albo serwer padl) ");
 			return null;
 		} catch (Exception ex) {

@@ -1,8 +1,11 @@
 package org.betacraft.launcher;
 
 import java.awt.Color;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -49,20 +52,33 @@ public class Lang extends JFrame {
 		OK.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String lang = (String) list.getSelectedValue();
-				if (!downloaded(lang)) {
-					if (!download(lang)) {
-						return;
-					}
-				}
-				Launcher.setProperty(Launcher.SETTINGS, "language", lang);
-				setVisible(false);
-				apply(true);
+				setLang();
 			}
 		});
 		add(OK);
 
 		OK.setBackground(Color.LIGHT_GRAY);
+
+		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+			public boolean dispatchKeyEvent(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					setLang();
+				}
+				return true;
+			}
+		});
+	}
+
+	public void setLang() {
+		String lang = (String) list.getSelectedValue();
+		if (!downloaded(lang)) {
+			if (!download(lang)) {
+				return;
+			}
+		}
+		Launcher.setProperty(Launcher.SETTINGS, "language", lang);
+		setVisible(false);
+		apply(true);
 	}
 
 	public void initLang() throws IOException {
@@ -178,10 +194,24 @@ public class Lang extends JFrame {
 			opcje.setTitle(Launcher.getProperty(file, "options_title"));
 		}
 
+		Wersja.also_known = Launcher.getProperty(file, "also_known_as");
+		Wersja.release = Launcher.getProperty(file, "release_date");
+		Wersja.info = Launcher.getProperty(file, "info");
+		Wersja.show_more = Launcher.getProperty(file, "info_button");
+		Wersja.mc_wiki = Launcher.getProperty(file, "minecraft_wiki");
+		Wersja.internal_err = Launcher.getProperty(file, "internal_error");
 		Wersja wersja = Window.currentAbout;
 		if (wersja != null) {
 			wersja.setTitle(Launcher.getProperty(file, "version_title"));
-			Wersja.orderbutton.setText(Wersja.order == Order.FROM_OLDEST ? Launcher.getProperty(file, "sort_oldest") : Launcher.getProperty(file, "sort_newest"));
+			if (Wersja.showinfo) {
+				Wersja.more.setText(Wersja.show_more + " <");
+			} else {
+				Wersja.more.setText(Wersja.show_more + " >");
+			}
+			Wersja.date.setText(Wersja.release);
+			Wersja.information.setText(Wersja.info);
+			Wersja.sort_button.setText(Wersja.order == Order.FROM_OLDEST ? Launcher.getProperty(file, "sort_oldest") : Launcher.getProperty(file, "sort_newest"));
+			Wersja.open_wiki.setText(Wersja.mc_wiki);
 		}
 	}
 }

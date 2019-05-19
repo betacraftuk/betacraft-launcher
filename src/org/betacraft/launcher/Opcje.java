@@ -1,8 +1,11 @@
 package org.betacraft.launcher;
 
 import java.awt.Color;
+import java.awt.KeyEventDispatcher;
+import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -15,15 +18,18 @@ public class Opcje extends JFrame {
 
 	static JCheckBox proxy;
 	static JCheckBox open;
+	//static JCheckBox fullscreen;
 	static JLabel label;
 	static JButton checkUpdate;
 	static JButton OK;
+	static JTextField parameters;
 
 	public static String update = "Update check";
 	public static String update_not_found = "Couldn't find any newer version of the launcher.";
 
 	public Opcje() {
 		Logger.a("Otwarto okno opcji.");
+		this.setIconImage(Window.img);
 		setSize(350, 386);
 		setLayout(null);
 		setTitle("Settings");
@@ -32,7 +38,7 @@ public class Opcje extends JFrame {
 		setVisible(true);
 
 		proxy = new JCheckBox("Use skin & sound proxy");
-		proxy.setSelected(Launcher.getProperty(Launcher.SETTINGS, "retrocraft").equals("true") ? true : false);
+		proxy.setSelected(Launcher.getProperty(Launcher.SETTINGS, "proxy").equals("true") ? true : false);
 		proxy.setBounds(10, 10, 330, 20);
 		this.add(proxy);
 
@@ -41,23 +47,25 @@ public class Opcje extends JFrame {
 		open.setBounds(10, 30, 330, 20);
 		this.add(open);
 
+		/*fullscreen = new JCheckBox("Fullscreen");
+		fullscreen.setSelected(Launcher.getProperty(Launcher.SETTINGS, "fullscreen").equals("true") ? true : false);
+		fullscreen.setBounds(10, 50, 330, 20);
+		this.add(fullscreen);*/
+
 		label = new JLabel("Launch arguments:");
 		label.setBounds(10, 50, 190, 20);
 		label.setForeground(Color.BLACK);
 		this.add(label);
-		final JTextField field = new JTextField(Launcher.getCustomParameters());
-		field.setBounds(25, 75, 300, 25);
-		this.add(field);
+		parameters = new JTextField(Launcher.getCustomParameters());
+		parameters.setBounds(25, 75, 300, 25);
+		this.add(parameters);
 
 		OK = new JButton("OK");
 		OK.setBounds(10, 320, 60, 20);
 		OK.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Launcher.setProperty(Launcher.SETTINGS, "launch", "~" + field.getText() + "~");
-				Launcher.setProperty(Launcher.SETTINGS, "proxy", proxy.isSelected() ? "true" : "false");
-				Launcher.setProperty(Launcher.SETTINGS, "keepopen", open.isSelected() ? "true" : "false");
-				setVisible(false);
+				saveOptions();
 			}
 		});
 		this.add(OK);
@@ -85,5 +93,21 @@ public class Opcje extends JFrame {
 			}
 		});
 		Lang.apply();
+		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
+			public boolean dispatchKeyEvent(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					saveOptions();
+				}
+				return true;
+			}
+		});
+	}
+
+	public void saveOptions() {
+		Launcher.setProperty(Launcher.SETTINGS, "launch", "~" + parameters.getText() + "~");
+		Launcher.setProperty(Launcher.SETTINGS, "proxy", proxy.isSelected() ? "true" : "false");
+		Launcher.setProperty(Launcher.SETTINGS, "keepopen", open.isSelected() ? "true" : "false");
+		//Launcher.setProperty(Launcher.SETTINGS, "fullscreen", fullscreen.isSelected() ? "true" : "false");
+		setVisible(false);
 	}
 }

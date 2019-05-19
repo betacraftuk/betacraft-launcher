@@ -9,9 +9,9 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
@@ -24,8 +24,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+
+import org.betacraft.launcher.Lang;
 
 import club.minnced.discord.rpc.DiscordEventHandlers;
 import club.minnced.discord.rpc.DiscordRPC;
@@ -96,7 +99,7 @@ public class Wrapper extends Applet implements AppletStub {
 			    ver_prefix = version;
 			}
 			if (ver_prefix.startsWith("Classic") && !nonOnlineClassic.contains(version)) {
-				String server = JOptionPane.showInputDialog(null, "Server IP (leave blank if you don't want to play online):", "");
+				String server = JOptionPane.showInputDialog(null, Lang.get("server"), "");
 				String port = "25565";
 				String IP = server;
 				if (IP.contains(":")) {
@@ -104,10 +107,15 @@ public class Wrapper extends Applet implements AppletStub {
 					IP = params1[0];
 					port = params1[1];
 				}
-				if (server != null) {
+				if (!server.equals("")) {
+					System.out.println("accepted server params");
 					params.put("server", IP);
 					params.put("port", port);
 				}
+			}
+			if (info[4].equals("true")) {
+				System.out.println("fullscreeN!");
+				params.put("fullscreen", "true");
 			}
 			new Wrapper().play();
 			DiscordRPC lib = DiscordRPC.INSTANCE;
@@ -116,7 +124,7 @@ public class Wrapper extends Applet implements AppletStub {
 			lib.Discord_Initialize(applicationId, handlers, true, "");
 			DiscordRichPresence presence = new DiscordRichPresence();
 			presence.startTimestamp = System.currentTimeMillis() / 1000;
-			presence.state = info[4] + ": " + version;
+			presence.state = Lang.get("version") + ": " + version;
 			presence.details = "Nick: " + info[0];
 			lib.Discord_UpdatePresence(presence);
 			new DiscordThread(lib).start();
@@ -285,25 +293,31 @@ public class Wrapper extends Applet implements AppletStub {
 				}
 			}
 
-			final Frame launcherFrameFake = new Frame();
-			launcherFrameFake.setLocationRelativeTo(null);
-			launcherFrameFake.setTitle("Minecraft " + ver_prefix);
-			launcherFrameFake.setBackground(Color.BLACK);
+			final Frame launcherFrame = new Frame();
+			launcherFrame.setLocationRelativeTo(null);
+			launcherFrame.setTitle("Minecraft " + ver_prefix);
+			BufferedImage img = ImageIO.read(this.getClass().getClassLoader().getResourceAsStream("icons/favicon.png"));
+			launcherFrame.setIconImage(img);
+			launcherFrame.setBackground(Color.BLACK);
 			final JPanel panel = new JPanel();
-			launcherFrameFake.setLayout(new BorderLayout());
-			panel.setPreferredSize(new Dimension(854, 480));
-			launcherFrameFake.add(panel, "Center");
-			launcherFrameFake.pack();
-			launcherFrameFake.setLocationRelativeTo(null);
-			launcherFrameFake.setVisible(true);
+			launcherFrame.setLayout(new BorderLayout());
+			if (version.equals("c0.0.12a-dev")) {
+				panel.setPreferredSize(new Dimension(640, 480));
+			} else {
+				panel.setPreferredSize(new Dimension(854, 480));
+			}
+			launcherFrame.add(panel, "Center");
+			launcherFrame.pack();
+			launcherFrame.setLocationRelativeTo(null);
+			launcherFrame.setVisible(true);
 			applet.setStub(this);
-			launcherFrameFake.addWindowListener(new WindowAdapter() {
+			launcherFrame.addWindowListener(new WindowAdapter() {
 	            @Override
 	            public void windowClosing(final WindowEvent e) {
 	            	stop();
 	                destroy();
-	                launcherFrameFake.setVisible(false);
-	                launcherFrameFake.dispose();
+	                launcherFrame.setVisible(false);
+	                launcherFrame.dispose();
 	                try {
 						classLoader.close();
 					} catch (IOException e1) {
@@ -316,10 +330,10 @@ public class Wrapper extends Applet implements AppletStub {
 			this.setLayout(new BorderLayout());
 			this.add(applet, "Center");
 			this.validate();
-			launcherFrameFake.removeAll();
-			launcherFrameFake.setLayout(new BorderLayout());
-			launcherFrameFake.add(this, "Center");
-			launcherFrameFake.validate();
+			launcherFrame.removeAll();
+			launcherFrame.setLayout(new BorderLayout());
+			launcherFrame.add(this, "Center");
+			launcherFrame.validate();
 			this.init();
 			active = true;
 			this.start();

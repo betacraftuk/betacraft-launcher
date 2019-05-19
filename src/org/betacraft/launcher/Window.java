@@ -3,13 +3,16 @@ package org.betacraft.launcher;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.InputStream;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -41,7 +44,18 @@ public class Window extends JFrame implements ActionListener {
 	public static String downloading = "Downloading ...";
 	public static String play_lang = "Play";
 
+	static BufferedImage img;
+
 	public Window() {
+		try {
+			InputStream imstream = this.getClass().getClassLoader().getResourceAsStream("icons/icon.png");
+			img = ImageIO.read(imstream);
+			this.setIconImage(img);
+		} catch (Exception ex) {
+			System.out.println("Error podczas wczytywania pliku ikony! (niewazne)");
+			ex.printStackTrace();
+		}
+		// 1697,21 + 
 		window = this;
 		setSize(800, 450);
 		setTitle("Betacraft Launcher version " + Launcher.VERSION);
@@ -102,7 +116,7 @@ public class Window extends JFrame implements ActionListener {
 			}
 
 			public void change() {
-				if (nick_input.getText().length() > 16){
+				if (nick_input.getText().length() > 16) {
 					JOptionPane.showMessageDialog(null, max_chars, warning, JOptionPane.WARNING_MESSAGE);
 					Window.setTextInField(nick_input, nick_input.getText().substring(0, 16));
 				}
@@ -139,7 +153,7 @@ public class Window extends JFrame implements ActionListener {
 		nicktext.setBounds(((Double)(width * 0.75)).intValue(), 21, 35, 20);
 		options.setBounds(((Double)(width * 0.13)).intValue(), 60, 150, 20);
 		lang.setBounds(600, 60, 150, 20);
-		currentver.setBounds(55, 21, 80, 20);
+		currentver.setBounds(55, 21, 100, 20);
 	}
 
 	public static void quit() {
