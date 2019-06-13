@@ -16,8 +16,6 @@ import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Random;
 import java.util.Scanner;
 
 import javax.swing.JFrame;
@@ -30,7 +28,7 @@ public class Launcher {
 	public static File SETTINGS = new File(BC.get() + "launcher/", "launcher.settings");
 
 	public static String chosen_version = "b1.7.3";
-	public static String VERSION = "1.05";
+	public static String VERSION = "1.06";
 	public static Integer sessions = 0;
 
 	public static String update = "There is a new version of the launcher (%s). Would you like to update?";
@@ -41,7 +39,6 @@ public class Launcher {
 		new File(BC.get() + "launcher/lang").mkdirs();
 		new File(BC.get() + "bin/natives/").mkdirs();
 		Logger.a("Launcher dziala w wersji " + VERSION);
-		// TODO fix this somehow for Windows 10 October Update... or maybe not? :^>
 		unloadNatives();
 		if (args.length > 0 && args[0].equals("wrap")) {
 			String[] split = new String[args.length-1];
@@ -69,7 +66,6 @@ public class Launcher {
 				File version = new File(BC.get(), "betacraft.jar$tmp");
 				File dest = new File(pathToJar);
 				Files.copy(version.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
-				final String path = pathToJar;
 				ArrayList<String> pa = new ArrayList<String>();
 				pa.add("java");
 				pa.add("-jar");
@@ -98,29 +94,33 @@ public class Launcher {
 		}
 		Window.window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Window.window.setVisible(true);
+		String lang = Launcher.getProperty(Launcher.SETTINGS, "language");
+		if (!lang.equals("")) {
+			Lang.download(lang); // refresh language files
+		}
 		Lang.apply();
 		String ver = Launcher.getProperty(SETTINGS, "version");
 		if (!ver.equals("")) {
 			chosen_version = ver;
 			Window.currentver.setText(ver);
 		}
-		if (new Random().nextInt(1000) == 1) {
-			System.out.println("HASSUS!");
-			new Window2();
-		}
-		if (Launcher.checkForUpdate()) {
-			Launcher.downloadUpdate();
-		}
+		if (Launcher.checkForUpdate()) Launcher.downloadUpdate();
 	}
 
 	public void LaunchGame(String customparams, final String username) {
 		try {
 			if (chosen_version != null) {
 				ArrayList<String> params = new ArrayList<String>();
+				String colon = ":";
 				if (OS.isWindows()) {
 					params.add("javaw");
+					colon = ";";
 				} else {
 					params.add("java");
+				}
+				String add = "";
+				if (Launcher.getProperty(SETTINGS, "RPC").equalsIgnoreCase("true")) {
+					add = colon + BC.get() + "launcher/discord_rpc.jar";
 				}
 				if (customparams != null && !customparams.equals("")) {
 					params.add(customparams);
@@ -128,7 +128,7 @@ public class Launcher {
 				boolean proxy = Launcher.getProperty(Launcher.SETTINGS, "proxy").equals("true");
 				boolean fullscreen = false;//Launcher.getProperty(Launcher.SETTINGS, "fullscreen").equals("true");
 				params.add("-cp");
-				params.add(BC.get() + "launcher/betacraft_wrapper.jar");
+				params.add(BC.get() + "launcher/betacraft_wrapper.jar" + add);
 				params.add("org.betacraft.Wrapper");
 				params.add(username + ":" + Integer.toString(sessions) + ":" + chosen_version + ":" + proxy + ":" + fullscreen);
 				params.add(BC.get());
@@ -312,7 +312,6 @@ public class Launcher {
 	public static String getCustomParameters() {
 		String params = getProperty(SETTINGS, "launch");
 
-		params = (params.length() >= 2) ? params.substring(1, params.length() - 1) : "";
 		return params;
 	}
 
@@ -334,8 +333,12 @@ public class Launcher {
 
 	public static boolean download(String link, File folder) {
 		Logger.a("Zainicjowano pobieranie z " + link);
+		File backupfile = new File(BC.get() + "launcher/backup.tmp");
 		try {
-			folder.createNewFile();
+			if (!folder.createNewFile()) {
+				backupfile.createNewFile();
+				Files.copy(folder.toPath(), backupfile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			}
 
 			URL url = new URL(link);
 			BufferedInputStream inputst = new BufferedInputStream(url.openStream());
@@ -354,6 +357,12 @@ public class Launcher {
 			Logger.a(ex.getMessage());
 			ex.printStackTrace();
 			folder.delete();
+			if (backupfile.exists()) {
+				try {
+					Files.copy(backupfile.toPath(), folder.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				} catch (IOException e) {}
+				backupfile.delete();
+			}
 			return false;
 		}
 	}
@@ -434,13 +443,16 @@ public class Launcher {
 			String update = s.nextLine().split(":")[1];
 			s.close();
 			return update;
-		} catch (UnknownHostException | SocketTimeoutException | SocketException ex) {
+		} catch (UnknownHostException ex) {
 			Logger.a("Brak polaczenia z internetem! (albo serwer padl) ");
-			return null;
+		} catch (SocketTimeoutException ex) {
+			Logger.a("Brak polaczenia z internetem! (albo serwer padl) ");
+		} catch (SocketException ex) {
+			Logger.a("Brak polaczenia z internetem! (albo serwer padl) ");
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			return null;
 		}
+		return null;
 	}
 
 	public static String getLastlogin() {

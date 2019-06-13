@@ -29,6 +29,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.betacraft.launcher.Lang;
+import org.betacraft.launcher.Launcher;
+import org.betacraft.launcher.OS;
 
 import club.minnced.discord.rpc.DiscordEventHandlers;
 import club.minnced.discord.rpc.DiscordRPC;
@@ -41,6 +43,7 @@ public class Wrapper extends Applet implements AppletStub {
 	public static String mainFolder;
 	public static String version;
 	private static URLClassLoader classLoader;
+	private static boolean discord = false;
 
 	private static Applet applet = null;
 	private static int context = 0;
@@ -81,7 +84,12 @@ public class Wrapper extends Applet implements AppletStub {
 			params.put("haspaid", "true");
 			System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 			if (info[3].equals("true")) {
-				System.setProperty("http.proxyHost", "betacraft.ovh");
+				if (version.startsWith("c0.")) {
+					System.setProperty("http.proxyHost", "classic.retrocraft.net");
+				} else {
+					System.setProperty("http.proxyHost", "betacraft.ovh");
+				}
+				System.setProperty("http.proxyPort", "80");
 			}
 			if (version.startsWith("b1.")) {
 			    ver_prefix = "Beta " + version.substring(1, version.length());
@@ -118,16 +126,18 @@ public class Wrapper extends Applet implements AppletStub {
 				params.put("fullscreen", "true");
 			}
 			new Wrapper().play();
-			DiscordRPC lib = DiscordRPC.INSTANCE;
-			String applicationId = "567450523603566617";
-			DiscordEventHandlers handlers = new DiscordEventHandlers();
-			lib.Discord_Initialize(applicationId, handlers, true, "");
-			DiscordRichPresence presence = new DiscordRichPresence();
-			presence.startTimestamp = System.currentTimeMillis() / 1000;
-			presence.state = Lang.get("version") + ": " + version;
-			presence.details = "Nick: " + info[0];
-			lib.Discord_UpdatePresence(presence);
-			new DiscordThread(lib).start();
+			if (discord = Launcher.getProperty(Launcher.SETTINGS, "RPC").equalsIgnoreCase("true")) {
+				DiscordRPC lib = DiscordRPC.INSTANCE;
+				String applicationId = "567450523603566617";
+				DiscordEventHandlers handlers = new DiscordEventHandlers();
+				lib.Discord_Initialize(applicationId, handlers, true, "");
+				DiscordRichPresence presence = new DiscordRichPresence();
+				presence.startTimestamp = System.currentTimeMillis() / 1000;
+				presence.state = Lang.get("version") + ": " + version;
+				presence.details = "Nick: " + info[0];
+				lib.Discord_UpdatePresence(presence);
+				new DiscordThread(lib).start();
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -185,14 +195,14 @@ public class Wrapper extends Applet implements AppletStub {
 
 		String jindx = null;
 		String jindx64 = null;
-		if (Sys.isLinux() || Sys.isSolaris()) {
+		if (OS.isLinux() || OS.isSolaris()) {
 			lwj = "liblwjgl.so";
 			lwj64 = "liblwjgl64.so";
 			jin = "libjinput-linux.so";
 			jin64 = "libjinput-linux64.so";
 			ope = "libopenal.so";
 			ope64 = "libopenal64.so";
-		} else if (Sys.isWindows()) {
+		} else if (OS.isWindows()) {
 			lwj = "lwjgl.dll";
 			lwj64 = "lwjgl64.dll";
 			jin = "jinput-raw.dll";
@@ -234,6 +244,15 @@ public class Wrapper extends Applet implements AppletStub {
 
     public void play() {
 		try {
+			new Thread() {
+				public void run() {
+					try {
+						new URL("https://betacraft.ovh/update_skin.php?name=" + params.get("username")).openStream().close();
+					} catch (Exception ex) {
+						System.out.println("Nie udalo sie polaczyc z proxy!");
+					}
+				}
+			}.start();
 			String nativesPath = mainFolder + "versions/" + version + session;
 			final File natives = new File(nativesPath);
 			natives.mkdirs();
@@ -368,7 +387,7 @@ public class Wrapper extends Applet implements AppletStub {
 
 	@Override
 	public void stop() {
-	    DiscordRPC.INSTANCE.Discord_Shutdown();
+	    if (discord) DiscordRPC.INSTANCE.Discord_Shutdown();
 		if (applet != null) {
 			active = false;
 			applet.stop();

@@ -144,21 +144,6 @@ public class Wersja extends JFrame implements ActionListener {
 		}
 
 		open_wiki.setBackground(Color.LIGHT_GRAY);
-
-		this.getRootPane().addKeyListener(new KeyAdapter() {
-			@Override
-			public void keyPressed(KeyEvent arg0) {
-				System.out.println(arg0.getKeyCode());
-			}
-		});
-		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
-			public boolean dispatchKeyEvent(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					saveVersion();
-				}
-				return true;
-			}
-		});
 	}
 
 	protected void updateList() {

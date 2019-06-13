@@ -2,7 +2,6 @@ package org.betacraft.launcher;
 
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.image.VolatileImage;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;

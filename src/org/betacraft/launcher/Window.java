@@ -9,8 +9,6 @@ import java.io.InputStream;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
@@ -143,7 +141,7 @@ public class Window extends JFrame implements ActionListener {
 
 	public static void resizeObjects() {
 		int width = window.getSize().width / 2; // 400
-		int height = window.getSize().height / 2; // 450
+		//int height = window.getSize().height / 2; // 450
 
 		infopanel.setBounds(0, 0, 800, 290); // 290, 800
 		play.setBounds(((Double)(width * 0.75)).intValue(), 50, 195, 36);
@@ -193,19 +191,25 @@ public class Window extends JFrame implements ActionListener {
 			}
 			play.setEnabled(false);
 
-			Timer timer = new Timer();
+			//Timer timer = new Timer();
 			try {
-				timer.schedule(new TimerTask() {
+				new Thread() {
 					public void run() {
-						play.setText(downloading);
+						setStatus(play, downloading);
 						File wrapper = new File(BC.get() + "launcher/", "betacraft_wrapper.jar");
 						try {
 							Files.copy(Launcher.currentPath.toPath(), wrapper.toPath(), StandardCopyOption.REPLACE_EXISTING);
-						} catch (FileSystemException ex) {
+						} catch (FileSystemException ex) { // there is another instance of the game running
 						} catch (Exception ex) {
 							ex.printStackTrace();
 							JOptionPane.showMessageDialog(null, "File cannot be copied! Try running with Administrator rights. If that won't help, contact me: @Moresteck#1688", "Error", JOptionPane.ERROR_MESSAGE);
 							return;
+						}
+						if (Launcher.getProperty(Launcher.SETTINGS, "RPC").equalsIgnoreCase("true")) {
+							File rpc = new File(BC.get() + "launcher/", "discord_rpc.jar");
+							if (!rpc.exists()) {
+								Launcher.download("https://betacraft.ovh/versions/discord_rpc.jar", rpc);
+							}
 						}
 						if (!Launcher.getVerDownloaded(Launcher.chosen_version)) {
 							for (Release r : Release.versions) {
@@ -220,11 +224,11 @@ public class Window extends JFrame implements ActionListener {
 							Launcher.nativesDownloaded(true);
 						}
 
-						play.setText(play_lang);
+						setStatus(play, play_lang);
 						play.setEnabled(true);
 						new Launcher().LaunchGame(Launcher.getCustomParameters(), nick_input.getText());
 					}
-				}, 10);
+				}.start();
 			} catch (Exception ex) {
 				
 			}
@@ -238,6 +242,15 @@ public class Window extends JFrame implements ActionListener {
 		Runnable set = new Runnable() {
 			public void run() {
 				field.setText(toSet);
+			}
+		};
+		SwingUtilities.invokeLater(set);
+	}
+
+	public static void setStatus(final JButton button, final String toSet) {
+		Runnable set = new Runnable() {
+			public void run() {
+				button.setText(toSet);
 			}
 		};
 		SwingUtilities.invokeLater(set);

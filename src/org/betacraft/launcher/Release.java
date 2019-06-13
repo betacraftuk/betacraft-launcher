@@ -36,7 +36,11 @@ public class Release {
 
 			try {
 				stream = url.openStream();
-			} catch (UnknownHostException | SocketTimeoutException | SocketException ex) {
+			} catch (UnknownHostException ex) {
+				Logger.a("Brak polaczenia z internetem! (albo serwer padl) ");
+			} catch (SocketTimeoutException ex) {
+				Logger.a("Brak polaczenia z internetem! (albo serwer padl) ");
+			} catch (SocketException ex) {
 				Logger.a("Brak polaczenia z internetem! (albo serwer padl) ");
 			} catch (Exception ex) {
 				Logger.a("KRYTYCZNY BLAD!");

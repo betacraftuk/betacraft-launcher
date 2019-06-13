@@ -1,11 +1,8 @@
 package org.betacraft.launcher;
 
 import java.awt.Color;
-import java.awt.KeyEventDispatcher;
-import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -58,15 +55,6 @@ public class Lang extends JFrame {
 		add(OK);
 
 		OK.setBackground(Color.LIGHT_GRAY);
-
-		KeyboardFocusManager.getCurrentKeyboardFocusManager().addKeyEventDispatcher(new KeyEventDispatcher() {
-			public boolean dispatchKeyEvent(KeyEvent e) {
-				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					setLang();
-				}
-				return true;
-			}
-		});
 	}
 
 	public void setLang() {
@@ -133,7 +121,7 @@ public class Lang extends JFrame {
 		boolean done = Launcher.download("https://betacraft.ovh/lang/" + lang + ".txt", new File(BC.get() + "launcher/lang/", lang + ".txt"));
 		if (!done) {
 			JOptionPane.showMessageDialog(null, "No Internet connection", "Language file download failed!", JOptionPane.ERROR_MESSAGE);
-			Window.quit();
+			//Window.quit();
 		}
 		return done;
 	}

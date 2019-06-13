@@ -16,7 +16,7 @@ public class Pobieranie extends JFrame {
 		setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 		setVisible(true);
 
-		JLabel label = new JLabel("Downloading update " + update);
+		JLabel label = new JLabel("Downloading Launcher v" + update + " ...");
 		label.setBounds(30, 10, 340, 20);
 		add(label);
 	}
