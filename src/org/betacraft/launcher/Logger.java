@@ -6,12 +6,16 @@ import java.text.SimpleDateFormat;
 public class Logger {
 	private static SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+	public static String lastMessage = "";
+
 	public static void a(Object obj) {
 		String str = null;
 		if (obj instanceof String) {
 			str = (String) obj;
 		} else if (obj instanceof Integer) {
 			str = ((Integer)obj).toString();
+		} else if (obj == null) {
+			str = "No internet connection, or the server is down.";
 		} else {
 			str = obj.toString();
 		}
@@ -19,6 +23,7 @@ public class Logger {
 		String all = "[" + date + "] " + str;
 
 		System.out.println(all);
+		lastMessage = all;
 		Launcher.write(new File(BC.get() + "launcher/", "launcher.log"), new String[] {all}, true);
 	}
 }

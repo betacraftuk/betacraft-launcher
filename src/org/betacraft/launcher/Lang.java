@@ -26,10 +26,10 @@ public class Lang extends JFrame {
 	static JList list;
 	static DefaultListModel listModel;
 	static JScrollPane listScroller;
-	JButton OK;
+	JButton OKButton;
 
 	public Lang() {
-		Logger.a("Otwarto okno wyboru jezyka.");
+		Logger.a("Language option window has been opened.");
 		setSize(282, 386);
 		setLayout(null);
 		setTitle("Select language");
@@ -44,25 +44,25 @@ public class Lang extends JFrame {
 			Logger.a(e1);
 		}
 
-		OK = new JButton("OK");
-		OK.setBounds(10, 320, 60, 20);
-		OK.addActionListener(new ActionListener() {
+		OKButton = new JButton("OK");
+		OKButton.setBounds(10, 320, 60, 20);
+		OKButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				setLang();
 			}
 		});
-		add(OK);
+		add(OKButton);
 
-		OK.setBackground(Color.LIGHT_GRAY);
+		OKButton.setBackground(Color.LIGHT_GRAY);
 	}
 
 	public void setLang() {
 		String lang = (String) list.getSelectedValue();
-		if (!downloaded(lang)) {
-			if (!download(lang)) {
-				return;
-			}
+
+		// Only return if we failed to download without a backup
+		if (download(lang) == DownloadResult.FAILED_WITHOUT_BACKUP) {
+			return;
 		}
 		Launcher.setProperty(Launcher.SETTINGS, "language", lang);
 		setVisible(false);
@@ -117,10 +117,11 @@ public class Lang extends JFrame {
 		return false;
 	}
 
-	public static boolean download(String lang) {
-		boolean done = Launcher.download("https://betacraft.ovh/lang/" + lang + ".txt", new File(BC.get() + "launcher/lang/", lang + ".txt"));
-		if (!done) {
+	public static DownloadResult download(String lang) {
+		DownloadResult done = Launcher.download("https://betacraft.ovh/lang/" + lang + ".txt", new File(BC.get() + "launcher/lang/", lang + ".txt"));
+		if (done != DownloadResult.OK) {
 			JOptionPane.showMessageDialog(null, "No Internet connection", "Language file download failed!", JOptionPane.ERROR_MESSAGE);
+			resetChangelog(true);
 			//Window.quit();
 		}
 		return done;
@@ -134,6 +135,14 @@ public class Lang extends JFrame {
 		apply(false);
 	}
 
+	public static void resetChangelog(boolean connectionFail) {
+		Window.infoPanel.setVisible(false);
+		Window.mainWindow.remove(Window.infoPanel);
+		Window.infoPanel = null;
+		Window.infoPanel = new InfoPanel(!connectionFail);
+		Window.mainWindow.add(Window.infoPanel);
+	}
+
 	public static void apply(boolean all) {
 		String lang = Launcher.getProperty(Launcher.SETTINGS, "language");
 		if (lang.equals("")) {
@@ -142,19 +151,15 @@ public class Lang extends JFrame {
 		}
 		File file = new File(BC.get() + "launcher/lang/", lang + ".txt");
 
-		// reset language of the changelog
+		// Reset language of the changelog
 		if (all) {
-			Window.infopanel.setVisible(false);
-			Window.window.remove(Window.infopanel);
-			Window.infopanel = null;
-			Window.infopanel = new InfoPanel();
-			Window.window.add(Window.infopanel);
+			resetChangelog(false);
 		}
 
-		Window.select_version.setText(Launcher.getProperty(file, "version_button"));
-		Window.play.setText(Launcher.getProperty(file, "play_button"));
-		Window.options.setText(Launcher.getProperty(file, "options_button"));
-		Window.window.setTitle(Launcher.getProperty(file, "launcher_title") + Launcher.VERSION);
+		Window.selectVersionButton.setText(Launcher.getProperty(file, "version_button"));
+		Window.playButton.setText(Launcher.getProperty(file, "play_button"));
+		Window.optionsButton.setText(Launcher.getProperty(file, "options_button"));
+		Window.mainWindow.setTitle(Launcher.getProperty(file, "launcher_title") + Launcher.VERSION);
 		Window.credits.setText(Launcher.getProperty(file, "credits"));
 		Window.nicktext.setText(Launcher.getProperty(file, "nick") + ":");
 
@@ -171,35 +176,35 @@ public class Lang extends JFrame {
 		Window.downloading = Launcher.getProperty(file, "downloading");
 		Window.resizeObjects();
 
-		Opcje opcje = Window.currentOptions;
-		Opcje.update = Launcher.getProperty(file, "update_check");
-		Opcje.update_not_found = Launcher.getProperty(file, "update_not_found");
+		Options opcje = Window.optionsWindow;
+		Options.update = Launcher.getProperty(file, "update_check");
+		Options.update_not_found = Launcher.getProperty(file, "update_not_found");
 		if (opcje != null) {
-			Opcje.proxy.setText(Launcher.getProperty(file, "use_betacraft"));
-			Opcje.label.setText(Launcher.getProperty(file, "launch_arguments") + ":");
-			Opcje.open.setText(Launcher.getProperty(file, "keep_launcher_open"));
-			Opcje.checkUpdate.setText(Launcher.getProperty(file, "check_update_button"));
+			Options.proxyCheck.setText(Launcher.getProperty(file, "use_betacraft"));
+			Options.parametersText.setText(Launcher.getProperty(file, "launch_arguments") + ":");
+			Options.keepOpenCheck.setText(Launcher.getProperty(file, "keep_launcher_open"));
+			Options.checkUpdateButton.setText(Launcher.getProperty(file, "check_update_button"));
 			opcje.setTitle(Launcher.getProperty(file, "options_title"));
 		}
 
-		Wersja.also_known = Launcher.getProperty(file, "also_known_as");
-		Wersja.release = Launcher.getProperty(file, "release_date");
-		Wersja.info = Launcher.getProperty(file, "info");
-		Wersja.show_more = Launcher.getProperty(file, "info_button");
-		Wersja.mc_wiki = Launcher.getProperty(file, "minecraft_wiki");
-		Wersja.internal_err = Launcher.getProperty(file, "internal_error");
-		Wersja wersja = Window.currentAbout;
+		Version.also_known = Launcher.getProperty(file, "also_known_as");
+		Version.release = Launcher.getProperty(file, "release_date");
+		Version.info = Launcher.getProperty(file, "info");
+		Version.show_more = Launcher.getProperty(file, "info_button");
+		Version.mc_wiki = Launcher.getProperty(file, "minecraft_wiki");
+		Version.internal_err = Launcher.getProperty(file, "internal_error");
+		Version wersja = Window.versionListWindow;
 		if (wersja != null) {
 			wersja.setTitle(Launcher.getProperty(file, "version_title"));
-			if (Wersja.showinfo) {
-				Wersja.more.setText(Wersja.show_more + " <");
+			if (Version.showinfo) {
+				Version.more.setText(Version.show_more + " <");
 			} else {
-				Wersja.more.setText(Wersja.show_more + " >");
+				Version.more.setText(Version.show_more + " >");
 			}
-			Wersja.date.setText(Wersja.release);
-			Wersja.information.setText(Wersja.info);
-			Wersja.sort_button.setText(Wersja.order == Order.FROM_OLDEST ? Launcher.getProperty(file, "sort_oldest") : Launcher.getProperty(file, "sort_newest"));
-			Wersja.open_wiki.setText(Wersja.mc_wiki);
+			Version.date.setText(Version.release);
+			Version.information.setText(Version.info);
+			Version.sort_button.setText(Version.order == Order.FROM_OLDEST ? Launcher.getProperty(file, "sort_oldest") : Launcher.getProperty(file, "sort_newest"));
+			Version.open_wiki.setText(Version.mc_wiki);
 		}
 	}
 }

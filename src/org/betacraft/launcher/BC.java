@@ -2,20 +2,19 @@ package org.betacraft.launcher;
 
 import java.io.File;
 
-/*
- * This is needed because Windows' file system is dumb
- */
+import javax.swing.JOptionPane;
+
 public class BC {
 
 	public static String get() {
 		if (OS.isWindows()) {
-			return windowsshit();
+			return windowsPath();
 		} else {
 			return path();
 		}
 	}
 
-	public static String windowsshit() {
+	public static String windowsPath() {
 		return "C:\\Users\\" + System.getProperty("user.name") + "\\AppData\\Roaming\\.betacraft\\";
 	}
 
@@ -23,10 +22,11 @@ public class BC {
 		String folder = null;
 		if (OS.isLinux() || OS.isSolaris()) {
 			folder = System.getProperty("user.home") + "/.betacraft/";
-		} else if (OS.isiOS()) {
+		} else if (OS.isMac()) {
 			folder = System.getProperty("user.home") + "/Library/Application Support/betacraft/";
 		} else {
 			Logger.a("Your operating system is not supported.");
+			JOptionPane.showMessageDialog(null, "Your operating system is not supported ;(", "I'm sorry, but", JOptionPane.WARNING_MESSAGE);
 			Window.quit();
 			return null;
 		}

@@ -7,7 +7,7 @@ import javax.swing.WindowConstants;
 public class Pobieranie extends JFrame {
 
 	public Pobieranie(String update) {
-		Window.window.setVisible(false);
+		Window.mainWindow.setVisible(false);
 		setSize(360, 80);
 		setLayout(null);
 		setTitle("Updating launcher");

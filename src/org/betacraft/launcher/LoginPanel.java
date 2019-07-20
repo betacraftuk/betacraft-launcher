@@ -28,40 +28,40 @@ public class LoginPanel extends JPanel {
 	}
 
 	public void update(final Graphics graphics) {
-        this.paint(graphics);
-    }
+		this.paint(graphics);
+	}
 
 	public void paintComponent(Graphics g) {
 		final int n = this.getWidth() / 2 + 1;
-        final int n2 = this.getHeight() / 2 + 1;
-        if (this.img == null || this.img.getWidth(null) != n || this.img.getHeight(null) != n2) {
-            this.img = this.createImage(n, n2);
-            final Graphics graphics2 = this.img.getGraphics();
-            for (int i = 0; i <= n / 32; ++i) {
-                for (int j = 0; j <= n2 / 32; ++j) {
-                    graphics2.drawImage(this.image, i * 32, j * 32, null);
-                }
-            }
-            if (graphics2 instanceof Graphics2D) {
-                final Graphics2D graphics2D = (Graphics2D)graphics2;
-                final int n3 = 1;
-                graphics2D.setPaint(new GradientPaint(new Point2D.Float(0.0f, 0.0f), new Color(553648127, true), new Point2D.Float(0.0f, n3), new Color(0, true)));
-                graphics2D.fillRect(0, 0, n, n3);
-                final int n4 = n2;
-                graphics2D.setPaint(new GradientPaint(new Point2D.Float(0.0f, 0.0f), new Color(0, true), new Point2D.Float(0.0f, n4), new Color(1610612736, true)));
-                graphics2D.fillRect(0, 0, n, n4);
-            }
-            graphics2.dispose();
-        }
-        g.drawImage(this.img, 0, 0, n * 2, n2 * 2, null);
+		final int n2 = this.getHeight() / 2 + 1;
+		if (this.img == null || this.img.getWidth(null) != n || this.img.getHeight(null) != n2) {
+			this.img = this.createImage(n, n2);
+			final Graphics graphics2 = this.img.getGraphics();
+			for (int i = 0; i <= n / 32; ++i) {
+				for (int j = 0; j <= n2 / 32; ++j) {
+					graphics2.drawImage(this.image, i * 32, j * 32, null);
+				}
+			}
+			if (graphics2 instanceof Graphics2D) {
+				final Graphics2D graphics2D = (Graphics2D)graphics2;
+				final int n3 = 1;
+				graphics2D.setPaint(new GradientPaint(new Point2D.Float(0.0f, 0.0f), new Color(553648127, true), new Point2D.Float(0.0f, n3), new Color(0, true)));
+				graphics2D.fillRect(0, 0, n, n3);
+				final int n4 = n2;
+				graphics2D.setPaint(new GradientPaint(new Point2D.Float(0.0f, 0.0f), new Color(0, true), new Point2D.Float(0.0f, n4), new Color(1610612736, true)));
+				graphics2D.fillRect(0, 0, n, n4);
+			}
+			graphics2.dispose();
+		}
+		g.drawImage(this.img, 0, 0, n * 2, n2 * 2, null);
 
-		add(Window.play);
+		add(Window.playButton);
 		add(Window.nick_input);
 		add(Window.credits);
-		add(Window.select_version);
+		add(Window.selectVersionButton);
 		add(Window.nicktext);
-		add(Window.options);
-		add(Window.lang);
-		add(Window.currentver);
+		add(Window.optionsButton);
+		add(Window.langButton);
+		add(Window.selectedVersionDisplay);
 	}
 }

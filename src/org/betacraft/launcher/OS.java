@@ -7,7 +7,7 @@ public class OS {
 		return (OS.indexOf("win") >= 0);
 	}
 
-	public static boolean isiOS() {
+	public static boolean isMac() {
 		return (OS.indexOf("mac") >= 0);
 	}
 
