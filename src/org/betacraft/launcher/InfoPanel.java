@@ -9,7 +9,7 @@ import javax.swing.JPanel;
 
 /*
  * TODO list for 1.10:
- * Wiki ? || Client log || Launcher log
+ * Wiki ? || Client log || Launcher log || Retrocraft server list
  */
 public class InfoPanel extends JPanel {
 	Image aroundBackground = null;

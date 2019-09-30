@@ -10,16 +10,25 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class Options extends JFrame {
 
 	static JCheckBox proxyCheck;
 	static JCheckBox keepOpenCheck;
 	static JCheckBox RPCCheck;
+
 	static JLabel parametersText;
+	static JTextField parameters;
+
+	static JLabel dimensions1Text;
+	static JLabel dimensions2Text;
+	static JTextField dimensions1;
+	static JTextField dimensions2;
+
 	static JButton checkUpdateButton;
 	static JButton OKButton;
-	static JTextField parameters;
 
 	public static String update = "Update check";
 	public static String update_not_found = "Couldn't find any newer version of the launcher.";
@@ -62,6 +71,20 @@ public class Options extends JFrame {
 		parameters.setBounds(25, 95, 300, 25);
 		this.add(parameters);
 
+		dimensions1Text = new JLabel("w:");
+		dimensions1Text.setBounds(9, 125, 15, 25);
+		this.add(dimensions1Text);
+		dimensions1 = new JTextField(Launcher.getProperty(Launcher.SETTINGS, "dimensions1"));
+		dimensions1.setBounds(25, 125, 60, 25);
+		this.add(dimensions1);
+
+		dimensions2Text = new JLabel("h:");
+		dimensions2Text.setBounds(90, 125, 15, 25);
+		this.add(dimensions2Text);
+		dimensions2 = new JTextField(Launcher.getProperty(Launcher.SETTINGS, "dimensions2"));
+		dimensions2.setBounds(105, 125, 60, 25);
+		this.add(dimensions2);
+
 		OKButton = new JButton("OK");
 		OKButton.setBounds(10, 320, 60, 20);
 		OKButton.addActionListener(new ActionListener() {
@@ -79,6 +102,40 @@ public class Options extends JFrame {
 
 		OKButton.setBackground(Color.LIGHT_GRAY);
 		checkUpdateButton.setBackground(Color.LIGHT_GRAY);
+
+		DocumentListener doc = new DocumentListener() {
+
+			public void changedUpdate(DocumentEvent e) {
+				change();
+			}
+			public void removeUpdate(DocumentEvent e) {
+				change();
+			}
+			public void insertUpdate(DocumentEvent e) {
+				change();
+			}
+
+			public void change() {
+				if (dimensions1.getText().length() > 9) {
+					Window.setTextInField(dimensions1, "");
+				}
+				if (dimensions2.getText().length() > 9) {
+					Window.setTextInField(dimensions2, "");
+				}
+				for (int i = 0; i < dimensions1.getText().length(); i++) {
+					if ("0123456789".indexOf(dimensions1.getText().charAt(i)) < 0) {
+						Window.setTextInField(dimensions1, "");
+					}
+				}
+				for (int i = 0; i < dimensions2.getText().length(); i++) {
+					if ("0123456789".indexOf(dimensions2.getText().charAt(i)) < 0) {
+						Window.setTextInField(dimensions2, "");
+					}
+				}
+			}
+		};
+		dimensions1.getDocument().addDocumentListener(doc);
+		dimensions2.getDocument().addDocumentListener(doc);
 
 		checkUpdateButton.addActionListener(new ActionListener() {
 			@Override
@@ -100,5 +157,7 @@ public class Options extends JFrame {
 		Launcher.setProperty(Launcher.SETTINGS, "proxy", proxyCheck.isSelected() ? "true" : "false");
 		Launcher.setProperty(Launcher.SETTINGS, "keepopen", keepOpenCheck.isSelected() ? "true" : "false");
 		Launcher.setProperty(Launcher.SETTINGS, "RPC", RPCCheck.isSelected() ? "true" : "false");
+		Launcher.setProperty(Launcher.SETTINGS, "dimensions1", dimensions1.getText());
+		Launcher.setProperty(Launcher.SETTINGS, "dimensions2", dimensions2.getText());
 	}
 }

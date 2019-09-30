@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -31,7 +32,7 @@ public class Launcher {
 
 	// Chosen version on init is equivalent to the BetaCraft's server version
 	public static String chosen_version = "b1.7.3";
-	public static String VERSION = "1.07"; // TODO Always update this
+	public static String VERSION = "1.08"; // TODO Always update this
 
 	// This is done incorrectly, but seems to not cause bugs,
 	// so it's here to stay this way, at least for now
@@ -47,6 +48,11 @@ public class Launcher {
 		new File(BC.get() + "bin/natives/").mkdirs();
 
 		Logger.a("BetaCraft Launcher v" + VERSION + " loaded.");
+
+		// If the properties file doesn't exist, create it
+		if (!SETTINGS.exists() || Lang.get("version").equals("")) {
+			writeDefault();
+		}
 
 		// Unload natives from previous sessions if they're not active
 		unloadNatives();
@@ -173,6 +179,7 @@ public class Launcher {
 				if (customparams != null && !customparams.isEmpty()) {
 					params.addAll(customparams);
 				}
+
 				boolean proxy = Launcher.getProperty(Launcher.SETTINGS, "proxy").equals("true");
 
 				// Add the rest of params and launch the wrapper
@@ -206,8 +213,17 @@ public class Launcher {
 		}
 	}
 
+	public static void writeDefault() {
+		setProperty(SETTINGS, "launch", "-Xmx1G");
+		setProperty(SETTINGS, "language", "English");
+		setProperty(SETTINGS, "version", "b1.7.3");
+		setProperty(SETTINGS, "RPC", "true");
+		setProperty(SETTINGS, "keepopen", "false");
+		setProperty(SETTINGS, "proxy", "true");
+	}
+
 	public static String getVerLink(String version) {
-		return "http://213.32.90.142/versions/" + version + ".jar";
+		return "https://betacraft.ovh/versions/" + version + ".jar";
 	}
 
 	public static File getVerFolder() {
@@ -259,12 +275,12 @@ public class Launcher {
 			}
 
 			if (download) {
-				download("http://213.32.90.142/versions/libjinput-linux.so", jinputDll);
-				download("http://213.32.90.142/versions/libjinput-linux64.so", jinputDll64);
-				download("http://213.32.90.142/versions/liblwjgl.so", lwjgl32);
-				download("http://213.32.90.142/versions/liblwjgl64.so", lwjgl64);
-				download("http://213.32.90.142/versions/libopenal.so", openal);
-				download("http://213.32.90.142/versions/libopenal64.so", openal64);
+				download("https://betacraft.ovh/versions/libjinput-linux.so", jinputDll);
+				download("https://betacraft.ovh/versions/libjinput-linux64.so", jinputDll64);
+				download("https://betacraft.ovh/versions/liblwjgl.so", lwjgl32);
+				download("https://betacraft.ovh/versions/liblwjgl64.so", lwjgl64);
+				download("https://betacraft.ovh/versions/libopenal.so", openal);
+				download("https://betacraft.ovh/versions/libopenal64.so", openal64);
 			}
 		}
 		if (OS.isWindows()) {
@@ -288,14 +304,14 @@ public class Launcher {
 			}
 
 			if (download) {
-				download("http://213.32.90.142/versions/jinput-raw.dll", jinputDll);
-				download("http://213.32.90.142/versions/jinput-raw_64.dll", jinputDll64);
-				download("http://213.32.90.142/versions/jinput-dx8.dll", jinput_dx8);
-				download("http://213.32.90.142/versions/jinput-dx8_64.dll", jinput_dx8_64);
-				download("http://213.32.90.142/versions/lwjgl-windows.dll", lwjgl32);
-				download("http://213.32.90.142/versions/lwjgl64.dll", lwjgl64);
-				download("http://213.32.90.142/versions/OpenAL32.dll", openal);
-				download("http://213.32.90.142/versions/OpenAL64.dll", openal64);
+				download("https://betacraft.ovh/versions/jinput-raw.dll", jinputDll);
+				download("https://betacraft.ovh/versions/jinput-raw_64.dll", jinputDll64);
+				download("https://betacraft.ovh/versions/jinput-dx8.dll", jinput_dx8);
+				download("https://betacraft.ovh/versions/jinput-dx8_64.dll", jinput_dx8_64);
+				download("https://betacraft.ovh/versions/lwjgl-windows.dll", lwjgl32);
+				download("https://betacraft.ovh/versions/lwjgl64.dll", lwjgl64);
+				download("https://betacraft.ovh/versions/OpenAL32.dll", openal);
+				download("https://betacraft.ovh/versions/OpenAL64.dll", openal64);
 			}
 		}
 		if (OS.isMac()) {
@@ -315,10 +331,10 @@ public class Launcher {
 			}
 
 			if (download) {
-				download("http://213.32.90.142/versions/libjinput-osx.jnilib", jinputDll);
-				download("http://213.32.90.142/versions/liblwjgl.jnilib", lwjgl32);
-				download("http://213.32.90.142/versions/openal.dylib", openal);
-				download("http://213.32.90.142/versions/libopenal.dylib", openal64);
+				download("https://betacraft.ovh/versions/libjinput-osx.jnilib", jinputDll);
+				download("https://betacraft.ovh/versions/liblwjgl.jnilib", lwjgl32);
+				download("https://betacraft.ovh/versions/openal.dylib", openal);
+				download("https://betacraft.ovh/versions/libopenal.dylib", openal64);
 			}
 		}
 		if (OS.isSolaris()) { // we are going to add support for this too
@@ -336,9 +352,9 @@ public class Launcher {
 			}
 
 			if (download) {
-				download("http://213.32.90.142/versions/liblwjgl.so", lwjgl32);
-				download("http://213.32.90.142/versions/liblwjgl64.so", lwjgl64);
-				download("http://213.32.90.142/versions/libopenal.so", openal);
+				download("https://betacraft.ovh/versions/liblwjgl.so", lwjgl32);
+				download("https://betacraft.ovh/versions/liblwjgl64.so", lwjgl64);
+				download("https://betacraft.ovh/versions/libopenal.so", openal);
 			}
 		}
 
@@ -353,9 +369,9 @@ public class Launcher {
 
 		if (download) {
 			if (OS.isWindows()) {
-				download("http://213.32.90.142/versions/lwjgl-windows.jar", lwjgl);
+				download("https://betacraft.ovh/versions/lwjgl-windows.jar", lwjgl);
 			} else {
-				download("http://213.32.90.142/versions/lwjgl.jar", lwjgl);
+				download("https://betacraft.ovh/versions/lwjgl.jar", lwjgl);
 			}
 			download("http://s3.amazonaws.com/MinecraftDownload/lwjgl_util.jar", lwjglutil);
 			download("http://s3.amazonaws.com/MinecraftDownload/jinput.jar", jinput);
@@ -463,12 +479,13 @@ public class Launcher {
 			boolean yes = false;
 
 			// Format the message
-			String rr = Launcher.update.replaceAll("%s", update);
+			String update_name = update.startsWith("!") ? update.replace("!", "") : update; 
+			String rr = Launcher.update.replaceAll("%s", update_name);
 
 			// Ask if the user wants this update or not
 			int result = JOptionPane.showConfirmDialog(null, rr, Options.update, JOptionPane.YES_NO_OPTION);
 			if (result == JOptionPane.YES_OPTION) {
-				Logger.a("The user wants to update to: " + update);
+				Logger.a("The user wants to update to: " + update_name);
 				yes = true;
 			} else {
 				Logger.a("The user doesn't want to update. The launcher stays at version: " + VERSION);
@@ -476,9 +493,9 @@ public class Launcher {
 			// If the user accepted the update, or it is a mandatory update, download it
 			if (yes || update.startsWith("!")) {
 				// Display downloading dialog
-				new Pobieranie(update);
+				new Pobieranie(update_name);
 				// Download the update
-				download("http://213.32.90.142/versions/launcher.jar", new File(BC.get(), "betacraft.jar$tmp"));
+				download("https://betacraft.ovh/versions/launcher.jar", new File(BC.get(), "betacraft.jar$tmp"));
 
 				// Launch the new version to finish updating
 				final String pathToJar = Window.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
@@ -528,7 +545,8 @@ public class Launcher {
 			// No internet connection scenario
 			return false;
 		}
-		if (!VERSION.equalsIgnoreCase(update)) {
+		String update_name = update.startsWith("!") ? update.replace("!", "") : update; 
+		if (!VERSION.equalsIgnoreCase(update_name)) {
 			// The latest version doesn't match the local version
 			Logger.a("Found a new version of the launcher (" + update + ").");
 			return true;
@@ -539,7 +557,7 @@ public class Launcher {
 
 	public static String getUpdate() {
 		try {
-			URL url = new URL("http://213.32.90.142/version_index");
+			URL url = new URL("https://betacraft.ovh/version_index");
 			Scanner s = new Scanner(url.openStream());
 			String update = s.nextLine().split(":")[1];
 			s.close();
@@ -609,7 +627,7 @@ public class Launcher {
 				// The wanted property has been found, so we're going to replace its value
 				newlines[i] = property + ":" + value;
 				found = true;
-				break;
+				continue;
 			}
 			// The property didn't match, just take this line further
 			newlines[i] = lines[i];
@@ -639,5 +657,38 @@ public class Launcher {
 			}
 		}
 		return value;
+	}
+
+	private static final Pattern patternControlCode = Pattern.compile("(?i)\\u00A7[0-9A-FK-OR]");
+
+	public static String ticksToElapsedTime(int ticks)
+	{
+		int i = ticks / 20;
+		int j = i / 60;
+		i = i % 60;
+		return i < 10 ? j + ":0" + i : j + ":" + i;
+	}
+
+	public static String stripControlCodes(String p_76338_0_)
+	{
+		return patternControlCode.matcher(p_76338_0_).replaceAll("");
+	}
+
+	protected static String[] splitObjectName(String toSplit)
+	{
+		String[] astring = new String[] {null, toSplit};
+		int i = toSplit.indexOf(58);
+
+		if (i >= 0)
+		{
+			astring[1] = toSplit.substring(i + 1, toSplit.length());
+
+			if (i > 1)
+			{
+				astring[0] = toSplit.substring(0, i);
+			}
+		}
+
+		return astring;
 	}
 }

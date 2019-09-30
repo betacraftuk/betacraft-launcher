@@ -176,15 +176,14 @@ public class Lang extends JFrame {
 		Window.downloading = Launcher.getProperty(file, "downloading");
 		Window.resizeObjects();
 
-		Options opcje = Window.optionsWindow;
 		Options.update = Launcher.getProperty(file, "update_check");
 		Options.update_not_found = Launcher.getProperty(file, "update_not_found");
-		if (opcje != null) {
+		if (Window.optionsWindow != null) {
 			Options.proxyCheck.setText(Launcher.getProperty(file, "use_betacraft"));
 			Options.parametersText.setText(Launcher.getProperty(file, "launch_arguments") + ":");
 			Options.keepOpenCheck.setText(Launcher.getProperty(file, "keep_launcher_open"));
 			Options.checkUpdateButton.setText(Launcher.getProperty(file, "check_update_button"));
-			opcje.setTitle(Launcher.getProperty(file, "options_title"));
+			Window.optionsWindow.setTitle(Launcher.getProperty(file, "options_title"));
 		}
 
 		Version.also_known = Launcher.getProperty(file, "also_known_as");
@@ -193,9 +192,8 @@ public class Lang extends JFrame {
 		Version.show_more = Launcher.getProperty(file, "info_button");
 		Version.mc_wiki = Launcher.getProperty(file, "minecraft_wiki");
 		Version.internal_err = Launcher.getProperty(file, "internal_error");
-		Version wersja = Window.versionListWindow;
-		if (wersja != null) {
-			wersja.setTitle(Launcher.getProperty(file, "version_title"));
+		if (Window.versionListWindow != null) {
+			Window.versionListWindow.setTitle(Launcher.getProperty(file, "version_title"));
 			if (Version.showinfo) {
 				Version.more.setText(Version.show_more + " <");
 			} else {

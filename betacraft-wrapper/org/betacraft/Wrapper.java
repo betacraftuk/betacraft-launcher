@@ -50,6 +50,10 @@ public class Wrapper extends Applet implements AppletStub {
 	private static boolean active = false; // If the game has started
 	public static String ver_prefix = ""; // Version's official name, eg. Infdev, Alpha, etc.
 	public static List<String> nonOnlineClassic = new ArrayList<String>(); // A list of Classic versions which cannot play online
+	public static List<String> onlineInfdev = new ArrayList<String>(); // A list of online Infdev versions (without world saving)
+
+	public static int width = 854;
+	public static int height = 480;
 
 	public static void main(String[] args) {
 		System.out.println("Starting BetaCraftWrapper v" + Launcher.VERSION);
@@ -70,7 +74,6 @@ public class Wrapper extends Applet implements AppletStub {
 				JOptionPane.showMessageDialog(null, "Error code 2: Could not initialize wrapper (sessionid is not a valid number)", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
-
 
 			version = info[2];
 
@@ -95,13 +98,8 @@ public class Wrapper extends Applet implements AppletStub {
 			System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
 			// Turn on proxy if wanted
-			if (info[3].equals("true")) {
-				if (version.startsWith("c0.")) {
-					// We gonna use Retrocraft for Classic for now :(
-					System.setProperty("http.proxyHost", "classic.retrocraft.net");
-				} else {
-					System.setProperty("http.proxyHost", "betacraft.ovh");
-				}
+			if (info[3].equals("true") && System.getProperty("http.proxyHost") == null) {
+				System.setProperty("http.proxyHost", "betacraft.ovh");
 				System.setProperty("http.proxyPort", "80");
 			}
 
@@ -122,20 +120,40 @@ public class Wrapper extends Applet implements AppletStub {
 				ver_prefix = version;
 			}
 
+			try {
+				if (!Launcher.getProperty(Launcher.SETTINGS, "dimensions1").equalsIgnoreCase("")) {
+					width = Integer.parseInt(Launcher.getProperty(Launcher.SETTINGS, "dimensions1"));
+				}
+				if (!Launcher.getProperty(Launcher.SETTINGS, "dimensions2").equalsIgnoreCase("")) {
+					height = Integer.parseInt(Launcher.getProperty(Launcher.SETTINGS, "dimensions2"));
+				}
+				if (width <= 100 || height <= 100) {
+					JOptionPane.showMessageDialog(null, "Error code 5: Window dimensions are too small!", "Error", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+			} catch (NumberFormatException ex) {
+				JOptionPane.showMessageDialog(null, "Error code 4: Window dimensions are illegal!", "Error", JOptionPane.ERROR_MESSAGE);
+				ex.printStackTrace();
+				return;
+			}
+
 			// Allow joining servers for Classic MP versions
 			if (ver_prefix.startsWith("Classic") && !nonOnlineClassic.contains(version)) {
-				String server = JOptionPane.showInputDialog(null, Lang.get("server"), "");
+				String server = JOptionPane.showInputDialog(null, Lang.get("server"), Launcher.getProperty(Launcher.SETTINGS, "server"));
 				String port = "25565";
-				String IP = server;
-				if (IP.contains(":")) {
-					String[] params1 = server.split(":");
-					IP = params1[0];
-					port = params1[1];
-				}
-				if (!server.equals("")) {
-					System.out.println("Accepted server parameters: " + server);
-					params.put("server", IP);
-					params.put("port", port);
+				if (server != null) {
+					String IP = server;
+					if (IP.contains(":")) {
+						String[] params1 = server.split(":");
+						IP = params1[0];
+						port = params1[1];
+					}
+					if (!server.equals("")) {
+						System.out.println("Accepted server parameters: " + server);
+						params.put("server", IP);
+						params.put("port", port);
+						params.put("mppass", "0");
+					}
 				}
 			}
 
@@ -252,16 +270,6 @@ public class Wrapper extends Applet implements AppletStub {
 
 	public void play() {
 		try {
-			// Tell the website to update the skin for the proxy
-			new Thread() {
-				public void run() {
-					try {
-						new URL("https://betacraft.ovh/update_skin.php?name=" + params.get("username")).openStream().close();
-					} catch (Exception ex) {
-						System.out.println("Error: Could not connect to the website to update player's skin!");
-					}
-				}
-			}.start();
 
 			// Copy natives
 			String nativesPath = mainFolder + "versions/" + version + "-" + session;
@@ -305,6 +313,11 @@ public class Wrapper extends Applet implements AppletStub {
 				Runnable run = (Runnable) appletClass.newInstance();
 				run.run();
 				return;
+			} else if (version.startsWith("4k")) {
+				// 4k needs special care
+				width = 854;
+				height = 480;
+				appletClass = classLoader.loadClass("M");
 			} else {
 				// For the rest of the versions (Indev+)
 				appletClass = classLoader.loadClass("net.minecraft.client.MinecraftApplet");
@@ -312,7 +325,8 @@ public class Wrapper extends Applet implements AppletStub {
 			applet = (Applet) appletClass.newInstance();
 
 			// Replace the main game folder to .betacraft
-			if (version.startsWith("in") || version.startsWith("a1.") || version.startsWith("b1.")) {
+			// Skip versions prior to Indev. They don't support changing game folders.
+			if (!version.startsWith("4k") && !version.startsWith("c0.") && !version.startsWith("rd-") && !version.startsWith("mc-")) {
 				for (final Field field : appletClass.getDeclaredFields()) {
 					final String name = field.getType().getName();
 					if (!name.contains("awt") && !name.contains("java")) {
@@ -343,17 +357,15 @@ public class Wrapper extends Applet implements AppletStub {
 			// This is needed for the window size
 			final JPanel panel = new JPanel();
 			gameFrame.setLayout(new BorderLayout());
-			if (version.equals("c0.0.12a-dev")) {
-				panel.setPreferredSize(new Dimension(640, 480));
-			} else {
-				panel.setPreferredSize(new Dimension(854, 480));
-			}
+			panel.setPreferredSize(new Dimension(width, height)); // 854, 480
 			gameFrame.add(panel, "Center");
 			gameFrame.pack();
 			gameFrame.setLocationRelativeTo(null);
 			gameFrame.setVisible(true);
 
 			applet.setStub(this);
+			applet.resize(width, height);
+			applet.setSize(width, height);
 
 			gameFrame.addWindowListener(new WindowAdapter() {
 				@Override
@@ -391,7 +403,22 @@ public class Wrapper extends Applet implements AppletStub {
 	}
 
 	@Override
-	public void appletResize(int arg0, int arg1) {}
+	public void appletResize(int width, int height) {
+		applet.resize(width, height);
+		applet.setSize(width, height);
+	}
+
+	@Override
+	public void resize(int width, int height) {
+		applet.resize(width, height);
+		applet.setSize(width, height);
+	}
+
+	@Override
+	public void resize(Dimension d) {
+		applet.resize(d);
+		applet.setSize(d);
+	}
 
 	@Override
 	public void update(final Graphics g) {
@@ -459,6 +486,12 @@ public class Wrapper extends Applet implements AppletStub {
 	}
 
 	@Override
+	public void setVisible(boolean b) {
+		super.setVisible(b);
+		applet.setVisible(b);
+	}
+
+	@Override
 	public URL getCodeBase() {
 		try {
 			return new URL("http://www.minecraft.net/game/");
@@ -508,5 +541,14 @@ public class Wrapper extends Applet implements AppletStub {
 		nonOnlineClassic.add("c0.0.14a_06");
 		nonOnlineClassic.add("c0.0.14a_07");
 		nonOnlineClassic.add("c0.0.14a_08");
+
+		onlineInfdev.add("inf-20100227-1");
+		onlineInfdev.add("inf-20100227-2");
+		onlineInfdev.add("inf-20100227");
+		onlineInfdev.add("inf-20100313");
+		onlineInfdev.add("inf-20100316");
+		onlineInfdev.add("inf-20100320");
+		onlineInfdev.add("inf-20100321");
+		onlineInfdev.add("inf-20100325");
 	}
 }
