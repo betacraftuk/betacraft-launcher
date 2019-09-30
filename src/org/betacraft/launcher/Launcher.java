@@ -17,7 +17,6 @@ import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -657,38 +656,5 @@ public class Launcher {
 			}
 		}
 		return value;
-	}
-
-	private static final Pattern patternControlCode = Pattern.compile("(?i)\\u00A7[0-9A-FK-OR]");
-
-	public static String ticksToElapsedTime(int ticks)
-	{
-		int i = ticks / 20;
-		int j = i / 60;
-		i = i % 60;
-		return i < 10 ? j + ":0" + i : j + ":" + i;
-	}
-
-	public static String stripControlCodes(String p_76338_0_)
-	{
-		return patternControlCode.matcher(p_76338_0_).replaceAll("");
-	}
-
-	protected static String[] splitObjectName(String toSplit)
-	{
-		String[] astring = new String[] {null, toSplit};
-		int i = toSplit.indexOf(58);
-
-		if (i >= 0)
-		{
-			astring[1] = toSplit.substring(i + 1, toSplit.length());
-
-			if (i > 1)
-			{
-				astring[0] = toSplit.substring(0, i);
-			}
-		}
-
-		return astring;
 	}
 }
