@@ -140,8 +140,13 @@ public class Options extends JFrame {
 		checkUpdateButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (Launcher.checkForUpdate()) {
-					Launcher.downloadUpdate();
+				if ((e.getModifiers() & ActionEvent.SHIFT_MASK) == ActionEvent.SHIFT_MASK) {
+					Launcher.setProperty(Launcher.SETTINGS, "pre_enabled", "true");
+					return;
+				}
+				boolean release = !Boolean.parseBoolean(Launcher.getProperty(Launcher.SETTINGS, "pre_enabled"));
+				if (Launcher.checkForUpdate(release)) {
+					Launcher.downloadUpdate(release);
 				} else {
 					JOptionPane.showMessageDialog(null, update_not_found, update, JOptionPane.INFORMATION_MESSAGE);
 				}

@@ -70,7 +70,7 @@ public class Lang extends JFrame {
 	}
 
 	public void initLang() throws IOException {
-		URL url = new URL("https://betacraft.ovh/lang/index.html");
+		URL url = new URL("http://betacraft.pl/lang/index.html");
 
 		Scanner scanner = new Scanner(url.openStream());
 		String now;
@@ -118,7 +118,7 @@ public class Lang extends JFrame {
 	}
 
 	public static DownloadResult download(String lang) {
-		DownloadResult done = Launcher.download("https://betacraft.ovh/lang/" + lang + ".txt", new File(BC.get() + "launcher/lang/", lang + ".txt"));
+		DownloadResult done = Launcher.download("http://betacraft.pl/lang/" + lang + ".txt", new File(BC.get() + "launcher/lang/", lang + ".txt"));
 		if (done != DownloadResult.OK) {
 			JOptionPane.showMessageDialog(null, "No Internet connection", "Language file download failed!", JOptionPane.ERROR_MESSAGE);
 			resetChangelog(true);

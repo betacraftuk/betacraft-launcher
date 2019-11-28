@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.SocketException;
@@ -31,7 +32,7 @@ public class Launcher {
 
 	// Chosen version on init is equivalent to the BetaCraft's server version
 	public static String chosen_version = "b1.7.3";
-	public static String VERSION = "1.08"; // TODO Always update this
+	public static String VERSION = "1.08_01"; // TODO Always update this
 
 	// This is done incorrectly, but seems to not cause bugs,
 	// so it's here to stay this way, at least for now
@@ -147,10 +148,10 @@ public class Launcher {
 		Lang.apply();
 
 		// Check for updates
-		if (Launcher.checkForUpdate()) Launcher.downloadUpdate();
+		if (Launcher.checkForUpdate(true)) Launcher.downloadUpdate(true);
 	}
 
-	public void launchGame(ArrayList<String> customparams, final String username) {
+	public void launchGame(ArrayList<String> customparams, final String username, String address) {
 		try {
 			// Rarely there will be no chosen version, so we need to check that
 			if (chosen_version != null) {
@@ -181,11 +182,17 @@ public class Launcher {
 
 				boolean proxy = Launcher.getProperty(Launcher.SETTINGS, "proxy").equals("true");
 
+				if (address == null) {
+					address = "";
+				} else {
+					address = ":" + address;
+				}
+
 				// Add the rest of params and launch the wrapper
 				params.add("-cp");
 				params.add(BC.get() + "launcher/betacraft_wrapper.jar" + add);
 				params.add("org.betacraft.Wrapper");
-				params.add(username + ":" + Integer.toString(sessions) + ":" + chosen_version + ":" + proxy);
+				params.add(username + ":" + Integer.toString(sessions) + ":" + chosen_version + ":" + proxy + address);
 				params.add(BC.get());
 				ProcessBuilder builder = new ProcessBuilder(params);
 				builder.start();
@@ -222,7 +229,7 @@ public class Launcher {
 	}
 
 	public static String getVerLink(String version) {
-		return "https://betacraft.ovh/versions/" + version + ".jar";
+		return "http://betacraft.pl/versions/" + version + ".jar";
 	}
 
 	public static File getVerFolder() {
@@ -274,12 +281,12 @@ public class Launcher {
 			}
 
 			if (download) {
-				download("https://betacraft.ovh/versions/libjinput-linux.so", jinputDll);
-				download("https://betacraft.ovh/versions/libjinput-linux64.so", jinputDll64);
-				download("https://betacraft.ovh/versions/liblwjgl.so", lwjgl32);
-				download("https://betacraft.ovh/versions/liblwjgl64.so", lwjgl64);
-				download("https://betacraft.ovh/versions/libopenal.so", openal);
-				download("https://betacraft.ovh/versions/libopenal64.so", openal64);
+				download("http://betacraft.pl/versions/libjinput-linux.so", jinputDll);
+				download("http://betacraft.pl/versions/libjinput-linux64.so", jinputDll64);
+				download("http://betacraft.pl/versions/liblwjgl.so", lwjgl32);
+				download("http://betacraft.pl/versions/liblwjgl64.so", lwjgl64);
+				download("http://betacraft.pl/versions/libopenal.so", openal);
+				download("http://betacraft.pl/versions/libopenal64.so", openal64);
 			}
 		}
 		if (OS.isWindows()) {
@@ -303,14 +310,14 @@ public class Launcher {
 			}
 
 			if (download) {
-				download("https://betacraft.ovh/versions/jinput-raw.dll", jinputDll);
-				download("https://betacraft.ovh/versions/jinput-raw_64.dll", jinputDll64);
-				download("https://betacraft.ovh/versions/jinput-dx8.dll", jinput_dx8);
-				download("https://betacraft.ovh/versions/jinput-dx8_64.dll", jinput_dx8_64);
-				download("https://betacraft.ovh/versions/lwjgl-windows.dll", lwjgl32);
-				download("https://betacraft.ovh/versions/lwjgl64.dll", lwjgl64);
-				download("https://betacraft.ovh/versions/OpenAL32.dll", openal);
-				download("https://betacraft.ovh/versions/OpenAL64.dll", openal64);
+				download("http://betacraft.pl/versions/jinput-raw.dll", jinputDll);
+				download("http://betacraft.pl/versions/jinput-raw_64.dll", jinputDll64);
+				download("http://betacraft.pl/versions/jinput-dx8.dll", jinput_dx8);
+				download("http://betacraft.pl/versions/jinput-dx8_64.dll", jinput_dx8_64);
+				download("http://betacraft.pl/versions/lwjgl-windows.dll", lwjgl32);
+				download("http://betacraft.pl/versions/lwjgl64.dll", lwjgl64);
+				download("http://betacraft.pl/versions/OpenAL32.dll", openal);
+				download("http://betacraft.pl/versions/OpenAL64.dll", openal64);
 			}
 		}
 		if (OS.isMac()) {
@@ -330,10 +337,10 @@ public class Launcher {
 			}
 
 			if (download) {
-				download("https://betacraft.ovh/versions/libjinput-osx.jnilib", jinputDll);
-				download("https://betacraft.ovh/versions/liblwjgl.jnilib", lwjgl32);
-				download("https://betacraft.ovh/versions/openal.dylib", openal);
-				download("https://betacraft.ovh/versions/libopenal.dylib", openal64);
+				download("http://betacraft.pl/versions/libjinput-osx.jnilib", jinputDll);
+				download("http://betacraft.pl/versions/liblwjgl.jnilib", lwjgl32);
+				download("http://betacraft.pl/versions/openal.dylib", openal);
+				download("http://betacraft.pl/versions/libopenal.dylib", openal64);
 			}
 		}
 		if (OS.isSolaris()) { // we are going to add support for this too
@@ -351,9 +358,9 @@ public class Launcher {
 			}
 
 			if (download) {
-				download("https://betacraft.ovh/versions/liblwjgl.so", lwjgl32);
-				download("https://betacraft.ovh/versions/liblwjgl64.so", lwjgl64);
-				download("https://betacraft.ovh/versions/libopenal.so", openal);
+				download("http://betacraft.pl/versions/liblwjgl.so", lwjgl32);
+				download("http://betacraft.pl/versions/liblwjgl64.so", lwjgl64);
+				download("http://betacraft.pl/versions/libopenal.so", openal);
 			}
 		}
 
@@ -368,9 +375,9 @@ public class Launcher {
 
 		if (download) {
 			if (OS.isWindows()) {
-				download("https://betacraft.ovh/versions/lwjgl-windows.jar", lwjgl);
+				download("http://betacraft.pl/versions/lwjgl-windows.jar", lwjgl);
 			} else {
-				download("https://betacraft.ovh/versions/lwjgl.jar", lwjgl);
+				download("http://betacraft.pl/versions/lwjgl.jar", lwjgl);
 			}
 			download("http://s3.amazonaws.com/MinecraftDownload/lwjgl_util.jar", lwjglutil);
 			download("http://s3.amazonaws.com/MinecraftDownload/jinput.jar", jinput);
@@ -471,9 +478,9 @@ public class Launcher {
 
 	}
 
-	public static void downloadUpdate() {
+	public static void downloadUpdate(boolean release) {
 		// Get the update name
-		String update = getUpdate();
+		String update = getUpdate(release);
 		try {
 			boolean yes = false;
 
@@ -493,8 +500,12 @@ public class Launcher {
 			if (yes || update.startsWith("!")) {
 				// Display downloading dialog
 				new Pobieranie(update_name);
+
+				String url = "http://betacraft.pl/launcher/launcher.jar";
+				if (!release) url = "http://betacraft.pl/launcher/pre.jar";
+
 				// Download the update
-				download("https://betacraft.ovh/versions/launcher.jar", new File(BC.get(), "betacraft.jar$tmp"));
+				download(url, new File(BC.get(), "betacraft.jar$tmp"));
 
 				// Launch the new version to finish updating
 				final String pathToJar = Window.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
@@ -537,9 +548,9 @@ public class Launcher {
 		}
 	}
 
-	public static boolean checkForUpdate() {
+	public static boolean checkForUpdate(boolean release) {
 		// Get the latest version
-		String update = getUpdate();
+		String update = getUpdate(release);
 		if (update == null) {
 			// No internet connection scenario
 			return false;
@@ -554,9 +565,11 @@ public class Launcher {
 		}
 	}
 
-	public static String getUpdate() {
+	public static String getUpdate(boolean release) {
 		try {
-			URL url = new URL("https://betacraft.ovh/version_index");
+			String Url = "http://betacraft.pl/launcher/rel.txt";
+			if (!release) Url = "http://betacraft.pl/launcher/pre.txt";
+			URL url = new URL(Url);
 			Scanner s = new Scanner(url.openStream());
 			String update = s.nextLine().split(":")[1];
 			s.close();

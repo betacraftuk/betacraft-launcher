@@ -7,6 +7,8 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.swing.JPanel;
 
+import org.betacraft.launcher.Window.Tab;
+
 /*
  * TODO list for 1.10:
  * Wiki ? || Client log || Launcher log || Retrocraft server list
@@ -29,7 +31,10 @@ public class InfoPanel extends JPanel {
 		// Putting this into separate thread *might* improve the on-load performance
 		new Thread() {
 			public void run() {
-				add(new WebsitePanel().getUpdateNews(isConnection));
+				if (Window.tab == Tab.CHANGELOG)
+					add(new WebsitePanel().getUpdateNews(isConnection));
+				if (Window.tab == Tab.SERVER_LIST)
+					add(new WebsitePanel().getServers(isConnection));
 			}
 		}.start();
 	}

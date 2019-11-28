@@ -12,13 +12,12 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.lang.Thread.State;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +29,6 @@ import javax.swing.JPanel;
 
 import org.betacraft.launcher.Lang;
 import org.betacraft.launcher.Launcher;
-import org.betacraft.launcher.OS;
 
 import club.minnced.discord.rpc.DiscordEventHandlers;
 import club.minnced.discord.rpc.DiscordRPC;
@@ -39,10 +37,11 @@ import club.minnced.discord.rpc.DiscordRichPresence;
 public class Wrapper extends Applet implements AppletStub {
 
 	final static Map<String, String> params = new HashMap<String, String>(); // Custom parameters
-	private static int session; // Session id to create natives folder for the game
+	public static String session; // Session id for premium authentication
 	public static String mainFolder; // .betacraft folder
 	public static String version; // Version to be launched
 	private static URLClassLoader classLoader; // Class loader for linking the game and natives
+	public static Class appletClass; // Minecraft's main class
 	private static boolean discord = false; // Discord RPC
 
 	private static Applet applet = null; // Game's applet
@@ -51,9 +50,15 @@ public class Wrapper extends Applet implements AppletStub {
 	public static String ver_prefix = ""; // Version's official name, eg. Infdev, Alpha, etc.
 	public static List<String> nonOnlineClassic = new ArrayList<String>(); // A list of Classic versions which cannot play online
 	public static List<String> onlineInfdev = new ArrayList<String>(); // A list of online Infdev versions (without world saving)
+	public static DiscordThread discordThread = null;
 
 	public static int width = 854;
 	public static int height = 480;
+
+	public static String proxyCompat = "www.minecraft.net";
+	public static int portCompat = 80;
+
+	public static boolean isIndevPlus = false;
 
 	public static void main(String[] args) {
 		System.out.println("Starting BetaCraftWrapper v" + Launcher.VERSION);
@@ -67,14 +72,8 @@ public class Wrapper extends Applet implements AppletStub {
 			String[] info = args[0].split(":");
 			System.out.println("Wrapper arguments: " + args[0]);
 
-			// Get a session number
-			try {
-				session = Integer.parseInt(info[1]);
-			} catch (Exception ex) {
-				JOptionPane.showMessageDialog(null, "Error code 2: Could not initialize wrapper (sessionid is not a valid number)", "Error", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
-
+			// Get mppass and version
+			session = info[1];
 			version = info[2];
 
 			// Initialize game's main path (.betacraft)
@@ -93,31 +92,30 @@ public class Wrapper extends Applet implements AppletStub {
 			params.put("username", info[0]);
 			params.put("sessionid", info[1]);
 			params.put("haspaid", "true");
+			params.put("stand-alone", "true");
 
 			// Fix crashing when teleporting with Java 8+
 			System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 
+			String sysProxy = System.getProperty("http.proxyHost");
+			String sysPort = System.getProperty("http.proxyPort");
+
 			// Turn on proxy if wanted
-			if (info[3].equals("true") && System.getProperty("http.proxyHost") == null) {
-				System.setProperty("http.proxyHost", "betacraft.ovh");
+			if (info[3].equals("true") && sysProxy == null && sysPort == null) {
+				System.setProperty("http.proxyHost", "betacraft.pl");
 				System.setProperty("http.proxyPort", "80");
 			}
 
-			// Make a prefix for the version
-			if (version.startsWith("b1.")) {
-				ver_prefix = "Beta " + version.substring(1, version.length());
-			} else if (version.startsWith("a1.")) {
-				ver_prefix = "Alpha v" + version.substring(1, version.length());
-			} else if (version.startsWith("inf-20100")) {
-				ver_prefix = "Infdev " + version.substring(4, version.length());
-			} else if (version.startsWith("in-20")) {
-				ver_prefix = "Indev " + version.substring(3, version.length());
-			} else if (version.startsWith("c0.")) {
-				ver_prefix = "Classic " + version.substring(1, version.length());
-			} else if (version.startsWith("mc-") || version.startsWith("rd-")) {
-				ver_prefix = "Pre-Classic " + version.substring(3, version.length());
-			} else {
-				ver_prefix = version;
+			if (sysProxy != null)
+				proxyCompat = sysProxy;
+			if (sysPort != null) {
+				try {
+					portCompat = Integer.parseInt(sysPort);
+				} catch (NumberFormatException ex) {
+					JOptionPane.showMessageDialog(null, "Error code 7: Proxy port is not a valid number!", "Error", JOptionPane.ERROR_MESSAGE);
+					ex.printStackTrace();
+					return;
+				}
 			}
 
 			try {
@@ -139,28 +137,32 @@ public class Wrapper extends Applet implements AppletStub {
 
 			// Allow joining servers for Classic MP versions
 			if (ver_prefix.startsWith("Classic") && !nonOnlineClassic.contains(version)) {
-				String server = JOptionPane.showInputDialog(null, Lang.get("server"), Launcher.getProperty(Launcher.SETTINGS, "server"));
-				String port = "25565";
-				if (server != null) {
-					String IP = server;
-					if (IP.contains(":")) {
-						String[] params1 = server.split(":");
-						IP = params1[0];
-						port = params1[1];
-					}
-					if (!server.equals("")) {
-						System.out.println("Accepted server parameters: " + server);
-						params.put("server", IP);
-						params.put("port", port);
-						params.put("mppass", "0");
+				if (info.length >= 5) {
+					String[] ipstuff = info[4].split("/");
+					params.put("server", ipstuff[0]);
+					params.put("port", ipstuff[1]);
+					params.put("mppass", session);
+				} else {
+					String server = JOptionPane.showInputDialog(null, Lang.get("server"), Launcher.getProperty(Launcher.SETTINGS, "server"));
+					String port = "25565";
+					if (server != null) {
+						String IP = server;
+						if (IP.contains(":")) {
+							String[] params1 = server.split(":");
+							IP = params1[0];
+							port = params1[1];
+						}
+						if (!server.equals("")) {
+							System.out.println("Accepted server parameters: " + server);
+							params.put("server", IP);
+							params.put("port", port);
+							params.put("mppass", "0");
+						}
 					}
 				}
 			}
 
-			// Start the game
-			new Wrapper().play();
-
-			// Enable Discord RPC if wanted
+			// Initialize Discord RPC if wanted
 			if (discord = Launcher.getProperty(Launcher.SETTINGS, "RPC").equalsIgnoreCase("true")) {
 				DiscordRPC lib = DiscordRPC.INSTANCE;
 				String applicationId = "567450523603566617";
@@ -169,10 +171,13 @@ public class Wrapper extends Applet implements AppletStub {
 				DiscordRichPresence presence = new DiscordRichPresence();
 				presence.startTimestamp = System.currentTimeMillis() / 1000;
 				presence.state = Lang.get("version") + ": " + version;
-				presence.details = "Nick: " + info[0];
+				presence.details = "Name: " + info[0];
 				lib.Discord_UpdatePresence(presence);
-				new DiscordThread(lib).start();
+				discordThread = new DiscordThread(lib);
 			}
+
+			// Start the game
+			new Wrapper().play();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -197,85 +202,90 @@ public class Wrapper extends Applet implements AppletStub {
 		}
 	}
 
-	public static void applyNatives() {
-		// Natives folder in mainFolder/versions/
-		String natives = version + "-" + session;
+	public void setPrefixAndLoadMainClass(URL[] url) {
+		classLoader = null;
+		classLoader = new URLClassLoader(url);
 
-		File lwjgl;
-		File lwjgl64;
-		File jinput;
-		File jinput64;
-		File openal;
-		File openal64;
-
-		File jinputdx8 = null;
-		File jinputdx864 = null;
-
-		// Assume the OS is Windows
-		// If not, we'll correct that in a while
-		String lwj = "lwjgl.dll";
-		String lwj64 = "lwjgl64.dll";
-		String jin = "jinput-raw.dll";
-		String jin64 = "jinput-raw_64.dll";
-		String ope = "OpenAL32.dll";
-		String ope64 = "OpenAL64.dll";
-
-		String jindx = null;
-		String jindx64 = null;
-
-		// Init file names for specific operating systems
-		if (OS.isLinux() || OS.isSolaris()) {
-			lwj = "liblwjgl.so";
-			lwj64 = "liblwjgl64.so";
-			jin = "libjinput-linux.so";
-			jin64 = "libjinput-linux64.so";
-			ope = "libopenal.so";
-			ope64 = "libopenal64.so";
-		} else if (OS.isWindows()) {
-			jindx = "jinput-dx8.dll";
-			jindx64 = "jinput-dx8_64.dll";
-		} else {
-			System.out.println("A critical error has occurred: Your operating system is not supported.");
-			System.exit(0);
-			return;
-		}
-		lwjgl = new File(mainFolder + "versions/" + natives, lwj);
-		lwjgl64 = new File(mainFolder + "versions/" + natives, lwj64);
-		jinput = new File(mainFolder + "versions/" + natives, jin);
-		jinput64 = new File(mainFolder + "versions/" + natives, jin64);
-		openal = new File(mainFolder + "versions/" + natives, ope);
-		openal64 = new File(mainFolder + "versions/" + natives, ope64);
-		if (jindx != null) {
-			jinputdx8 = new File(mainFolder + "versions/" + natives, jindx);
-			jinputdx864 = new File(mainFolder + "versions/" + natives, jindx64);
-		}
-
-		// Copy natives to session's folder
+		// I know this looks terrible, but it works!
 		try {
-			Files.copy(new File(mainFolder + "bin/natives", lwj).toPath(), lwjgl.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(new File(mainFolder + "bin/natives", lwj64).toPath(), lwjgl64.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(new File(mainFolder + "bin/natives", jin).toPath(), jinput.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(new File(mainFolder + "bin/natives", jin64).toPath(), jinput64.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(new File(mainFolder + "bin/natives", ope).toPath(), openal.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			Files.copy(new File(mainFolder + "bin/natives", ope64).toPath(), openal64.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			if (jindx != null) {
-				Files.copy(new File(mainFolder + "bin/natives", jindx).toPath(), jinputdx8.toPath(), StandardCopyOption.REPLACE_EXISTING);
-				Files.copy(new File(mainFolder + "bin/natives", jindx64).toPath(), jinputdx864.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			// Classic
+			appletClass = classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
+			ver_prefix = "Classic " + version.substring(1, version.length());
+		} catch (ClassNotFoundException ex) {
+			try {
+				appletClass = classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
+			} catch (ClassNotFoundException ex1) {
+				try {
+					// rd
+					appletClass = classLoader.loadClass("com.mojang.rubydung.RubyDung");
+					ver_prefix = "Pre-Classic " + version;
+
+					// This is a special case where we need to avoid endless running in the background
+					// and false reporting of Discord RPC.
+					Thread t = new Thread((Runnable) appletClass.newInstance());
+					t.start();
+					while (t.getState() == State.RUNNABLE || t.getState() == State.NEW) {
+						if (discordThread != null) discordThread.rpc.Discord_RunCallbacks();
+						Thread.sleep(2000);
+					}
+					this.stop();
+
+					return;
+				} catch (ClassNotFoundException ex2) {
+					try {
+						appletClass = classLoader.loadClass("com.mojang.minecraft.RubyDung");
+
+						// This is a special case where we need to avoid endless running in the background
+						// and false reporting of Discord RPC.
+						Thread t = new Thread((Runnable) appletClass.newInstance());
+						t.start();
+						while (t.getState() == State.RUNNABLE || t.getState() == State.NEW) {
+							if (discordThread != null) discordThread.rpc.Discord_RunCallbacks();
+							Thread.sleep(2000);
+						}
+						this.stop();
+
+						return;
+					} catch (ClassNotFoundException ex3) {
+						try {
+							// Indev+
+							appletClass = classLoader.loadClass("net.minecraft.client.MinecraftApplet");
+							isIndevPlus = true;
+							if (version.startsWith("in-")) {
+								ver_prefix = "Indev " + version.substring(3, version.length());
+							} else if (version.startsWith("b")) {
+								ver_prefix = "Beta " + version.substring(1, version.length());
+							} else if (version.startsWith("a")) {
+								ver_prefix = "Alpha v" + version.substring(1, version.length());
+							} else if (version.startsWith("inf-")) {
+								ver_prefix = "Infdev " + version.substring(4, version.length());
+							} else {
+								ver_prefix = version;
+							}
+						} catch (ClassNotFoundException ex4) {
+							try {
+								appletClass = classLoader.loadClass("M");
+								ver_prefix = version;
+								width = 854;
+								height = 480;
+							} catch (ClassNotFoundException ex5) {}
+						}
+					} catch (Exception ex3) {}
+				} catch (Exception ex2) {}
 			}
-		} catch (IOException e) {
-			System.out.println("An error has occurred: Could not copy natives (is there another instance of the game running?)");
-			e.printStackTrace();
+		}
+
+		try {
+			applet = (Applet) appletClass.newInstance();
+		} catch (Exception ex) {
+			ex.printStackTrace();
 		}
 	}
 
 	public void play() {
 		try {
 
-			// Copy natives
-			String nativesPath = mainFolder + "versions/" + version + "-" + session;
-			final File natives = new File(nativesPath);
-			natives.mkdirs();
-			applyNatives();
+			String nativesPath = mainFolder + "bin/natives";
 
 			// Glue everything Minecraft needs for running
 			String file = mainFolder + "versions/" + version + ".jar";
@@ -292,41 +302,11 @@ public class Wrapper extends Applet implements AppletStub {
 			url[2] = new File(file2).toURI().toURL();
 			url[3] = new File(file3).toURI().toURL();
 
-			classLoader = null;
-			classLoader = new URLClassLoader(url);
-
-			// Find game's applet or main class
-			final Class appletClass;
-			if (version.startsWith("c")) {
-				appletClass = classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
-			} else if (version.startsWith("rd")) {
-				appletClass = classLoader.loadClass("com.mojang.rubydung.RubyDung");
-
-				// This isn't an applet, we're going to run it like a Runnable
-				Runnable run = (Runnable) appletClass.newInstance();
-				run.run();
-				return;
-			} else if (version.startsWith("mc")) {
-				appletClass = classLoader.loadClass("com.mojang.minecraft.RubyDung");
-
-				// This isn't an applet, we're going to run it like a Runnable
-				Runnable run = (Runnable) appletClass.newInstance();
-				run.run();
-				return;
-			} else if (version.startsWith("4k")) {
-				// 4k needs special care
-				width = 854;
-				height = 480;
-				appletClass = classLoader.loadClass("M");
-			} else {
-				// For the rest of the versions (Indev+)
-				appletClass = classLoader.loadClass("net.minecraft.client.MinecraftApplet");
-			}
-			applet = (Applet) appletClass.newInstance();
+			setPrefixAndLoadMainClass(url);
 
 			// Replace the main game folder to .betacraft
 			// Skip versions prior to Indev. They don't support changing game folders.
-			if (!version.startsWith("4k") && !version.startsWith("c0.") && !version.startsWith("rd-") && !version.startsWith("mc-")) {
+			if (!version.startsWith("4k") && !version.startsWith("c") && !version.startsWith("rd-") && !version.startsWith("mc-")) {
 				for (final Field field : appletClass.getDeclaredFields()) {
 					final String name = field.getType().getName();
 					if (!name.contains("awt") && !name.contains("java")) {
@@ -358,6 +338,7 @@ public class Wrapper extends Applet implements AppletStub {
 			final JPanel panel = new JPanel();
 			gameFrame.setLayout(new BorderLayout());
 			panel.setPreferredSize(new Dimension(width, height)); // 854, 480
+
 			gameFrame.add(panel, "Center");
 			gameFrame.pack();
 			gameFrame.setLocationRelativeTo(null);
@@ -396,6 +377,18 @@ public class Wrapper extends Applet implements AppletStub {
 			this.init();
 			active = true;
 			this.start();
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				@Override
+				public void run() {
+					applet.stop();
+				}
+			});
+
+			// Start Discord RPC
+			discordThread.start();
+		} catch (ClassNotFoundException ex) {
+			JOptionPane.showMessageDialog(null, "Error code 6: Couldn't satisfy the wrapper with a valid .jar file. Check your version.", "Error", JOptionPane.INFORMATION_MESSAGE);
+			ex.printStackTrace();
 		} catch (Exception ex) {
 			System.out.println("A critical error has occurred!");
 			ex.printStackTrace();
@@ -470,14 +463,61 @@ public class Wrapper extends Applet implements AppletStub {
 	public void init() {
 		if (applet != null) {
 			applet.init();
-			return;
+
+			// Quit Game button for Beta :D
+			if (!isIndevPlus || version.startsWith("in") || version.startsWith("a") || !version.startsWith("b")) return;
+			try {
+				for (final Field field : appletClass.getDeclaredFields()) {
+					final String name = field.getType().getName();
+					if (!name.contains("awt") && !name.contains("java")) {
+						Field buttonTriggerField = null;
+
+						// Set Minecraft field accessible
+						field.setAccessible(true);
+						// Get the instance
+						Object mc = field.get(applet);
+
+						final Class clazz = classLoader.loadClass(name);
+						for (final Field field1 : clazz.getDeclaredFields()) {
+							if (Modifier.isPublic(field1.getModifiers())) {
+
+								if (!field1.getType().isPrimitive()) continue;
+
+								// The trigger field for the button is always public,
+								// and is always the first to be found by this code.
+								// The next public boolean field is responsible for
+								// something different, so we need to stop the code
+								// after we found the first occurrence.
+								if (field1.getType().getName().equals("boolean")) {
+									boolean bol = field1.getBoolean(mc);
+									if (bol) {
+										buttonTriggerField = field1;
+										break;
+									}
+								}
+							}
+						}
+						if (buttonTriggerField != null) {
+							buttonTriggerField.setAccessible(true);
+							buttonTriggerField.set(mc, false);
+							break;
+						}
+					}
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+			}
 		}
 	}
 
 	@Override
 	public URL getDocumentBase() {
 		try {
-			return new URL("http://www.minecraft.net/game/");
+			if (nonOnlineClassic.contains(version)) {
+				return new URL("http://www.minecraft.net:" + portCompat + "/game/");
+			} else {
+				return new URL("http://www.minecraft.net/game/");
+			}
 		}
 		catch (MalformedURLException e) {
 			e.printStackTrace();

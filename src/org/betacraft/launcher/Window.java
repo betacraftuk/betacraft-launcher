@@ -42,6 +42,8 @@ public class Window extends JFrame implements ActionListener {
 	public static String downloading = "Downloading ...";
 	public static String play_lang = "Play";
 
+	public static Tab tab = Tab.CHANGELOG;
+
 	// Launcher's icon
 	static BufferedImage img;
 
@@ -68,7 +70,7 @@ public class Window extends JFrame implements ActionListener {
 		selectedVersionDisplay = new JLabel(Launcher.chosen_version);
 		selectVersionButton = new JButton("Select version");
 		credits = new JLabel("BetaCraft Launcher made by Kazu & Moresteck");
-		nicktext = new JLabel("Nick:");
+		nicktext = new JLabel("User:");
 		optionsButton = new JButton("Options");
 		langButton = new JButton("Language");
 
@@ -224,7 +226,7 @@ public class Window extends JFrame implements ActionListener {
 						if (Launcher.getProperty(Launcher.SETTINGS, "RPC").equalsIgnoreCase("true")) {
 							File rpc = new File(BC.get() + "launcher/", "discord_rpc.jar");
 							if (!rpc.exists()) {
-								Launcher.download("https://betacraft.ovh/versions/discord_rpc.jar", rpc);
+								Launcher.download("http://betacraft.pl/versions/discord_rpc.jar", rpc);
 							}
 						}
 
@@ -245,7 +247,7 @@ public class Window extends JFrame implements ActionListener {
 						playButton.setEnabled(true);
 
 						// Start the wrapper
-						new Launcher().launchGame(Launcher.getCustomParameters(), Launcher.getLastlogin());
+						new Launcher().launchGame(Launcher.getCustomParameters(), Launcher.getLastlogin(), null);
 					}
 				}.start();
 			} catch (Exception ex) {
@@ -273,5 +275,10 @@ public class Window extends JFrame implements ActionListener {
 			}
 		};
 		SwingUtilities.invokeLater(set);
+	}
+
+	public enum Tab {
+		CHANGELOG,
+		SERVER_LIST;
 	}
 }

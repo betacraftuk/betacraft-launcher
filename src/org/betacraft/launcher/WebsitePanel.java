@@ -1,5 +1,6 @@
 package org.betacraft.launcher;
 
+
 import java.awt.Color;
 import java.net.URI;
 import java.net.URL;
@@ -14,11 +15,18 @@ import javax.swing.event.HyperlinkListener;
 public class WebsitePanel extends JPanel {
 
 	JScrollPane scrollPane = null;
+
 	private static final HyperlinkListener EXTERNAL_HYPERLINK_LISTENER = new HyperlinkListener() {
 		public void hyperlinkUpdate(final HyperlinkEvent hyperlinkEvent) {
 			if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+				URL u = hyperlinkEvent.getURL();
+				if (!u.toString().startsWith("http")) { // If the URL isn't pointing to any http/s website
+					String split = u.toString().split("/")[1];
+					String address = split.replaceAll(":", "/");
+					new Launcher().launchGame(Launcher.getCustomParameters(), Launcher.getLastlogin(), address);
+				}
 				try {
-					openLink(hyperlinkEvent.getURL().toURI());
+					openLink(u.toURI());
 				}
 				catch (Exception ex) {
 					ex.printStackTrace();
@@ -37,12 +45,52 @@ public class WebsitePanel extends JPanel {
 		catch (Throwable t) {
 			System.out.println("Failed to open link in a web browser: " + uri.toString());
 		}
-	}	
+	}
+
+	public JScrollPane getServers(boolean isConnection) {
+
+		final JEditorPane textPane = new JEditorPane();
+		try {
+			label1:
+			{
+			textPane.setEditable(false);
+			textPane.setBackground(Color.BLACK);
+			textPane.setContentType("text/html;charset=UTF-8");
+			String loading = Lang.get("srv_loading");
+			String list1 = "<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + loading + "</h1></center></font></body></html>";
+			textPane.setText(list1);
+			textPane.addHyperlinkListener(EXTERNAL_HYPERLINK_LISTENER);
+
+			if (!isConnection) {
+				textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + Lang.get("srv_failed") + "</h1><br>no connection</center></font></body></html>");
+				break label1;
+			}
+			new Thread() {
+				public void run() {
+					try {
+						textPane.setPage(new URL("http://betacraft.pl/server"));
+					}
+					catch (Exception ex) {
+						ex.printStackTrace();
+						textPane.setContentType("text/html");
+						textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + Lang.get("srv_failed") + "</h1><br>" + ex.toString() + "</center></font></body></html>");
+					}
+				}
+			}.start();
+			//this.scrollPane.getViewport().getView().setBackground(Color.BLACK);
+			}
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+		}
+		this.scrollPane = new JScrollPane(textPane);
+		this.scrollPane.setBorder(new MatteBorder(1, 1, 1, 1, Color.BLACK));
+		this.scrollPane.setWheelScrollingEnabled(true);
+		this.scrollPane.setBounds(20, 20, 750, 250);
+		return this.scrollPane;
+	}
 
 	public JScrollPane getUpdateNews(boolean isConnection) {
-		if (this.scrollPane != null) {
-			return this.scrollPane;
-		}
 
 		final JEditorPane textPane = new JEditorPane();
 		try {
@@ -63,7 +111,7 @@ public class WebsitePanel extends JPanel {
 			new Thread() {
 				public void run() {
 					try {
-						textPane.setPage(new URL("http://betacraft.ovh/versions/changelog/" + Launcher.getProperty(Launcher.SETTINGS, "language") + ".html"));
+						textPane.setPage(new URL("http://betacraft.pl/versions/changelog/" + Launcher.getProperty(Launcher.SETTINGS, "language") + ".html"));
 					}
 					catch (Exception ex) {
 						ex.printStackTrace();
