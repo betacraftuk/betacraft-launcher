@@ -43,6 +43,7 @@ public class Wrapper extends Applet implements AppletStub {
 	private static URLClassLoader classLoader; // Class loader for linking the game and natives
 	public static Class appletClass; // Minecraft's main class
 	private static boolean discord = false; // Discord RPC
+	public static String[] arguments;
 
 	private static Applet applet = null; // Game's applet
 	private static int context = 0; // Return value for isActive
@@ -69,12 +70,12 @@ public class Wrapper extends Applet implements AppletStub {
 			}
 
 			// Our wrapper arguments are differenciated by colons
-			String[] info = args[0].split(":");
+			arguments = args[0].split(":");
 			System.out.println("Wrapper arguments: " + args[0]);
 
 			// Get mppass and version
-			session = info[1];
-			version = info[2];
+			session = arguments[1];
+			version = arguments[2];
 
 			// Initialize game's main path (.betacraft)
 			String path = "";
@@ -89,8 +90,8 @@ public class Wrapper extends Applet implements AppletStub {
 			mainFolder = path;
 
 			// Add parameters for the client
-			params.put("username", info[0]);
-			params.put("sessionid", info[1]);
+			params.put("username", arguments[0]);
+			params.put("sessionid", arguments[1]);
 			params.put("haspaid", "true");
 			params.put("stand-alone", "true");
 
@@ -101,8 +102,10 @@ public class Wrapper extends Applet implements AppletStub {
 			String sysPort = System.getProperty("http.proxyPort");
 
 			// Turn on proxy if wanted
-			if (info[3].equals("true") && sysProxy == null && sysPort == null) {
+			if (arguments[3].equals("true") && sysProxy == null) {
 				System.setProperty("http.proxyHost", "betacraft.pl");
+			}
+			if (arguments[3].equals("true") && sysPort == null) {
 				System.setProperty("http.proxyPort", "80");
 			}
 
@@ -135,33 +138,6 @@ public class Wrapper extends Applet implements AppletStub {
 				return;
 			}
 
-			// Allow joining servers for Classic MP versions
-			if (ver_prefix.startsWith("Classic") && !nonOnlineClassic.contains(version)) {
-				if (info.length >= 5) {
-					String[] ipstuff = info[4].split("/");
-					params.put("server", ipstuff[0]);
-					params.put("port", ipstuff[1]);
-					params.put("mppass", session);
-				} else {
-					String server = JOptionPane.showInputDialog(null, Lang.get("server"), Launcher.getProperty(Launcher.SETTINGS, "server"));
-					String port = "25565";
-					if (server != null) {
-						String IP = server;
-						if (IP.contains(":")) {
-							String[] params1 = server.split(":");
-							IP = params1[0];
-							port = params1[1];
-						}
-						if (!server.equals("")) {
-							System.out.println("Accepted server parameters: " + server);
-							params.put("server", IP);
-							params.put("port", port);
-							params.put("mppass", "0");
-						}
-					}
-				}
-			}
-
 			// Initialize Discord RPC if wanted
 			if (discord = Launcher.getProperty(Launcher.SETTINGS, "RPC").equalsIgnoreCase("true")) {
 				DiscordRPC lib = DiscordRPC.INSTANCE;
@@ -171,7 +147,7 @@ public class Wrapper extends Applet implements AppletStub {
 				DiscordRichPresence presence = new DiscordRichPresence();
 				presence.startTimestamp = System.currentTimeMillis() / 1000;
 				presence.state = Lang.get("version") + ": " + version;
-				presence.details = "Name: " + info[0];
+				presence.details = Lang.get("nick") + ": " + arguments[0];
 				lib.Discord_UpdatePresence(presence);
 				discordThread = new DiscordThread(lib);
 			}
@@ -198,6 +174,34 @@ public class Wrapper extends Applet implements AppletStub {
 				try {
 					Thread.sleep(2000);
 				} catch (InterruptedException ignored) {}
+			}
+		}
+	}
+
+	public void askForServer() {
+		if (ver_prefix.startsWith("Classic") && !nonOnlineClassic.contains(version)) {
+			if (arguments.length >= 5) {
+				String[] ipstuff = arguments[4].split("/");
+				params.put("server", ipstuff[0]);
+				params.put("port", ipstuff[1]);
+				params.put("mppass", session);
+			} else {
+				String server = JOptionPane.showInputDialog(null, Lang.get("server"), Launcher.getProperty(Launcher.SETTINGS, "server"));
+				String port = "25565";
+				if (server != null) {
+					String IP = server;
+					if (IP.contains(":")) {
+						String[] params1 = server.split(":");
+						IP = params1[0];
+						port = params1[1];
+					}
+					if (!server.equals("")) {
+						System.out.println("Accepted server parameters: " + server);
+						params.put("server", IP);
+						params.put("port", port);
+						params.put("mppass", "0");
+					}
+				}
 			}
 		}
 	}
@@ -303,6 +307,9 @@ public class Wrapper extends Applet implements AppletStub {
 			url[3] = new File(file3).toURI().toURL();
 
 			setPrefixAndLoadMainClass(url);
+
+			// Allow joining servers for Classic MP versions
+			askForServer();
 
 			// Replace the main game folder to .betacraft
 			// Skip versions prior to Indev. They don't support changing game folders.

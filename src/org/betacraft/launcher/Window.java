@@ -226,7 +226,7 @@ public class Window extends JFrame implements ActionListener {
 						if (Launcher.getProperty(Launcher.SETTINGS, "RPC").equalsIgnoreCase("true")) {
 							File rpc = new File(BC.get() + "launcher/", "discord_rpc.jar");
 							if (!rpc.exists()) {
-								Launcher.download("http://betacraft.pl/versions/discord_rpc.jar", rpc);
+								Launcher.download("https://betacraft.pl/versions/discord_rpc.jar", rpc);
 							}
 						}
 

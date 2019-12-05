@@ -68,7 +68,7 @@ public class WebsitePanel extends JPanel {
 			new Thread() {
 				public void run() {
 					try {
-						textPane.setPage(new URL("http://betacraft.pl/server"));
+						textPane.setPage(new URL("https://betacraft.pl/server"));
 					}
 					catch (Exception ex) {
 						ex.printStackTrace();
@@ -111,7 +111,7 @@ public class WebsitePanel extends JPanel {
 			new Thread() {
 				public void run() {
 					try {
-						textPane.setPage(new URL("http://betacraft.pl/versions/changelog/" + Launcher.getProperty(Launcher.SETTINGS, "language") + ".html"));
+						textPane.setPage(new URL("https://betacraft.pl/versions/changelog/" + Launcher.getProperty(Launcher.SETTINGS, "language") + ".html"));
 					}
 					catch (Exception ex) {
 						ex.printStackTrace();

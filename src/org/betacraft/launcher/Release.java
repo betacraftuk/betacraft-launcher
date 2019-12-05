@@ -24,7 +24,7 @@ public class Release {
 		String[] offlineVersions = getOfflineVersions();
 
 		try {
-			final URL url = new URL("http://betacraft.pl/version_index");
+			final URL url = new URL("https://betacraft.pl/version_index");
 
 			InputStream onlineListStream = null;
 			try {
