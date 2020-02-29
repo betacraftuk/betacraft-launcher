@@ -1,6 +1,13 @@
 package org.betacraft.launcher;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
@@ -15,32 +22,21 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 public class Window extends JFrame implements ActionListener {
 
-	static JLabel selectedVersionDisplay = null;
+	static JLabel selectedInstanceDisplay = null;
 	static JButton playButton, selectVersionButton, optionsButton, langButton;
+	static JButton tabchangelog, tabservers, tabinstances;
 	static JLabel credits, nicktext;
-	static JTextField nick_input = null;
-	static Version versionListWindow = null;
-	static Options optionsWindow = null;
-	static Lang languageWindow = null;
+	static JButton nicknameButton = null;
 	static InfoPanel infoPanel = null;
-	static LoginPanel bottomPanel = null;
+	static BottomPanel bottomPanel = null;
+	static Component centerPanel = null;
 	public static Window mainWindow = null;
-
-	public static String max_chars = "The maximum amount of characters in a nickname is 16.";
-	public static String min_chars = "Your nickname must have at least 3 characters.";
-	public static String banned_chars = "Your nickname mustn't contain spaces and any special characters.";
-	public static String warning = "Warning";
-	public static String no_connection = "No stable internet connection.";
-	public static String download_fail = "Download failed.";
-	public static String downloading = "Downloading ...";
-	public static String play_lang = "Play";
 
 	public static Tab tab = Tab.CHANGELOG;
 
@@ -55,32 +51,117 @@ public class Window extends JFrame implements ActionListener {
 		} catch (Exception ex) {
 			Logger.a("An error occurred while loading the window icon!");
 			ex.printStackTrace();
+			Logger.printException(ex);
 		}
-		// 1697,21 + 
+
 		mainWindow = this;
-		setSize(800, 450);
-		setTitle("BetaCraft Launcher v" + Launcher.VERSION);
-		setLayout(null);
+		setMinimumSize(new Dimension(800, 480));
+		setTitle(Lang.WINDOW_TITLE);
+		setLayout(new BorderLayout());
 		setLocationRelativeTo(null);
-		setResizable(false);
 
 		// Initialize components
-		nick_input = new JTextField(Launcher.getLastlogin());
-		playButton = new JButton(play_lang);
-		selectedVersionDisplay = new JLabel(Launcher.chosen_version);
-		selectVersionButton = new JButton("Select version");
-		credits = new JLabel("BetaCraft Launcher made by Kazu & Moresteck");
-		nicktext = new JLabel("User:");
-		optionsButton = new JButton("Options");
-		langButton = new JButton("Language");
+		nicknameButton = new JButton(String.format(Lang.WINDOW_USER, Launcher.getNickname()));
+		playButton = new JButton(Lang.WINDOW_PLAY);
+		selectedInstanceDisplay = new JLabel(Launcher.currentInstance.name + " [" + Launcher.currentInstance.version + "]");
+		selectVersionButton = new JButton(Lang.WINDOW_SELECT_VERSION);
+		credits = new JLabel(Lang.WINDOW_CREDITS);
+		nicktext = new JLabel(Lang.WINDOW_USER);
+		optionsButton = new JButton(Lang.WINDOW_OPTIONS);
+		langButton = new JButton(Lang.WINDOW_LANGUAGE);
 
-		infoPanel = new InfoPanel(true);
-		Window.mainWindow.add(infoPanel);
+		nicknameButton.setContentAreaFilled(false);
+		//login.setBorderPainted(true);
+		//Border b = new BevelBorder(JFrame.DO_NOTHING_ON_CLOSE, Color.GRAY, Color.DARK_GRAY);
+		//login.setBorder(b);
+		nicknameButton.setOpaque(false);
+		nicknameButton.setForeground(Color.WHITE);
 
-		bottomPanel = new LoginPanel();
-		add(bottomPanel);
+		nicknameButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				new LoginPanel();
+			}
+		});
 
-		resizeObjects();
+		bottomPanel = new BottomPanel();
+		centerPanel = new WebsitePanel().getUpdateNews(true);
+		this.add(Window.centerPanel, BorderLayout.CENTER);
+		this.add(Window.bottomPanel, BorderLayout.SOUTH);
+
+		JPanel stuffz = new JPanel() {
+			public void update(final Graphics graphics) {
+				this.paint(graphics);
+			}
+
+			public void paintComponent(Graphics g) {
+				bottomPanel.paintComponent(g);
+			}
+		};
+		stuffz.setLayout(new GridBagLayout());
+		tabchangelog = new JButton("Changelog");
+		tabinstances = new JButton("Instances");
+		tabservers = new JButton("Classic servers");
+		positionButtons();
+
+		tabchangelog.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (Window.tab != Tab.CHANGELOG) {
+					mainWindow.remove(Window.centerPanel);
+					centerPanel = new WebsitePanel().getUpdateNews(true);
+					Window.tab = Tab.CHANGELOG;
+					mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
+					mainWindow.pack();
+				}
+			}
+		});
+		
+		tabinstances.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (Window.tab != Tab.INSTANCES) {
+					/*mainWindow.remove(Window.centerPanel);
+					centerPanel = new WebsitePanel().getInstances();
+					Window.tab = Tab.INSTANCES;
+					mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
+					mainWindow.pack();*/
+
+					new InstanceList();
+				}
+			}
+		});
+		
+		tabservers.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (Window.tab != Tab.SERVER_LIST) {
+					mainWindow.remove(Window.centerPanel);
+					centerPanel = new WebsitePanel().getServers(true);
+					Window.tab = Tab.SERVER_LIST;
+					mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
+					mainWindow.pack();
+				}
+			}
+		});
+
+		GridBagConstraints constr = new GridBagConstraints();
+		constr.fill = GridBagConstraints.BOTH;
+		constr.gridwidth = GridBagConstraints.RELATIVE;
+		constr.gridy = 0;
+		constr.gridx = 0;
+		constr.weightx = 0.0;
+		constr.gridwidth = 1;
+		constr.insets = new Insets(0, 2, 0, 2);
+		stuffz.add(tabchangelog, constr);
+
+		constr.gridx = 1;
+		stuffz.add(tabinstances, constr);
+
+		constr.gridx = 2;
+		stuffz.add(tabservers, constr);
+
+		this.add(stuffz, BorderLayout.NORTH);
 
 		// Buttons are being added in LoginPanel.paintComponent()
 		// because it will put them above the bottom panel's background
@@ -88,176 +169,120 @@ public class Window extends JFrame implements ActionListener {
 		// Add some texture to the components
 		credits.setForeground(Color.LIGHT_GRAY);
 		nicktext.setForeground(Color.WHITE);
-		selectedVersionDisplay.setForeground(Color.WHITE);
-
-		optionsButton.setBackground(Color.LIGHT_GRAY);
-		selectVersionButton.setBackground(Color.LIGHT_GRAY);
-		playButton.setBackground(Color.LIGHT_GRAY);
-		langButton.setBackground(Color.LIGHT_GRAY);
+		selectedInstanceDisplay.setForeground(Color.WHITE);
 
 		// Add listeners for components
 		playButton.addActionListener(this);
 		selectVersionButton.addActionListener(this);
 		optionsButton.addActionListener(this);
 		langButton.addActionListener(this);
-		playButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				Launcher.write(new File(BC.get(), "lastlogin"), new String[] {nick_input.getText()}, false);
-			}
-		});
-		nick_input.getDocument().addDocumentListener(new DocumentListener() {
-
-			public void changedUpdate(DocumentEvent e) {
-				change();
-			}
-			public void removeUpdate(DocumentEvent e) {
-				change();
-			}
-			public void insertUpdate(DocumentEvent e) {
-				change();
-			}
-
-			public void change() {
-				if (nick_input.getText().length() > 16) {
-					JOptionPane.showMessageDialog(null, max_chars, warning, JOptionPane.WARNING_MESSAGE);
-					Window.setTextInField(nick_input, nick_input.getText().substring(0, 16));
-
-					// Save the lastlogin to fix "" player issue
-					Launcher.write(new File(BC.get(), "lastlogin"), new String[] {nick_input.getText()}, false);
-				}
-			}
-		});
 
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 			@Override
 			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-				Launcher.write(new File(BC.get(), "lastlogin"), new String[] {nick_input.getText()}, false);
 				Logger.a("Deactivation...");
-				Window.quit();
+				Window.quit(true);
 			}
 		});
-
-		// TODO: Make the window resizeable for 1.09
-		/*this.addComponentListener(new ComponentAdapter() {
-		    public void componentResized(ComponentEvent componentEvent) {
-		    	if (componentEvent.getComponent().getSize().width < 800 || componentEvent.getComponent().getSize().height < 450) {
-		    		componentEvent.getComponent().setSize(800, 450);
-		    	}
-		        resizeObjects();
-		    }
-		});*/
+		this.pack();
 	}
 
-	public static void resizeObjects() {
-		int width = mainWindow.getSize().width / 2; // 400
-		//int height = window.getSize().height / 2; // 450
+	public static void positionButtons() {
+		JButton largest = selectVersionButton;
+		if (largest.getPreferredSize().getWidth() < langButton.getPreferredSize().getWidth()) {
+			largest = langButton;
+		}
+		if (largest.getPreferredSize().getWidth() < optionsButton.getPreferredSize().getWidth()) {
+			largest = optionsButton;
+		}
+		selectVersionButton.setPreferredSize(largest.getPreferredSize());
+		langButton.setPreferredSize(largest.getPreferredSize());
+		optionsButton.setPreferredSize(largest.getPreferredSize());
 
-		infoPanel.setBounds(0, 0, 800, 290);
-		playButton.setBounds(((Double)(width * 0.75)).intValue(), 50, 195, 36);
-		nick_input.setBounds(((Double)(width * 0.84)).intValue(), 20, 120, 24); // 337
-		credits.setBounds(15, 90, 390, 30);
-		selectVersionButton.setBounds(((Double)(width * 0.13)).intValue(), 39, 150, 20); // 50
-		nicktext.setBounds(((Double)(width * 0.75)).intValue(), 21, 35, 20);
-		optionsButton.setBounds(((Double)(width * 0.13)).intValue(), 60, 150, 20);
-		langButton.setBounds(600, 60, 150, 20);
-		selectedVersionDisplay.setBounds(55, 21, 100, 20);
+		largest = tabservers;
+		if (largest.getPreferredSize().getWidth() < tabinstances.getPreferredSize().getWidth()) {
+			largest = tabinstances;
+		}
+		if (largest.getPreferredSize().getWidth() < tabchangelog.getPreferredSize().getWidth()) {
+			largest = tabchangelog;
+		}
+		tabchangelog.setPreferredSize(largest.getPreferredSize());
+		tabinstances.setPreferredSize(largest.getPreferredSize());
+		tabservers.setPreferredSize(largest.getPreferredSize());
 	}
 
-	public static void quit() {
-		mainWindow.setVisible(false);
-		mainWindow.dispose();
-		System.exit(0);
+	public static void quit(boolean close) {
+		if (mainWindow != null) mainWindow.setVisible(false);
+		if (mainWindow != null) mainWindow.dispose();
+		Launcher.setProperty(Launcher.SETTINGS, "tab", tab.name());
+		if (close) System.exit(0);
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 
-		// Initialize other windows if not initialized already
-		if (source == selectVersionButton && versionListWindow == null) {
-			versionListWindow = new Version();
+		// Initialize other windows if needed
+		if (source == selectVersionButton) {
+			new SelectVersion();
 		}
-		if (source == optionsButton && optionsWindow == null) {
-			optionsWindow = new Options();
-		}
-		if (source == langButton && languageWindow == null) {
-			languageWindow = new Lang();
-		}
-
-		// Respond to actions
 		if (source == optionsButton) {
-			optionsWindow.setVisible(true);
+			new InstanceSettings();
 		}
 		if (source == langButton) {
-			languageWindow.setVisible(true);
+			new Lang();
 		}
+
 		if (source == playButton) {
-			if (nick_input.getText().length() < 3) {
-				JOptionPane.showMessageDialog(null, min_chars, warning, JOptionPane.WARNING_MESSAGE);
-				return;
-			}
-
-			// Check for banned characters
-			for (int i = 0; i < nick_input.getText().length(); i++) {
-				if ("-0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz".indexOf(nick_input.getText().charAt(i)) < 0) {
-					JOptionPane.showMessageDialog(null, banned_chars, warning, JOptionPane.WARNING_MESSAGE);
-					return;
-				}
-			}
-
 			playButton.setEnabled(false);
 			try {
 				new Thread() {
 					public void run() {
-						setStatus(playButton, downloading);
-						File wrapper = new File(BC.get() + "launcher/", "betacraft_wrapper.jar");
+						setStatus(playButton, Lang.WINDOW_DOWNLOADING);
+						File wrapper = new File(BC.get() + "launcher", "betacraft_wrapper.jar");
 						try {
 							Files.copy(Launcher.currentPath.toPath(), wrapper.toPath(), StandardCopyOption.REPLACE_EXISTING);
 						} catch (FileSystemException ex) {
 							// There is another instance of the game running, we are going to ignore it
 						} catch (Exception ex) {
 							ex.printStackTrace();
+							Logger.printException(ex);
 							JOptionPane.showMessageDialog(null, "The file could not be copied! Try running with Administrator rights. If that won't help, contact me: @Moresteck#1688", "Error", JOptionPane.ERROR_MESSAGE);
 							return;
 						}
 
 						// Download Discord RPC if the checkbox is selected
-						if (Launcher.getProperty(Launcher.SETTINGS, "RPC").equalsIgnoreCase("true")) {
-							File rpc = new File(BC.get() + "launcher/", "discord_rpc.jar");
+						if (Launcher.currentInstance.RPC) {
+							File rpc = new File(BC.get() + "launcher", "discord_rpc.jar");
 							if (!rpc.exists()) {
-								Launcher.download("https://betacraft.pl/versions/discord_rpc.jar", rpc);
+								Launcher.download("https://betacraft.pl/launcher/assets/discord_rpc.jar", rpc);
 							}
 						}
 
 						// Download the game if not done already
-						if (!Launcher.isReadyToPlay(Launcher.chosen_version)) {
-							if (DownloadResult.OK != Launcher.download(Launcher.getVerLink(Launcher.chosen_version), new File(Launcher.getVerFolder(), Launcher.chosen_version + ".jar"))) {
-								JOptionPane.showMessageDialog(null, no_connection, download_fail, JOptionPane.ERROR_MESSAGE);
+						if (!Launcher.isReadyToPlay(Launcher.currentInstance.version)) {
+							if (DownloadResult.OK != Launcher.download(Release.getReleaseByName(Launcher.currentInstance.version).getJson().getDownloadURL(), new File(Launcher.getVerFolder(), Launcher.currentInstance.version + ".jar"))) {
+								JOptionPane.showMessageDialog(null, Lang.ERR_NO_CONNECTION, Lang.ERR_DL_FAIL, JOptionPane.ERROR_MESSAGE);
 							}
 						}
 
-						// Download the natives if not done already
-						if (!Launcher.nativesDownloaded(false)) {
-							Launcher.nativesDownloaded(true);
-						}
+						// Download the latest libs and natives
+						if (!Launcher.checkDepends()) Launcher.downloadDepends();
 
 						// Update the button state
-						setStatus(playButton, play_lang);
+						setStatus(playButton, Lang.WINDOW_PLAY);
 						playButton.setEnabled(true);
 
 						// Start the wrapper
-						new Launcher().launchGame(Launcher.getCustomParameters(), Launcher.getLastlogin(), null);
+						new Launcher().launchGame(Launcher.currentInstance);
 					}
 				}.start();
 			} catch (Exception ex) {
-
+				Logger.printException(ex);
 			}
-		} else if (source == selectVersionButton) {
-			versionListWindow.setVisible(true);
 		}
-		Lang.apply();
 	}
+
 
 	public static void setTextInField(final JTextField field, final String toSet) {
 		Runnable set = new Runnable() {
@@ -279,6 +304,7 @@ public class Window extends JFrame implements ActionListener {
 
 	public enum Tab {
 		CHANGELOG,
+		INSTANCES,
 		SERVER_LIST;
 	}
 }

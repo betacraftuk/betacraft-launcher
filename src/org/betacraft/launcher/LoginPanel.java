@@ -1,67 +1,123 @@
 package org.betacraft.launcher;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.GradientPaint;
-import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.geom.Point2D;
-import java.io.IOException;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
-import javax.imageio.ImageIO;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 
-public class LoginPanel extends JPanel {
-	Image image = null;
-	Image img;
+public class LoginPanel extends JFrame {
+
+	static JCheckBox rememberpassword;
+
+	static JLabel emailText;
+	static JTextField email;
+
+	static JLabel passwordText;
+	static JTextField password;
+
+	static JButton OKButton;
 
 	public LoginPanel() {
-		setBounds(0, 290, 160, 800);
-		setSize(800, 160); // replace 140 with 450 in case you want to go back
-		setLayout(null);
-		try {
-			image = ImageIO.read(Launcher.class.getResource("/icons/dirt.png")).getScaledInstance(32, 32, 16);
-		} catch (IOException e2) {
-			e2.printStackTrace();
-			return;
-		}
-	}
+		Logger.a("Logging window has been opened.");
+		this.setIconImage(Window.img);
+		setTitle(Lang.LOGIN_TITLE);
+		setResizable(true);
+		this.setMinimumSize(new Dimension(360, 240));
 
-	public void update(final Graphics graphics) {
-		this.paint(graphics);
-	}
+		JPanel panel = new InstanceSettings.OptionsPanel();
+		panel.setLayout(new GridBagLayout());
 
-	public void paintComponent(Graphics g) {
-		final int n = this.getWidth() / 2 + 1;
-		final int n2 = this.getHeight() / 2 + 1;
-		if (this.img == null || this.img.getWidth(null) != n || this.img.getHeight(null) != n2) {
-			this.img = this.createImage(n, n2);
-			final Graphics graphics2 = this.img.getGraphics();
-			for (int i = 0; i <= n / 32; ++i) {
-				for (int j = 0; j <= n2 / 32; ++j) {
-					graphics2.drawImage(this.image, i * 32, j * 32, null);
+		GridBagConstraints constr = new GridBagConstraints();
+
+		constr.gridx = 0;
+		constr.gridy = 0;
+		constr.fill = GridBagConstraints.BOTH;
+		constr.gridwidth = 4;
+		constr.weightx = 1.0;
+		constr.insets = new Insets(10, 10, 0, 10);
+
+		constr.fill = GridBagConstraints.HORIZONTAL;
+		constr.gridwidth = 1;
+		constr.gridx = 0;
+		constr.weightx = 0.0;
+
+		constr.gridy++;
+		emailText = new JLabel(Lang.LOGIN_EMAIL_NICKNAME);
+		emailText.setForeground(Color.LIGHT_GRAY);
+		panel.add(emailText, constr);
+
+		constr.gridx = 1;
+		email = new JTextField(MojangLogging.email, 6);
+		panel.add(email, constr);
+
+		constr.gridx = 0;
+		constr.gridy++;
+		passwordText = new JLabel(Lang.LOGIN_PASSWORD);
+		passwordText.setForeground(Color.LIGHT_GRAY);
+		panel.add(passwordText, constr);
+
+		constr.gridx = 1;
+		password = new JPasswordField(MojangLogging.password, 6);
+		panel.add(password, constr);
+
+		constr.gridy++;
+		rememberpassword = new JCheckBox(Lang.LOGIN_REMEMBER_PASSWORD);
+		rememberpassword.setForeground(Color.LIGHT_GRAY);
+		rememberpassword.setOpaque(false);
+		//rememberpassword.setEnabled(false);
+		String entry = Launcher.getProperty(Launcher.SETTINGS, "remember-password");
+		boolean remember = false;
+		if (!entry.equals("")) remember = Boolean.parseBoolean(entry);
+		rememberpassword.setSelected(remember);
+		panel.add(rememberpassword, constr);
+		// =================================================================
+
+		JPanel okPanel = new InstanceSettings.OptionsPanel();
+		okPanel.setLayout(new GridBagLayout());
+
+		constr.fill = GridBagConstraints.HORIZONTAL;
+		constr.gridx = 0;
+		constr.gridy = constr.gridy + 1;
+		constr.weighty = 1.0;
+		constr.insets = new Insets(2, 2, 2, 2);
+		constr.gridwidth = GridBagConstraints.RELATIVE;
+		constr.gridheight = 1;
+		constr.weightx = 1.0;
+		OKButton = new JButton(Lang.OPTIONS_OK);
+		OKButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (password.getText().equals("")) {
+					MojangLogging.email = email.getText();
+					Window.nicknameButton.setText(String.format(Lang.WINDOW_USER, MojangLogging.email));
+				} else {
+					new MojangLogging().authenticate(email.getText(), password.getText());
 				}
+				Launcher.setProperty(Launcher.SETTINGS, "remember-password", Boolean.toString(rememberpassword.isSelected()));
+				if (!rememberpassword.isSelected()) MojangLogging.password = "";
+				Launcher.saveLastLogin();
+				setVisible(false);
 			}
-			if (graphics2 instanceof Graphics2D) {
-				final Graphics2D graphics2D = (Graphics2D)graphics2;
-				final int n3 = 1;
-				graphics2D.setPaint(new GradientPaint(new Point2D.Float(0.0f, 0.0f), new Color(553648127, true), new Point2D.Float(0.0f, n3), new Color(0, true)));
-				graphics2D.fillRect(0, 0, n, n3);
-				final int n4 = n2;
-				graphics2D.setPaint(new GradientPaint(new Point2D.Float(0.0f, 0.0f), new Color(0, true), new Point2D.Float(0.0f, n4), new Color(1610612736, true)));
-				graphics2D.fillRect(0, 0, n, n4);
-			}
-			graphics2.dispose();
-		}
-		g.drawImage(this.img, 0, 0, n * 2, n2 * 2, null);
+		});
+		okPanel.add(OKButton, constr);
+		okPanel.setBackground(Color.WHITE);
 
-		add(Window.playButton);
-		add(Window.nick_input);
-		add(Window.credits);
-		add(Window.selectVersionButton);
-		add(Window.nicktext);
-		add(Window.optionsButton);
-		add(Window.langButton);
-		add(Window.selectedVersionDisplay);
+		this.getContentPane().add(panel, BorderLayout.CENTER);
+		this.getContentPane().add(okPanel, BorderLayout.PAGE_END);
+		this.pack();
+		setLocationRelativeTo(Window.mainWindow);
+		setVisible(true);
 	}
 }

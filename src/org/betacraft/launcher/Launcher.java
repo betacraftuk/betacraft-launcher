@@ -1,71 +1,189 @@
 package org.betacraft.launcher;
 
+import java.awt.Image;
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Constructor;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.Scanner;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.PBEParameterSpec;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
+import org.betacraft.ClassicMPWrapper;
+import org.betacraft.ClassicWrapper;
+import org.betacraft.FkWrapper;
+import org.betacraft.PreClassicWrapper;
 import org.betacraft.Wrapper;
+import org.betacraft.launcher.Window.Tab;
 
 // Main class
 public class Launcher {
 	// Location of the launcher executable
 	public static File currentPath;
-	public static File SETTINGS = new File(BC.get() + "launcher/", "launcher.settings");
+	public static File SETTINGS;
 
 	// Chosen version on init is equivalent to the BetaCraft's server version
-	public static String chosen_version = "b1.7.3";
-	public static String VERSION = "1.08_02"; // TODO Always update this
+	public static String VERSION = "1.09"; // TODO Always update this
 
 	// This is done incorrectly, but seems to not cause bugs,
 	// so it's here to stay this way, at least for now
 	public static Integer sessions = 0;
 
-	public static String update = "There is a new version of the launcher available (%s). Would you like to update?";
-	public static String lang_version = "Version";
+	public static Instance currentInstance;
 
 	public static void main(String[] args) {
-		// Create required directories
-		new File(BC.get() + "versions/").mkdirs();
-		new File(BC.get() + "launcher/lang/").mkdirs();
-		new File(BC.get() + "bin/natives/").mkdirs();
-
-		Logger.a("BetaCraft Launcher v" + VERSION + " loaded.");
-
-		// If the properties file doesn't exist, create it
-		if (!SETTINGS.exists() || Lang.get("version").equals("")) {
-			writeDefault();
+		try {
+			if (OS.isLinux()) UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+			if (OS.isWindows()) UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+		} catch (Exception ex) {
+			// why
+			try {
+				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			} catch (Exception ex1) {
+				ex1.printStackTrace();
+				Logger.printException(ex1);
+			}
 		}
 
-		// Unload natives from previous sessions if they're not active
+		try {
+			// Define a current path for the launcher
+			String p = Window.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
+			if (OS.isWindows()) {
+				p = p.substring(1, p.length());
+			}
+			currentPath = new File(p);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
 
 		// Launch the game if wanted
 		if (args.length > 0 && args[0].equals("wrap")) {
+			BC.wrapped = true;
+			SETTINGS = new File(BC.get() + "launcher", "launcher.settings");
+			Lang.refresh();
+			String username = args[1];
+			String sessionid = args[2];
+			String server = args[3].equals("-") ? null : args[3];
+			String mppass = args[4].equals("-") ? "0" : args[4];
 			// Convert arguments to work with Wrapper
-			String[] split = new String[args.length-1];
-			for (int i = 1; i < args.length; i++) {
-				split[i-1] = args[i];
+			StringBuilder split = new StringBuilder();
+			for (int i = 5; i < args.length; i++) {
+				split.append(args[i] + " ");
+			}
+			String instanceName = split.toString();
+			instanceName = instanceName.substring(0, instanceName.length() - 1);
+
+			currentInstance = Instance.loadInstance(instanceName);
+			ReleaseJson json = new ReleaseJson(currentInstance.version, false);
+			String meth = json.getLaunchMethod();
+
+			// Get addons as classes
+			ArrayList<Class> addons = new ArrayList<Class>();
+			if (!currentInstance.addons.equals("")) {
+				try {
+					URLClassLoader loader = new URLClassLoader(new URL[] {
+				            new URL("file://" + BC.get() + "launcher" + File.separator + "addons" + File.separator)
+				    });
+					System.out.println("Loading addons...");
+					for (String s : currentInstance.addons) {
+						//File classFile = new File(BC.get() + "launcher" + File.separator + "addons", s + ".class");
+						System.out.println("- " + s);
+						addons.add(loader.loadClass(s));
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					Logger.printException(ex);
+				}
+			}
+			
+			if (meth.equalsIgnoreCase("rd") || meth.equalsIgnoreCase("mc")) {
+				new PreClassicWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WINDOW_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+			} else if (meth.equalsIgnoreCase("classic")) {
+				new ClassicWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WINDOW_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+			} else if (meth.equalsIgnoreCase("classicmp")) {
+				new ClassicMPWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WINDOW_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+			} else if (meth.equalsIgnoreCase("indev")) {
+				new Wrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WINDOW_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+			} else if (meth.equalsIgnoreCase("4k")) {
+				new FkWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WINDOW_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+			} else {
+				try {
+					URLClassLoader loader = new URLClassLoader(new URL[] {
+				            new URL("file://" + BC.get() + "launcher" + File.separator + "launch-methods" + File.separator)
+				    });
+					System.out.print(meth);
+					Class c = loader.loadClass(meth);
+					Constructor con = c.getConstructor(String.class, String.class, String.class, String.class, String.class, Integer.class, Integer.class, Boolean.class, String.class, String.class, String.class, String.class, String.class, Image.class, ArrayList.class);
+					con.newInstance(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WINDOW_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					Logger.printException(ex);
+				}
 			}
 
 			// Try to start the game
-			Wrapper.main(split);
+			//Wrapper.main(split);
 			return;
+		}
+
+		SETTINGS = new File(BC.get() + "launcher", "launcher.settings");
+
+		if (SETTINGS.exists() && !getProperty(SETTINGS, "version").equals("1")) {
+			removeRecursively(new File(BC.get() + "launcher"));
+			writeDefault();
+		}
+
+		// Create required directories
+		new File(BC.get() + "versions" + File.separator + "jsons").mkdirs();
+		new File(BC.get() + "launcher" + File.separator + "lang").mkdirs();
+		new File(BC.get() + "launcher" + File.separator + "addons").mkdirs();
+		new File(BC.get() + "launcher" + File.separator + "instances").mkdirs();
+		new File(BC.get() + "launcher" + File.separator + "launch-methods").mkdirs();
+		new File(BC.get() + "bin" + File.separator + "natives").mkdirs();
+
+		Logger.a("BetaCraft Launcher v" + VERSION + " loaded.");
+
+		// Load language pack
+		Lang.refresh();
+		readLastLogin();
+
+		// If the properties file doesn't exist, create it
+		if (!SETTINGS.exists() || Launcher.getProperty(SETTINGS, "lastInstance").equals("")) {
+			writeDefault();
+			currentInstance = Instance.newInstance(Launcher.getProperty(Launcher.SETTINGS, "lastInstance"));
+			currentInstance.saveInstance();
+		} else {
+			currentInstance = Instance.loadInstance(Launcher.getProperty(Launcher.SETTINGS, "lastInstance"));
+			if (currentInstance == null) {
+				currentInstance = Instance.newInstance(Launcher.getProperty(Launcher.SETTINGS, "lastInstance"));
+				currentInstance.saveInstance();
+			}
 		}
 
 		// Finish updating of the launcher if wanted
@@ -106,53 +224,70 @@ public class Launcher {
 				System.exit(0);
 			} catch (Exception ex) {
 				ex.printStackTrace();
+				Logger.printException(ex);
 				System.exit(0);
 			}
 			return;
 		}
 
-		// Define last chosen version
-		String ver = Launcher.getProperty(SETTINGS, "version");
-		if (!ver.equals("")) {
-			chosen_version = ver;
-		}
-
 		try {
-			// Define a current path for the launcher
-			String p = Window.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-			if (OS.isWindows()) {
-				p = p.substring(1, p.length());
-			}
-			currentPath = new File(p);
-
 			// Create UI
+
+			// TODO Check for updates
+			if (Launcher.checkForUpdate(true)) Launcher.downloadUpdate(true);
 			new Window();
+			if (!MojangLogging.password.equals("")) {
+				new MojangLogging().authenticate(MojangLogging.email, MojangLogging.password);
+			} else {
+				if (MojangLogging.email.equals("")) {
+					Window.nicknameButton.setText(Lang.LOGIN_CLICK_HERE_TO_LOG_IN);
+				} else {
+					Window.nicknameButton.setText(String.format(Lang.WINDOW_USER, MojangLogging.email));
+				}
+			}
 			Release.initVersions();
+			Addon.loadAddons();
+			ModsRepository.loadMods();
 		} catch (Exception ex) {
 			Logger.a("A critical error has occurred while trying to initialize the launcher!");
 			ex.printStackTrace();
+			Logger.printException(ex);
 		}
 
 		// Finish UI
 		Window.mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		Window.mainWindow.setVisible(true);
-
-		// Load language pack
-		String lang = Launcher.getProperty(Launcher.SETTINGS, "language");
-		if (!lang.equals("")) {
-			// Refresh the language pack to match the latest version
-			Lang.download(lang);
-		}
-		Lang.apply();
-
-		// Check for updates
-		if (Launcher.checkForUpdate(true)) Launcher.downloadUpdate(true);
 	}
 
-	public void launchGame(ArrayList<String> customparams, final String username, String address) {
+	public static void restart() {
+		try {
+			ArrayList<String> params = new ArrayList<String>();
+			params.add("java");
+			params.add("-jar");
+			params.add(currentPath.toPath().toString());
+			ProcessBuilder builder = new ProcessBuilder(params);
+			builder.start();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+		}
+		Window.quit(true);
+	}
+
+	public static void setInstance(Instance instance) {
+		Launcher.currentInstance = instance;
+		Window.selectedInstanceDisplay.setText(Launcher.currentInstance.name + " [" + Launcher.currentInstance.version + "]");
+		setProperty(SETTINGS, "lastInstance", Launcher.currentInstance.name);
+	}
+
+	public void launchGame(Instance instance) {
+		this.launchGame(instance, "-", "-");
+	}
+
+	public void launchGame(Instance instance, String server, String mppass) {
 		try {
 			// Rarely there will be no chosen version, so we need to check that
-			if (chosen_version != null) {
+			if (instance.version != null) {
 				ArrayList<String> params = new ArrayList<String>();
 
 				// The colon in the launch arguments is different for Windows
@@ -168,32 +303,45 @@ public class Launcher {
 				// Additional parameters:
 				// - Discord RPC
 				String add = "";
-				if (Launcher.getProperty(SETTINGS, "RPC").equalsIgnoreCase("true")) {
+				if (instance.RPC) {
 					// Add DRPC to the launch arguments
-					add = colon + BC.get() + "launcher/discord_rpc.jar";
+					add = colon + BC.get() + "launcher" + File.separator + "discord_rpc.jar";
 				}
 
 				// Add custom parameters from options
-				if (customparams != null && !customparams.isEmpty()) {
-					params.addAll(customparams);
+				if (instance.launchArgs != null && !instance.launchArgs.isEmpty()) {
+					params.addAll(getCustomParameters());
 				}
 
-				boolean proxy = Launcher.getProperty(Launcher.SETTINGS, "proxy").equals("true");
-
-				if (address == null) {
-					address = "";
-				} else {
-					address = ":" + address;
+				if (instance.proxy) {
+					String[] args = Release.getReleaseByName(instance.version).getJson().getProxyArgs().split(" ");
+					for (String s : args) {
+						params.add(s);
+					}
 				}
 
 				// Add the rest of params and launch the wrapper
 				params.add("-cp");
-				params.add(BC.get() + "launcher/betacraft_wrapper.jar" + add);
-				params.add("org.betacraft.Wrapper");
-				params.add(username + ":" + Integer.toString(sessions) + ":" + chosen_version + ":" + proxy + address);
-				params.add(BC.get());
+				params.add(BC.get() + "launcher" + File.separator + "betacraft_wrapper.jar" + add);
+				params.add("org.betacraft.launcher.Launcher");
+				params.add("wrap");
+				params.add(getNickname());
+				if (MojangLogging.userProfile != null) {
+					params.add(getAuthToken(true));
+				} else {
+					params.add("0");
+				}
+				params.add(server);
+				params.add(mppass);
+				params.add(currentInstance.name);
+				System.out.println(params.toString());
 				ProcessBuilder builder = new ProcessBuilder(params);
 				builder.start();
+
+				// Close the launcher if desired
+				if (!instance.keepopen) {
+					Window.quit(true);
+				}
 
 				// For debugging
 				/*Process process = builder.start();
@@ -204,188 +352,145 @@ public class Launcher {
 				while ((line1 = br.readLine()) != null) {
 					Logger.a(line1);
 				}*/
-
-				// Close the launcher if desired
-				if (!Launcher.getProperty(SETTINGS, "keepopen").equals("true")) {
-					Window.quit();
-				}
 				return;
 			}
 		} catch (Exception ex) {
 			Logger.a("A critical error has occurred while attempting to launch the game!");
 			ex.printStackTrace();
+			Logger.printException(ex);
 		}
 	}
 
 	public static void writeDefault() {
-		setProperty(SETTINGS, "launch", "-Xmx1G");
 		setProperty(SETTINGS, "language", "English");
-		setProperty(SETTINGS, "version", "b1.7.3");
-		setProperty(SETTINGS, "RPC", "true");
-		setProperty(SETTINGS, "keepopen", "false");
-		setProperty(SETTINGS, "proxy", "true");
+		setProperty(SETTINGS, "lastInstance", "(default instance)");
+		setProperty(SETTINGS, "tab", Tab.CHANGELOG.name());
+		setProperty(SETTINGS, "version", "1");
 	}
 
-	public static String getVerLink(String version) {
-		return "https://betacraft.pl/versions/" + version + ".jar";
+	public static void removeRecursively(File folder) {
+		String[] entries = folder.list();
+		for (String s: entries) {
+			File currentFile = new File(folder.getPath(), s);
+			if (currentFile.isDirectory()) {
+				for (String s1 : currentFile.list()) {
+					// Delete files inside this folder
+					new File(currentFile.getPath(), s1).delete();
+				}
+				try {
+					Files.delete(currentFile.toPath());
+				} catch (Exception ex) {}
+			}
+		}
 	}
 
 	public static File getVerFolder() {
-		return new File(BC.get() + "versions/");
+		return new File(BC.get() + "versions" + File.separator);
 	}
 
 	public static boolean isReadyToPlay(String version) {
 		File file = new File(getVerFolder(), version + ".jar");
+		boolean bol = false;
 		if (file.exists() && !file.isDirectory()) {
-			return true;
+			bol = true;
 		}
-		return false;
+		boolean bol1 = false;
+		ReleaseJson json = Release.getReleaseByName(version).getJson();
+		if (!json.getLaunchMethodLink().equals("")) {
+			if (download(json.getLaunchMethodLink(), new File(BC.get() + "launcher" + File.separator + "launch-methods", json.getLaunchMethod() + ".class")) != DownloadResult.FAILED_WITHOUT_BACKUP) {
+				bol1 = true;
+			} else {
+				JOptionPane.showMessageDialog(null, "Couldn't download the launch method.", "Error", JOptionPane.ERROR_MESSAGE);
+				bol1 = false;
+			}
+		}
+		boolean bol2 = false;
+		for (String s : Launcher.currentInstance.addons) {
+			if (download("https://betacraft.pl/launcher/assets/addons/" + s + ".class", new File(BC.get() + "launcher" + File.separator + "addons", s + ".class")) != DownloadResult.FAILED_WITHOUT_BACKUP) {
+				bol2 = true;
+			} else {
+				JOptionPane.showMessageDialog(null, "Couldn't download addon: " + s, "Error", JOptionPane.ERROR_MESSAGE);
+			}
+		}
+		return bol && bol1 && bol2;
 	}
 
-	// This method has two uses:
-	// one use is to download the natives - true
-	// the other one is to check if natives are downloaded - false
-	public static boolean nativesDownloaded(boolean download) {
-		File lwjgl = new File(BC.get() + "bin/", "lwjgl.jar");
-		File lwjglutil = new File(BC.get() + "bin/", "lwjgl_util.jar");
-		File jinput = new File(BC.get() + "bin/", "jinput.jar");
-
-		File jinputDll = null;
-		File jinputDll64 = null;
-		File lwjgl32 = null;
-		File lwjgl64 = null;
-		File openal = null;
-		File openal64 = null;
-
-		File jinput_dx8 = null;
-		File jinput_dx8_64 = null;
-
-		if (OS.isLinux()) {
-			jinputDll = new File(BC.get() + "bin/natives/", "libjinput-linux.so");
-			jinputDll64 = new File(BC.get() + "bin/natives/", "libjinput-linux64.so");
-			lwjgl32 = new File(BC.get() + "bin/natives/", "liblwjgl.so");
-			lwjgl64 = new File(BC.get() + "bin/natives/", "liblwjgl64.so");
-			openal = new File(BC.get() + "bin/natives/", "libopenal.so");
-			openal64 = new File(BC.get() + "bin/natives/", "libopenal64.so");
-
-			try {
-				if (!download && (!jinputDll.exists() || !jinputDll64.exists() || !lwjgl64.exists() || !lwjgl32.exists() || !openal.exists() ||
-						!openal64.exists())) {
-					return false;
-				}
-			} catch (Exception ex) {
-				Logger.a("Could not check for natives!");
-				ex.printStackTrace();
-			}
-
-			if (download) {
-				download("https://betacraft.pl/versions/libjinput-linux.so", jinputDll);
-				download("https://betacraft.pl/versions/libjinput-linux64.so", jinputDll64);
-				download("https://betacraft.pl/versions/liblwjgl.so", lwjgl32);
-				download("https://betacraft.pl/versions/liblwjgl64.so", lwjgl64);
-				download("https://betacraft.pl/versions/libopenal.so", openal);
-				download("https://betacraft.pl/versions/libopenal64.so", openal64);
-			}
+	public static boolean checkDepends() {
+		File bin = new File(BC.get() + "bin");
+		if (bin.listFiles().length <= 1) {
+			return false;
 		}
-		if (OS.isWindows()) {
-			jinputDll = new File(BC.get() + "bin/natives/", "jinput-raw.dll");
-			jinputDll64 = new File(BC.get() + "bin/natives/", "jinput-raw_64.dll");
-			jinput_dx8 = new File(BC.get() + "bin/natives/", "jinput-dx8.dll");
-			jinput_dx8_64 = new File(BC.get() + "bin/natives/", "jinput-dx8_64.dll");
-			lwjgl32 = new File(BC.get() + "bin/natives/", "lwjgl.dll");
-			lwjgl64 = new File(BC.get() + "bin/natives/", "lwjgl64.dll");
-			openal = new File(BC.get() + "bin/natives/", "OpenAL32.dll");
-			openal64 = new File(BC.get() + "bin/natives/", "OpenAL64.dll");
-
-			try {
-				if (!download && (!jinputDll.exists() || !jinputDll64.exists() || !lwjgl64.exists() || !lwjgl32.exists() || !openal.exists() ||
-						!openal64.exists() || !jinput_dx8.exists() || !jinput_dx8_64.exists())) {
-					return false;
-				}
-			} catch (Exception ex) {
-				Logger.a("Could not check for natives!");
-				ex.printStackTrace();
-			}
-
-			if (download) {
-				download("https://betacraft.pl/versions/jinput-raw.dll", jinputDll);
-				download("https://betacraft.pl/versions/jinput-raw_64.dll", jinputDll64);
-				download("https://betacraft.pl/versions/jinput-dx8.dll", jinput_dx8);
-				download("https://betacraft.pl/versions/jinput-dx8_64.dll", jinput_dx8_64);
-				download("https://betacraft.pl/versions/lwjgl-windows.dll", lwjgl32);
-				download("https://betacraft.pl/versions/lwjgl64.dll", lwjgl64);
-				download("https://betacraft.pl/versions/OpenAL32.dll", openal);
-				download("https://betacraft.pl/versions/OpenAL64.dll", openal64);
-			}
+		if (new File(bin, "natives").listFiles().length <= 1) {
+			return false;
 		}
-		if (OS.isMac()) {
-			jinputDll = new File(BC.get() + "bin/natives/", "libjinput-osx.jnilib");
-			lwjgl32 = new File(BC.get() + "bin/natives/", "liblwjgl.jnilib");
-			openal = new File(BC.get() + "bin/natives/", "openal.dylib");
-			openal64 = new File(BC.get() + "bin/natives/", "libopenal.dylib");
-
-			try {
-				if (!download && (!jinputDll.exists() || !lwjgl32.exists() || !openal.exists() ||
-						!openal64.exists())) {
-					return false;
-				}
-			} catch (Exception ex) {
-				Logger.a("Could not check for natives!");
-				ex.printStackTrace();
-			}
-
-			if (download) {
-				download("https://betacraft.pl/versions/libjinput-osx.jnilib", jinputDll);
-				download("https://betacraft.pl/versions/liblwjgl.jnilib", lwjgl32);
-				download("https://betacraft.pl/versions/openal.dylib", openal);
-				download("https://betacraft.pl/versions/libopenal.dylib", openal64);
-			}
-		}
-		if (OS.isSolaris()) { // we are going to add support for this too
-			lwjgl32 = new File(BC.get() + "bin/natives/", "liblwjgl.so");
-			lwjgl64 = new File(BC.get() + "bin/natives/", "liblwjgl64.so");
-			openal = new File(BC.get() + "bin/natives/", "libopenal.so");
-
-			try {
-				if (!download && (!lwjgl64.exists() || !lwjgl32.exists() || !openal.exists())) {
-					return false;
-				}
-			} catch (Exception ex) {
-				Logger.a("Could not check for natives!");
-				ex.printStackTrace();
-			}
-
-			if (download) {
-				download("https://betacraft.pl/versions/liblwjgl.so", lwjgl32);
-				download("https://betacraft.pl/versions/liblwjgl64.so", lwjgl64);
-				download("https://betacraft.pl/versions/libopenal.so", openal);
-			}
-		}
-
 		try {
-			if (!download && (!jinput.exists() || !lwjgl.exists() || !lwjglutil.exists())) {
+			URL url = new URL("https://betacraft.pl/launcher/assets/depends-version.txt");
+			Scanner s = new Scanner(url.openStream(), "UTF-8");
+			String libs = s.nextLine().split(":")[1];
+			String natives = s.nextLine().split(":")[1];
+			s.close();
+
+			if (!libs.equals(Launcher.getProperty(SETTINGS, "libs-version"))) {
+				Launcher.setProperty(SETTINGS, "libs-version", libs);
+				Launcher.setProperty(SETTINGS, "natives-version", natives);
 				return false;
 			}
+			if (!natives.equals(Launcher.getProperty(SETTINGS, "natives-version"))) {
+				Launcher.setProperty(SETTINGS, "libs-version", libs);
+				Launcher.setProperty(SETTINGS, "natives-version", natives);
+				return false;
+			}
+			return true;
 		} catch (Exception ex) {
-			Logger.a("Could not check for libraries!");
 			ex.printStackTrace();
+			Logger.printException(ex);
+
+			return false;
+		}
+	}
+
+	public static boolean downloadDepends() {
+		File destLibs = new File(BC.get() + "bin" + File.separator);
+		File destNatives = new File(BC.get() + "bin" + File.separator + "natives" + File.separator);
+
+		destNatives.mkdirs();
+
+		String link1 = "https://betacraft.pl/launcher/assets/natives-windows.zip";
+		String link2 = "https://betacraft.pl/launcher/assets/libs-windows.zip";
+		if (OS.isLinux()) {
+			link2 = "https://betacraft.pl/launcher/assets/libs-linux.zip";
+			link1 = "https://betacraft.pl/launcher/assets/natives-linux.zip";
+		}
+		if (OS.isMac()) {
+			link2 = "https://betacraft.pl/launcher/assets/libs-osx.zip";
+			link1 = "https://betacraft.pl/launcher/assets/natives-osx.zip";
 		}
 
-		if (download) {
-			if (OS.isWindows()) {
-				download("https://betacraft.pl/versions/lwjgl-windows.jar", lwjgl);
-			} else {
-				download("https://betacraft.pl/versions/lwjgl.jar", lwjgl);
-			}
-			download("http://s3.amazonaws.com/MinecraftDownload/lwjgl_util.jar", lwjglutil);
-			download("http://s3.amazonaws.com/MinecraftDownload/jinput.jar", jinput);
+		File dest1 = new File(destNatives, "natives.zip");
+		switch (download(link1, dest1)) {
+		case FAILED_WITH_BACKUP: return true;
+		case FAILED_WITHOUT_BACKUP: return true;
+		case OK:
 		}
+
+		Unrar(dest1.toPath().toString(), destNatives.toPath().toString());
+		//dest1.delete();
+
+		File dest2 = new File(destLibs, "libs.zip");
+		switch (download(link2, dest2)) {
+		case FAILED_WITH_BACKUP: return true;
+		case FAILED_WITHOUT_BACKUP: return true;
+		case OK:
+		}
+
+		Unrar(dest2.toPath().toString(), destLibs.toPath().toString());
+		//dest2.delete();
 		return true;
 	}
 
 	public static ArrayList<String> getCustomParameters() {
 		// Get the parameters in form of string
-		String params = getProperty(SETTINGS, "launch");
+		String params = currentInstance.launchArgs;
 
 		// If the parameters are empty, return an empty list
 		if (params.length() == 0) return new ArrayList<String>();
@@ -407,8 +512,9 @@ public class Launcher {
 		Logger.a("Download started from: " + link);
 
 		// Get a backup file that we will use to restore the file if the upload fails
-		File backupfile = new File(BC.get() + "launcher/backup.tmp");
+		File backupfile = new File(BC.get() + "launcher" + File.separator + "backup.tmp");
 		try {
+			System.out.println(folder.toPath().toString());
 			// If the file already exists, make a copy of it
 			if (!folder.createNewFile()) {
 				backupfile.createNewFile();
@@ -430,6 +536,7 @@ public class Launcher {
 		} catch (Exception ex) {
 			Logger.a("A critical error has occurred while attempting to download a file from: " + link);
 			ex.printStackTrace();
+			Logger.printException(ex);
 
 			// Delete the failed download
 			folder.delete();
@@ -451,7 +558,34 @@ public class Launcher {
 	}
 
 	public static void Unrar(String filepath, String SRC) {
+		FileInputStream fis;
+		byte[] buffer = new byte[1024];
+		try {
+			fis = new FileInputStream(filepath);
+			ZipInputStream zis = new ZipInputStream(fis);
+			ZipEntry entry = zis.getNextEntry();
+			while (entry != null) {
+				String fileName = entry.getName();
+				File newFile = new File(SRC + File.separator + fileName);
 
+				new File(newFile.getParent()).mkdirs();
+				FileOutputStream fos = new FileOutputStream(newFile);
+				int length;
+				while ((length = zis.read(buffer)) > 0) {
+					fos.write(buffer, 0, length);
+				}
+
+				fos.close();
+				zis.closeEntry();
+				entry = zis.getNextEntry();
+			}
+			zis.closeEntry();
+			zis.close();
+			fis.close();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+		}
 	}
 
 	public static void downloadUpdate(boolean release) {
@@ -462,10 +596,10 @@ public class Launcher {
 
 			// Format the message
 			String update_name = update.startsWith("!") ? update.replace("!", "") : update; 
-			String rr = Launcher.update.replaceAll("%s", update_name);
+			String rr = Lang.UPDATE_FOUND.replaceAll("%s", update_name);
 
 			// Ask if the user wants this update or not
-			int result = JOptionPane.showConfirmDialog(null, rr, Options.update, JOptionPane.YES_NO_OPTION);
+			int result = JOptionPane.showConfirmDialog(null, rr, Lang.OPTIONS_UPDATE_HEADER, JOptionPane.YES_NO_OPTION);
 			if (result == JOptionPane.YES_OPTION) {
 				Logger.a("The user wants to update to: " + update_name);
 				yes = true;
@@ -474,25 +608,26 @@ public class Launcher {
 			}
 			// If the user accepted the update, or it is a mandatory update, download it
 			if (yes || update.startsWith("!")) {
-				// Display downloading dialog
-				new Pobieranie(update_name);
+				// Display downloading dialogue
+				DownloadFrame dl = new DownloadFrame(update_name);
 
 				String url = "https://betacraft.pl/launcher/launcher.jar";
 				if (!release) url = "https://betacraft.pl/launcher/pre.jar";
 
 				// Download the update
-				download(url, new File(BC.get(), "betacraft.jar$tmp"));
+				dl.download(url, new File(BC.get(), "betacraft.jar$tmp"));
 
 				// Launch the new version to finish updating
 				final String pathToJar = Window.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
 				Runtime.getRuntime().exec("java -jar " + BC.get() + "betacraft.jar$tmp" + " update " + pathToJar);
 
 				// Close this process
-				Window.quit();
+				Window.quit(true);
 			}
 		} catch (Exception ex) {
 			Logger.a("An error has occurred while updating the launcher!");
 			ex.printStackTrace();
+			Logger.printException(ex);
 		}
 	}
 
@@ -501,23 +636,25 @@ public class Launcher {
 			// Create new file, if it doesn't already exist
 			file.createNewFile();
 		} catch (IOException e) {
+			System.out.println(file.toPath().toString());
 			e.printStackTrace();
+			Logger.printException(e);
 		}
-		BufferedWriter writer = null;
+		OutputStreamWriter writer = null;
 		try {
 			// Write in UTF-8
-			writer = new BufferedWriter(new OutputStreamWriter(
-					new FileOutputStream(file, append), "utf-8"));
+			writer = new OutputStreamWriter(
+					new FileOutputStream(file, append), "UTF-8");
 			for (int i = 0; i < lines.length; i++) {
 				// Skip empty lines
 				if (lines[i] != null) {
-					writer.write(lines[i]);
-					writer.newLine();
+					writer.write(lines[i] + "\n");
 				}
 			}
 		} catch (Exception ex) {
 			Logger.a("A critical error occurred while attempting to write to file: " + file);
 			ex.printStackTrace();
+			Logger.printException(ex);
 		} finally {
 			// Close the file
 			try {writer.close();} catch (Exception ex) {}
@@ -546,7 +683,7 @@ public class Launcher {
 			String Url = "https://betacraft.pl/launcher/rel.txt";
 			if (!release) Url = "https://betacraft.pl/launcher/pre.txt";
 			URL url = new URL(Url);
-			Scanner s = new Scanner(url.openStream());
+			Scanner s = new Scanner(url.openStream(), "UTF-8");
 			String update = s.nextLine().split(":")[1];
 			s.close();
 			return update;
@@ -558,16 +695,79 @@ public class Launcher {
 			Logger.a(null);
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			Logger.printException(ex);
 		}
 		return null;
 	}
 
-	public static String getLastlogin() {
-		File file = new File(BC.get(), "lastlogin");
-		if (!file.exists()) {
-			return "";
+	public static String getNickname() {
+		if (MojangLogging.userProfile != null)
+			return MojangLogging.userProfile.get("selectedProfile.name");
+
+		return MojangLogging.email;
+	}
+
+	public static void readLastLogin() {
+        try {
+            final File lastLogin = new File(BC.get(), "lastlogin");
+            final Cipher cipher = getCipher(2, "bcpasswordfile");
+            DataInputStream dis;
+            if (cipher != null) {
+                dis = new DataInputStream(new CipherInputStream(new FileInputStream(lastLogin), cipher));
+            }
+            else {
+                dis = new DataInputStream(new FileInputStream(lastLogin));
+            }
+            MojangLogging.email = dis.readUTF();
+            MojangLogging.password = dis.readUTF();
+            dis.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Logger.printException(ex);
+        }
+    }
+
+	public static void saveLastLogin() {
+        try {
+            final File lastLogin = new File(BC.get(), "lastlogin");
+            final Cipher cipher = getCipher(1, "bcpasswordfile");
+            DataOutputStream dos;
+            if (cipher != null) {
+                dos = new DataOutputStream(new CipherOutputStream(new FileOutputStream(lastLogin), cipher));
+            }
+            else {
+                dos = new DataOutputStream(new FileOutputStream(lastLogin));
+            }
+            dos.writeUTF(MojangLogging.email);
+            if (Launcher.getProperty(Launcher.SETTINGS, "remember-password").equals("true")) {
+                dos.writeUTF(MojangLogging.password);
+            } else {
+            	dos.writeUTF("");
+            }
+            dos.close();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            Logger.printException(ex);
+        }
+    }
+    
+    private static Cipher getCipher(final int mode, final String password) throws Exception {
+        final Random random = new Random(37635689L);
+        final byte[] salt = new byte[8];
+        random.nextBytes(salt);
+        final PBEParameterSpec pbeParamSpec = new PBEParameterSpec(salt, 5);
+        final SecretKey pbeKey = SecretKeyFactory.getInstance("PBEWithMD5AndDES").generateSecret(new PBEKeySpec(password.toCharArray()));
+        final Cipher cipher = Cipher.getInstance("PBEWithMD5AndDES");
+        cipher.init(mode, pbeKey, pbeParamSpec);
+        return cipher;
+    }
+
+	public static String getAuthToken(boolean fulltoken) {
+		if (MojangLogging.userProfile != null) {
+			if (fulltoken) return "token:" + MojangLogging.userProfile.get("accessToken") + ":" + MojangLogging.userProfile.get("selectedProfile.id");  
+			return MojangLogging.userProfile.get("accessToken");
 		}
-		return read(file)[0];
+		return "0";
 	}
 
 	public static String[] read(File file) {
@@ -577,24 +777,27 @@ public class Launcher {
 				Logger.a("Created a new file: " + file);
 			}
 		} catch (IOException e) {
+			System.out.println(file.toPath().toString());
 			e.printStackTrace();
+			Logger.printException(e);
 		}
-		BufferedReader reader = null;
-		String[] lines = new String[4096]; // We likely wouldn't have to deal with more lines than this
+		InputStreamReader reader = null;
 		try {
 			// Read in UTF-8
-			reader = new BufferedReader(new InputStreamReader(
-					new FileInputStream(file), "utf-8"));
-			int i = 0;
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				lines[i] = line;
-				i++;
+			reader = new InputStreamReader(
+					new FileInputStream(file), "UTF-8");
+			StringBuilder inputB = new StringBuilder();
+			char[] buffer = new char[1024];
+			while (true) {
+				int readcount = reader.read(buffer);
+				if (readcount < 0) break;
+				inputB.append(buffer, 0, readcount);
 			}
-			return lines;
+			return inputB.toString().split("\n");
 		} catch (Exception ex) {
 			Logger.a("A critical error occurred while reading from file: " + file);
 			ex.printStackTrace();
+			Logger.printException(ex);
 		} finally {
 			// Close the file
 			try {reader.close();} catch (Exception ex) {}
@@ -640,10 +843,26 @@ public class Launcher {
 
 			// Check if the property matches
 			if (lines[i].startsWith(property + ":")) {
-				value = lines[i].split(":", 2)[1];
+				value = lines[i].substring(property.length()+1, lines[i].length());
 				break;
 			}
 		}
 		return value;
+	}
+
+	public static String[] excludeExistant(File file, String[] properties) {
+		String[] lines = read(file);
+		for (int i = 0; i < lines.length; i++) {
+			// If the array is empty, ignore it
+			if (lines[i] == null) continue;
+
+			for (int i1 = 0; i1 < properties.length; i1++) {
+				// If the property matches, remove it from array
+				if (lines[i].startsWith(properties[i1] + ":")) {
+					properties[i1] = null;
+				}
+			}
+		}
+		return properties;
 	}
 }

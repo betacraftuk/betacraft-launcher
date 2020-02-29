@@ -14,8 +14,4 @@ public class OS {
 	public static boolean isLinux() {
 		return (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0);
 	}
-
-	public static boolean isSolaris() {
-		return (OS.indexOf("sunos") >= 0);
-	}
 }

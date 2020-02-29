@@ -1,9 +1,9 @@
 package org.betacraft.launcher;
 
-
 import java.awt.Color;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -16,20 +16,36 @@ public class WebsitePanel extends JPanel {
 
 	JScrollPane scrollPane = null;
 
-	private static final HyperlinkListener EXTERNAL_HYPERLINK_LISTENER = new HyperlinkListener() {
+	public static final HyperlinkListener EXTERNAL_HYPERLINK_LISTENER = new HyperlinkListener() {
 		public void hyperlinkUpdate(final HyperlinkEvent hyperlinkEvent) {
 			if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
 				URL u = hyperlinkEvent.getURL();
-				if (!u.toString().startsWith("http")) { // If the URL isn't pointing to any http/s website
-					String split = u.toString().split("/")[1];
-					String address = split.replaceAll(":", "/");
-					new Launcher().launchGame(Launcher.getCustomParameters(), Launcher.getLastlogin(), address);
+				if (u.toString().startsWith("join://")) { // If the URL isn't pointing to any http/s website
+					String raw = u.toString().substring(7);
+					String[] split = raw.split("/");
+					String address = split[0];
+					String mppass = split[1];
+					String protocolVersion = split[2];
+					ArrayList<Release> matches = new ArrayList<Release>();
+					for (Release r : Release.versions) {
+						if (r.getJson().getLaunchMethod().equals("classicmp")) {
+							if (r.getJson().getCustomEntry("protocolVersion").equals(protocolVersion)) {
+								matches.add(r);
+							}
+						}
+					}
+					// uh, make a selection window later
+					Launcher.currentInstance.version = matches.get(matches.size()-1).getName();
+					Launcher.currentInstance.saveInstance();
+					new Launcher().launchGame(Launcher.currentInstance, address, mppass);
+					return;
 				}
 				try {
 					openLink(u.toURI());
 				}
 				catch (Exception ex) {
 					ex.printStackTrace();
+					Logger.printException(ex);
 				}
 			}
 		}
@@ -45,6 +61,26 @@ public class WebsitePanel extends JPanel {
 		catch (Throwable t) {
 			System.out.println("Failed to open link in a web browser: " + uri.toString());
 		}
+	}
+
+	public JScrollPane getInstances() {
+
+		final JEditorPane textPane = new JEditorPane();
+		try {
+			textPane.setEditable(false);
+			textPane.setBackground(Color.BLACK);
+			textPane.setContentType("text/html;charset=UTF-8");
+			textPane.addHyperlinkListener(EXTERNAL_HYPERLINK_LISTENER);
+		}
+		catch (Exception ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+		}
+		this.scrollPane = new JScrollPane(textPane);
+		this.scrollPane.setBorder(new MatteBorder(1, 1, 1, 1, Color.BLACK));
+		this.scrollPane.setWheelScrollingEnabled(true);
+		//this.scrollPane.setBounds(20, 20, 750, 250);
+		return this.scrollPane;
 	}
 
 	public JScrollPane getServers(boolean isConnection) {
@@ -68,25 +104,26 @@ public class WebsitePanel extends JPanel {
 			new Thread() {
 				public void run() {
 					try {
-						textPane.setPage(new URL("https://betacraft.pl/server"));
+						textPane.setPage(new URL("https://betacraft.pl/server.php?user=" + Launcher.getNickname() + "&token=" + Launcher.getAuthToken(false)));
 					}
 					catch (Exception ex) {
 						ex.printStackTrace();
+						Logger.printException(ex);
 						textPane.setContentType("text/html");
 						textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + Lang.get("srv_failed") + "</h1><br>" + ex.toString() + "</center></font></body></html>");
 					}
 				}
 			}.start();
-			//this.scrollPane.getViewport().getView().setBackground(Color.BLACK);
 			}
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
+			Logger.printException(ex);
 		}
 		this.scrollPane = new JScrollPane(textPane);
-		this.scrollPane.setBorder(new MatteBorder(1, 1, 1, 1, Color.BLACK));
+		//this.scrollPane.setBorder(new MatteBorder(1, 1, 1, 1, Color.BLACK));
 		this.scrollPane.setWheelScrollingEnabled(true);
-		this.scrollPane.setBounds(20, 20, 750, 250);
+		//this.scrollPane.setBounds(20, 20, 750, 250);
 		return this.scrollPane;
 	}
 
@@ -115,6 +152,7 @@ public class WebsitePanel extends JPanel {
 					}
 					catch (Exception ex) {
 						ex.printStackTrace();
+						Logger.printException(ex);
 						textPane.setContentType("text/html");
 						textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + Lang.get("cl_failed") + "</h1><br>" + ex.toString() + "</center></font></body></html>");
 					}
@@ -125,11 +163,12 @@ public class WebsitePanel extends JPanel {
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
+			Logger.printException(ex);
 		}
 		this.scrollPane = new JScrollPane(textPane);
-		this.scrollPane.setBorder(new MatteBorder(1, 1, 1, 1, Color.BLACK));
+		this.scrollPane.setBorder(null);
 		this.scrollPane.setWheelScrollingEnabled(true);
-		this.scrollPane.setBounds(20, 20, 750, 250);
+		//this.scrollPane.setBounds(20, 20, 750, 250);
 		return this.scrollPane;
 	}
 }

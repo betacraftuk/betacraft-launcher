@@ -24,6 +24,16 @@ public class Logger {
 
 		System.out.println(all);
 		lastMessage = all;
-		Launcher.write(new File(BC.get() + "launcher/", "launcher.log"), new String[] {all}, true);
+		Launcher.write(new File(BC.get() + "launcher", "launcher.log"), new String[] {all}, true);
+	}
+
+	public static void printException(Exception ex) {
+		//String[] lines = new String[trace.length];
+		Logger.a(ex.getClass().getCanonicalName() + ": " + ex.getMessage());
+		StackTraceElement[] trace = ex.getStackTrace();
+		for (int i = 0; i < trace.length; i++) {
+			StackTraceElement line = trace[i];
+			Logger.a("    " + line.getClassName() + " | " + line.getMethodName() + " | " + line.getLineNumber());
+		}
 	}
 }

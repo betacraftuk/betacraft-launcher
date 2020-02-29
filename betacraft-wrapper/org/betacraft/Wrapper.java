@@ -7,9 +7,9 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
+import java.awt.Image;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.lang.Thread.State;
@@ -20,15 +20,15 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.betacraft.launcher.BC;
+import org.betacraft.launcher.InstanceList;
 import org.betacraft.launcher.Lang;
-import org.betacraft.launcher.Launcher;
+import org.betacraft.launcher.Logger;
 
 import club.minnced.discord.rpc.DiscordEventHandlers;
 import club.minnced.discord.rpc.DiscordRPC;
@@ -36,127 +36,93 @@ import club.minnced.discord.rpc.DiscordRichPresence;
 
 public class Wrapper extends Applet implements AppletStub {
 
-	final static Map<String, String> params = new HashMap<String, String>(); // Custom parameters
-	public static String session; // Session id for premium authentication
-	public static String mainFolder; // .betacraft folder
-	public static String version; // Version to be launched
-	private static URLClassLoader classLoader; // Class loader for linking the game and natives
-	public static Class appletClass; // Minecraft's main class
-	private static boolean discord = false; // Discord RPC
-	public static String[] arguments;
+	public final Map<String, String> params = new HashMap<String, String>(); // Client parameters
+	public String session; // Session id for premium authentication
+	public String mainFolder; // .betacraft folder
+	public String version; // Version to be launched
+	public URLClassLoader classLoader; // Class loader for linking the game and natives
+	public Class appletClass; // Minecraft's main class
+	public boolean discord = false; // Discord RPC
+	public Image icon;
 
-	private static Applet applet = null; // Game's applet
-	private static int context = 0; // Return value for isActive
-	private static boolean active = false; // If the game has started
-	public static String ver_prefix = ""; // Version's official name, eg. Infdev, Alpha, etc.
-	public static List<String> nonOnlineClassic = new ArrayList<String>(); // A list of Classic versions which cannot play online
-	public static List<String> onlineInfdev = new ArrayList<String>(); // A list of online Infdev versions (without world saving)
-	public static DiscordThread discordThread = null;
+	public Frame gameFrame;
+	public Applet applet = null; // Game's applet
+	public int context = 0; // Return value for isActive
+	public boolean active = false; // If the game has started
+	public String ver_prefix = "";
+	public DiscordThread discordThread = null;
 
-	public static int width = 854;
-	public static int height = 480;
+	public int width = 854;
+	public int height = 480;
 
-	public static String proxyCompat = "www.minecraft.net";
-	public static int portCompat = 80;
+	public String proxyCompat = "www.minecraft.net";
+	public String portCompat = "80";
+	public String serverAddress = null;
+	public String mppass = null;
 
-	public static boolean isIndevPlus = false;
+	public ArrayList<Addon> addons = new ArrayList<Addon>();
 
-	public static void main(String[] args) {
-		System.out.println("Starting BetaCraftWrapper v" + Launcher.VERSION);
+	public Wrapper(String user, String ver_prefix, String version, String sessionid, String mainFolder, Integer height, Integer width, Boolean RPC, String launchMethod, String server, String mppass, String USR, String VER, Image img, ArrayList addons) {
 		try {
-			if (args.length < 2) {
-				JOptionPane.showMessageDialog(null, "Error code 1: Could not initialize wrapper (arguments too short)", "Error", JOptionPane.ERROR_MESSAGE);
-				return;
+			ArrayList<Class> li = (ArrayList<Class>) addons;
+			for (Class c : li) {
+				this.addons.add((Addon)c.newInstance());
 			}
-
-			// Our wrapper arguments are differenciated by colons
-			arguments = args[0].split(":");
-			System.out.println("Wrapper arguments: " + args[0]);
-
-			// Get mppass and version
-			session = arguments[1];
-			version = arguments[2];
-
-			// Initialize game's main path (.betacraft)
-			String path = "";
-			for (int i = 1; i < args.length; i++) {
-				path = path + " " + args[i];
-			}
-			if (path.equals("")) {
-				JOptionPane.showMessageDialog(null, "Error code 3: Could not initialize wrapper (mainFolder argument is empty)", "Error", JOptionPane.ERROR_MESSAGE);
-				return;
-			}
-			path = path.substring(1, path.length());
-			mainFolder = path;
-
-			// Add parameters for the client
-			params.put("username", arguments[0]);
-			params.put("sessionid", arguments[1]);
-			params.put("haspaid", "true");
-			params.put("stand-alone", "true");
-
-			// Fix crashing when teleporting with Java 8+
-			System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
-
-			String sysProxy = System.getProperty("http.proxyHost");
-			String sysPort = System.getProperty("http.proxyPort");
-
-			// Turn on proxy if wanted
-			if (arguments[3].equals("true") && sysProxy == null) {
-				System.setProperty("http.proxyHost", "betacraft.pl");
-			}
-			if (arguments[3].equals("true") && sysPort == null) {
-				System.setProperty("http.proxyPort", "80");
-			}
-
-			if (sysProxy != null)
-				proxyCompat = sysProxy;
-			if (sysPort != null) {
-				try {
-					portCompat = Integer.parseInt(sysPort);
-				} catch (NumberFormatException ex) {
-					JOptionPane.showMessageDialog(null, "Error code 7: Proxy port is not a valid number!", "Error", JOptionPane.ERROR_MESSAGE);
-					ex.printStackTrace();
-					return;
-				}
-			}
-
-			try {
-				if (!Launcher.getProperty(Launcher.SETTINGS, "dimensions1").equalsIgnoreCase("")) {
-					width = Integer.parseInt(Launcher.getProperty(Launcher.SETTINGS, "dimensions1"));
-				}
-				if (!Launcher.getProperty(Launcher.SETTINGS, "dimensions2").equalsIgnoreCase("")) {
-					height = Integer.parseInt(Launcher.getProperty(Launcher.SETTINGS, "dimensions2"));
-				}
-				if (width <= 100 || height <= 100) {
-					JOptionPane.showMessageDialog(null, "Error code 5: Window dimensions are too small!", "Error", JOptionPane.ERROR_MESSAGE);
-					return;
-				}
-			} catch (NumberFormatException ex) {
-				JOptionPane.showMessageDialog(null, "Error code 4: Window dimensions are illegal!", "Error", JOptionPane.ERROR_MESSAGE);
-				ex.printStackTrace();
-				return;
-			}
-
-			// Initialize Discord RPC if wanted
-			if (discord = Launcher.getProperty(Launcher.SETTINGS, "RPC").equalsIgnoreCase("true")) {
-				DiscordRPC lib = DiscordRPC.INSTANCE;
-				String applicationId = "567450523603566617";
-				DiscordEventHandlers handlers = new DiscordEventHandlers();
-				lib.Discord_Initialize(applicationId, handlers, true, "");
-				DiscordRichPresence presence = new DiscordRichPresence();
-				presence.startTimestamp = System.currentTimeMillis() / 1000;
-				presence.state = Lang.get("version") + ": " + version;
-				presence.details = Lang.get("nick") + ": " + arguments[0];
-				lib.Discord_UpdatePresence(presence);
-				discordThread = new DiscordThread(lib);
-			}
-
-			// Start the game
-			new Wrapper().play();
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			Logger.printException(ex);
 		}
+		params.put("username", user);
+		params.put("sessionid", sessionid);
+		params.put("haspaid", "true");
+
+		this.version = version;
+		this.session = sessionid;
+		launchType = launchMethod;
+		this.mainFolder = mainFolder;
+		this.height = height;
+		this.width = width;
+		this.discord = RPC;
+		this.serverAddress = server;
+		this.mppass = mppass;
+		this.icon = img;
+		this.ver_prefix = "Minecraft " + ver_prefix;
+
+		new File(this.mainFolder).mkdirs();
+
+		System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
+		String proxy = System.getProperty("http.proxyHost");
+		String port = System.getProperty("http.proxyPort");
+
+		if (proxy != null) {
+			this.proxyCompat = proxy;
+		}
+		if (port != null) {
+			this.portCompat = port;
+		}
+
+		if (this.discord) {
+			DiscordRPC lib = DiscordRPC.INSTANCE;
+			String applicationId = "567450523603566617";
+			DiscordEventHandlers handlers = new DiscordEventHandlers();
+			lib.Discord_Initialize(applicationId, handlers, true, "");
+			DiscordRichPresence presence = new DiscordRichPresence();
+			presence.startTimestamp = System.currentTimeMillis() / 1000;
+			presence.state = VER + ": " + version;
+			presence.details = USR + " " + user;
+			lib.Discord_UpdatePresence(presence);
+			discordThread = new DiscordThread(lib);
+		}
+
+		try {
+			for (Addon a : this.addons) {
+				a.preInit(this);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+		}
+		play();
 	}
 
 	public static class DiscordThread extends Thread {
@@ -179,42 +145,44 @@ public class Wrapper extends Applet implements AppletStub {
 	}
 
 	public void askForServer() {
-		if (ver_prefix.startsWith("Classic") && !nonOnlineClassic.contains(version)) {
-			if (arguments.length >= 5) {
-				String[] ipstuff = arguments[4].split("/");
-				params.put("server", ipstuff[0]);
-				params.put("port", ipstuff[1]);
-				params.put("mppass", session);
-			} else {
-				String server = JOptionPane.showInputDialog(null, Lang.get("server"), Launcher.getProperty(Launcher.SETTINGS, "server"));
-				String port = "25565";
-				if (server != null) {
-					String IP = server;
-					if (IP.contains(":")) {
-						String[] params1 = server.split(":");
-						IP = params1[0];
-						port = params1[1];
-					}
-					if (!server.equals("")) {
-						System.out.println("Accepted server parameters: " + server);
-						params.put("server", IP);
-						params.put("port", port);
-						params.put("mppass", "0");
-					}
+		if (this.serverAddress != null) {
+			String[] ipstuff = serverAddress.split(":");
+			params.put("server", ipstuff[0]);
+			params.put("port", ipstuff[1]);
+			params.put("mppass", this.mppass);
+		} else {
+			String server = JOptionPane.showInputDialog(this, Lang.WRAP_SERVER, Lang.WRAP_SERVER_TITLE, JOptionPane.DEFAULT_OPTION);//JOptionPane.showInputDialog(null, Lang.WRAP_SERVER, "");
+			String port = "25565";
+			if (server != null && !server.equals("")) {
+				String IP = server;
+				if (IP.contains(":")) {
+					String[] params1 = server.split(":");
+					IP = params1[0];
+					port = params1[1];
+				}
+				if (!server.equals("")) {
+					System.out.println("Accepted server parameters: " + server);
+					params.put("server", IP);
+					params.put("port", port);
+					params.put("mppass", this.mppass);
 				}
 			}
 		}
 	}
 
+	public String launchType = null;
+
 	public void setPrefixAndLoadMainClass(URL[] url) {
 		classLoader = null;
-		classLoader = new URLClassLoader(url);
+		classLoader = new BCClassLoader(url);
+		String launchType = null;
 
 		// I know this looks terrible, but it works!
 		try {
 			// Classic
 			appletClass = classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
-			ver_prefix = "Classic " + version.substring(1, version.length());
+			launchType = "classicmp";
+			//ver_prefix = "Classic " + version.substring(1, version.length());
 		} catch (ClassNotFoundException ex) {
 			try {
 				appletClass = classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
@@ -222,7 +190,8 @@ public class Wrapper extends Applet implements AppletStub {
 				try {
 					// rd
 					appletClass = classLoader.loadClass("com.mojang.rubydung.RubyDung");
-					ver_prefix = "Pre-Classic " + version;
+					launchType = "rd";
+					//ver_prefix = "Pre-Classic " + version;
 
 					// This is a special case where we need to avoid endless running in the background
 					// and false reporting of Discord RPC.
@@ -238,6 +207,7 @@ public class Wrapper extends Applet implements AppletStub {
 				} catch (ClassNotFoundException ex2) {
 					try {
 						appletClass = classLoader.loadClass("com.mojang.minecraft.RubyDung");
+						launchType = "mc";
 
 						// This is a special case where we need to avoid endless running in the background
 						// and false reporting of Discord RPC.
@@ -254,66 +224,43 @@ public class Wrapper extends Applet implements AppletStub {
 						try {
 							// Indev+
 							appletClass = classLoader.loadClass("net.minecraft.client.MinecraftApplet");
-							isIndevPlus = true;
+							launchType = "indev";
 							if (version.startsWith("in-")) {
-								ver_prefix = "Indev " + version.substring(3, version.length());
+								//ver_prefix = "Indev " + version.substring(3, version.length());
 							} else if (version.startsWith("b")) {
-								ver_prefix = "Beta " + version.substring(1, version.length());
+								//ver_prefix = "Beta " + version.substring(1, version.length());
 							} else if (version.startsWith("a")) {
-								ver_prefix = "Alpha v" + version.substring(1, version.length());
+								//ver_prefix = "Alpha v" + version.substring(1, version.length());
 							} else if (version.startsWith("inf-")) {
-								ver_prefix = "Infdev " + version.substring(4, version.length());
+								//ver_prefix = "Infdev " + version.substring(4, version.length());
 							} else {
-								ver_prefix = version;
+								//ver_prefix = version;
 							}
 						} catch (ClassNotFoundException ex4) {
 							try {
 								appletClass = classLoader.loadClass("M");
-								ver_prefix = version;
-								width = 854;
-								height = 480;
+								launchType = "4k";
+								//ver_prefix = version;
 							} catch (ClassNotFoundException ex5) {}
 						}
 					} catch (Exception ex3) {}
 				} catch (Exception ex2) {}
 			}
 		}
+		// Don't force the launch type if the info file knows it better.
+		if (this.launchType.equals("")) this.launchType = launchType;
 
 		try {
 			applet = (Applet) appletClass.newInstance();
 		} catch (Exception ex) {
 			ex.printStackTrace();
+			Logger.printException(ex);
 		}
 	}
 
-	public void play() {
+	public void setGameFolder() {
 		try {
-
-			String nativesPath = mainFolder + "bin/natives";
-
-			// Glue everything Minecraft needs for running
-			String file = mainFolder + "versions/" + version + ".jar";
-			String file1 = mainFolder + "bin/lwjgl.jar";
-			String file2 = mainFolder + "bin/lwjgl_util.jar";
-			String file3 = mainFolder + "bin/jinput.jar";
-
-			System.setProperty("org.lwjgl.librarypath", nativesPath);
-			System.setProperty("net.java.games.input.librarypath", nativesPath);
-
-			final URL[] url = new URL[4];
-			url[0] = new File(file).toURI().toURL();
-			url[1] = new File(file1).toURI().toURL();
-			url[2] = new File(file2).toURI().toURL();
-			url[3] = new File(file3).toURI().toURL();
-
-			setPrefixAndLoadMainClass(url);
-
-			// Allow joining servers for Classic MP versions
-			askForServer();
-
-			// Replace the main game folder to .betacraft
-			// Skip versions prior to Indev. They don't support changing game folders.
-			if (!version.startsWith("4k") && !version.startsWith("c") && !version.startsWith("rd-") && !version.startsWith("mc-")) {
+			if (launchType.equals("indev")) {
 				for (final Field field : appletClass.getDeclaredFields()) {
 					final String name = field.getType().getName();
 					if (!name.contains("awt") && !name.contains("java")) {
@@ -326,24 +273,64 @@ public class Wrapper extends Applet implements AppletStub {
 						}
 						if (fileField != null) {
 							fileField.setAccessible(true);
-							fileField.set(null, new File(mainFolder));
+							fileField.set(null, new File(this.mainFolder));
 							break;
 						}
 					}
 				}
 			}
+		} catch (ClassNotFoundException ex) {
+			JOptionPane.showMessageDialog(null, "Error code 6: Couldn't satisfy the wrapper with a valid .jar file. Check your version or launch configuration file.", "Error", JOptionPane.INFORMATION_MESSAGE);
+			ex.printStackTrace();
+			Logger.printException(ex);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+		}
+	}
+
+	public void play() {
+		try {
+
+			String nativesPath = BC.get() + "bin/natives";
+
+			// Glue everything Minecraft needs for running
+			String file = BC.get() + "versions/" + version + ".jar";
+			String file1 = BC.get() + "bin/lwjgl.jar";
+			String file2 = BC.get() + "bin/lwjgl_util.jar";
+			String file3 = BC.get() + "bin/jinput.jar";
+			String file4 = BC.get() + "bin/jutils.jar";
+
+			System.setProperty("org.lwjgl.librarypath", nativesPath);
+			System.setProperty("net.java.games.input.librarypath", nativesPath);
+
+			final URL[] url = new URL[5];
+			url[0] = new File(file).toURI().toURL();
+			url[1] = new File(file1).toURI().toURL();
+			url[2] = new File(file2).toURI().toURL();
+			url[3] = new File(file3).toURI().toURL();
+			url[4] = new File(file4).toURI().toURL();
+
+			setPrefixAndLoadMainClass(url);
+
+			// Replace the main game folder to .betacraft
+			// Skip versions prior to Indev. They don't support changing game folders.
+			this.setGameFolder();
+
+			// Start Discord RPC
+			if (discord) discordThread.start();
 
 			// Make a frame for the game
-			final Frame gameFrame = new Frame();
-			gameFrame.setLocationRelativeTo(null);
-			gameFrame.setTitle("Minecraft " + ver_prefix);
-			BufferedImage img = ImageIO.read(this.getClass().getClassLoader().getResourceAsStream("icons/favicon.png"));
-			gameFrame.setIconImage(img);
+			gameFrame = new Frame();
+			gameFrame.setTitle(ver_prefix);
+			gameFrame.setIconImage(this.icon);
 			gameFrame.setBackground(Color.BLACK);
 
 			// This is needed for the window size
 			final JPanel panel = new JPanel();
+			panel.setLayout(new BorderLayout());
 			gameFrame.setLayout(new BorderLayout());
+			panel.setBackground(Color.BLACK);
 			panel.setPreferredSize(new Dimension(width, height)); // 854, 480
 
 			gameFrame.add(panel, "Center");
@@ -353,72 +340,55 @@ public class Wrapper extends Applet implements AppletStub {
 
 			applet.setStub(this);
 			applet.resize(width, height);
-			applet.setSize(width, height);
+			applet.setMinimumSize(new Dimension(width, height));
 
-			gameFrame.addWindowListener(new WindowAdapter() {
-				@Override
-				public void windowClosing(final WindowEvent e) {
-					stop();
-					destroy();
-					gameFrame.setVisible(false);
-					gameFrame.dispose();
-					try {
-						classLoader.close();
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-					System.exit(0);
-				}
-			});
+			this.addHooks();
 
 			// Add game's applet to this window
 			this.setLayout(new BorderLayout());
 			this.add(applet, "Center");
-			this.validate();
 			gameFrame.removeAll();
 			gameFrame.setLayout(new BorderLayout());
-			gameFrame.add(this, "Center");
-			gameFrame.validate();
-
-			// Start the client
+			gameFrame.add(Wrapper.this, "Center");
 			this.init();
 			active = true;
 			this.start();
-			Runtime.getRuntime().addShutdownHook(new Thread() {
-				@Override
-				public void run() {
-					applet.stop();
-				}
-			});
-
-			// Start Discord RPC
-			discordThread.start();
-		} catch (ClassNotFoundException ex) {
-			JOptionPane.showMessageDialog(null, "Error code 6: Couldn't satisfy the wrapper with a valid .jar file. Check your version.", "Error", JOptionPane.INFORMATION_MESSAGE);
-			ex.printStackTrace();
+			gameFrame.validate();
+			//classLoader.loadClass("com.mojang.minecraft.level.tile.a");
 		} catch (Exception ex) {
 			System.out.println("A critical error has occurred!");
-			ex.printStackTrace();
+			System.out.print(ex.toString());
 		}
 	}
 
-	@Override
-	public void appletResize(int width, int height) {
-		applet.resize(width, height);
-		applet.setSize(width, height);
+	public void addHooks() {
+		gameFrame.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(final WindowEvent e) {
+				stop();
+				destroy();
+				gameFrame.setVisible(false);
+				gameFrame.dispose();
+				try {
+					classLoader.close();
+				} catch (IOException e1) {
+					e1.printStackTrace();
+					Logger.printException(e1);
+				}
+				System.exit(0);
+			}
+		});
+
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			@Override
+			public void run() {
+				Wrapper.this.stop();
+			}
+		});
 	}
 
 	@Override
-	public void resize(int width, int height) {
-		applet.resize(width, height);
-		applet.setSize(width, height);
-	}
-
-	@Override
-	public void resize(Dimension d) {
-		applet.resize(d);
-		applet.setSize(d);
-	}
+	public void appletResize(int width, int height) {}
 
 	@Override
 	public void update(final Graphics g) {
@@ -447,14 +417,24 @@ public class Wrapper extends Applet implements AppletStub {
 		if (discord) DiscordRPC.INSTANCE.Discord_Shutdown();
 		if (applet != null) {
 			active = false;
-			applet.stop();
+			try {
+				applet.stop();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				System.exit(0);
+			}
 		}
 	}
 
 	@Override
 	public void destroy() {
 		if (applet != null) {
-			applet.destroy();
+			try {
+				applet.destroy();
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				System.exit(0);
+			}
 		}
 	}
 
@@ -470,64 +450,62 @@ public class Wrapper extends Applet implements AppletStub {
 	public void init() {
 		if (applet != null) {
 			applet.init();
-
-			// Quit Game button for Beta :D
-			if (!isIndevPlus || version.startsWith("in") || version.startsWith("a") || !version.startsWith("b")) return;
 			try {
-				for (final Field field : appletClass.getDeclaredFields()) {
-					final String name = field.getType().getName();
-					if (!name.contains("awt") && !name.contains("java")) {
-						Field buttonTriggerField = null;
-
-						// Set Minecraft field accessible
-						field.setAccessible(true);
-						// Get the instance
-						Object mc = field.get(applet);
-
-						final Class clazz = classLoader.loadClass(name);
-						for (final Field field1 : clazz.getDeclaredFields()) {
-							if (Modifier.isPublic(field1.getModifiers())) {
-
-								if (!field1.getType().isPrimitive()) continue;
-
-								// The trigger field for the button is always public,
-								// and is always the first to be found by this code.
-								// The next public boolean field is responsible for
-								// something different, so we need to stop the code
-								// after we found the first occurrence.
-								if (field1.getType().getName().equals("boolean")) {
-									boolean bol = field1.getBoolean(mc);
-									if (bol) {
-										buttonTriggerField = field1;
-										break;
-									}
-								}
-							}
-						}
-						if (buttonTriggerField != null) {
-							buttonTriggerField.setAccessible(true);
-							buttonTriggerField.set(mc, false);
-							break;
-						}
-					}
+				for (Addon a : this.addons) {
+					a.postInit(this);
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
+				Logger.printException(ex);
 			}
 		}
+
+		// c0.24_st_03 - c0.27_st
+		/*if (launchType.equals("c")) {
+				try {
+					for (final Field minecraftField : appletClass.getDeclaredFields()) {
+						final String name = minecraftField.getType().getName();
+						if (name.contains("com.mojang.minecraft.k")) {
+
+							// Set Minecraft field accessible
+							minecraftField.setAccessible(true);
+							// Get the instance
+							Object mc = minecraftField.get(applet);
+
+							final Class clazz = classLoader.loadClass(name);
+							for (final Field field1 : clazz.getDeclaredFields()) {
+								if (field1.getType().getName().equals("com.mojang.minecraft.e.a")) {
+									final Class clazz2 = classLoader.loadClass("com.mojang.minecraft.e.a");
+									final Class clazz3 = classLoader.loadClass("com.mojang.minecraft.d.b");
+
+									//Field funsafe = Unsafe.class.getDeclaredField("theUnsafe");
+									//funsafe.setAccessible(true);
+									//Unsafe unsafe = (Unsafe) funsafe.get(null);
+									Object survivalClass = clazz2.getConstructor(mc.getClass()).newInstance(mc);
+
+
+									// Reproduce the init method which is removed in c0.28 - creative c0.30s
+
+									field1.set(mc, survivalClass);
+									break;
+								}
+							}
+						}
+					}
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+			}*/
 	}
 
 	@Override
 	public URL getDocumentBase() {
 		try {
-			if (nonOnlineClassic.contains(version)) {
-				return new URL("http://www.minecraft.net:" + portCompat + "/game/");
-			} else {
-				return new URL("http://www.minecraft.net/game/");
-			}
+			return new URL("http://www.minecraft.net/game/");
 		}
 		catch (MalformedURLException e) {
 			e.printStackTrace();
+			Logger.printException(e);
 			return null;
 		}
 	}
@@ -545,6 +523,7 @@ public class Wrapper extends Applet implements AppletStub {
 		}
 		catch (MalformedURLException e) {
 			e.printStackTrace();
+			Logger.printException(e);
 			return null;
 		}
 	}
@@ -558,44 +537,37 @@ public class Wrapper extends Applet implements AppletStub {
 		return null;
 	}
 
-	static {
-		nonOnlineClassic.add("c0.0.1a");
-		nonOnlineClassic.add("c0.0.2a");
-		nonOnlineClassic.add("c0.0.3a");
-		nonOnlineClassic.add("c0.0.4a");
-		nonOnlineClassic.add("c0.0.5a");
-		nonOnlineClassic.add("c0.0.6a");
-		nonOnlineClassic.add("c0.0.7a");
-		nonOnlineClassic.add("c0.0.8a");
-		nonOnlineClassic.add("c0.0.9a");
-		nonOnlineClassic.add("c0.0.10a");
-		nonOnlineClassic.add("c0.0.11a");
-		nonOnlineClassic.add("c0.0.12a-dev");
-		nonOnlineClassic.add("c0.0.12a");
-		nonOnlineClassic.add("c0.0.12a_01");
-		nonOnlineClassic.add("c0.0.12a_02");
-		nonOnlineClassic.add("c0.0.12a_03");
-		nonOnlineClassic.add("c0.0.13a-dev");
-		nonOnlineClassic.add("c0.0.13a");
-		nonOnlineClassic.add("c0.0.13a_01");
-		nonOnlineClassic.add("c0.0.13a_02");
-		nonOnlineClassic.add("c0.0.13a_03");
-		nonOnlineClassic.add("c0.0.14a");
-		nonOnlineClassic.add("c0.0.14a_01");
-		nonOnlineClassic.add("c0.0.14a_02");
-		nonOnlineClassic.add("c0.0.14a_03");
-		nonOnlineClassic.add("c0.0.14a_04");
-		nonOnlineClassic.add("c0.0.14a_06");
-		nonOnlineClassic.add("c0.0.14a_07");
-		nonOnlineClassic.add("c0.0.14a_08");
+	public class BCClassLoader extends URLClassLoader {
 
-		onlineInfdev.add("inf-20100227-1");
-		onlineInfdev.add("inf-20100227-2");
-		onlineInfdev.add("inf-20100227");
-		onlineInfdev.add("inf-20100313");
-		onlineInfdev.add("inf-20100316");
-		onlineInfdev.add("inf-20100320");
-		onlineInfdev.add("inf-20100321");
-		onlineInfdev.add("inf-20100325");
+		public BCClassLoader(URL[] u) {
+			super(u);
+		}
+
+		@Override
+		public Class<?> loadClass(String name) throws ClassNotFoundException {
+			//if (name.equals("com.mojang.minecraft.level.tile.a")) return new SurvivalsTile(2).getClass();
+			return super.loadClass(name);
+		}
 	}
+
+	/*public class SurvivalsTile extends com.mojang.minecraft.level.tile.a {
+
+		protected SurvivalsTile(int i) {
+			super(i);
+		}
+
+		protected SurvivalsTile(int i, int j) {
+			super(i, j);
+		}
+
+		@Override
+		public void e(final Level level, final int n, final int n2, final int n3) {
+			for (int f = this.f(), i = 0; i < f; ++i) {
+				if (com.mojang.minecraft.level.tile.a.a.nextFloat() <= n) {
+					final float n5 = 0.7f;
+	                level.addEntity(new Item(level, n + (com.mojang.minecraft.level.tile.a.a.nextFloat() * n5 + (1.0f - n5) * 0.5f), n2 + (com.mojang.minecraft.level.tile.a.a.nextFloat() * n5 + (1.0f - n5) * 0.5f), n3 + (com.mojang.minecraft.level.tile.a.a.nextFloat() * n5 + (1.0f - n5) * 0.5f), this.ac));
+				}
+			}
+		}
+	}*/
 }
