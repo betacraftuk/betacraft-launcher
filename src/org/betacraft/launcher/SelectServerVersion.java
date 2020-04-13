@@ -6,31 +6,30 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JList;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
-public class InstanceList extends JFrame {
+public class SelectServerVersion extends JFrame {
 	static JList list;
 	static DefaultListModel listModel;
 	static JScrollPane listScroller;
 
-	static JButton newButton, OKButton;
+	static JButton OKButton;
 	static JPanel panel;
 	static GridBagConstraints constr;
 
-	public InstanceList() {
-		Logger.a("Instances list window has been opened.");
+	public SelectServerVersion(ArrayList<Release> thelist, final String mppass, final String address) {
 		this.setIconImage(Window.img);
-		this.setMinimumSize(new Dimension(282, 386));
+		this.setMinimumSize(new Dimension(282, 169));
 
-		this.setTitle(Lang.SELECT_INSTANCE_TITLE);
+		this.setTitle(Lang.WINDOW_SELECT_VERSION);
 		this.setResizable(true);
 
 		panel = new JPanel();
@@ -43,19 +42,7 @@ public class InstanceList extends JFrame {
 		constr.gridwidth = GridBagConstraints.RELATIVE;
 		constr.weightx = 1.0;
 
-		newButton = new JButton(Lang.SELECT_INSTANCE_NEW);
-		newButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				String newName = JOptionPane.showInputDialog(InstanceList.this, Lang.INSTANCE_NAME, Lang.SELECT_INSTANCE_NEW, JOptionPane.DEFAULT_OPTION);//.showInputDialog(null, Lang.INSTANCE_NAME, "");
-				if (newName != null && !newName.equals("")) Instance.newInstance(newName).saveInstance();
-				makeList();
-				pack();
-			}
-		});
-		panel.add(newButton, constr);
-
-		makeList();
+		makeList(thelist);
 
 		constr.gridy++;
 		constr.weighty = GridBagConstraints.RELATIVE;
@@ -66,9 +53,24 @@ public class InstanceList extends JFrame {
 		OKButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				Launcher.setInstance(Instance.loadInstance((String) list.getSelectedValue()));
 				setVisible(false);
-				Window.instanceList = null;
+				Release ver = (Release) list.getSelectedValue();
+				Launcher.currentInstance.version = ver.getName();
+				Launcher.setInstance(Launcher.currentInstance);
+				Launcher.currentInstance.saveInstance();
+				Launcher.saveLastLogin();
+				Window.mainWindow.playButton.setEnabled(false);
+				new Thread() {
+					public void run() {
+						Window.mainWindow.setStatus(Window.mainWindow.playButton, Lang.WINDOW_DOWNLOADING);
+						Launcher.initStartup();
+
+						// Update the button state
+						Window.mainWindow.setStatus(Window.mainWindow.playButton, Lang.WINDOW_PLAY);
+						Window.mainWindow.playButton.setEnabled(true);
+						new Launcher().launchGame(Launcher.currentInstance, address, mppass, null);
+					}
+				}.start();
 			}
 		});
 		panel.add(OKButton, constr);
@@ -78,17 +80,15 @@ public class InstanceList extends JFrame {
 		this.setVisible(true);
 	}
 
-	public void makeList() {
-		int i = 0;
+	public void makeList(ArrayList<Release> thelist) {
 		int index = 0;
 		listModel = new DefaultListModel();
-		String current = Launcher.currentInstance.name;
-		for (String item : Instance.getInstances()) {
+		for (int i = 0; i < thelist.size(); i++) {
+			Release item = thelist.get(i);
 			listModel.addElement(item);
-			if (current.equals(item)) {
+			if (i == thelist.size()-1) {
 				index = i;
 			}
-			i++;
 		}
 
 		constr.weighty = 1.0;
@@ -98,7 +98,7 @@ public class InstanceList extends JFrame {
 		list = new JList(listModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setLayoutOrientation(JList.VERTICAL);
-		list.setVisibleRowCount(3);
+		list.setVisibleRowCount(5);
 		list.setSelectedIndex(index);
 
 		if (listScroller != null) panel.remove(listScroller);

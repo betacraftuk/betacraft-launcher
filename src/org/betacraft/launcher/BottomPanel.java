@@ -49,7 +49,7 @@ public class BottomPanel extends JPanel {
 		left.add(Window.selectVersionButton, constr);
 		constr.gridy = 2;
 		constr.insets = new Insets(0, 50, 0, 50);
-		left.add(Window.optionsButton, constr);
+		left.add(Window.settingsButton, constr);
 		
 		JPanel center = new JPanel();
 		/*center.setOpaque(false);
@@ -60,22 +60,26 @@ public class BottomPanel extends JPanel {
 		l = new GridLayout(0, 2);
 		center.setLayout(l);
 		center.add(Window.playButton);*/
-		center.setLayout(new GridLayout(2, 1));
+		center.setLayout(new GridBagLayout());
 		center.setOpaque(false);
 		constr.gridy = 0;
-		constr.insets = new Insets(4, 50, 2, 50);
+		constr.insets = new Insets(10, 2, 4, 0);
 		constr.weightx = 0.0;
 		constr.gridwidth = GridBagConstraints.RELATIVE;
 		constr.fill = GridBagConstraints.BOTH;
 		constr.gridx = 1;
-		center.add(Window.nicknameButton);
-		constr.gridy = 0;
+		center.add(Window.nick_input, constr);
+		constr.insets = new Insets(10, 2, 4, 0);
+		constr.gridx = 2;
+		center.add(Window.loginButton, constr);
+		constr.gridy = 1;
+		constr.gridx = 1;
 		constr.weightx = 0.0;
-		constr.gridwidth = GridBagConstraints.RELATIVE;
+		constr.gridwidth = 2;
 		constr.fill = GridBagConstraints.BOTH;
-		constr.insets = new Insets(2, 2, 0, 50);
+		constr.insets = new Insets(0, 2, 0, 0);
 		//constr.ipady = 10;
-		center.add(Window.playButton);
+		center.add(Window.playButton, constr);
 		
 		JPanel right = new JPanel();
 		right.setLayout(new GridBagLayout());

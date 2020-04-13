@@ -48,7 +48,7 @@ public class Addon {
 			String[] offlineAddons = new File(BC.get() + "launcher" + File.separator + "addons" + File.separator).list(new FilenameFilter() {
 				@Override
 				public boolean accept(File dir, String fileName) {
-					return fileName.endsWith(".class");
+					return fileName.endsWith(".jar");
 				}
 			});
 
@@ -75,7 +75,7 @@ public class Addon {
 			// If connection failed, load the offline list
 			if (onlineListStream == null) {
 				for (String s : offlineAddons) {
-					addons.add(new Addon(s.substring(0, s.length() -6), false));
+					addons.add(new Addon(s.substring(0, s.length() -4), false));
 				}
 				return;
 			}
@@ -88,7 +88,7 @@ public class Addon {
 					if (offlineAddons[i] != null && ver != null) {
 						// From x.class to x
 						// If the addon from offline list matches the addon from online list 
-						if (offlineAddons[i].substring(0, offlineAddons[i].length() -6).equals(ver)) {
+						if (offlineAddons[i].substring(0, offlineAddons[i].length() -4).equals(ver)) {
 							// ... Then remove it from the offline addons list
 							// Otherwise it would appear doubled in the list
 							offlineAddons[i] = null;
@@ -104,7 +104,7 @@ public class Addon {
 			for (int i = 0; i < offlineAddons.length; i++) {
 				// Skip previously removed duplicates
 				if (offlineAddons[i] == null) continue;
-				addons.add(new Addon(offlineAddons[i].substring(0, offlineAddons[i].length() -6), false));
+				addons.add(new Addon(offlineAddons[i].substring(0, offlineAddons[i].length() -4), false));
 			}
 
 			// Close the connection

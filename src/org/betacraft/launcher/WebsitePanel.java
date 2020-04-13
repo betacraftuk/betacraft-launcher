@@ -19,9 +19,9 @@ public class WebsitePanel extends JPanel {
 	public static final HyperlinkListener EXTERNAL_HYPERLINK_LISTENER = new HyperlinkListener() {
 		public void hyperlinkUpdate(final HyperlinkEvent hyperlinkEvent) {
 			if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-				URL u = hyperlinkEvent.getURL();
-				if (u.toString().startsWith("join://")) { // If the URL isn't pointing to any http/s website
-					String raw = u.toString().substring(7);
+				String u = hyperlinkEvent.getDescription();
+				if (u.startsWith("join://")) { // If the URL isn't pointing to any http/s website
+					String raw = u.substring(7);
 					String[] split = raw.split("/");
 					String address = split[0];
 					String mppass = split[1];
@@ -35,13 +35,11 @@ public class WebsitePanel extends JPanel {
 						}
 					}
 					// uh, make a selection window later
-					Launcher.currentInstance.version = matches.get(matches.size()-1).getName();
-					Launcher.currentInstance.saveInstance();
-					new Launcher().launchGame(Launcher.currentInstance, address, mppass);
+					new SelectServerVersion(matches, mppass, address);
 					return;
 				}
 				try {
-					openLink(u.toURI());
+					openLink(hyperlinkEvent.getURL().toURI());
 				}
 				catch (Exception ex) {
 					ex.printStackTrace();
@@ -92,25 +90,25 @@ public class WebsitePanel extends JPanel {
 			textPane.setEditable(false);
 			textPane.setBackground(Color.BLACK);
 			textPane.setContentType("text/html;charset=UTF-8");
-			String loading = Lang.get("srv_loading");
+			String loading = Lang.TAB_SRV_LOADING;
 			String list1 = "<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + loading + "</h1></center></font></body></html>";
 			textPane.setText(list1);
 			textPane.addHyperlinkListener(EXTERNAL_HYPERLINK_LISTENER);
 
 			if (!isConnection) {
-				textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + Lang.get("srv_failed") + "</h1><br>no connection</center></font></body></html>");
+				textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + Lang.TAB_SRV_FAILED + "</h1><br>no connection</center></font></body></html>");
 				break label1;
 			}
 			new Thread() {
 				public void run() {
 					try {
-						textPane.setPage(new URL("https://betacraft.pl/server.php?user=" + Launcher.getNickname() + "&token=" + Launcher.getAuthToken(false)));
+						textPane.setPage(new URL("https://betacraft.pl/server.php?user=" + Launcher.getNickname() + "&token=" + Launcher.getAuthToken(true)));
 					}
 					catch (Exception ex) {
 						ex.printStackTrace();
 						Logger.printException(ex);
 						textPane.setContentType("text/html");
-						textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + Lang.get("srv_failed") + "</h1><br>" + ex.toString() + "</center></font></body></html>");
+						textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + Lang.TAB_SRV_FAILED + "</h1><br>" + ex.toString() + "</center></font></body></html>");
 					}
 				}
 			}.start();
@@ -136,13 +134,13 @@ public class WebsitePanel extends JPanel {
 			textPane.setEditable(false);
 			textPane.setBackground(Color.BLACK);
 			textPane.setContentType("text/html;charset=UTF-8");
-			String news = Lang.get("cl_loading");
+			String news = Lang.TAB_CL_LOADING;
 			String news1 = "<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + news + "</h1></center></font></body></html>";
 			textPane.setText(news1);
 			textPane.addHyperlinkListener(EXTERNAL_HYPERLINK_LISTENER);
 
 			if (!isConnection) {
-				textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + Lang.get("cl_failed") + "</h1><br>no connection</center></font></body></html>");
+				textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + Lang.TAB_CL_FAILED + "</h1><br>no connection</center></font></body></html>");
 				break label1;
 			}
 			new Thread() {
@@ -154,7 +152,7 @@ public class WebsitePanel extends JPanel {
 						ex.printStackTrace();
 						Logger.printException(ex);
 						textPane.setContentType("text/html");
-						textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + Lang.get("cl_failed") + "</h1><br>" + ex.toString() + "</center></font></body></html>");
+						textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + Lang.TAB_CL_FAILED + "</h1><br>" + ex.toString() + "</center></font></body></html>");
 					}
 				}
 			}.start();

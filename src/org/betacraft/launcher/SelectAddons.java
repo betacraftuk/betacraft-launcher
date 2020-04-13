@@ -33,11 +33,11 @@ public class SelectAddons extends JFrame implements ActionListener {
 	public SelectAddons() {
 		Logger.a("Addons list window has been opened.");
 		this.setIconImage(Window.img);
-		setMinimumSize(new Dimension(282, 386));
-		setPreferredSize(new Dimension(282, 386));
-		setTitle(Lang.ADDON_LIST_TITLE);
-		setResizable(true);
-		setLayout(new BorderLayout());
+		this.setMinimumSize(new Dimension(282, 386));
+		this.setPreferredSize(new Dimension(282, 386));
+		this.setTitle(Lang.ADDON_LIST_TITLE);
+		this.setResizable(true);
+		this.setLayout(new BorderLayout());
 
 		panel = new JPanel();
 		panel.setLayout(new GridBagLayout());
@@ -77,13 +77,14 @@ public class SelectAddons extends JFrame implements ActionListener {
 		updateList();
 		this.add(panel, BorderLayout.CENTER);
 		this.pack();
-		setLocationRelativeTo(Window.mainWindow);
-		setVisible(true);
+		this.setLocationRelativeTo(Window.mainWindow);
+		this.setVisible(true);
 	}
 
 	protected static ArrayList<JCheckBox> checkboxes = new ArrayList<JCheckBox>();
 
 	protected void updateList() {
+		checkboxes.clear();
 		JPanel listpanel = new JPanel();
 		listpanel.setLayout(new GridBagLayout());
 		listpanel.setMaximumSize(new Dimension(282, 300));
@@ -135,6 +136,7 @@ public class SelectAddons extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == OK) {
 			saveAddons();
+			Window.addonsList = null;
 		}
 	}
 }

@@ -11,8 +11,7 @@ import java.awt.Image;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
-import java.lang.Thread.State;
+import java.io.FilenameFilter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.net.MalformedURLException;
@@ -20,39 +19,55 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
+import org.betacraft.Addon.WhatToDo;
 import org.betacraft.launcher.BC;
-import org.betacraft.launcher.InstanceList;
 import org.betacraft.launcher.Lang;
+import org.betacraft.launcher.Launcher;
 import org.betacraft.launcher.Logger;
 
-import club.minnced.discord.rpc.DiscordEventHandlers;
-import club.minnced.discord.rpc.DiscordRPC;
-import club.minnced.discord.rpc.DiscordRichPresence;
+import net.arikia.dev.drpc.DiscordEventHandlers;
+import net.arikia.dev.drpc.DiscordRPC;
+import net.arikia.dev.drpc.DiscordRichPresence;
+
 
 public class Wrapper extends Applet implements AppletStub {
 
-	public final Map<String, String> params = new HashMap<String, String>(); // Client parameters
-	public String session; // Session id for premium authentication
-	public String mainFolder; // .betacraft folder
-	public String version; // Version to be launched
-	public URLClassLoader classLoader; // Class loader for linking the game and natives
-	public Class appletClass; // Minecraft's main class
-	public boolean discord = false; // Discord RPC
+	/** Client parameters */
+	public final Map<String, String> params = new HashMap<String, String>();
+	/** Session id for premium authentication */
+	public String session;
+	/** Instance's folder */
+	public String mainFolder;
+	/** Version to be launched */
+	public String version;
+	/** Class loader for linking the game and libraries */
+	public BCClassLoader classLoader;
+	/** Minecraft's main class */
+	public Class mainClass;
+	/** Discord RPC */
+	public boolean discord = false;
+	/** Icon for the window frame */
 	public Image icon;
 
 	public Frame gameFrame;
-	public Applet applet = null; // Game's applet
-	public int context = 0; // Return value for isActive
-	public boolean active = false; // If the game has started
-	public String ver_prefix = "";
+	public JPanel panel;
+	/** Applet of the game */
+	public Object mainClassInstance = null;
+	public int context = 0;
+	public boolean active = false;
+	/** Name for the window frame */
+	public String window_name = "";
 	public DiscordThread discordThread = null;
 
+	/** Preferred width of the game applet */
 	public int width = 854;
+	/** Preferred height of the game applet */
 	public int height = 480;
 
 	public String proxyCompat = "www.minecraft.net";
@@ -60,18 +75,32 @@ public class Wrapper extends Applet implements AppletStub {
 	public String serverAddress = null;
 	public String mppass = null;
 
-	public ArrayList<Addon> addons = new ArrayList<Addon>();
+	/** List of addons to be applied to this instance */
+	public ArrayList<Addon> addons = new ArrayList<>();
+	public ArrayList<Class<Addon>> ogaddons = new ArrayList<>();
 
+	/**
+	 * Initializes the Wrapper class & enables the game
+	 * 
+	 * @param user - Username
+	 * @param ver_prefix - Name for the window frame
+	 * @param version - Version of the game to play
+	 * @param sessionid - Session id of the account (token:accessToken:profileid)
+	 * @param mainFolder - Folder of the instance
+	 * @param height - Preferred height of the applet
+	 * @param width - Preferred width of the applet
+	 * @param RPC - Discord Rich Presence
+	 * @param launchMethod - Launch method for the version
+	 * @param server - Server parameters
+	 * @param mppass - Authentication string for Classic servers
+	 * @param USR - Discord RPC username string
+	 * @param VER - Discord RPC version string
+	 * @param img - Icon for the window frame
+	 * @param addons - List of addons to apply to this instance
+	 */
 	public Wrapper(String user, String ver_prefix, String version, String sessionid, String mainFolder, Integer height, Integer width, Boolean RPC, String launchMethod, String server, String mppass, String USR, String VER, Image img, ArrayList addons) {
-		try {
-			ArrayList<Class> li = (ArrayList<Class>) addons;
-			for (Class c : li) {
-				this.addons.add((Addon)c.newInstance());
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			Logger.printException(ex);
-		}
+		ogaddons = (ArrayList<Class<Addon>>)addons;
+
 		params.put("username", user);
 		params.put("sessionid", sessionid);
 		params.put("haspaid", "true");
@@ -86,11 +115,10 @@ public class Wrapper extends Applet implements AppletStub {
 		this.serverAddress = server;
 		this.mppass = mppass;
 		this.icon = img;
-		this.ver_prefix = "Minecraft " + ver_prefix;
+		this.window_name = ver_prefix;
 
 		new File(this.mainFolder).mkdirs();
 
-		System.setProperty("java.util.Arrays.useLegacyMergeSort", "true");
 		String proxy = System.getProperty("http.proxyHost");
 		String port = System.getProperty("http.proxyPort");
 
@@ -102,41 +130,70 @@ public class Wrapper extends Applet implements AppletStub {
 		}
 
 		if (this.discord) {
-			DiscordRPC lib = DiscordRPC.INSTANCE;
 			String applicationId = "567450523603566617";
 			DiscordEventHandlers handlers = new DiscordEventHandlers();
-			lib.Discord_Initialize(applicationId, handlers, true, "");
+			DiscordRPC.discordInitialize(applicationId, handlers, true);
+
 			DiscordRichPresence presence = new DiscordRichPresence();
 			presence.startTimestamp = System.currentTimeMillis() / 1000;
 			presence.state = VER + ": " + version;
-			presence.details = USR + " " + user;
-			lib.Discord_UpdatePresence(presence);
-			discordThread = new DiscordThread(lib);
+			presence.details = String.format(USR, user);
+			presence.largeImageKey = "bc";
+			presence.largeImageText = "Download at betacraft.pl";
+			DiscordRPC.discordUpdatePresence(presence);
+			discordThread = new DiscordThread();
 		}
 
-		try {
-			for (Addon a : this.addons) {
-				a.preInit(this);
-			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			Logger.printException(ex);
-		}
 		play();
 	}
 
-	public static class DiscordThread extends Thread {
-		DiscordRPC rpc;
+	/**
+	 * Loads addons in the correct order
+	 * 
+	 * @param a - Addon to load
+	 */
+	public void loadAddon(Addon a) {
+		if (addonLoaded(a)) return;
+		List<String> applyAfter = a.applyAfter();
+		for (String addon : applyAfter) {
+			for (Class<Addon> a1 : ogaddons) {
+				if (a1.getName().contains(addon)) {
+					try {
+						loadAddon((Addon) a1.newInstance());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}
+				/*String[] name = a1.split("\\.");
+				if (name[name.length - 2].equals(addon)) {
+					try {
+						loadAddon((Addon) classLoader.loadClass(name[name.length - 2]).newInstance());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+				}*/
+			}
+		}
+		this.addons.add(a);
+	}
 
-		DiscordThread(DiscordRPC lib) {
+	public boolean addonLoaded(Addon a) {
+		for (Addon addon : this.addons) {
+			if (addon.getName().equals(a.getName())) return true;
+		}
+		return false;
+	}
+
+	public static class DiscordThread extends Thread {
+
+		DiscordThread() {
 			super("RPC-Callback-Handler");
-			rpc = lib;
 		}
 
 		// Update the RPC
-		public void start() {
+		public synchronized void start() {
 			while (!Thread.currentThread().isInterrupted()) {
-				rpc.Discord_RunCallbacks();
+				DiscordRPC.discordRunCallbacks();
 				try {
 					Thread.sleep(2000);
 				} catch (InterruptedException ignored) {}
@@ -144,6 +201,9 @@ public class Wrapper extends Applet implements AppletStub {
 		}
 	}
 
+	/**
+	 * Asks the client for server credentials.
+	 */
 	public void askForServer() {
 		if (this.serverAddress != null) {
 			String[] ipstuff = serverAddress.split(":");
@@ -172,98 +232,117 @@ public class Wrapper extends Applet implements AppletStub {
 
 	public String launchType = null;
 
+	/**
+	 * Replaced with {@link #loadMainClass(URL[])}
+	 * 
+	 * @param url - Array of jar links for the class loader
+	 */
+	@Deprecated
 	public void setPrefixAndLoadMainClass(URL[] url) {
-		classLoader = null;
-		classLoader = new BCClassLoader(url);
+		this.loadMainClass(url);
+	}
+
+	/**
+	 * Loads the main game class and initializes it.
+	 * Additionally it loads the appropriate non-custom launch method if launch type is empty.
+	 * 
+	 * @param url - Array of jar links for the class loader
+	 */
+	public void loadMainClass(URL[] url) {
+
+		try {
+			classLoader = null;
+			URL[] old = url.clone();
+			URL[] neww = new URL[old.length/* + ogaddons.size()*/];
+			int i;
+			for (i = 0; i < old.length; i++) {
+				neww[i] = old[i];
+			}
+			/*if (i < neww.length) {
+				for (String c : ogaddons) {
+					neww[i] = new File(c).toURI().toURL();
+					i++;
+				}
+			}*/
+			classLoader = new BCClassLoader(neww);
+			try {
+				for (Class<Addon> c : ogaddons) {
+					/*String[] split = c.split("\\.");
+					String split2[] = split[split.length - 2].split(File.separator);
+					Class<?> addon = Launcher.class.getClassLoader().loadClass(split2[split2.length - 1]);*/
+					this.loadAddon((Addon) c.newInstance());
+					System.out.println("- " + c);
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				Logger.printException(ex);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+		}
 		String launchType = null;
 
 		// I know this looks terrible, but it works!
 		try {
 			// Classic
-			appletClass = classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
-			launchType = "classicmp";
-			//ver_prefix = "Classic " + version.substring(1, version.length());
+			mainClass = classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
+			launchType = "classicmp"; // Force MP because we have no way of knowing if the client supports MP or not.
 		} catch (ClassNotFoundException ex) {
 			try {
-				appletClass = classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
-			} catch (ClassNotFoundException ex1) {
+				mainClass = classLoader.loadClass("com.mojang.rubydung.RubyDung");
+				launchType = "rd";
+
+			} catch (ClassNotFoundException ex2) {
 				try {
-					// rd
-					appletClass = classLoader.loadClass("com.mojang.rubydung.RubyDung");
-					launchType = "rd";
-					//ver_prefix = "Pre-Classic " + version;
+					mainClass = classLoader.loadClass("com.mojang.minecraft.RubyDung");
+					launchType = "mc";
 
-					// This is a special case where we need to avoid endless running in the background
-					// and false reporting of Discord RPC.
-					Thread t = new Thread((Runnable) appletClass.newInstance());
-					t.start();
-					while (t.getState() == State.RUNNABLE || t.getState() == State.NEW) {
-						if (discordThread != null) discordThread.rpc.Discord_RunCallbacks();
-						Thread.sleep(2000);
-					}
-					this.stop();
-
-					return;
-				} catch (ClassNotFoundException ex2) {
+				} catch (ClassNotFoundException ex3) {
 					try {
-						appletClass = classLoader.loadClass("com.mojang.minecraft.RubyDung");
-						launchType = "mc";
-
-						// This is a special case where we need to avoid endless running in the background
-						// and false reporting of Discord RPC.
-						Thread t = new Thread((Runnable) appletClass.newInstance());
-						t.start();
-						while (t.getState() == State.RUNNABLE || t.getState() == State.NEW) {
-							if (discordThread != null) discordThread.rpc.Discord_RunCallbacks();
-							Thread.sleep(2000);
-						}
-						this.stop();
-
-						return;
-					} catch (ClassNotFoundException ex3) {
+						// Indev+
+						mainClass = classLoader.loadClass("net.minecraft.client.MinecraftApplet");
+						launchType = "indev";
+					} catch (ClassNotFoundException ex4) {
 						try {
-							// Indev+
-							appletClass = classLoader.loadClass("net.minecraft.client.MinecraftApplet");
-							launchType = "indev";
-							if (version.startsWith("in-")) {
-								//ver_prefix = "Indev " + version.substring(3, version.length());
-							} else if (version.startsWith("b")) {
-								//ver_prefix = "Beta " + version.substring(1, version.length());
-							} else if (version.startsWith("a")) {
-								//ver_prefix = "Alpha v" + version.substring(1, version.length());
-							} else if (version.startsWith("inf-")) {
-								//ver_prefix = "Infdev " + version.substring(4, version.length());
-							} else {
-								//ver_prefix = version;
-							}
-						} catch (ClassNotFoundException ex4) {
-							try {
-								appletClass = classLoader.loadClass("M");
-								launchType = "4k";
-								//ver_prefix = version;
-							} catch (ClassNotFoundException ex5) {}
-						}
-					} catch (Exception ex3) {}
-				} catch (Exception ex2) {}
-			}
+							mainClass = classLoader.loadClass("M");
+							launchType = "4k";
+						} catch (ClassNotFoundException ex5) {}
+					}
+				}// catch (Exception ex3) {}
+			}// catch (Exception ex2) {}
 		}
 		// Don't force the launch type if the info file knows it better.
+		if (this.launchType.equals("") &&
+				launchType.equalsIgnoreCase("classicmp")) {
+			new ClassicMPWrapper(params.get("username"), this.window_name, this.version, params.get("sessionid"), this.mainFolder, this.height, this.width, this.discord, launchType, this.serverAddress, this.mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, this.icon, this.ogaddons);
+			return;
+		} else if (this.launchType.equals("") && (launchType.equalsIgnoreCase("rd") || launchType.equalsIgnoreCase("mc"))) {
+			new PreClassicWrapper(params.get("username"), this.window_name, this.version, params.get("sessionid"), this.mainFolder, this.height, this.width, this.discord, launchType, this.serverAddress, this.mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, this.icon, this.ogaddons);
+			return;
+		} else if (this.launchType.equals("") && launchType.equalsIgnoreCase("4k")) {
+			new FkWrapper(params.get("username"), this.window_name, this.version, params.get("sessionid"), this.mainFolder, this.height, this.width, this.discord, launchType, this.serverAddress, this.mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, this.icon, this.ogaddons);
+			return;
+		}
 		if (this.launchType.equals("")) this.launchType = launchType;
 
 		try {
-			applet = (Applet) appletClass.newInstance();
+			mainClassInstance = mainClass.newInstance();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
 		}
 	}
 
+	/**
+	 * Sets the game folder to {@link #mainFolder}
+	 */
 	public void setGameFolder() {
 		try {
 			if (launchType.equals("indev")) {
-				for (final Field field : appletClass.getDeclaredFields()) {
+				for (final Field field : mainClass.getDeclaredFields()) {
 					final String name = field.getType().getName();
-					if (!name.contains("awt") && !name.contains("java")) {
+					if (!name.contains("awt") && !name.contains("java") && !name.contains("long")) {
 						Field fileField = null;
 						final Class clazz = classLoader.loadClass(name);
 						for (final Field field1 : clazz.getDeclaredFields()) {
@@ -289,45 +368,58 @@ public class Wrapper extends Applet implements AppletStub {
 		}
 	}
 
-	public void play() {
+	public void loadJars() {
 		try {
-
-			String nativesPath = BC.get() + "bin/natives";
+			String[] libs = new File(BC.get(), "bin/").list(new FilenameFilter() {
+				@Override
+				public boolean accept(File dir, String fileName) {
+					return fileName.endsWith(".jar");
+				}
+			});
 
 			// Glue everything Minecraft needs for running
-			String file = BC.get() + "versions/" + version + ".jar";
-			String file1 = BC.get() + "bin/lwjgl.jar";
-			String file2 = BC.get() + "bin/lwjgl_util.jar";
-			String file3 = BC.get() + "bin/jinput.jar";
-			String file4 = BC.get() + "bin/jutils.jar";
+			String[] files = new String[libs.length + 1];
 
+			files[0] = BC.get() + "versions/" + version + ".jar";
+
+			for (int i = 0; i < libs.length; i++) {
+				files[i + 1] = BC.get() + "bin/" + libs[i];
+			}
+
+			String nativesPath = BC.get() + "bin/natives";
 			System.setProperty("org.lwjgl.librarypath", nativesPath);
 			System.setProperty("net.java.games.input.librarypath", nativesPath);
 
-			final URL[] url = new URL[5];
-			url[0] = new File(file).toURI().toURL();
-			url[1] = new File(file1).toURI().toURL();
-			url[2] = new File(file2).toURI().toURL();
-			url[3] = new File(file3).toURI().toURL();
-			url[4] = new File(file4).toURI().toURL();
+			final URL[] url = new URL[files.length];
+			for (int i = 0; i < files.length; i++) {
+				System.out.println(files[i]);
+				url[i] = new File(files[i]).toURI().toURL();
+			}
 
-			setPrefixAndLoadMainClass(url);
+			loadMainClass(url);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+		}
+	}
+
+	public void play() {
+		try {
+
+			this.loadJars();
 
 			// Replace the main game folder to .betacraft
 			// Skip versions prior to Indev. They don't support changing game folders.
 			this.setGameFolder();
 
-			// Start Discord RPC
-			if (discord) discordThread.start();
-
 			// Make a frame for the game
 			gameFrame = new Frame();
-			gameFrame.setTitle(ver_prefix);
+			gameFrame.setTitle(window_name);
 			gameFrame.setIconImage(this.icon);
 			gameFrame.setBackground(Color.BLACK);
 
 			// This is needed for the window size
-			final JPanel panel = new JPanel();
+			panel = new JPanel();
 			panel.setLayout(new BorderLayout());
 			gameFrame.setLayout(new BorderLayout());
 			panel.setBackground(Color.BLACK);
@@ -338,15 +430,16 @@ public class Wrapper extends Applet implements AppletStub {
 			gameFrame.setLocationRelativeTo(null);
 			gameFrame.setVisible(true);
 
-			applet.setStub(this);
-			applet.resize(width, height);
-			applet.setMinimumSize(new Dimension(width, height));
+			Applet a = (Applet) mainClassInstance;
+			a.setStub(this);
+			a.resize(width, height);
+			a.setMinimumSize(new Dimension(width, height));
 
 			this.addHooks();
 
 			// Add game's applet to this window
 			this.setLayout(new BorderLayout());
-			this.add(applet, "Center");
+			this.add(a, "Center");
 			gameFrame.removeAll();
 			gameFrame.setLayout(new BorderLayout());
 			gameFrame.add(Wrapper.this, "Center");
@@ -354,7 +447,9 @@ public class Wrapper extends Applet implements AppletStub {
 			active = true;
 			this.start();
 			gameFrame.validate();
-			//classLoader.loadClass("com.mojang.minecraft.level.tile.a");
+
+			// Start Discord RPC
+			if (discord) discordThread.start();
 		} catch (Exception ex) {
 			System.out.println("A critical error has occurred!");
 			System.out.print(ex.toString());
@@ -369,12 +464,6 @@ public class Wrapper extends Applet implements AppletStub {
 				destroy();
 				gameFrame.setVisible(false);
 				gameFrame.dispose();
-				try {
-					classLoader.close();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-					Logger.printException(e1);
-				}
 				System.exit(0);
 			}
 		});
@@ -414,11 +503,13 @@ public class Wrapper extends Applet implements AppletStub {
 	@Override
 	public void stop() {
 		// Shutdown the RPC correctly
-		if (discord) DiscordRPC.INSTANCE.Discord_Shutdown();
-		if (applet != null) {
-			active = false;
+		if (discord) DiscordRPC.discordShutdown();
+		active = false;
+		if (mainClassInstance != null) {
 			try {
-				applet.stop();
+				if (mainClassInstance instanceof Applet) {
+					((Applet) mainClassInstance).stop();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				System.exit(0);
@@ -428,9 +519,11 @@ public class Wrapper extends Applet implements AppletStub {
 
 	@Override
 	public void destroy() {
-		if (applet != null) {
+		if (mainClassInstance != null) {
 			try {
-				applet.destroy();
+				if (mainClassInstance instanceof Applet) {
+					((Applet) mainClassInstance).destroy();
+				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				System.exit(0);
@@ -440,62 +533,93 @@ public class Wrapper extends Applet implements AppletStub {
 
 	@Override
 	public void start() {
-		if (applet != null) {
-			applet.start();
-			return;
+		if (mainClassInstance != null) {
+			try {
+				if (mainClassInstance instanceof Applet) {
+					((Applet) mainClassInstance).start();
+					/*try {
+						for (Field mcfield : mainClass.getDeclaredFields()) {
+							if (!mcfield.getType().getName().contains("java") && !mcfield.getType().getName().contains("long")) {
+								mcfield.setAccessible(true);
+								Class clazz1 = mcfield.getType().asSubclass(Runnable.class);
+								Object mc = mcfield.get(mainClassInstance);
+								for (Field resourcethreadfield : clazz1.getDeclaredFields()) {
+									try {
+										if (resourcethreadfield.getType().getName().equals("com.mojang.minecraft.c")) {
+											resourcethreadfield.setAccessible(true);
+											Class clazz = resourcethreadfield.getType().asSubclass(Thread.class);
+											Thread resourcethread = (Thread) resourcethreadfield.get(mc);
+											for (Field fileparentfield : clazz.getDeclaredFields()) {
+												if (fileparentfield.getType().getName().equals("java.io.File")) {
+													File file = new File(this.mainFolder, "classicresources/");
+													file.mkdirs();
+													fileparentfield.setAccessible(true);
+													fileparentfield.set(resourcethread, file);
+													break;
+												}
+											}
+											break;
+										}
+									} catch (Exception ex) {
+										ex.printStackTrace();
+									}
+								}
+							}
+						}
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}*/
+				}
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				System.exit(0);
+			}
 		}
 	}
 
 	@Override
 	public void init() {
-		if (applet != null) {
-			applet.init();
-			try {
-				for (Addon a : this.addons) {
-					a.postInit(this);
-				}
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				Logger.printException(ex);
-			}
+		if (mainClassInstance != null) {
+			if (!this.addonsPreAppletInit(this.addons)) return;
+			((Applet)mainClassInstance).init();
+			if (!this.addonsPostAppletInit(this.addons)) return;
 		}
+	}
 
-		// c0.24_st_03 - c0.27_st
-		/*if (launchType.equals("c")) {
-				try {
-					for (final Field minecraftField : appletClass.getDeclaredFields()) {
-						final String name = minecraftField.getType().getName();
-						if (name.contains("com.mojang.minecraft.k")) {
+	public boolean addonsPreAppletInit(ArrayList<Addon> toinit) {
+		try {
+			boolean stop = false;
+			ArrayList<Addon> left = (ArrayList<Addon>) toinit.clone();
+			for (Addon a : toinit) {
+				left.remove(a);
+				WhatToDo todo = a.preAppletInit(this, left);
+				if (todo == WhatToDo.STOP_LOOP) break;
+				if (todo == WhatToDo.STOP_CODE) stop = true;
+			}
+			return !stop;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+			return true;
+		}
+	}
 
-							// Set Minecraft field accessible
-							minecraftField.setAccessible(true);
-							// Get the instance
-							Object mc = minecraftField.get(applet);
-
-							final Class clazz = classLoader.loadClass(name);
-							for (final Field field1 : clazz.getDeclaredFields()) {
-								if (field1.getType().getName().equals("com.mojang.minecraft.e.a")) {
-									final Class clazz2 = classLoader.loadClass("com.mojang.minecraft.e.a");
-									final Class clazz3 = classLoader.loadClass("com.mojang.minecraft.d.b");
-
-									//Field funsafe = Unsafe.class.getDeclaredField("theUnsafe");
-									//funsafe.setAccessible(true);
-									//Unsafe unsafe = (Unsafe) funsafe.get(null);
-									Object survivalClass = clazz2.getConstructor(mc.getClass()).newInstance(mc);
-
-
-									// Reproduce the init method which is removed in c0.28 - creative c0.30s
-
-									field1.set(mc, survivalClass);
-									break;
-								}
-							}
-						}
-					}
-				} catch (Exception ex) {
-					ex.printStackTrace();
-				}
-			}*/
+	public boolean addonsPostAppletInit(ArrayList<Addon> toinit) {
+		try {
+			boolean stop = false;
+			ArrayList<Addon> left = (ArrayList<Addon>) toinit.clone();
+			for (Addon a : toinit) {
+				left.remove(a);
+				WhatToDo todo = a.postAppletInit(this, left);
+				if (todo == WhatToDo.STOP_LOOP) break;
+				if (todo == WhatToDo.STOP_CODE) stop = true;
+			}
+			return !stop;
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+			return true;
+		}
 	}
 
 	@Override
@@ -508,12 +632,6 @@ public class Wrapper extends Applet implements AppletStub {
 			Logger.printException(e);
 			return null;
 		}
-	}
-
-	@Override
-	public void setVisible(boolean b) {
-		super.setVisible(b);
-		applet.setVisible(b);
 	}
 
 	@Override
@@ -545,29 +663,7 @@ public class Wrapper extends Applet implements AppletStub {
 
 		@Override
 		public Class<?> loadClass(String name) throws ClassNotFoundException {
-			//if (name.equals("com.mojang.minecraft.level.tile.a")) return new SurvivalsTile(2).getClass();
 			return super.loadClass(name);
 		}
 	}
-
-	/*public class SurvivalsTile extends com.mojang.minecraft.level.tile.a {
-
-		protected SurvivalsTile(int i) {
-			super(i);
-		}
-
-		protected SurvivalsTile(int i, int j) {
-			super(i, j);
-		}
-
-		@Override
-		public void e(final Level level, final int n, final int n2, final int n3) {
-			for (int f = this.f(), i = 0; i < f; ++i) {
-				if (com.mojang.minecraft.level.tile.a.a.nextFloat() <= n) {
-					final float n5 = 0.7f;
-	                level.addEntity(new Item(level, n + (com.mojang.minecraft.level.tile.a.a.nextFloat() * n5 + (1.0f - n5) * 0.5f), n2 + (com.mojang.minecraft.level.tile.a.a.nextFloat() * n5 + (1.0f - n5) * 0.5f), n3 + (com.mojang.minecraft.level.tile.a.a.nextFloat() * n5 + (1.0f - n5) * 0.5f), this.ac));
-				}
-			}
-		}
-	}*/
 }

@@ -9,25 +9,33 @@ public class Logger {
 	public static String lastMessage = "";
 
 	public static void a(Object obj) {
+		log(new File(BC.get() + "launcher", "launcher.log"), true, obj);
+	}
+
+	public static void logClient(Object obj) {
+		log(new File(BC.get(), "output-client.log"), true, obj);
+	}
+
+	public static void log(File file, boolean append, Object value) {
 		String str = null;
-		if (obj instanceof String) {
-			str = (String) obj;
-		} else if (obj instanceof Integer) {
-			str = ((Integer)obj).toString();
-		} else if (obj == null) {
+		if (value instanceof String) {
+			str = (String) value;
+		} else if (value instanceof Integer) {
+			str = ((Integer)value).toString();
+		} else if (value == null) {
 			str = "No internet connection, or the server is down.";
 		} else {
-			str = obj.toString();
+			str = value.toString();
 		}
 		String date = format.format(Long.valueOf(System.currentTimeMillis()));
 		String all = "[" + date + "] " + str;
 
 		System.out.println(all);
 		lastMessage = all;
-		Launcher.write(new File(BC.get() + "launcher", "launcher.log"), new String[] {all}, true);
+		Launcher.write(file, new String[] {all}, append);
 	}
 
-	public static void printException(Exception ex) {
+	public static void printException(Throwable ex) {
 		//String[] lines = new String[trace.length];
 		Logger.a(ex.getClass().getCanonicalName() + ": " + ex.getMessage());
 		StackTraceElement[] trace = ex.getStackTrace();

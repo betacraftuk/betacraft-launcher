@@ -20,13 +20,13 @@ import java.util.ArrayList;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.betacraft.launcher.BC;
 import org.betacraft.launcher.Lang;
-import org.betacraft.launcher.Launcher;
 import org.betacraft.launcher.Logger;
 
-public class ClassicWrapper extends Wrapper {
+public class PreClassicWrapper2 extends Wrapper {
 
-	public ClassicWrapper(String user, String ver_prefix, String version, String sessionid, String mainFolder, int height,
+	public PreClassicWrapper2(String user, String ver_prefix, String version, String sessionid, String mainFolder, int height,
 			int width, boolean RPC, String launchMethod, String server, String mppass, String USR, String VER,
 			Image img, ArrayList addons) {
 		super(user, ver_prefix, version, sessionid, mainFolder, height, width, RPC, launchMethod, server, mppass, USR, VER,
@@ -37,18 +37,32 @@ public class ClassicWrapper extends Wrapper {
 	public void loadMainClass(URL[] url) {
 		try {
 			URL[] old = url.clone();
-			URL[] neww = new URL[old.length/* + ogaddons.size()*/];
+			URL[] neww = new URL[old.length/* + ogaddons.size()*/ + 1];
 			int i;
 			for (i = 0; i < old.length; i++) {
 				neww[i] = old[i];
 			}
-			/*if (i < neww.length) {
+			/*if (i < neww.length - 1) {
 				for (String c : ogaddons) {
 					neww[i] = new File(c).toURI().toURL();
 					i++;
 				}
 			}*/
+			neww[neww.length-1] = new File(BC.get() + "launcher/", "PreClassic.jar").toURI().toURL();
 			classLoader = new BCClassLoader(neww);
+			try {
+				mainClass = classLoader.loadClass("com.mojang.rubydung.RubyDung");
+				this.launchType = "rd";
+			} catch (ClassNotFoundException ex) {
+				try {
+					mainClass = classLoader.loadClass("com.mojang.minecraft.RubyDung");
+					this.launchType = "mc";
+				} catch (ClassNotFoundException ex1) {
+					System.out.println("Unknown launch class!");
+					ex1.printStackTrace();
+					Logger.printException(ex1);
+				}
+			}
 			try {
 				for (Class<Addon> c : ogaddons) {
 					/*String[] split = c.split("\\.");
@@ -61,8 +75,16 @@ public class ClassicWrapper extends Wrapper {
 				ex.printStackTrace();
 				Logger.printException(ex);
 			}
-			mainClass = classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
-			mainClassInstance = mainClass.newInstance();
+			if (System.getProperty("preclassic.mapwidth") == null) {
+				System.setProperty("preclassic.mapwidth", "256");
+			}
+			if (System.getProperty("preclassic.mapheight") == null) {
+				System.setProperty("preclassic.mapheight", "256");
+			}
+			if (System.getProperty("preclassic.mapdepth") == null) {
+				System.setProperty("preclassic.mapdepth", "64");
+			}
+			mainClassInstance = classLoader.loadClass("org.betacraft.preclassic.RDApplet").getConstructor(Wrapper.class).newInstance(this);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
@@ -104,14 +126,14 @@ public class ClassicWrapper extends Wrapper {
 				public void mouseClicked(MouseEvent e) {
 					gameFrame.removeAll();
 					gameFrame.setLayout(new BorderLayout());
-					gameFrame.add(ClassicWrapper.this, "Center");
-					ClassicWrapper.this.init();
+					gameFrame.add(PreClassicWrapper2.this, "Center");
+					PreClassicWrapper2.this.init();
 					active = true;
-					ClassicWrapper.this.start();
+					PreClassicWrapper2.this.start();
 					Runtime.getRuntime().addShutdownHook(new Thread() {
 						@Override
 						public void run() {
-							ClassicWrapper.this.stop();
+							PreClassicWrapper2.this.stop();
 						}
 					});
 					gameFrame.validate();
@@ -139,7 +161,7 @@ public class ClassicWrapper extends Wrapper {
 				public void windowClosing(final WindowEvent e) {
 					stop();
 					destroy();
-					ClassicWrapper.this.destroy();
+					PreClassicWrapper2.this.destroy();
 					gameFrame.setVisible(false);
 					gameFrame.dispose();
 					System.exit(0);

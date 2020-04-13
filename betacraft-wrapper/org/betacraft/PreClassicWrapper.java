@@ -1,62 +1,92 @@
 package org.betacraft;
 
-import java.applet.Applet;
 import java.awt.Image;
 import java.io.File;
 import java.lang.Thread.State;
 import java.net.URL;
 import java.util.ArrayList;
 
-import org.betacraft.launcher.BC;
 import org.betacraft.launcher.Logger;
+
+import net.arikia.dev.drpc.DiscordRPC;
 
 public class PreClassicWrapper extends Wrapper {
 
 	public PreClassicWrapper(String user, String ver_prefix, String version, String sessionid, String mainFolder,
 			int height, int width, boolean RPC, String launchMethod, String server, String mppass, String USR,
-			String VER, Image img, ArrayList<Class> addons) {
+			String VER, Image img, ArrayList addons) {
 		super(user, ver_prefix, version, sessionid, mainFolder, height, width, RPC, launchMethod, server, mppass, USR, VER,
 				img, addons);
 	}
 
 	@Override
-	public void setPrefixAndLoadMainClass(URL[] url) {
+	public void loadMainClass(URL[] url) {
 		try {
-			classLoader = new BCClassLoader(url);
-
-			try {
-				// rd-
-				appletClass = classLoader.loadClass("com.mojang.rubydung.RubyDung");
-
-				Thread t = new Thread((Runnable) appletClass.newInstance());
-				t.start();
-				while (t.getState() == State.RUNNABLE || t.getState() == State.NEW) {
-					if (discordThread != null) discordThread.rpc.Discord_RunCallbacks();
-					Thread.sleep(2000);
-				}
-				this.stop();
-
-				return;
-			} catch (ClassNotFoundException ex) {
-				try {
-					// mc-
-					appletClass = classLoader.loadClass("com.mojang.minecraft.RubyDung");
-
-					Thread t = new Thread((Runnable) appletClass.newInstance());
-					t.start();
-					while (t.getState() == State.RUNNABLE || t.getState() == State.NEW) {
-						if (discordThread != null) discordThread.rpc.Discord_RunCallbacks();
-						Thread.sleep(2000);
-					}
-					this.stop();
-
-					return;
-				} catch (ClassNotFoundException ex1) {
-					ex1.printStackTrace();
-					Logger.printException(ex1);
-				}
+			classLoader = null;
+			URL[] old = url.clone();
+			URL[] neww = new URL[old.length/* + ogaddons.size()*/];
+			int i;
+			for (i = 0; i < old.length; i++) {
+				neww[i] = old[i];
 			}
-			applet = (Applet) appletClass.newInstance();
+			/*if (i < neww.length) {
+				for (String c : ogaddons) {
+					neww[i] = new File(c).toURI().toURL();
+					i++;
+				}
+			}*/
+			classLoader = new BCClassLoader(neww);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+		}
+
+		try {
+			// rd-
+			mainClass = classLoader.loadClass("com.mojang.rubydung.RubyDung");
+		} catch (ClassNotFoundException ex) {
+			try {
+				// mc-
+				mainClass = classLoader.loadClass("com.mojang.minecraft.RubyDung");
+			} catch (ClassNotFoundException ex1) {
+				ex1.printStackTrace();
+				Logger.printException(ex1);
+			}
+		}
+		try {
+			for (Class<Addon> c : ogaddons) {
+				/*String[] split = c.split("\\.");
+				String split2[] = split[split.length - 2].split(File.separator);
+				Class<?> addon = classLoader.loadClass(split2[split2.length - 1]);*/
+				this.loadAddon((Addon) c.newInstance());
+				System.out.println("- " + c);
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+		}
+		try {
+			//PreClassicHooker r = new PreClassicHooker(this.width, this.height, this.ver_prefix, this.icon, appletClass);
+			//Class e = classLoader.loadClass("org.betacraft.PreClassicHooker");
+			//Constructor constr = e.getConstructor(int.class, int.class, String.class, Image.class, Class.class);
+			//PreClassicHooker run = (PreClassicHooker) constr.newInstance(this.width, this.height, this.ver_prefix, this.icon, appletClass);
+			mainClassInstance = mainClass.newInstance();
+			if (!this.addonsPreAppletInit(this.addons)) return;
+			System.out.println(mainClassInstance.getClass().getName());
+			Thread t = new Thread() {
+				public void run() {
+					((Runnable)mainClassInstance).run();
+				}
+			};
+			t.start();
+			if (!this.addonsPostAppletInit(this.addons)) return;
+			while (t.getState() == State.RUNNABLE || t.getState() == State.NEW) {
+				if (discordThread != null) DiscordRPC.discordRunCallbacks();
+				Thread.sleep(2000);
+			}
+			this.stop();
+
+			return;
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
@@ -66,30 +96,10 @@ public class PreClassicWrapper extends Wrapper {
 	@Override
 	public void play() {
 		try {
-			String nativesPath = BC.get() + "bin/natives";
-
-			// Glue everything Minecraft needs for running
-			String file = BC.get() + "versions/" + version + ".jar";
-			String file1 = BC.get() + "bin/lwjgl.jar";
-			String file2 = BC.get() + "bin/lwjgl_util.jar";
-			String file3 = BC.get() + "bin/jinput.jar";
-			String file4 = BC.get() + "bin/jutils.jar";
-
-			System.setProperty("org.lwjgl.librarypath", nativesPath);
-			System.setProperty("net.java.games.input.librarypath", nativesPath);
-
-			final URL[] url = new URL[5];
-			url[0] = new File(file).toURI().toURL();
-			url[1] = new File(file1).toURI().toURL();
-			url[2] = new File(file2).toURI().toURL();
-			url[3] = new File(file3).toURI().toURL();
-			url[4] = new File(file4).toURI().toURL();
-
-			setPrefixAndLoadMainClass(url);
+			this.loadJars();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
 		}
 	}
-
 }

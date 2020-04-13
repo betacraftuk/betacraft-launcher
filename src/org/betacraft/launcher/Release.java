@@ -20,8 +20,9 @@ public class Release {
 	public static ArrayList<Release> versions = new ArrayList<Release>();
 
 	public static void initVersions() throws IOException {
+		versions.clear();
 		Launcher.download("https://betacraft.pl/launcher/assets/jsons.zip", new File(BC.get() + "versions" + File.separator + "jsons" + File.separator + "$jsons.zip"));
-		Launcher.Unrar(new File(BC.get() + "versions" + File.separator + "jsons" + File.separator + "$jsons.zip").toPath().toString(), new File(BC.get() + "versions" + File.separator + "jsons" + File.separator).toPath().toString());
+		Launcher.Unrar(new File(BC.get() + "versions" + File.separator + "jsons" + File.separator + "$jsons.zip").toPath().toString(), new File(BC.get() + "versions" + File.separator + "jsons" + File.separator).toPath().toString(), false);
 		String[] offlineVersions = getOfflineVersions();
 
 		try {
@@ -64,7 +65,7 @@ public class Release {
 					if (offlineVersions[i] != null && ver != null) {
 						// From x.jar to x
 						// If the version from offline list matches the version from online list 
-						if (offlineVersions[i].substring(0, offlineVersions[i].length() - 5).equals(ver)) {
+						if (offlineVersions[i].equals(ver)) {
 							// ... Then remove it from the offline versions list
 							// Otherwise it would appear doubled in the versions list
 							offlineVersions[i] = null;
@@ -73,14 +74,14 @@ public class Release {
 				}
 
 				// Add the online version to the versions list
-				versions.add(new Release(ver, true));
+				versions.add(new Release(ver, true, false));
 			}
 
 			// Add offline versions to the version list
 			for (int i = 0; i < offlineVersions.length; i++) {
 				// Skip previously removed duplicates
 				if (offlineVersions[i] == null) continue;
-				versions.add(new Release(offlineVersions[i].substring(0, offlineVersions[i].length() - 5), false));
+				versions.add(new Release(offlineVersions[i], false, true));
 			}
 
 			// Close the connection
@@ -98,27 +99,47 @@ public class Release {
 
 	protected static String[] getOfflineVersions() {
 		// Get the versions folder
-		File file = new File(BC.get() + "versions" + File.separator + "jsons" + File.separator);
+		File file = new File(BC.get() + "versions" + File.separator);
+		File file1 = new File(BC.get() + "versions" + File.separator + "jsons" + File.separator);
 
 		// Take only files that are of jar type
 		String[] offlineVersions = file.list(new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String fileName) {
+				return fileName.endsWith(".jar");
+			}
+		});
+		String[] offlineJsons = file1.list(new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String fileName) {
 				return fileName.endsWith(".info");
 			}
 		});
+		String[] total = new String[offlineVersions.length + offlineJsons.length];
+		int index = 0;
+		for (String s1 : offlineVersions) {
+			s1 = s1.substring(0, s1.length() - 4);
+			total[index] = s1;
+			index++;
+		}
+		for (String s1 : offlineJsons) {
+		    s1 = s1.substring(0, s1.length() - 5);
+			total[index] = s1;
+			index++;
+		}
 		ArrayList<String> tosort = new ArrayList<String>();
-		for (String s : offlineVersions) {
-			tosort.add(s);
+		for (String s2 : total) {
+			tosort.add(s2);
 		}
 		Collections.sort(tosort);
 		for (int i = 0; i < tosort.size(); i++) {
-			offlineVersions[i] = tosort.get(i);
+			if (i != 0 && tosort.get(i - 1).equals(tosort.get(i))) continue; // Prevent duplicates
+			total[i] = tosort.get(i);
 		}
-		return offlineVersions;
+		return total;
 	}
 
-	protected static void loadOfflineList() {
+	private static void loadOfflineList() {
 		String[] offlineVersions = getOfflineVersions();
 		try {
 			// Scan the offline version list, but don't update the file (false)
@@ -135,7 +156,7 @@ public class Release {
 					if (offlineVersions[i] != null && split[0] != null) {
 						// From x.jar to x
 						// If the version from offline list matches the version from online list
-						if (offlineVersions[i].substring(0, offlineVersions[i].length() -5).equals(split[0])) {
+						if (offlineVersions[i].equals(split[0])) {
 							// ... Then remove it from the offline versions list
 							// Otherwise it would appear doubled in the versions list
 							offlineVersions[i] = null;
@@ -144,14 +165,14 @@ public class Release {
 					}
 				}
 				if (!addToList) continue;
-				versions.add(new Release(split[0], false));
+				versions.add(new Release(split[0], false, false));
 			}
 
 			// Add offline versions to the versions list
 			for (int i = 0; i < offlineVersions.length; i++) {
 				// Skip previously removed duplicates
 				if (offlineVersions[i] == null) continue;
-				versions.add(new Release(offlineVersions[i].substring(0, -5), false));
+				versions.add(new Release(offlineVersions[i], false, true));
 			}
 
 			// Close the file
@@ -201,10 +222,12 @@ public class Release {
 
 	private String name;
 	private ReleaseJson json;
+	private boolean custom;
 
-	public Release(String name, boolean online) {
+	public Release(String name, boolean online, boolean custom) {
 		this.name = name;
-		this.json = new ReleaseJson(name, online);
+		this.custom = custom;
+		this.json = new ReleaseJson(name, online, custom);
 	}
 
 	public String getName() {
@@ -215,10 +238,18 @@ public class Release {
 		return this.json;
 	}
 
+	public boolean isCustom() {
+		return this.custom;
+	}
+
+	private String customPrefix() {
+		return this.custom ? Lang.VERSION_CUSTOM : "";
+	}
+
 	public String toString() {
 		if (!this.json.getOtherName().equals(""))
-			return this.name + " (" + this.json.getOtherName() + ")";
-		return this.name;
+			return this.customPrefix() + this.name + " (" + this.json.getOtherName() + ")";
+		return this.customPrefix() + this.name;
 	}
 
 	public static Release getReleaseByName(String name) {

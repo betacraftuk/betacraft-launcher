@@ -7,26 +7,28 @@ public class ReleaseJson {
 	private long releaseTimestamp = 0;
 	private long timestamp = 0;
 	private String download = "";
-	private String launchMethod = "indev";
+	private String launchMethod = "";
 	private String launchMethodLink = "";
-	private String proxyArgs = "-Dhttp.proxyHost=betacraft.pl";
+	private String proxyArgs = "";
 	private String otherName = "";
 	private String version;
 	private File json;
 
-	private final boolean online;
+	public boolean online;
+	public boolean custom;
 
-	public ReleaseJson(String version, boolean online) {
+	public ReleaseJson(String version, boolean online, boolean custom) {
 		this.version = version;
 		this.online = online;
+		this.online = custom;
 		initJson();
 	}
 
 	public void initJson() {
 		try {
-			if (!jsonExists()) downloadJson(); // TODO turn on when all jsons are made
+			if (this.custom && (!jsonExists() || Launcher.forceUpdate)) downloadJson();
 			json = new File(BC.get() + "versions" + File.separator + "jsons", version + ".info");
-			String[] toSet = Launcher.excludeExistant(json, new String[] {"release-date", "compile-date", "url", "launch-method", "launch-method-link", "proxy-args", "other-name"});
+			String[] toSet = Launcher.excludeExistant(json, new String[] {"release-date", "compile-date", "url", "launch-method", "launch-method-link", "proxy-args", "other-name"}, "UTF-8");
 			for (String set : toSet) {
 				if (set != null) {
 					if (set.equals("release-date")) Launcher.setProperty(json, set, Long.toString(releaseTimestamp));

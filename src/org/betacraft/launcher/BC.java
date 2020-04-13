@@ -5,7 +5,7 @@ import java.io.File;
 import javax.swing.JOptionPane;
 
 public class BC {
-	public static boolean portable = true;
+	public static boolean portable = false;
 	public static boolean wrapped = false;
 
 	public static String get() {
@@ -44,5 +44,9 @@ public class BC {
 	public static String prefBC() {
 		if (wrapped) return Launcher.currentPath.getAbsoluteFile().getParentFile().getParentFile().getParent();
 		return Launcher.currentPath.getAbsoluteFile().getParent();
+	}
+
+	public static String trimBetaCraftDir(String path) {
+		return path.replaceAll(get(), "");
 	}
 }

@@ -11,32 +11,38 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.InputStream;
-import java.nio.file.FileSystemException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 
 import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 public class Window extends JFrame implements ActionListener {
 
 	static JLabel selectedInstanceDisplay = null;
-	static JButton playButton, selectVersionButton, optionsButton, langButton;
+	static JButton playButton, selectVersionButton, settingsButton, langButton;
 	static JButton tabchangelog, tabservers, tabinstances;
 	static JLabel credits, nicktext;
-	static JButton nicknameButton = null;
+	static JTextField nick_input;
+	static JButton loginButton = null;
 	static InfoPanel infoPanel = null;
 	static BottomPanel bottomPanel = null;
 	static Component centerPanel = null;
 	public static Window mainWindow = null;
+
+	public static ModsRepository modsRepo = null;
+	public static InstanceList instanceList = null;
+	public static InstanceSettings instanceSettings = null;
+	public static Lang lang = null;
+	public static SelectAddons addonsList = null;
+	public static SelectVersion versionsList = null;
+	public static LoginPanel loginPanel = null;
 
 	public static Tab tab = Tab.CHANGELOG;
 
@@ -56,31 +62,50 @@ public class Window extends JFrame implements ActionListener {
 
 		mainWindow = this;
 		setMinimumSize(new Dimension(800, 480));
+		setPreferredSize(new Dimension(800, 480));
 		setTitle(Lang.WINDOW_TITLE);
 		setLayout(new BorderLayout());
 		setLocationRelativeTo(null);
 
 		// Initialize components
-		nicknameButton = new JButton(String.format(Lang.WINDOW_USER, Launcher.getNickname()));
+		loginButton = new JButton(Lang.LOGIN_BUTTON);
 		playButton = new JButton(Lang.WINDOW_PLAY);
 		selectedInstanceDisplay = new JLabel(Launcher.currentInstance.name + " [" + Launcher.currentInstance.version + "]");
 		selectVersionButton = new JButton(Lang.WINDOW_SELECT_VERSION);
 		credits = new JLabel(Lang.WINDOW_CREDITS);
-		nicktext = new JLabel(Lang.WINDOW_USER);
-		optionsButton = new JButton(Lang.WINDOW_OPTIONS);
+		nick_input = new JTextField(MojangLogging.username, 16);
+		settingsButton = new JButton(Lang.WINDOW_OPTIONS);
 		langButton = new JButton(Lang.WINDOW_LANGUAGE);
 
-		nicknameButton.setContentAreaFilled(false);
-		//login.setBorderPainted(true);
-		//Border b = new BevelBorder(JFrame.DO_NOTHING_ON_CLOSE, Color.GRAY, Color.DARK_GRAY);
-		//login.setBorder(b);
-		nicknameButton.setOpaque(false);
-		nicknameButton.setForeground(Color.WHITE);
+		nick_input.getDocument().addDocumentListener(new DocumentListener() {
+			public void changedUpdate(DocumentEvent e) {
+				change();
+			}
+			public void removeUpdate(DocumentEvent e) {
+				change();
+			}
+			public void insertUpdate(DocumentEvent e) {
+				change();
+			}
 
-		nicknameButton.addActionListener(new ActionListener() {
+			public void change() {
+				MojangLogging.username = nick_input.getText();
+			}
+		});
+
+		loginButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new LoginPanel();
+				if (!nick_input.isEnabled()) {
+					nick_input.setEnabled(true);
+					loginButton.setText(Lang.LOGIN_BUTTON);
+					MojangLogging.email = "";
+					MojangLogging.password = "";
+					MojangLogging.userProfile = null;
+				} else {
+					if (loginPanel == null) new LoginPanel();
+					else loginPanel.setVisible(true);
+				}
 			}
 		});
 
@@ -99,9 +124,9 @@ public class Window extends JFrame implements ActionListener {
 			}
 		};
 		stuffz.setLayout(new GridBagLayout());
-		tabchangelog = new JButton("Changelog");
-		tabinstances = new JButton("Instances");
-		tabservers = new JButton("Classic servers");
+		tabchangelog = new JButton(Lang.TAB_CHANGELOG);
+		tabinstances = new JButton(Lang.TAB_INSTANCES);
+		tabservers = new JButton(Lang.TAB_SERVERS);
 		positionButtons();
 
 		tabchangelog.addActionListener(new ActionListener() {
@@ -127,7 +152,8 @@ public class Window extends JFrame implements ActionListener {
 					mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
 					mainWindow.pack();*/
 
-					new InstanceList();
+					if (instanceList == null) new InstanceList();
+					else instanceList.setVisible(true);
 				}
 			}
 		});
@@ -168,13 +194,12 @@ public class Window extends JFrame implements ActionListener {
 
 		// Add some texture to the components
 		credits.setForeground(Color.LIGHT_GRAY);
-		nicktext.setForeground(Color.WHITE);
 		selectedInstanceDisplay.setForeground(Color.WHITE);
 
 		// Add listeners for components
 		playButton.addActionListener(this);
 		selectVersionButton.addActionListener(this);
-		optionsButton.addActionListener(this);
+		settingsButton.addActionListener(this);
 		langButton.addActionListener(this);
 
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -192,12 +217,12 @@ public class Window extends JFrame implements ActionListener {
 		if (largest.getPreferredSize().getWidth() < langButton.getPreferredSize().getWidth()) {
 			largest = langButton;
 		}
-		if (largest.getPreferredSize().getWidth() < optionsButton.getPreferredSize().getWidth()) {
-			largest = optionsButton;
+		if (largest.getPreferredSize().getWidth() < settingsButton.getPreferredSize().getWidth()) {
+			largest = settingsButton;
 		}
 		selectVersionButton.setPreferredSize(largest.getPreferredSize());
 		langButton.setPreferredSize(largest.getPreferredSize());
-		optionsButton.setPreferredSize(largest.getPreferredSize());
+		settingsButton.setPreferredSize(largest.getPreferredSize());
 
 		largest = tabservers;
 		if (largest.getPreferredSize().getWidth() < tabinstances.getPreferredSize().getWidth()) {
@@ -214,6 +239,7 @@ public class Window extends JFrame implements ActionListener {
 	public static void quit(boolean close) {
 		if (mainWindow != null) mainWindow.setVisible(false);
 		if (mainWindow != null) mainWindow.dispose();
+		Launcher.saveLastLogin();
 		Launcher.setProperty(Launcher.SETTINGS, "tab", tab.name());
 		if (close) System.exit(0);
 	}
@@ -224,50 +250,27 @@ public class Window extends JFrame implements ActionListener {
 
 		// Initialize other windows if needed
 		if (source == selectVersionButton) {
-			new SelectVersion();
+			if (versionsList == null) new SelectVersion();
+			else versionsList.setVisible(true);
 		}
-		if (source == optionsButton) {
-			new InstanceSettings();
+		if (source == settingsButton) {
+			if (instanceSettings == null) new InstanceSettings();
+			else instanceSettings.setVisible(true);
 		}
 		if (source == langButton) {
-			new Lang();
+			if (lang == null) new Lang();
+			else lang.setVisible(true);
 		}
 
 		if (source == playButton) {
+			Launcher.saveLastLogin();
 			playButton.setEnabled(false);
 			try {
 				new Thread() {
 					public void run() {
 						setStatus(playButton, Lang.WINDOW_DOWNLOADING);
-						File wrapper = new File(BC.get() + "launcher", "betacraft_wrapper.jar");
-						try {
-							Files.copy(Launcher.currentPath.toPath(), wrapper.toPath(), StandardCopyOption.REPLACE_EXISTING);
-						} catch (FileSystemException ex) {
-							// There is another instance of the game running, we are going to ignore it
-						} catch (Exception ex) {
-							ex.printStackTrace();
-							Logger.printException(ex);
-							JOptionPane.showMessageDialog(null, "The file could not be copied! Try running with Administrator rights. If that won't help, contact me: @Moresteck#1688", "Error", JOptionPane.ERROR_MESSAGE);
-							return;
-						}
 
-						// Download Discord RPC if the checkbox is selected
-						if (Launcher.currentInstance.RPC) {
-							File rpc = new File(BC.get() + "launcher", "discord_rpc.jar");
-							if (!rpc.exists()) {
-								Launcher.download("https://betacraft.pl/launcher/assets/discord_rpc.jar", rpc);
-							}
-						}
-
-						// Download the game if not done already
-						if (!Launcher.isReadyToPlay(Launcher.currentInstance.version)) {
-							if (DownloadResult.OK != Launcher.download(Release.getReleaseByName(Launcher.currentInstance.version).getJson().getDownloadURL(), new File(Launcher.getVerFolder(), Launcher.currentInstance.version + ".jar"))) {
-								JOptionPane.showMessageDialog(null, Lang.ERR_NO_CONNECTION, Lang.ERR_DL_FAIL, JOptionPane.ERROR_MESSAGE);
-							}
-						}
-
-						// Download the latest libs and natives
-						if (!Launcher.checkDepends()) Launcher.downloadDepends();
+						Launcher.initStartup();
 
 						// Update the button state
 						setStatus(playButton, Lang.WINDOW_PLAY);
@@ -282,7 +285,6 @@ public class Window extends JFrame implements ActionListener {
 			}
 		}
 	}
-
 
 	public static void setTextInField(final JTextField field, final String toSet) {
 		Runnable set = new Runnable() {

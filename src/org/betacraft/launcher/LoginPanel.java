@@ -101,7 +101,7 @@ public class LoginPanel extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				if (password.getText().equals("")) {
 					MojangLogging.email = email.getText();
-					Window.nicknameButton.setText(String.format(Lang.WINDOW_USER, MojangLogging.email));
+					//Window.nicknameButton.setText(String.format(Lang.WINDOW_USER, MojangLogging.email));
 				} else {
 					new MojangLogging().authenticate(email.getText(), password.getText());
 				}
@@ -109,6 +109,7 @@ public class LoginPanel extends JFrame {
 				if (!rememberpassword.isSelected()) MojangLogging.password = "";
 				Launcher.saveLastLogin();
 				setVisible(false);
+				Window.loginPanel = null;
 			}
 		});
 		okPanel.add(OKButton, constr);

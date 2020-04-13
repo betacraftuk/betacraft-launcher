@@ -1,0 +1,253 @@
+package org.betacraft;
+
+import java.awt.BorderLayout;
+import java.awt.Canvas;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Frame;
+import java.awt.Image;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
+
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+import org.betacraft.launcher.Lang;
+import org.betacraft.launcher.Logger;
+
+// Pretends to be MinecraftApplet
+public class Classic15aWrapper extends Wrapper {
+	public Runnable run;
+	public Thread thread;
+
+	public Classic15aWrapper(String user, String ver_prefix, String version, String sessionid, String mainFolder,
+			Integer height, Integer width, Boolean RPC, String launchMethod, String server, String mppass, String USR,
+			String VER, Image img, ArrayList addons) {
+		super(user, ver_prefix, version, sessionid, mainFolder, height, width, RPC, launchMethod, server, mppass, USR, VER, img,
+				addons);
+	}
+
+	@Override
+	public void play() {
+		this.askForServer();
+		try {
+			this.loadJars();
+
+			// Make a frame for the game
+			gameFrame = new Frame();
+			gameFrame.setTitle(window_name);
+			gameFrame.setIconImage(this.icon);
+			gameFrame.setBackground(Color.BLACK);
+
+			// This is needed for the window size
+			panel = new JPanel();
+			panel.setLayout(new BorderLayout());
+			gameFrame.setLayout(new BorderLayout());
+			JLabel infolabel1 = new JLabel(Lang.WRAP_CLASSIC_RESIZE);
+			infolabel1.setBackground(Color.BLACK);
+			infolabel1.setForeground(Color.WHITE);
+			panel.add(infolabel1, BorderLayout.CENTER);
+			panel.setBackground(Color.BLACK);
+			panel.setPreferredSize(new Dimension(width, height));
+
+			panel.addMouseListener(new MouseListener() {
+
+				public void mouseClicked(MouseEvent e) {
+					gameFrame.removeAll();
+					gameFrame.setLayout(new BorderLayout());
+					gameFrame.add(Classic15aWrapper.this, "Center");
+					Classic15aWrapper.this.init();
+					active = true;
+					Classic15aWrapper.this.start();
+					Runtime.getRuntime().addShutdownHook(new Thread() {
+						@Override
+						public void run() {
+							Classic15aWrapper.this.stop();
+						}
+					});
+					gameFrame.validate();
+				}
+
+				public void mouseEntered(MouseEvent arg0) {}
+				public void mouseExited(MouseEvent arg0) {}
+				public void mousePressed(MouseEvent arg0) {}
+				public void mouseReleased(MouseEvent arg0) {}
+
+			});
+
+			gameFrame.add(panel, "Center");
+			gameFrame.pack();
+			gameFrame.setLocationRelativeTo(null);
+			gameFrame.setVisible(true);
+
+			gameFrame.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosing(final WindowEvent e) {
+					stop();
+					destroy();
+					gameFrame.setVisible(false);
+					gameFrame.dispose();
+					System.exit(0);
+				}
+			});
+
+			// Add game's applet to this window
+			this.setLayout(new BorderLayout());
+
+			// Start Discord RPC
+			if (discord) discordThread.start();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+		}
+	}
+
+	@Override
+	public void start() {}
+
+	@Override
+	public void init() {
+		try {
+			if (!this.addonsPreAppletInit(this.addons)) return;
+			Canvas canvas = new Canvas();
+			for (final Field minecraftField : mainClass.getDeclaredFields()) {
+				String name = minecraftField.getType().getName();
+				if (name.contains("mojang")) {
+					final Class<?> clazz = classLoader.loadClass(name);
+					Constructor<?> con = clazz.getConstructor(java.awt.Canvas.class, int.class, int.class, boolean.class);
+					run = (Runnable) con.newInstance(params.containsKey("fullscreen") ? null : canvas, panel.getWidth(), panel.getHeight(), params.containsKey("fullscreen"));
+					mainClassInstance = run;
+					if (this.getParameter("server") != null) {
+						int port = this.getParameter("port") != null ? Integer.parseInt(this.getParameter("port")) : 25565;
+						clazz.getDeclaredMethod("a", String.class, int.class).invoke(run, this.getParameter("server"), port);
+					}
+					setResolution(run, canvas, clazz);
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+		}
+	}
+
+	@Override
+	public void stop() {
+		try {
+			for (final Field mcField : mainClass.getDeclaredFields()) {
+				String name = mcField.getType().getName();
+				if (name.contains("mojang")) {
+					final Class<?> clazz = classLoader.loadClass(name);
+					mcField.setAccessible(true);
+					for (Field pauseField : clazz.getDeclaredFields()) {
+						int mod = pauseField.getModifiers();
+						if (Modifier.isVolatile(mod) && Modifier.isPublic(mod) && pauseField.getType().getName().equals("boolean")) {
+							pauseField.set(run, true);
+						}
+					}
+					for (Field runningField : clazz.getDeclaredFields()) {
+						int mod = runningField.getModifiers();
+						if (Modifier.isVolatile(mod) && !Modifier.isPublic(mod) && runningField.getType().getName().equals("boolean")) {
+							runningField.setAccessible(true);
+							runningField.set(run, false);
+						}
+					}
+					clazz.getDeclaredMethod("b", null).invoke(run);
+				}
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+		}
+	}
+
+	@Override
+	public void destroy() {
+		this.stop();
+		try {
+			this.thread.join(5000L);
+		} catch (InterruptedException e) {
+            try {
+            	for (final Field mcField : mainClass.getDeclaredFields()) {
+    				String name = mcField.getType().getName();
+    				if (name.contains("mojang")) {
+    					final Class<?> clazz = classLoader.loadClass(name);
+    					mcField.setAccessible(true);
+    					clazz.getDeclaredMethod("a", null).invoke(run);
+    				}
+    			}
+            }
+            catch (Exception ee) {
+                ee.printStackTrace();
+            }
+        } catch (Exception ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+		}
+	}
+
+	public void setResolution(Runnable run, Canvas canvas, Class<?> clazz) {
+		try {
+			
+			Field resource = clazz.getDeclaredField("f");
+			resource.setAccessible(true);
+			resource.set(run, this.getDocumentBase().getHost() + ":" + this.getDocumentBase().getPort());
+	        if (this.getParameter("username") != null && this.getParameter("sessionid") != null) {
+	        	Field credentials = clazz.getDeclaredField("e");
+	        	credentials.setAccessible(true);
+	        	Object credinstance = this.classLoader.loadClass("com.mojang.minecraft.a").getConstructor(String.class, String.class).newInstance(this.getParameter("username"), this.getParameter("sessionid"));
+	        	
+	        	credentials.set(run, credinstance);
+	        }
+	        if (this.getParameter("loadmap_user") != null && this.getParameter("loadmap_id") != null) {
+	        	Field mapuser = clazz.getDeclaredField("j");
+	        	mapuser.setAccessible(true);
+	        	mapuser.set(run, this.getParameter("loadmap_user"));
+	        	Field mapid = clazz.getDeclaredField("k");
+	        	mapid.setAccessible(true);
+	        	mapid.set(run, Integer.parseInt(this.getParameter("loadmap_id")));
+	        }
+			for (final Field appletModeField : clazz.getDeclaredFields()) {
+				if (appletModeField.getType().getName().equalsIgnoreCase("boolean") && Modifier.isPublic(appletModeField.getModifiers())) {
+					appletModeField.setAccessible(true);
+					appletModeField.set(run, params.containsKey("offlinesaving") ? false : !params.containsKey("fullscreen"));
+					break;
+				}
+			}
+			for (final Field fullscreenField : clazz.getDeclaredFields()) {
+				if (fullscreenField.getType().getName().equalsIgnoreCase("boolean") && Modifier.isPrivate(fullscreenField.getModifiers())) {
+					fullscreenField.setAccessible(true);
+					fullscreenField.set(run, params.containsKey("fullscreen"));
+					break;
+				}
+			}
+			this.setLayout(new BorderLayout());
+			this.add(canvas, "Center");
+			(thread = new Thread(run)).start();
+			canvas.setFocusable(true);
+			this.validate();
+			addonsPostAppletInit(this.addons);
+		} catch (Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+
+	@Override
+	public URL getDocumentBase() {
+		try {
+			return new URL("http://www.minecraft.net:" + portCompat + "/game/");
+		}
+		catch (MalformedURLException e) {
+			e.printStackTrace();
+			Logger.printException(e);
+			return null;
+		}
+	}
+}

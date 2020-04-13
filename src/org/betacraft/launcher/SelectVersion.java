@@ -32,18 +32,15 @@ public class SelectVersion extends JFrame implements ActionListener {
 	public SelectVersion() {
 		Logger.a("Version list window has been opened.");
 		this.setIconImage(Window.img);
-		setMinimumSize(new Dimension(282, 386));
-		//setLayout(null);
-		setTitle(Lang.VERSION_LIST_TITLE);
-		setResizable(true);
+		this.setMinimumSize(new Dimension(282, 386));
+		this.setTitle(Lang.VERSION_LIST_TITLE);
+		this.setResizable(true);
 
 		panel = new JPanel();
 		panel.setLayout(new GridBagLayout());
 
 		constr = new GridBagConstraints();
 
-		//constr.gridx = GridBagConstraints.RELATIVE;
-		//constr.gridy = GridBagConstraints.RELATIVE;
 		constr.fill = GridBagConstraints.BOTH;
 		constr.insets = new Insets(5, 5, 0, 5);
 		constr.gridwidth = GridBagConstraints.RELATIVE;
@@ -77,8 +74,8 @@ public class SelectVersion extends JFrame implements ActionListener {
 
 		this.getContentPane().add(panel, BorderLayout.CENTER);
 		this.pack();
-		setLocationRelativeTo(Window.mainWindow);
-		setVisible(true);
+		this.setLocationRelativeTo(Window.mainWindow);
+		this.setVisible(true);
 	}
 
 	protected void updateList() {
@@ -100,7 +97,6 @@ public class SelectVersion extends JFrame implements ActionListener {
 		
 		list = new JList(listModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		//list.setBounds(10, 30, 262, 290);
 		list.setLayoutOrientation(JList.VERTICAL);
 		list.setVisibleRowCount(3);
 		list.setSelectedIndex(index);
@@ -108,10 +104,8 @@ public class SelectVersion extends JFrame implements ActionListener {
 		if (listScroller != null) panel.remove(listScroller);
 
 		listScroller = new JScrollPane(list);
-		//listScroller.setSize(new Dimension(20, 80));
 		listScroller.setWheelScrollingEnabled(true);
 		panel.add(listScroller, constr);
-		//getContentPane().add(panel);
 	}
 
 	public void saveVersion() {
@@ -126,6 +120,7 @@ public class SelectVersion extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == OK) {
 			saveVersion();
+			Window.versionsList = null;
 		}
 	}
 }

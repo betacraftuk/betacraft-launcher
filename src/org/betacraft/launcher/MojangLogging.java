@@ -16,9 +16,10 @@ import javax.swing.JOptionPane;
 public class MojangLogging {
 	protected static Map<String, String> userProfile;
 	protected static String email = "";
+	protected static String username = "";
 	protected static String password = "";
 
-	public Map<String, String> authenticate(String player, String password) {
+	public boolean authenticate(String player, String password) {
 		MojangLogging.email = player;
 		MojangLogging.password = password;
 
@@ -49,7 +50,7 @@ public class MojangLogging {
 			in.read(bytearr);
 			in.close();
 			String response = new String(bytearr, Charset.forName("UTF-8"));
-			//System.out.println(response);
+			System.out.println(response);
 			String selectedProfile = response.substring(response.indexOf("\"selectedProfile\""));
 			String accessToken = response.substring(response.indexOf("\"accessToken\"")).split("\"")[3];
 			String clientToken = response.substring(response.indexOf("\"clientToken\"")).split("\"")[3];
@@ -62,8 +63,12 @@ public class MojangLogging {
 			responsemap.put("selectedProfile.id", id);
 			userProfile = responsemap;
 
-			Window.nicknameButton.setText(String.format(Lang.WINDOW_USER, name));
+			username = name;
+			Window.nick_input.setText(Launcher.getNickname());
+			Window.nick_input.setEnabled(false);
+			Window.loginButton.setText(Lang.LOGOUT_BUTTON);
 			Logger.a("Logged in successfully.");
+			return true;
 		} catch (ArrayIndexOutOfBoundsException ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
@@ -99,6 +104,6 @@ public class MojangLogging {
 				Logger.printException(ex1);
 			}
 		}
-		return responsemap;
+		return false;
 	}
 }

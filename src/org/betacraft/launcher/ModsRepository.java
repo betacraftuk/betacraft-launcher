@@ -7,8 +7,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -26,8 +24,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
-
-import org.betacraft.launcher.VersionSorter.Order;
 
 public class ModsRepository extends JFrame implements ActionListener {
 
@@ -64,6 +60,7 @@ public class ModsRepository extends JFrame implements ActionListener {
 			for (String ver : scan(onlineListScanner)) {
 				mods.add(ver);
 			}
+			setModsOnline();
 
 			// Close the connection
 			onlineListScanner.close();
@@ -74,6 +71,18 @@ public class ModsRepository extends JFrame implements ActionListener {
 			Logger.printException(ex);
 
 			JOptionPane.showMessageDialog(null, "An error occurred while loading mods list! Report this to: @Moresteck#1688", "Critical error!", JOptionPane.ERROR_MESSAGE);
+		}
+	}
+
+	protected static void setModsOnline() {
+		for (String s : mods) {
+			for (Release r : Release.versions) {
+				if (r.getName().equals(s)) {
+					if (Release.versions.get(0).getJson().online) {
+						r.getJson().online = true;
+					}
+				}
+			}
 		}
 	}
 
@@ -103,7 +112,7 @@ public class ModsRepository extends JFrame implements ActionListener {
 		Logger.a("Mods repository window has been opened.");
 		this.setIconImage(Window.img);
 		setMinimumSize(new Dimension(282, 386));
-		setTitle(Lang.VERSION_LIST_TITLE);
+		setTitle(Lang.INSTANCE_MODS_REPOSITORY);
 		setResizable(true);
 
 		panel = new JPanel();
@@ -158,10 +167,11 @@ public class ModsRepository extends JFrame implements ActionListener {
 		if (list.getSelectedValuesList().size() == 0) return;
 		for (Object o : list.getSelectedValuesList()) {
 			String s = (String) o;
-			new ReleaseJson(s, true);
+			new ReleaseJson(s, true, true);
 		}
 		try {
 			Release.initVersions();
+			setModsOnline();
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
@@ -178,6 +188,7 @@ public class ModsRepository extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == OK) {
 			saveVersions();
+			Window.modsRepo = null;
 		}
 	}
 }

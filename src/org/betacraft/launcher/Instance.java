@@ -4,6 +4,8 @@ import java.awt.Image;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,7 +39,7 @@ public class Instance {
 
 	public static Instance newInstance(String name) {
 		// Use default settings
-		return new Instance(name, "-Xmx512M", "b1.9-pre6", 854, 480, true, false, false, new ArrayList<String>(), BC.get() + name + "/");
+		return new Instance(name, "-Xmx512M", "b1.5_01", 854, 480, true, false, false, new ArrayList<String>(), BC.get() + name + "/");
 	}
 
 	public static Instance loadInstance(String name) {
@@ -54,6 +56,7 @@ public class Instance {
 			String[] addonz = addonz1.split(",");
 			if (!addonz1.equals("")) {
 				for (String addon : addonz) {
+					if (instance.addons.contains(addon)) continue;
 					instance.addons.add(addon);
 				}
 			}
@@ -149,15 +152,33 @@ public class Instance {
 				return ImageIO.read(this.getClass().getClassLoader().getResourceAsStream("icons/favicon.png"));
 			}
 			return ImageIO.read(imgFile).getScaledInstance(32, 32, 16);
+		} catch (Exception e2) {
+			e2.printStackTrace();
+			Logger.printException(e2);
+			this.setIcon(null);
+			try {
+				return ImageIO.read(this.getClass().getClassLoader().getResourceAsStream("icons/favicon.png"));
+			} catch (IOException e) { return null; }
+		}
+	}
+
+	public void setIcon(File path) {
+		try {
+			File imgFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".png");
+			if (path == null) {
+				imgFile.delete();
+				return;
+			}
+			Files.copy(path.toPath(), imgFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException e2) {
 			e2.printStackTrace();
 			Logger.printException(e2);
-			return null;
 		}
 	}
 
 	public void setAddons(List<String> list) {
-		this.addons = list;
+		this.addons.clear();
+		this.addons.addAll(list);
 	}
 
 	public void removeAddon(String name) {

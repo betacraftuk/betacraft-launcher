@@ -2,7 +2,6 @@ package org.betacraft.launcher;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -12,8 +11,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 
 import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
@@ -30,22 +27,24 @@ import javax.swing.event.DocumentListener;
 
 public class InstanceSettings extends JFrame {
 
-	static JCheckBox proxyCheck;
-	static JCheckBox keepOpenCheck;
-	static JCheckBox RPCCheck;
+	public JCheckBox proxyCheck;
+	public JCheckBox keepOpenCheck;
+	public JCheckBox RPCCheck;
+	public JCheckBox forceUpdate = null;
 
-	static JLabel parametersText;
-	static JTextField parameters;
+	public JLabel parametersText;
+	public JTextField parameters;
 
-	static JLabel dimensions1Text;
-	static JLabel dimensions2Text;
-	static JTextField dimensions1;
-	static JTextField dimensions2;
+	public JLabel dimensions1Text;
+	public JLabel dimensions2Text;
+	public JTextField dimensions1;
+	public JTextField dimensions2;
 
-	static JButton OKButton;
+	public JButton OKButton;
 
-	static JButton dirChooser;
-	static JTextField instanceName;
+	public JButton dirChooser;
+	public JTextField instanceName;
+	public JLabel instanceIcon;
 	static Image img = null;
 	static Image image = null;
 
@@ -84,7 +83,6 @@ public class InstanceSettings extends JFrame {
 		this.setIconImage(Window.img);
 		setTitle(Lang.OPTIONS_TITLE);
 		setResizable(true);
-		this.setMinimumSize(new Dimension(664, 333));
 
 
 
@@ -188,8 +186,8 @@ public class InstanceSettings extends JFrame {
 		JPanel instanceSettings = new OptionsPanel();
 		instanceSettings.setLayout(new GridBagLayout());
 		JButton remove = new JButton("x");
-		int height = (int) remove.getPreferredSize().getHeight();
-		remove.setPreferredSize(new Dimension(height, height));
+		int height = (int) remove.getPreferredSize().getWidth();
+		//remove.setPreferredSize(new Dimension(height, height));
 		remove.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -209,7 +207,7 @@ public class InstanceSettings extends JFrame {
 		});
 		JLabel removelabel = new JLabel(Lang.INSTANCE_REMOVE_TITLE);
 		JLabel instanceNameText = new JLabel(Lang.INSTANCE_NAME);
-		JLabel instanceIcon = new JLabel(new ImageIcon(Launcher.currentInstance.getIcon()));
+		instanceIcon = new JLabel(new ImageIcon(Launcher.currentInstance.getIcon()));
 		JButton chooseIcon = new JButton(Lang.INSTANCE_CHANGE_ICON_NAME);
 		chooseIcon.addActionListener(new ActionListener() {
 			@Override
@@ -221,16 +219,12 @@ public class InstanceSettings extends JFrame {
 				dirChooser.setAcceptAllFileFilterUsed(false);
 				if (dirChooser.showOpenDialog(Window.mainWindow) == JFileChooser.APPROVE_OPTION) { 
 					File selected = dirChooser.getSelectedFile();
-					if (!selected.toPath().toString().endsWith(".png") && !selected.toPath().toString().endsWith(".ico") &&
-							!selected.toPath().toString().endsWith(".jpg")) {
-						JOptionPane.showMessageDialog(null, String.format(Lang.INSTANCE_CHANGE_ICON_UNSUPPORTED, "PNG, ICO, JPG"), Lang.INSTANCE_CHANGE_ICON_UNSUPPORTED_TITLE, JOptionPane.WARNING_MESSAGE);
-						return;
-					}
-					File toSave = new File(BC.get() + "launcher" + File.separator + "instances", Launcher.currentInstance.name + ".png");
 					try {
-						Files.copy(selected.toPath(), toSave.toPath(), StandardCopyOption.REPLACE_EXISTING);
+						Launcher.currentInstance.setIcon(selected);
+						instanceIcon.setIcon(new ImageIcon(Launcher.currentInstance.getIcon()));
 					} catch (Exception ex) {
-						JOptionPane.showMessageDialog(null, String.format(Lang.INSTANCE_CHANGE_ICON_FAILED, ex.getLocalizedMessage()), Lang.INSTANCE_CHANGE_ICON_FAILED_TITLE, JOptionPane.ERROR_MESSAGE);
+						Launcher.currentInstance.setIcon(null);
+						JOptionPane.showMessageDialog(null, String.format(Lang.INSTANCE_CHANGE_ICON_FAILED, ex.getMessage()), Lang.INSTANCE_CHANGE_ICON_FAILED_TITLE, JOptionPane.ERROR_MESSAGE);
 					}
 				}
 			}
@@ -239,14 +233,16 @@ public class InstanceSettings extends JFrame {
 		addons.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new SelectAddons();
+				if (Window.addonsList == null) new SelectAddons();
+				else Window.addonsList.setVisible(true);
 			}
 		});
 		JButton modrepo = new JButton(Lang.INSTANCE_MODS_REPOSITORY);
 		modrepo.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				new ModsRepository();
+				if (Window.modsRepo == null) new ModsRepository();
+				else Window.modsRepo.setVisible(true);
 			}
 		});
 
@@ -284,13 +280,19 @@ public class InstanceSettings extends JFrame {
 		constr1.gridy = 3;
 		constr1.weightx = 1.0;
 		constr1.ipadx = 0;
-		constr1.insets = new Insets(50, 2, 2, 2);
+		constr1.insets = new Insets(25, 2, 2, 2);
 		constr1.fill = GridBagConstraints.HORIZONTAL;
+		forceUpdate = new JCheckBox(Lang.FORCE_UPDATE);
+		forceUpdate.setForeground(Color.LIGHT_GRAY);
+		forceUpdate.setOpaque(false);
+		forceUpdate.setSelected(Launcher.forceUpdate);
+		instanceSettings.add(forceUpdate, constr1);
+		constr1.gridy = 4;
+		constr1.insets = new Insets(2, 2, 2, 2);
 		//constr1.gridwidth = 2;
 		instanceSettings.add(addons, constr1);
-		constr1.insets = new Insets(2, 2, 2, 2);
 		constr1.ipady = 0;
-		constr1.gridy = 4;
+		constr1.gridy = 5;
 		instanceSettings.add(modrepo, constr1);
 
 		JPanel okPanel = new OptionsPanel();
@@ -310,6 +312,7 @@ public class InstanceSettings extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				saveOptions();
 				setVisible(false);
+				Window.instanceSettings = null;
 			}
 		});
 		okPanel.add(OKButton, constr1);
@@ -355,6 +358,8 @@ public class InstanceSettings extends JFrame {
 		};
 		dimensions1.getDocument().addDocumentListener(doc);
 		dimensions2.getDocument().addDocumentListener(doc);
+
+		this.setMinimumSize(this.getPreferredSize().getSize());
 	}
 
 	/*public void updateInfo() {
@@ -368,6 +373,7 @@ public class InstanceSettings extends JFrame {
 	}*/
 
 	public void saveOptions() {
+		Launcher.forceUpdate = forceUpdate.isSelected();
 		try {
 			Launcher.currentInstance.width = Integer.parseInt(dimensions1.getText());
 		} catch (Exception ex) {

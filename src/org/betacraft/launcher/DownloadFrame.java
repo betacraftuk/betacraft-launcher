@@ -1,7 +1,6 @@
 package org.betacraft.launcher;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -12,12 +11,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
-import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
-
-import org.betacraft.launcher.InstanceSettings.OptionsPanel;
 
 public class DownloadFrame extends JFrame {
 	public JProgressBar bar;
@@ -41,21 +38,21 @@ public class DownloadFrame extends JFrame {
 		constr.fill = GridBagConstraints.HORIZONTAL;
 		constr.insets = new Insets(10, 10, 10, 10);
 
-		//JLabel label = new JLabel("Downloading Launcher v" + split[0] + " ...");
+		JLabel label = new JLabel("Downloading Launcher v" + update + " ...");
 		bar = new JProgressBar();
 		//bar.setIndeterminate(true);
 		panel.add(bar, constr);
 
-		bar.setBounds(30, 10, 340, 20);
-		//this.getContentPane().add(panel, BorderLayout.NORTH);
+		label.setBounds(30, 10, 340, 20);
+		this.getContentPane().add(label, BorderLayout.CENTER);
 		//this.pack();
-		this.add(bar);
+		//this.add(bar);
 		setVisible(true);
 	}
 
 	public void download(final String link, final File folder) {
 		new Thread() {
-			int downloadSize;
+			int downloadSize = 0;
 			public void run() {
 				Logger.a("Update started from: " + link);
 
@@ -83,6 +80,7 @@ public class DownloadFrame extends JFrame {
 					outputst.close();
 					inputst.close();
 					downloadSize = 0;
+					Logger.a("Update done.");
 					return;
 				} catch (Exception ex) {
 					Logger.a("A critical error has occurred while attempting to download a file from: " + link);
