@@ -47,6 +47,6 @@ public class BC {
 	}
 
 	public static String trimBetaCraftDir(String path) {
-		return path.replaceAll(get(), "");
+		return path.substring(BC.get().length());
 	}
 }

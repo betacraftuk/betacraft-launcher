@@ -59,7 +59,7 @@ public class Launcher {
 	/** Location of the launcher executable */
 	public static File currentPath;
 	public static File SETTINGS;
-	public static String VERSION = "1.09_03"; // TODO Always update this
+	public static String VERSION = "1.09_04"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
@@ -354,7 +354,7 @@ public class Launcher {
 
 		// Download Discord RPC if the checkbox is selected
 		if (Launcher.currentInstance.RPC) {
-			File rpc = new File(BC.get() + "launcher", "discord_rpc.jar");
+			File rpc = new File(BC.get() + "launcher/", "discord_rpc.jar");
 			if (!rpc.exists() || Launcher.forceUpdate) {
 				Launcher.downloadWithButtonOutput("https://betacraft.pl/launcher/assets/1.09_02/discord_rpc.jar", rpc);
 			}
