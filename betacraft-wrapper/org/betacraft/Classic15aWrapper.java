@@ -18,6 +18,7 @@ import java.net.URL;
 import java.util.ArrayList;
 
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.betacraft.launcher.Lang;
@@ -33,6 +34,32 @@ public class Classic15aWrapper extends Wrapper {
 			String VER, Image img, ArrayList addons) {
 		super(user, ver_prefix, version, sessionid, mainFolder, height, width, RPC, launchMethod, server, mppass, USR, VER, img,
 				addons);
+	}
+
+	public void askForServer() {
+		if (this.serverAddress != null) {
+			String[] ipstuff = serverAddress.split(":");
+			params.put("server", ipstuff[0]);
+			params.put("port", ipstuff[1]);
+			params.put("mppass", this.mppass);
+		} else {
+			String server = JOptionPane.showInputDialog(this, Lang.WRAP_SERVER, Lang.WRAP_SERVER_TITLE, JOptionPane.DEFAULT_OPTION);//JOptionPane.showInputDialog(null, Lang.WRAP_SERVER, "");
+			String port = "5565";
+			if (server != null && !server.equals("")) {
+				String IP = server;
+				if (IP.contains(":")) {
+					String[] params1 = server.split(":");
+					IP = params1[0];
+					port = params1[1];
+				}
+				if (!server.equals("")) {
+					System.out.println("Accepted server parameters: " + server);
+					params.put("server", IP);
+					params.put("port", port);
+					params.put("mppass", this.mppass);
+				}
+			}
+		}
 	}
 
 	@Override
@@ -123,12 +150,10 @@ public class Classic15aWrapper extends Wrapper {
 				if (name.contains("mojang")) {
 					final Class<?> clazz = classLoader.loadClass(name);
 					Constructor<?> con = clazz.getConstructor(java.awt.Canvas.class, int.class, int.class, boolean.class);
-					run = (Runnable) con.newInstance(params.containsKey("fullscreen") ? null : canvas, panel.getWidth(), panel.getHeight(), params.containsKey("fullscreen"));
+					run = (Runnable) con.newInstance(params.containsKey("fullscreen") ? null : canvas, panel.getWidth(), 
+							panel.getHeight(), params.containsKey("fullscreen"));
+
 					mainClassInstance = run;
-					if (this.getParameter("server") != null) {
-						int port = this.getParameter("port") != null ? Integer.parseInt(this.getParameter("port")) : 25565;
-						clazz.getDeclaredMethod("a", String.class, int.class).invoke(run, this.getParameter("server"), port);
-					}
 					setResolution(run, canvas, clazz);
 				}
 			}
@@ -206,6 +231,26 @@ public class Classic15aWrapper extends Wrapper {
 	        	
 	        	credentials.set(run, credinstance);
 	        }
+	        if (this.getParameter("server") != null) {
+				int port = Integer.parseInt(this.getParameter("port"));
+				try {
+					Class c = this.classLoader.loadClass("com.mojang.minecraft.net.b");
+					Constructor constr = c.getConstructor(clazz, String.class, int.class, String.class);
+					constr.setAccessible(true);
+					Object Cc = constr.newInstance(run, 
+							this.getParameter("server"), port, 
+							this.getParameter("username"));
+
+					Field field = clazz.getDeclaredField("C");
+					field.setAccessible(true);
+					field.set(run, Cc);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+					Logger.printException(ex);
+				}
+				// previous method, but this has hardcoded port
+				//clazz.getDeclaredMethod("a", String.class, int.class).invoke(run, this.getParameter("server"), port);
+			}
 	        if (this.getParameter("loadmap_user") != null && this.getParameter("loadmap_id") != null) {
 	        	Field mapuser = clazz.getDeclaredField("j");
 	        	mapuser.setAccessible(true);
