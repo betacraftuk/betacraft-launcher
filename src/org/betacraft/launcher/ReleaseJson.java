@@ -20,7 +20,7 @@ public class ReleaseJson {
 	public ReleaseJson(String version, boolean online, boolean custom) {
 		this.version = version;
 		this.online = online;
-		this.online = custom;
+		this.custom = custom;
 		initJson();
 	}
 

@@ -59,7 +59,7 @@ public class Launcher {
 	/** Location of the launcher executable */
 	public static File currentPath;
 	public static File SETTINGS;
-	public static String VERSION = "1.09_04"; // TODO Always update this
+	public static String VERSION = "1.09_06"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
@@ -119,8 +119,9 @@ public class Launcher {
 					for (String s : currentInstance.addons) {
 						try {
 							String path = BC.get() + "launcher" + File.separator + "addons" + File.separator + s + ".jar";
+							System.out.println(path);
 							URLClassLoader loader = new URLClassLoader(new URL[] {
-									new URL("file://" + path)
+									new File(path).toURI().toURL()
 							});
 
 							System.out.println("- " + s);
@@ -161,7 +162,7 @@ public class Launcher {
 				try {
 					String path = BC.get() + "launcher" + File.separator + "launch-methods" + File.separator + meth + ".jar";
 					URLClassLoader loader = new URLClassLoader(new URL[] {
-							new URL("file://" + path)
+							new File(path).toURI().toURL()
 					});
 
 					loadClasses(path, loader);
@@ -775,18 +776,26 @@ public class Launcher {
 			}
 			// If the user accepted the update, or it is a mandatory update, download it
 			if (yes || update.startsWith("!")) {
+				update = update.startsWith("!") ? update.substring(1) : update;
 				// Display downloading dialogue
 				//DownloadFrame dl = new DownloadFrame(update_name);
+				String ending = ".jar";
+				if (Launcher.currentPath.toPath().toString().endsWith(".exe")) {
+					ending = ".exe";
+				}
+				if (BC.portable) {
+					ending = "-portable" + ending;
+				}
 
-				String url = "https://betacraft.pl/launcher/launcher.jar";
-				if (!release) url = "https://betacraft.pl/launcher/pre.jar";
+				String url = "https://betacraft.pl/launcher/launcher-" + update + ending;
+				if (!release) url = "https://betacraft.pl/launcher/pre-" + update + ending;
 
 				// Download the update
 				download(url, new File(BC.get(), "betacraft.jar$tmp"));
 
 				// Launch the new version to finish updating
-				final String pathToJar = Window.class.getProtectionDomain().getCodeSource().getLocation().toURI().getPath();
-				Runtime.getRuntime().exec("java -jar " + BC.get() + "betacraft.jar$tmp" + " update " + pathToJar);
+				String[] args = new String[] {"java", "-jar", BC.get() + "betacraft.jar$tmp", "update", Launcher.currentPath.toPath().toString()};
+				Runtime.getRuntime().exec(args);
 
 				// Close this process
 				Window.quit(true);
