@@ -28,13 +28,10 @@ public class WebsitePanel extends JPanel {
 					String protocolVersion = split[2];
 					ArrayList<Release> matches = new ArrayList<Release>();
 					for (Release r : Release.versions) {
-						if (r.getJson().getLaunchMethod().equals("classicmp")) {
-							if (r.getJson().getCustomEntry("protocolVersion").equals(protocolVersion)) {
-								matches.add(r);
-							}
+						if (r.getJson().getCustomEntry("protocolVersion").equals(protocolVersion)) {
+							matches.add(r);
 						}
 					}
-					// uh, make a selection window later
 					new SelectServerVersion(matches, mppass, address);
 					return;
 				}

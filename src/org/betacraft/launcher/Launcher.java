@@ -59,7 +59,7 @@ public class Launcher {
 	/** Location of the launcher executable */
 	public static File currentPath;
 	public static File SETTINGS;
-	public static String VERSION = "1.09_07"; // TODO Always update this
+	public static String VERSION = "1.09_08"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
