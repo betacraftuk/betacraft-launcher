@@ -59,10 +59,11 @@ public class Launcher {
 	/** Location of the launcher executable */
 	public static File currentPath;
 	public static File SETTINGS;
-	public static String VERSION = "1.09_08"; // TODO Always update this
+	public static String VERSION = "1.09_09"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
+	public static ArrayList<Thread> totalThreads = new ArrayList<>();
 
 	public static void main(String[] args) {
 		try {
@@ -88,6 +89,48 @@ public class Launcher {
 			currentPath = new File(p);
 		} catch (Exception ex) {
 			ex.printStackTrace();
+		}
+
+		if (args.length >= 2 && (args[0].equals("update") || (args[1].equals("update")))) {
+			try {
+				// Backwards compatibility with older versions of the launcher
+				int e = 1;
+				if (args[1].equals("update")) {
+					e++;
+				}
+
+				// Define a path for the update destination
+				String pathToJar = "";
+				for (int i = e; i < args.length; i++) {
+					if (pathToJar.equals("")) {
+						pathToJar = args[i];
+					} else {
+						pathToJar = pathToJar + " " + args[i];
+					}
+				}
+
+				// Fix the path for different operating systems
+				if ((pathToJar.startsWith("//") && !OS.isWindows()) || (pathToJar.startsWith("/") && OS.isWindows())) pathToJar = pathToJar.substring(1, pathToJar.length());
+
+				// Move the updated version to the destination
+				File dest = new File(pathToJar);
+				Files.copy(currentPath.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+				// Launch the updated launcher
+				ArrayList<String> pa = new ArrayList<String>();
+				pa.add("java");
+				pa.add("-jar");
+				pa.add(dest.toPath().toString());
+				new ProcessBuilder(pa).start();
+
+				// Exit this process, its job is done
+				System.exit(0);
+			} catch (Exception ex) {
+				ex.printStackTrace();
+				Logger.printException(ex);
+				System.exit(0);
+			}
+			return;
 		}
 
 		// Launch the game if wanted
@@ -182,7 +225,7 @@ public class Launcher {
 		SETTINGS = new File(BC.get() + "launcher", "launcher.settings");
 
 		if (SETTINGS.exists() && !getProperty(SETTINGS, "version").equals("1")) {
-			removeRecursively(new File(BC.get() + "launcher"));
+			removeRecursively(new File(BC.get() + "launcher"), true, false);
 			writeDefault();
 		}
 
@@ -195,6 +238,8 @@ public class Launcher {
 		new File(BC.get() + "bin" + File.separator + "natives").mkdirs();
 
 		Logger.a("BetaCraft Launcher JE v" + VERSION + " loaded.");
+		Logger.a("Portable: " + BC.portable);
+		Logger.a("EXE: " + currentPath.toPath().toString().endsWith(".exe"));
 
 		// Load language pack
 		Lang.refresh();
@@ -211,50 +256,6 @@ public class Launcher {
 				currentInstance = Instance.newInstance(Launcher.getProperty(Launcher.SETTINGS, "lastInstance"));
 				currentInstance.saveInstance();
 			}
-		}
-
-		// Finish updating of the launcher if wanted
-		if (args.length >= 2 && (args[0].equals("update") || (args[1].equals("update")))) {
-			try {
-				// Backwards compatibility with older versions of the launcher
-				int e = 1;
-				if (args[1].equals("update")) {
-					e++;
-				}
-
-				// Define a path for the update destination
-				String pathToJar = "";
-				for (int i = e; i < args.length; i++) {
-					if (pathToJar.equals("")) {
-						pathToJar = args[i];
-					} else {
-						pathToJar = pathToJar + " " + args[i];
-					}
-				}
-
-				// Fix the path for different operating systems
-				if ((pathToJar.startsWith("//") && !OS.isWindows()) || (pathToJar.startsWith("/") && OS.isWindows())) pathToJar = pathToJar.substring(1, pathToJar.length());
-
-				// Move the updated version to the destination
-				File version = new File(BC.get(), "betacraft.jar$tmp");
-				File dest = new File(pathToJar);
-				Files.copy(version.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
-
-				// Launch the updated launcher
-				ArrayList<String> pa = new ArrayList<String>();
-				pa.add("java");
-				pa.add("-jar");
-				pa.add(dest.toPath().toString());
-				new ProcessBuilder(pa).start();
-
-				// Exit this process, its job is done
-				System.exit(0);
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				Logger.printException(ex);
-				System.exit(0);
-			}
-			return;
 		}
 
 		try {
@@ -471,7 +472,7 @@ public class Launcher {
 				// Close the launcher if desired
 				if (!instance.keepopen) {
 					builder.start();
-					Window.quit(true);
+					Window.quit(false);
 				}
 
 				// For debugging
@@ -485,6 +486,9 @@ public class Launcher {
 				}
 				Logger.logClient("End of client input");
 				Logger.a("Client closed.");
+				if (!instance.keepopen) {
+					Window.quit(true);
+				}
 				return;
 			}
 		} catch (Exception ex) {
@@ -501,11 +505,11 @@ public class Launcher {
 		setProperty(SETTINGS, "version", "1");
 	}
 
-	public static void removeRecursively(File folder) {
+	public static void removeRecursively(File folder, boolean deleteFolderItself, boolean deleteOnlyFiles) {
 		String[] entries = folder.list();
 		for (String s: entries) {
 			File currentFile = new File(folder.getPath(), s);
-			if (currentFile.isDirectory()) {
+			if (currentFile.isDirectory() && !deleteOnlyFiles) {
 				for (String s1 : currentFile.list()) {
 					// Delete files inside this folder
 					new File(currentFile.getPath(), s1).delete();
@@ -517,7 +521,7 @@ public class Launcher {
 				currentFile.delete();
 			}
 		}
-		folder.delete();
+		if (deleteFolderItself) folder.delete();
 	}
 
 	public static File getVerFolder() {
@@ -608,6 +612,12 @@ public class Launcher {
 	public static boolean downloadDepends() {
 		File destLibs = new File(BC.get() + "bin" + File.separator);
 		File destNatives = new File(BC.get() + "bin" + File.separator + "natives" + File.separator);
+		if (destNatives.list().length > 0) {
+			removeRecursively(destNatives, true, false);
+		}
+		if (destLibs.list().length > 0) {
+			removeRecursively(destLibs, false, false);
+		}
 
 		destNatives.mkdirs();
 
@@ -717,7 +727,7 @@ public class Launcher {
 	}
 
 	public static void Unrar(String filepath, String SRC, boolean delete) {
-		new Thread() {
+		Thread unrarthread = new Thread() {
 			public void run() {
 				FileInputStream fis;
 				byte[] buffer = new byte[1024];
@@ -753,7 +763,9 @@ public class Launcher {
 				}
 				if (delete) new File(filepath).delete();
 			}
-		}.start();
+		};
+		totalThreads.add(unrarthread);
+		unrarthread.start();
 	}
 
 	public static void downloadUpdate(boolean release) {
@@ -927,6 +939,7 @@ public class Launcher {
 				dos.writeUTF("");
 			}
 			dos.writeUTF(MojangLogging.username);
+			
 			dos.close();
 		} catch (Exception ex) {
 			ex.printStackTrace();

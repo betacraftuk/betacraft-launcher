@@ -24,6 +24,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 public class ModsRepository extends JFrame implements ActionListener {
 
@@ -161,6 +163,29 @@ public class ModsRepository extends JFrame implements ActionListener {
 		listScroller = new JScrollPane(list);
 		listScroller.setWheelScrollingEnabled(true);
 		panel.add(listScroller, constr);
+		list.addListSelectionListener(new ListSelectionListener() {
+
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				String mod = (String) list.getSelectedValue();
+				//System.out.println(mod);
+				/*version_name.setText(release.getName());
+				StringBuilder datee = new StringBuilder();
+				if (!release.getDate().equals("")) {
+					datee.append(release.getDate());
+				}
+				if (!release.getTime().equals("")) {
+					datee.append(", " + release.getTime() + " CEST");
+				}
+				date2.setText(datee.toString());
+				information2.setText((release.hasSpecialName() ? String.format(also_known, release.getSpecialName()) : "") + release.getDescription());
+				if (release.getWikiLink() == null) {
+					open_wiki.setEnabled(false);
+				} else {
+					open_wiki.setEnabled(true);
+				}*/
+			}
+		});
 	}
 
 	public void saveVersions() {

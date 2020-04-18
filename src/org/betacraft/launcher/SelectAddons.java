@@ -7,13 +7,15 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -21,8 +23,6 @@ import org.betacraft.launcher.VersionSorter.Order;
 
 public class SelectAddons extends JFrame implements ActionListener {
 
-	static JList list;
-	static DefaultListModel listModel;
 	static JScrollPane listScroller;
 	static JButton more_button;
 	static JButton OK;
@@ -53,10 +53,10 @@ public class SelectAddons extends JFrame implements ActionListener {
 		more_button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				// todo
+				
 			}
 		});
-		more_button.setEnabled(false);
+		//more_button.setEnabled(false);
 		panel.add(more_button, constr);
 		this.add(panel, BorderLayout.NORTH);
 

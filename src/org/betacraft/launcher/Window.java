@@ -110,8 +110,9 @@ public class Window extends JFrame implements ActionListener {
 		});
 
 		bottomPanel = new BottomPanel();
-		centerPanel = new WebsitePanel().getUpdateNews(true);
-		this.add(Window.centerPanel, BorderLayout.CENTER);
+		String tabname = Launcher.getProperty(Launcher.SETTINGS, "tab");
+		Tab tab = tabname.equals("") ? Tab.CHANGELOG : Tab.valueOf(tabname.toUpperCase());
+		setTab(tab);
 		this.add(Window.bottomPanel, BorderLayout.SOUTH);
 
 		JPanel stuffz = new JPanel() {
@@ -132,13 +133,7 @@ public class Window extends JFrame implements ActionListener {
 		tabchangelog.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (Window.tab != Tab.CHANGELOG) {
-					mainWindow.remove(Window.centerPanel);
-					centerPanel = new WebsitePanel().getUpdateNews(true);
-					Window.tab = Tab.CHANGELOG;
-					mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
-					mainWindow.pack();
-				}
+				setTab(Tab.CHANGELOG);
 			}
 		});
 		
@@ -161,13 +156,7 @@ public class Window extends JFrame implements ActionListener {
 		tabservers.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (Window.tab != Tab.SERVER_LIST) {
-					mainWindow.remove(Window.centerPanel);
-					centerPanel = new WebsitePanel().getServers(true);
-					Window.tab = Tab.SERVER_LIST;
-					mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
-					mainWindow.pack();
-				}
+				setTab(Tab.SERVER_LIST);
 			}
 		});
 
@@ -212,7 +201,24 @@ public class Window extends JFrame implements ActionListener {
 		this.pack();
 	}
 
+	public static void setTab(Tab tab) {
+		if (tab == Tab.CHANGELOG) {
+			if (Window.centerPanel != null) mainWindow.remove(Window.centerPanel);
+			centerPanel = new WebsitePanel().getUpdateNews(true);
+			Window.tab = Tab.CHANGELOG;
+			mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
+			mainWindow.pack();
+		} else if (tab == Tab.SERVER_LIST) {
+			if (Window.centerPanel != null) mainWindow.remove(Window.centerPanel);
+			centerPanel = new WebsitePanel().getServers(true);
+			Window.tab = Tab.SERVER_LIST;
+			mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
+			mainWindow.pack();
+		}
+	}
+
 	public static void positionButtons() {
+		// Find the most wide button and set its width to other buttons
 		JButton largest = selectVersionButton;
 		if (largest.getPreferredSize().getWidth() < langButton.getPreferredSize().getWidth()) {
 			largest = langButton;
@@ -241,7 +247,12 @@ public class Window extends JFrame implements ActionListener {
 		if (mainWindow != null) mainWindow.dispose();
 		Launcher.saveLastLogin();
 		Launcher.setProperty(Launcher.SETTINGS, "tab", tab.name());
-		if (close) System.exit(0);
+		if (close) {
+			for (Thread t : Launcher.totalThreads) {
+				while (t.isAlive());
+			}
+			System.exit(0);
+		}
 	}
 
 	@Override

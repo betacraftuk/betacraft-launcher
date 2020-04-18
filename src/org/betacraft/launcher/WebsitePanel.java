@@ -19,6 +19,20 @@ public class WebsitePanel extends JPanel {
 	public static final HyperlinkListener EXTERNAL_HYPERLINK_LISTENER = new HyperlinkListener() {
 		public void hyperlinkUpdate(final HyperlinkEvent hyperlinkEvent) {
 			if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+				try {
+					openLink(hyperlinkEvent.getURL().toURI());
+				}
+				catch (Exception ex) {
+					ex.printStackTrace();
+					Logger.printException(ex);
+				}
+			}
+		}
+	};
+
+	public static final HyperlinkListener SERVERS_HYPERLINK_LISTENER = new HyperlinkListener() {
+		public void hyperlinkUpdate(final HyperlinkEvent hyperlinkEvent) {
+			if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
 				String u = hyperlinkEvent.getDescription();
 				if (u.startsWith("join://")) { // If the URL isn't pointing to any http/s website
 					String raw = u.substring(7);
@@ -34,13 +48,6 @@ public class WebsitePanel extends JPanel {
 					}
 					new SelectServerVersion(matches, mppass, address);
 					return;
-				}
-				try {
-					openLink(hyperlinkEvent.getURL().toURI());
-				}
-				catch (Exception ex) {
-					ex.printStackTrace();
-					Logger.printException(ex);
 				}
 			}
 		}
@@ -90,7 +97,7 @@ public class WebsitePanel extends JPanel {
 			String loading = Lang.TAB_SRV_LOADING;
 			String list1 = "<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + loading + "</h1></center></font></body></html>";
 			textPane.setText(list1);
-			textPane.addHyperlinkListener(EXTERNAL_HYPERLINK_LISTENER);
+			textPane.addHyperlinkListener(SERVERS_HYPERLINK_LISTENER);
 
 			if (!isConnection) {
 				textPane.setText("<html><body><font color=\"#808080\"><br><br><br><br><br><center><h1>" + Lang.TAB_SRV_FAILED + "</h1><br>no connection</center></font></body></html>");
