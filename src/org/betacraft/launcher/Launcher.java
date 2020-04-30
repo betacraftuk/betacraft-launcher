@@ -381,7 +381,7 @@ public class Launcher {
 		// Download the latest libs and natives
 		if (!Launcher.checkDepends() || Launcher.forceUpdate) {
 			if (!Launcher.downloadDepends()) {
-				JOptionPane.showMessageDialog(null, Lang.ERR_NO_CONNECTION, Lang.ERR_DL_FAIL, JOptionPane.ERROR_MESSAGE);
+				
 			}
 		}
 	}
