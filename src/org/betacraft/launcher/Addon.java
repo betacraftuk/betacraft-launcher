@@ -1,5 +1,6 @@
 package org.betacraft.launcher;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.InputStream;
@@ -13,11 +14,16 @@ import java.util.Scanner;
 
 import javax.swing.JEditorPane;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.border.MatteBorder;
 
 public class Addon {
 	public String name;
 	public boolean online;
-	public JEditorPane info;
+	public JScrollPane info;
+
+	// When you click on "Show info" button, you get a new window popping,
+	// with just the page embed about the addon. Same for mods. TODO
 
 	public Addon(String name, boolean online) {
 		this.name = name;
@@ -25,7 +31,7 @@ public class Addon {
 		this.info = getInfo();
 	}
 
-	private JEditorPane getInfo() {
+	public JScrollPane getInfo() {
 		JEditorPane pane = new JEditorPane();
 		pane.setEditable(false);
 		pane.setOpaque(false);
@@ -38,7 +44,10 @@ public class Addon {
 			Logger.printException(ex);
 			pane.setText(Lang.ADDON_NO_DESC);
 		}
-		return pane;
+		JScrollPane scrlPane = new JScrollPane(pane);
+		scrlPane.setBorder(null);
+		scrlPane.setWheelScrollingEnabled(true);
+		return scrlPane;
 	}
 
 	public static ArrayList<Addon> addons = new ArrayList<Addon>();
@@ -52,7 +61,7 @@ public class Addon {
 				}
 			});
 
-			final URL url = new URL("https://betacraft.pl/launcher/assets/addons/list.txt");
+			final URL url = new URL("https://betacraft.pl/launcher/assets/addons/1.09_10/list.txt");
 
 			InputStream onlineListStream = null;
 			try {
@@ -69,7 +78,6 @@ public class Addon {
 				Logger.printException(ex);
 
 				// Every networking bug has been catched before, so this one must be serious
-				JOptionPane.showMessageDialog(null, "An error occurred while loading addons list! Report this to: @Moresteck#1688", "Critical error!", JOptionPane.ERROR_MESSAGE);
 			}
 
 			// If connection failed, load the offline list
@@ -114,8 +122,6 @@ public class Addon {
 			Logger.a("A critical error occurred while initializing addons list!");
 			ex.printStackTrace();
 			Logger.printException(ex);
-
-			JOptionPane.showMessageDialog(null, "An error occurred while loading addons list! Report this to: @Moresteck#1688", "Critical error!", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 

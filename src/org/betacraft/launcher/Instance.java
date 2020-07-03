@@ -51,8 +51,8 @@ public class Instance {
 				return null;
 			}
 			Instance instance = newInstance(name);
-			instance.launchArgs = Launcher.getProperty(instanceFile, "launchArgs");
-			String addonz1 = Launcher.getProperty(instanceFile, "addons");
+			instance.launchArgs = Util.getProperty(instanceFile, "launchArgs");
+			String addonz1 = Util.getProperty(instanceFile, "addons");
 			String[] addonz = addonz1.split(",");
 			if (!addonz1.equals("")) {
 				for (String addon : addonz) {
@@ -60,11 +60,11 @@ public class Instance {
 					instance.addons.add(addon);
 				}
 			}
-			instance.gameDir = Launcher.getProperty(instanceFile, "gameDir");
-			instance.version = Launcher.getProperty(instanceFile, "version");
+			instance.gameDir = Util.getProperty(instanceFile, "gameDir");
+			instance.version = Util.getProperty(instanceFile, "version");
 
-			String width = Launcher.getProperty(instanceFile, "width");
-			String height = Launcher.getProperty(instanceFile, "height");
+			String width = Util.getProperty(instanceFile, "width");
+			String height = Util.getProperty(instanceFile, "height");
 
 			try {
 				instance.width = Integer.parseInt(width);
@@ -74,9 +74,9 @@ public class Instance {
 				return null;
 			}
 
-			instance.proxy = Boolean.parseBoolean(Launcher.getProperty(instanceFile, "proxy"));
-			instance.keepopen = Boolean.parseBoolean(Launcher.getProperty(instanceFile, "keepopen"));
-			instance.RPC = Boolean.parseBoolean(Launcher.getProperty(instanceFile, "RPC"));
+			instance.proxy = Boolean.parseBoolean(Util.getProperty(instanceFile, "proxy"));
+			instance.keepopen = Boolean.parseBoolean(Util.getProperty(instanceFile, "keepopen"));
+			instance.RPC = Boolean.parseBoolean(Util.getProperty(instanceFile, "RPC"));
 			return instance;
 		} catch (Exception ex) {
 			Logger.a("Failed to load instance: " + name);
@@ -90,13 +90,13 @@ public class Instance {
 		try {
 			File instanceFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".txt");
 			if (!instanceFile.exists()) instanceFile.createNewFile();
-			Launcher.setProperty(instanceFile, "name", this.name);
-			Launcher.setProperty(instanceFile, "launchArgs", this.launchArgs);
-			Launcher.setProperty(instanceFile, "width", Integer.toString(this.width));
-			Launcher.setProperty(instanceFile, "height", Integer.toString(this.height));
-			Launcher.setProperty(instanceFile, "proxy", Boolean.toString(this.proxy));
-			Launcher.setProperty(instanceFile, "keepopen", Boolean.toString(this.keepopen));
-			Launcher.setProperty(instanceFile, "RPC", Boolean.toString(this.RPC));
+			Util.setProperty(instanceFile, "name", this.name);
+			Util.setProperty(instanceFile, "launchArgs", this.launchArgs);
+			Util.setProperty(instanceFile, "width", Integer.toString(this.width));
+			Util.setProperty(instanceFile, "height", Integer.toString(this.height));
+			Util.setProperty(instanceFile, "proxy", Boolean.toString(this.proxy));
+			Util.setProperty(instanceFile, "keepopen", Boolean.toString(this.keepopen));
+			Util.setProperty(instanceFile, "RPC", Boolean.toString(this.RPC));
 			StringBuilder builder = new StringBuilder();
 			String addons = "";
 			if (this.addons.size() > 0) {
@@ -105,9 +105,9 @@ public class Instance {
 				}
 				addons = builder.toString().substring(0, builder.toString().length() - 1);
 			}
-			Launcher.setProperty(instanceFile, "addons", addons);
-			Launcher.setProperty(instanceFile, "gameDir", this.gameDir);
-			Launcher.setProperty(instanceFile, "version", this.version);
+			Util.setProperty(instanceFile, "addons", addons);
+			Util.setProperty(instanceFile, "gameDir", this.gameDir);
+			Util.setProperty(instanceFile, "version", this.version);
 			Logger.a("Saved instance: " + this.name);
 		} catch (Exception ex) {
 			ex.printStackTrace();

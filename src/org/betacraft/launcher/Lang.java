@@ -22,7 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
-public class Lang extends JFrame {
+public class Lang extends JFrame implements LanguageElement {
 	public static List<String> locales = new ArrayList<String>();
 
 	static JList list;
@@ -39,9 +39,12 @@ public class Lang extends JFrame {
 
 		this.setTitle(Lang.LANG);
 		this.setResizable(true);
+		final boolean panelnull = panel == null;
 
-		panel = new JPanel();
-		panel.setLayout(new GridBagLayout());
+		if (panelnull) {
+			panel = new JPanel();
+			panel.setLayout(new GridBagLayout());
+		}
 
 		constr = new GridBagConstraints();
 
@@ -64,20 +67,26 @@ public class Lang extends JFrame {
 		constr.weighty = GridBagConstraints.RELATIVE;
 		constr.gridheight = 1;
 		constr.insets = new Insets(5, 5, 5, 5);
-		OKButton = new JButton(Lang.OPTIONS_OK);
-
-		OKButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setLang();
-				Window.lang = null;
-			}
-		});
-		panel.add(OKButton, constr);
+		if (panelnull) {
+			OKButton = new JButton(Lang.OPTIONS_OK);
+			OKButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					setLang();
+					Window.lang = null;
+				}
+			});
+			panel.add(OKButton, constr);
+		}
 		this.add(panel);
 		this.pack();
 		this.setLocationRelativeTo(Window.mainWindow);
 		this.setVisible(true);
+	}
+
+	public void update() {
+		this.setTitle(Lang.LANG);
+		OKButton.setText(Lang.OPTIONS_OK);
 	}
 
 	public void setLang() {
@@ -87,7 +96,7 @@ public class Lang extends JFrame {
 		if (download(lang) == DownloadResult.FAILED_WITHOUT_BACKUP) {
 			return;
 		}
-		Launcher.setProperty(Launcher.SETTINGS, "language", lang);
+		Util.setProperty(BC.SETTINGS, "language", lang);
 		setVisible(false);
 		Launcher.restart();
 	}
@@ -107,7 +116,7 @@ public class Lang extends JFrame {
 		int i = 0;
 		int index = 0;
 		listModel = new DefaultListModel();
-		String lang = Launcher.getProperty(Launcher.SETTINGS, "language");
+		String lang = Util.getProperty(BC.SETTINGS, "language");
 		for (String item : locales) {
 			listModel.addElement(item);
 			if (lang.equals(item)) {
@@ -146,100 +155,113 @@ public class Lang extends JFrame {
 		return done;
 	}
 
-	public static void refresh() {
-		String lang = Launcher.getProperty(Launcher.SETTINGS, "language");
+	public static void refresh(boolean download, boolean force) {
+		String lang = Util.getProperty(BC.SETTINGS, "language");
 		if (lang.equals("")) {
 			lang = "English";
 		}
-		if (download(lang) == DownloadResult.FAILED_WITHOUT_BACKUP) return;
+		if (download && download(lang) == DownloadResult.FAILED_WITHOUT_BACKUP) return;
 		File file = new File(BC.get() + "launcher" + File.separator + "lang" + File.separator +  lang + ".txt");
 		String charset = "UTF-8";
 		if (lang.equalsIgnoreCase("Russian")) charset = "Cp1251";
 
-		WINDOW_SELECT_VERSION = Launcher.getProperty(file, "version_button", charset);
-		WINDOW_PLAY = Launcher.getProperty(file, "play_button", charset);
-		WINDOW_OPTIONS = Launcher.getProperty(file, "options_button", charset);
-		WINDOW_TITLE = Launcher.getProperty(file, "launcher_title", charset) + Launcher.VERSION;
-		WINDOW_CREDITS = Launcher.getProperty(file, "credits", charset);
-		WINDOW_LANGUAGE = Launcher.getProperty(file, "language", charset);
-		WINDOW_DOWNLOADING = Launcher.getProperty(file, "downloading", charset);
-		WINDOW_USERNAME_FIELD_EMPTY = Launcher.getProperty(file, "username_field_empty", charset);
+		WINDOW_SELECT_VERSION = Util.getProperty(file, "version_button", charset);
+		WINDOW_PLAY = Util.getProperty(file, "play_button", charset);
+		WINDOW_OPTIONS = Util.getProperty(file, "options_button", charset);
+		WINDOW_TITLE = Util.getProperty(file, "launcher_title", charset) + Launcher.VERSION;
+		WINDOW_CREDITS = Util.getProperty(file, "credits", charset);
+		WINDOW_LANGUAGE = Util.getProperty(file, "language", charset);
+		WINDOW_DOWNLOADING = Util.getProperty(file, "downloading", charset);
+		WINDOW_USERNAME_FIELD_EMPTY = Util.getProperty(file, "username_field_empty", charset);
 
-		LANG = Launcher.getProperty(file, "lang_title", charset);
-		USERNAME = Launcher.getProperty(file, "username", charset);
+		LANG = Util.getProperty(file, "lang_title", charset);
+		USERNAME = Util.getProperty(file, "username", charset);
 
-		ERR_WARNING = Launcher.getProperty(file, "warning", charset);
-		ERR_NO_CONNECTION = Launcher.getProperty(file, "no_connection", charset);
-		ERR_DL_FAIL = Launcher.getProperty(file, "download_fail", charset);
+		ERR_WARNING = Util.getProperty(file, "warning", charset);
+		ERR_NO_CONNECTION = Util.getProperty(file, "no_connection", charset);
+		ERR_DL_FAIL = Util.getProperty(file, "download_fail", charset);
 
-		OPTIONS_UPDATE_HEADER = Launcher.getProperty(file, "update_check", charset);
-		OPTIONS_UPDATE_NF = Launcher.getProperty(file, "update_not_found", charset);
-		OPTIONS_PROXY = Launcher.getProperty(file, "use_betacraft", charset);
-		OPTIONS_RPC = Launcher.getProperty(file, "discord_rpc", charset);
-		OPTIONS_LAUNCH_ARGS = Launcher.getProperty(file, "launch_arguments", charset) + ":";
-		OPTIONS_KEEP_OPEN = Launcher.getProperty(file, "keep_launcher_open", charset);
-		OPTIONS_WIDTH = Launcher.getProperty(file, "width", charset);
-		OPTIONS_OK = Launcher.getProperty(file, "ok", charset);
-		OPTIONS_HEIGHT = Launcher.getProperty(file, "height", charset);
-		OPTIONS_UPDATE = Launcher.getProperty(file, "check_update_button", charset);
-		OPTIONS_TITLE = Launcher.getProperty(file, "options_title", charset);
+		OPTIONS_UPDATE_HEADER = Util.getProperty(file, "update_check", charset);
+		OPTIONS_UPDATE_NF = Util.getProperty(file, "update_not_found", charset);
+		OPTIONS_PROXY = Util.getProperty(file, "use_betacraft", charset);
+		OPTIONS_RPC = Util.getProperty(file, "discord_rpc", charset);
+		OPTIONS_LAUNCH_ARGS = Util.getProperty(file, "launch_arguments", charset) + ":";
+		OPTIONS_KEEP_OPEN = Util.getProperty(file, "keep_launcher_open", charset);
+		OPTIONS_WIDTH = Util.getProperty(file, "width", charset);
+		OPTIONS_OK = Util.getProperty(file, "ok", charset);
+		OPTIONS_HEIGHT = Util.getProperty(file, "height", charset);
+		OPTIONS_UPDATE = Util.getProperty(file, "check_update_button", charset);
+		OPTIONS_TITLE = Util.getProperty(file, "options_title", charset);
 
-		SORT_FROM_OLDEST = Launcher.getProperty(file, "sort_oldest", charset);
-		SORT_FROM_NEWEST = Launcher.getProperty(file, "sort_newest", charset);
-		VERSION_LIST_TITLE = Launcher.getProperty(file, "version_title", charset);
+		SORT_FROM_OLDEST = Util.getProperty(file, "sort_oldest", charset);
+		SORT_FROM_NEWEST = Util.getProperty(file, "sort_newest", charset);
+		VERSION_LIST_TITLE = Util.getProperty(file, "version_title", charset);
 
-		ADDON_LIST_TITLE = Launcher.getProperty(file, "addon_list_title", charset);
-		ADDON_NO_DESC = Launcher.getProperty(file, "addon_no_desc", charset);
-		ADDON_SHOW_INFO = Launcher.getProperty(file, "addon_show_info", charset);
+		ADDON_LIST_TITLE = Util.getProperty(file, "addon_list_title", charset);
+		ADDON_NO_DESC = Util.getProperty(file, "addon_no_desc", charset);
+		ADDON_SHOW_INFO = Util.getProperty(file, "addon_show_info", charset);
 
-		LOGIN_TITLE = Launcher.getProperty(file, "login_title", charset);
-		LOGIN_BUTTON = Launcher.getProperty(file, "log_in_button", charset);
-		LOGOUT_BUTTON = Launcher.getProperty(file, "log_out_button", charset);
-		LOGIN_EMAIL_NICKNAME = Launcher.getProperty(file, "login_email_nickname", charset);
-		LOGIN_PASSWORD = Launcher.getProperty(file, "login_password", charset);
-		LOGIN_REMEMBER_PASSWORD = Launcher.getProperty(file, "login_remember_password", charset);
+		LOGIN_TITLE = Util.getProperty(file, "login_title", charset);
+		LOGIN_BUTTON = Util.getProperty(file, "log_in_button", charset);
+		LOGOUT_BUTTON = Util.getProperty(file, "log_out_button", charset);
+		LOGIN_EMAIL_NICKNAME = Util.getProperty(file, "login_email_nickname", charset);
+		LOGIN_PASSWORD = Util.getProperty(file, "login_password", charset);
+		LOGIN_REMEMBER_PASSWORD = Util.getProperty(file, "login_remember_password", charset);
 
-		LOGIN_FAILED = Launcher.getProperty(file, "login_failed", charset);
-		LOGIN_FAILED_METHOD = Launcher.getProperty(file, "login_failed_method", charset);
-		LOGIN_FAILED_INVALID_CREDENTIALS = Launcher.getProperty(file, "login_failed_invalid_credentials", charset);
+		LOGIN_FAILED = Util.getProperty(file, "login_failed", charset);
+		LOGIN_FAILED_METHOD = Util.getProperty(file, "login_failed_method", charset);
+		LOGIN_FAILED_INVALID_CREDENTIALS = Util.getProperty(file, "login_failed_invalid_credentials", charset);
 
-		INSTANCE_GAME_DIRECTORY = Launcher.getProperty(file, "instance_game_directory", charset);
-		INSTANCE_GAME_DIRECTORY_TITLE = Launcher.getProperty(file, "instance_game_directory_title", charset);
-		INSTANCE_REMOVE_QUESTION = Launcher.getProperty(file, "instance_remove_question", charset);
-		INSTANCE_REMOVE_TITLE = Launcher.getProperty(file, "instance_remove_title", charset);
-		INSTANCE_CHANGE_ICON_NAME = Launcher.getProperty(file, "instance_change_icon_name", charset);
-		INSTANCE_CHANGE_ICON_TITLE = Launcher.getProperty(file, "instance_change_icon_title", charset);
-		INSTANCE_CHANGE_ICON_UNSUPPORTED = Launcher.getProperty(file, "instance_change_icon_unsupported", charset);
-		INSTANCE_CHANGE_ICON_UNSUPPORTED_TITLE = Launcher.getProperty(file, "instance_change_icon_unsupported_title", charset);
-		INSTANCE_CHANGE_ICON_FAILED = Launcher.getProperty(file, "instance_change_icon_failed", charset);
-		INSTANCE_CHANGE_ICON_FAILED_TITLE = Launcher.getProperty(file, "instance_change_icon_failed_title", charset);
-		INSTANCE_NAME = Launcher.getProperty(file, "instance_name", charset);
-		INSTANCE_SELECT_ADDONS = Launcher.getProperty(file, "instance_select_addons", charset);
-		INSTANCE_MODS_REPOSITORY = Launcher.getProperty(file, "instance_mods_repository", charset);
+		INSTANCE_GAME_DIRECTORY = Util.getProperty(file, "instance_game_directory", charset);
+		INSTANCE_GAME_DIRECTORY_TITLE = Util.getProperty(file, "instance_game_directory_title", charset);
+		INSTANCE_REMOVE_QUESTION = Util.getProperty(file, "instance_remove_question", charset);
+		INSTANCE_REMOVE_TITLE = Util.getProperty(file, "instance_remove_title", charset);
+		INSTANCE_CHANGE_ICON_NAME = Util.getProperty(file, "instance_change_icon_name", charset);
+		INSTANCE_CHANGE_ICON_TITLE = Util.getProperty(file, "instance_change_icon_title", charset);
+		INSTANCE_CHANGE_ICON_UNSUPPORTED = Util.getProperty(file, "instance_change_icon_unsupported", charset);
+		INSTANCE_CHANGE_ICON_UNSUPPORTED_TITLE = Util.getProperty(file, "instance_change_icon_unsupported_title", charset);
+		INSTANCE_CHANGE_ICON_FAILED = Util.getProperty(file, "instance_change_icon_failed", charset);
+		INSTANCE_CHANGE_ICON_FAILED_TITLE = Util.getProperty(file, "instance_change_icon_failed_title", charset);
+		INSTANCE_NAME = Util.getProperty(file, "instance_name", charset);
+		INSTANCE_SELECT_ADDONS = Util.getProperty(file, "instance_select_addons", charset);
+		INSTANCE_MODS_REPOSITORY = Util.getProperty(file, "instance_mods_repository", charset);
 
-		SELECT_INSTANCE_TITLE = Launcher.getProperty(file, "select_instance_title", charset);
-		SELECT_INSTANCE_NEW = Launcher.getProperty(file, "select_instance_new", charset);
+		SELECT_INSTANCE_TITLE = Util.getProperty(file, "select_instance_title", charset);
+		SELECT_INSTANCE_NEW = Util.getProperty(file, "select_instance_new", charset);
 
-		UPDATE_FOUND = Launcher.getProperty(file, "new_version_found", charset);
+		UPDATE_FOUND = Util.getProperty(file, "new_version_found", charset);
 
-		WRAP_USER = Launcher.getProperty(file, "nick", charset);
-		WRAP_VERSION = Launcher.getProperty(file, "version", charset);
-		WRAP_SERVER = Launcher.getProperty(file, "server", charset);
-		WRAP_SERVER_TITLE = Launcher.getProperty(file, "server_title", charset);
-		WRAP_CLASSIC_RESIZE = Launcher.getProperty(file, "classic_resize", charset);
+		WRAP_USER = Util.getProperty(file, "nick", charset);
+		WRAP_VERSION = Util.getProperty(file, "version", charset);
+		WRAP_SERVER = Util.getProperty(file, "server", charset);
+		WRAP_SERVER_TITLE = Util.getProperty(file, "server_title", charset);
+		WRAP_CLASSIC_RESIZE = Util.getProperty(file, "classic_resize", charset);
 
-		TAB_CHANGELOG =  Launcher.getProperty(file, "tab_changelog", charset);
-		TAB_INSTANCES =  Launcher.getProperty(file, "tab_instances", charset);
-		TAB_SERVERS =  Launcher.getProperty(file, "tab_servers", charset);
+		TAB_CHANGELOG =  Util.getProperty(file, "tab_changelog", charset);
+		TAB_INSTANCES =  Util.getProperty(file, "tab_instances", charset);
+		TAB_SERVERS =  Util.getProperty(file, "tab_servers", charset);
 
-		VERSION_CUSTOM = Launcher.getProperty(file, "version_custom", charset);
+		VERSION_CUSTOM = Util.getProperty(file, "version_custom", charset);
 
-		TAB_SRV_LOADING = Launcher.getProperty(file, "srv_loading", charset);
-		TAB_SRV_FAILED = Launcher.getProperty(file, "srv_failed", charset);
-		TAB_CL_LOADING = Launcher.getProperty(file, "cl_loading", charset);
-		TAB_CL_FAILED = Launcher.getProperty(file, "cl_failed", charset);
+		BROWSER_TITLE = Util.getProperty(file, "browser_title", charset);
 
-		FORCE_UPDATE = Launcher.getProperty(file, "force_update", charset);
+		TAB_SRV_LOADING = Util.getProperty(file, "srv_loading", charset);
+		TAB_SRV_FAILED = Util.getProperty(file, "srv_failed", charset);
+		TAB_CL_LOADING = Util.getProperty(file, "cl_loading", charset);
+		TAB_CL_FAILED = Util.getProperty(file, "cl_failed", charset);
+
+		FORCE_UPDATE = Util.getProperty(file, "force_update", charset);
+
+		if (force) {
+			Window.mainWindow.update();
+			if (Window.addonsList != null) Window.addonsList.update();
+			if (Window.modsRepo != null) Window.modsRepo.update();
+			if (Window.lang != null) Window.lang.update();
+			if (Window.instanceList != null) Window.instanceList.update();
+			if (Window.instanceSettings != null) Window.instanceSettings.update();
+			if (Window.versionsList != null) Window.versionsList.update();
+			if (Window.loginPanel != null) Window.loginPanel.update();
+		}
 	}
 
 	static String UPDATE_FOUND = "There is a new version of the launcher available (%s). Would you like to update?";
@@ -308,7 +330,9 @@ public class Lang extends JFrame {
 	static String TAB_INSTANCES = "Instances";
 	static String TAB_SERVERS = "Classic servers";
 
-	static String VERSION_CUSTOM = "[Custom] ";
+	static String VERSION_CUSTOM = " [Custom]";
+
+	static String BROWSER_TITLE = "Webpage viewer";
 
 	static String TAB_SRV_LOADING = "Loading servers list...";
 	static String TAB_SRV_FAILED = "Failed to list classic servers!";

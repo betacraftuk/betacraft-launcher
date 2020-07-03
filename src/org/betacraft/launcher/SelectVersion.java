@@ -18,11 +18,11 @@ import javax.swing.ListSelectionModel;
 
 import org.betacraft.launcher.VersionSorter.Order;
 
-public class SelectVersion extends JFrame implements ActionListener {
+public class SelectVersion extends JFrame implements ActionListener, LanguageElement {
 
 	static JList list;
 	static DefaultListModel listModel;
-	static JScrollPane listScroller;
+	public static JScrollPane listScroller;
 	static JButton sort_button;
 	static JButton OK;
 	static Order order = Order.FROM_OLDEST;
@@ -78,6 +78,14 @@ public class SelectVersion extends JFrame implements ActionListener {
 		this.setVisible(true);
 	}
 
+	public void update() {
+		this.setTitle(Lang.VERSION_LIST_TITLE);
+		String name = (SelectVersion.order == Order.FROM_OLDEST) ? Lang.SORT_FROM_OLDEST : Lang.SORT_FROM_NEWEST;
+		sort_button.setText(name);
+		OK.setText(Lang.OPTIONS_OK);
+		this.pack();
+	}
+
 	protected void updateList() {
 		int i = 0;
 		int index = 0;
@@ -94,7 +102,7 @@ public class SelectVersion extends JFrame implements ActionListener {
 		constr.weighty = 1.0;
 		constr.gridheight = GridBagConstraints.RELATIVE;
 		constr.gridy = 1;
-		
+
 		list = new JList(listModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setLayoutOrientation(JList.VERTICAL);
@@ -105,14 +113,17 @@ public class SelectVersion extends JFrame implements ActionListener {
 
 		listScroller = new JScrollPane(list);
 		listScroller.setWheelScrollingEnabled(true);
+		listScroller.requestFocus();
 		panel.add(listScroller, constr);
 	}
 
 	public void saveVersion() {
 		Release ver = (Release) list.getSelectedValue();
-		Launcher.currentInstance.version = ver.getName();
-		Launcher.setInstance(Launcher.currentInstance);
-		Launcher.currentInstance.saveInstance();
+		if (ver != null) {
+			Launcher.currentInstance.version = ver.getName();
+			Launcher.setInstance(Launcher.currentInstance);
+			Launcher.currentInstance.saveInstance();
+		}
 		setVisible(false);
 	}
 

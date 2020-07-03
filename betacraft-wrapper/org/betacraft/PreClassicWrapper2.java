@@ -13,7 +13,6 @@ import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
@@ -179,18 +178,6 @@ public class PreClassicWrapper2 extends Wrapper {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
-		}
-	}
-
-	@Override
-	public URL getDocumentBase() {
-		try {
-			return new URL("http://www.minecraft.net:" + portCompat + "/game/");
-		}
-		catch (MalformedURLException e) {
-			e.printStackTrace();
-			Logger.printException(e);
-			return null;
 		}
 	}
 

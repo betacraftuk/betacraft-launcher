@@ -16,7 +16,7 @@ import org.betacraft.launcher.Window.Tab;
 
 /*
  * TODO list for 1.10:
- * Client log || Launcher log
+ * Client log || Launcher log || Mods repository
  */
 public class InfoPanel extends JPanel {
 	static Image aroundBackground = null;

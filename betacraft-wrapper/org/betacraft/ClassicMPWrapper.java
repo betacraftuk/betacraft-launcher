@@ -1,11 +1,7 @@
 package org.betacraft;
 
 import java.awt.Image;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-
-import org.betacraft.launcher.Logger;
 
 public class ClassicMPWrapper extends ClassicWrapper {
 
@@ -20,17 +16,5 @@ public class ClassicMPWrapper extends ClassicWrapper {
 	public void play() {
 		askForServer();
 		super.play();
-	}
-
-	@Override
-	public URL getDocumentBase() {
-		try {
-			return new URL("http://www.minecraft.net/game/");
-		}
-		catch (MalformedURLException e) {
-			e.printStackTrace();
-			Logger.printException(e);
-			return null;
-		}
 	}
 }

@@ -3,15 +3,11 @@ package org.betacraft.launcher;
 import java.awt.Image;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.lang.reflect.Constructor;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
@@ -24,21 +20,10 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Random;
 import java.util.Scanner;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
-import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
-import javax.crypto.SecretKey;
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
-import javax.crypto.spec.PBEParameterSpec;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
@@ -46,26 +31,28 @@ import org.betacraft.Classic12aWrapper;
 import org.betacraft.Classic15aWrapper;
 import org.betacraft.ClassicMPWrapper;
 import org.betacraft.ClassicWrapper;
+import org.betacraft.CommandLine;
 import org.betacraft.FkWrapper;
+import org.betacraft.Minecraft13w16a;
 import org.betacraft.PreClassicWrapper;
 import org.betacraft.PreClassicWrapper2;
 import org.betacraft.Wrapper;
+import org.betacraft.WrapperDetector;
+import org.betacraft.launcher.Release.VersionInfo;
 import org.betacraft.launcher.Window.Tab;
 import org.betacraft.launcher.themes.LinuxThemeSetter;
 import org.betacraft.launcher.themes.WindowsThemeSetter;
 
 /** Main class */
 public class Launcher {
-	/** Location of the launcher executable */
-	public static File currentPath;
-	public static File SETTINGS;
-	public static String VERSION = "1.09_09"; // TODO Always update this
+	public static String VERSION = "1.09_10"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
 	public static ArrayList<Thread> totalThreads = new ArrayList<>();
 
 	public static void main(String[] args) {
+		long nano = System.nanoTime();
 		try {
 			// Fix for Java having a cross-platform look and feel
 			if (OS.isWindows()) WindowsThemeSetter.setWindowsLook();
@@ -86,7 +73,7 @@ public class Launcher {
 			if (OS.isWindows()) {
 				p = p.substring(1, p.length());
 			}
-			currentPath = new File(p);
+			BC.currentPath = new File(p);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
@@ -114,7 +101,7 @@ public class Launcher {
 
 				// Move the updated version to the destination
 				File dest = new File(pathToJar);
-				Files.copy(currentPath.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(BC.currentPath.toPath(), dest.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
 				// Launch the updated launcher
 				ArrayList<String> pa = new ArrayList<String>();
@@ -136,8 +123,8 @@ public class Launcher {
 		// Launch the game if wanted
 		if (args.length > 0 && args[0].equals("wrap")) {
 			BC.wrapped = true;
-			SETTINGS = new File(BC.get() + "launcher", "launcher.settings");
-			Lang.refresh();
+			BC.SETTINGS = new File(BC.get() + "launcher", "launcher.settings");
+			Lang.refresh(false, false);
 			String username = args[1];
 			String sessionid = args[2];
 			String server = args[3].equals("-") ? null : args[3];
@@ -151,7 +138,7 @@ public class Launcher {
 			instanceName = instanceName.substring(0, instanceName.length() - 1);
 
 			currentInstance = Instance.loadInstance(instanceName);
-			ReleaseJson json = new ReleaseJson(currentInstance.version, false, false);
+			ReleaseJson json = new ReleaseJson(currentInstance.version);
 			String meth = json.getLaunchMethod();
 
 			// Get addons as classes
@@ -184,23 +171,45 @@ public class Launcher {
 				}
 			}
 
+			if (meth.equalsIgnoreCase("")) { // assume the version
+				meth = WrapperDetector.getLaunchMethod(BC.get() + "versions/" + currentInstance.version + ".jar");
+				if (meth.equals("custom")) {
+					String err = "Error code 7 (ERRCONFIG): Couldn't determine the launch method for your JAR. Configure your version configuration file: " + BC.get() + "versions/jsons/" + currentInstance.version + ".info";
+					System.out.println(err);
+					JOptionPane.showMessageDialog(null, err, "Error", JOptionPane.INFORMATION_MESSAGE);
+					System.exit(0);
+				}
+			}
+
+			/*if (meth.equals("1.6")) {
+				String err = "Error code 8 (UNSUPPORTED): Versions 1.6+ are not supported yet.";
+				System.out.println(err);
+				JOptionPane.showMessageDialog(null, err, "Error", JOptionPane.INFORMATION_MESSAGE);
+				System.exit(0);
+			}*/
+
+			Logger.a("Loaded in: " + (System.nanoTime() - nano) + " ns");
 			if (meth.equalsIgnoreCase("rd") || meth.equalsIgnoreCase("mc")) {
 				new Launcher().extractFromJar("/PreClassic.jar", new File(BC.get() + "launcher/", "PreClassic.jar"));
-				new PreClassicWrapper2(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+				new PreClassicWrapper2(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 			} else if (meth.equalsIgnoreCase("preclassic")) {
-				new PreClassicWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+				new PreClassicWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 			} else if (meth.equalsIgnoreCase("classic12a")) {
-				new Classic12aWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+				new Classic12aWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 			} else if (meth.equalsIgnoreCase("classic15a")) {
-				new Classic15aWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+				new Classic15aWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 			} else if (meth.equalsIgnoreCase("classic")) {
-				new ClassicWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+				new ClassicWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 			} else if (meth.equalsIgnoreCase("classicmp")) {
-				new ClassicMPWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
-			} else if (meth.equalsIgnoreCase("indev") || meth.equalsIgnoreCase("")) {
-				new Wrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+				new ClassicMPWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+			} else if (meth.equalsIgnoreCase("indev")) {
+				new Wrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+			} else if (meth.equalsIgnoreCase("commandline")) {
+				new CommandLine(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+			} else if (meth.equalsIgnoreCase("1.6")) {
+				new Minecraft13w16a(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 			} else if (meth.equalsIgnoreCase("4k")) {
-				new FkWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+				new FkWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 			} else {
 				try {
 					String path = BC.get() + "launcher" + File.separator + "launch-methods" + File.separator + meth + ".jar";
@@ -209,7 +218,7 @@ public class Launcher {
 					});
 
 					loadClasses(path, loader);
-					System.out.print("Launch method: " + meth);
+					System.out.println("Launch method: " + meth);
 					Class c = loader.loadClass(meth);
 					Constructor con = c.getConstructor(String.class, String.class, String.class, String.class, String.class, Integer.class, Integer.class, Boolean.class, String.class, String.class, String.class, String.class, String.class, Image.class, ArrayList.class);
 					con.newInstance(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
@@ -222,9 +231,9 @@ public class Launcher {
 			return;
 		}
 
-		SETTINGS = new File(BC.get() + "launcher", "launcher.settings");
+		BC.SETTINGS = new File(BC.get() + "launcher", "launcher.settings");
 
-		if (SETTINGS.exists() && !getProperty(SETTINGS, "version").equals("1")) {
+		if (BC.SETTINGS.exists() && !Util.getProperty(BC.SETTINGS, "version").equals("1")) {
 			removeRecursively(new File(BC.get() + "launcher"), true, false);
 			writeDefault();
 		}
@@ -237,39 +246,34 @@ public class Launcher {
 		new File(BC.get() + "launcher" + File.separator + "launch-methods").mkdirs();
 		new File(BC.get() + "bin" + File.separator + "natives").mkdirs();
 
-		Logger.a("BetaCraft Launcher JE v" + VERSION + " loaded.");
+		Logger.a("BetaCraft Launcher JE v" + VERSION + " loading...");
 		Logger.a("Portable: " + BC.portable);
-		Logger.a("EXE: " + currentPath.toPath().toString().endsWith(".exe"));
+		Logger.a("EXE: " + BC.currentPath.toPath().toString().endsWith(".exe"));
+		Logger.a("Prerelease: " + BC.prerelease);
+		Logger.a("Nightly: " + BC.nightly);
 
 		// Load language pack
-		Lang.refresh();
-		readLastLogin();
+		Lang.refresh(false, false);
+		Util.readLastLogin();
 
 		// If the properties file doesn't exist, create it
-		if (!SETTINGS.exists() || Launcher.getProperty(SETTINGS, "lastInstance").equals("")) {
+		if (!BC.SETTINGS.exists() || Util.getProperty(BC.SETTINGS, "lastInstance").equals("")) {
 			writeDefault();
-			currentInstance = Instance.newInstance(Launcher.getProperty(Launcher.SETTINGS, "lastInstance"));
+			currentInstance = Instance.newInstance(Util.getProperty(BC.SETTINGS, "lastInstance"));
 			currentInstance.saveInstance();
 		} else {
-			currentInstance = Instance.loadInstance(Launcher.getProperty(Launcher.SETTINGS, "lastInstance"));
+			currentInstance = Instance.loadInstance(Util.getProperty(BC.SETTINGS, "lastInstance"));
 			if (currentInstance == null) {
-				currentInstance = Instance.newInstance(Launcher.getProperty(Launcher.SETTINGS, "lastInstance"));
+				currentInstance = Instance.newInstance(Util.getProperty(BC.SETTINGS, "lastInstance"));
 				currentInstance.saveInstance();
 			}
 		}
 
 		try {
-			// Create UI
-
-			// TODO Check for updates
-			if (Launcher.checkForUpdate(true)) Launcher.downloadUpdate(true);
-			new Window();
-			if (!MojangLogging.password.equals("")) {
-				new MojangLogging().authenticate(MojangLogging.email, MojangLogging.password);
-			}
-			Release.initVersions();
-			org.betacraft.launcher.Addon.loadAddons();
-			ModsRepository.loadMods();
+			// Create UI etc
+			DownloadThread t = new DownloadThread();
+			totalThreads.add(t);
+			t.start();
 		} catch (Exception ex) {
 			Logger.a("A critical error has occurred while trying to initialize the launcher!");
 			ex.printStackTrace();
@@ -277,18 +281,28 @@ public class Launcher {
 		}
 
 		// Finish UI
-		Window.mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		Window.mainWindow.setVisible(true);
+		
+		Logger.a("Loaded in: " + (System.nanoTime() - nano) + " ns");
 	}
 
 	public void extractFromJar(String filepath, File to) {
 		try {
 			Logger.a("Extracting \"" + filepath + "\" to \"" + to.toPath().toString() + "\"");
-            Files.copy(getClass().getResourceAsStream(filepath), Paths.get(to.toPath().toString()), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-            Logger.printException(ex);
-        }
+			Files.copy(getClass().getResourceAsStream(filepath), Paths.get(to.toPath().toString()), StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+		}
+	}
+
+	public void packToJar(String filepath, File to) {
+		try {
+			Logger.a("Extracting \"" + filepath + "\" to \"" + to.toPath().toString() + "\"");
+			Files.copy(getClass().getResourceAsStream(filepath), Paths.get(to.toPath().toString()), StandardCopyOption.REPLACE_EXISTING);
+		} catch (IOException ex) {
+			ex.printStackTrace();
+			Logger.printException(ex);
+		}
 	}
 
 	public static void loadClasses(String pathtojar, URLClassLoader loader) {
@@ -323,7 +337,7 @@ public class Launcher {
 			ArrayList<String> params = new ArrayList<String>();
 			params.add("java");
 			params.add("-jar");
-			params.add(currentPath.toPath().toString());
+			params.add(BC.currentPath.toPath().toString());
 			ProcessBuilder builder = new ProcessBuilder(params);
 			builder.start();
 		} catch (Exception ex) {
@@ -336,20 +350,20 @@ public class Launcher {
 	public static void setInstance(Instance instance) {
 		Launcher.currentInstance = instance;
 		Window.selectedInstanceDisplay.setText(Launcher.currentInstance.name + " [" + Launcher.currentInstance.version + "]");
-		setProperty(SETTINGS, "lastInstance", Launcher.currentInstance.name);
+		Util.setProperty(BC.SETTINGS, "lastInstance", Launcher.currentInstance.name);
 	}
 
 	public static void initStartup() {
 		File wrapper = new File(BC.get() + "launcher", "betacraft_wrapper.jar");
-		if (Launcher.currentPath.length() != wrapper.length()) {
+		if (BC.currentPath.length() != wrapper.length()) {
 			try {
-				Files.copy(Launcher.currentPath.toPath(), wrapper.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				Files.copy(BC.currentPath.toPath(), wrapper.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			} catch (FileSystemException ex) {
 				// There is another instance of the game running, we are going to ignore it
 			} catch (Exception ex) {
 				ex.printStackTrace();
 				Logger.printException(ex);
-				JOptionPane.showMessageDialog(null, "The file could not be copied! Try running with Administrator rights. If that won't help, contact me: @Moresteck#1688", "Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "The file could not be copied! Try running with Administrator rights. If that won't help, contact: @Mordor#1688", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 		}
@@ -362,12 +376,19 @@ public class Launcher {
 			}
 		}
 
-		Release.getReleaseByName(Launcher.currentInstance.version).getJson().initJson();
+		Release rel = Release.getReleaseByName(Launcher.currentInstance.version);
+		if (!rel.getInfo().isCustom()) {
+			rel.getInfo().downloadJson();
+		}
+
+		ReleaseJson info = new ReleaseJson(rel.getName());
+		info.custom = rel.getInfo().isCustom();
+		rel.setInfo(info);
 
 		// Download the game if not done already
 		if (!Launcher.isVersionReady(Launcher.currentInstance.version) || Launcher.forceUpdate) {
-			ReleaseJson json = Release.getReleaseByName(Launcher.currentInstance.version).getJson();
-			if (!json.getDownloadURL().equals("") && (DownloadResult.OK != Launcher.downloadWithButtonOutput(Release.getReleaseByName(Launcher.currentInstance.version).getJson().getDownloadURL(), new File(Launcher.getVerFolder(), Launcher.currentInstance.version + ".jar")))) {
+			VersionInfo json = Release.getReleaseByName(Launcher.currentInstance.version).getInfo();
+			if (!json.getDownloadURL().equals("") && (DownloadResult.OK != Launcher.downloadWithButtonOutput(Release.getReleaseByName(Launcher.currentInstance.version).getInfo().getDownloadURL(), new File(Launcher.getVerFolder(), Launcher.currentInstance.version + ".jar")))) {
 				JOptionPane.showMessageDialog(null, Lang.ERR_NO_CONNECTION, Lang.ERR_DL_FAIL, JOptionPane.ERROR_MESSAGE);
 			}
 		}
@@ -387,10 +408,10 @@ public class Launcher {
 	}
 
 	public void launchGame(Instance instance) {
-		launchGame(instance, "-", "-", null);
+		launchGame(instance, "-", "-");
 	}
 
-	public static void launchGame(Instance instance, String server, String mppass, String add1) {
+	public static void launchGame(Instance instance, String server, String mppass) {
 		try {
 			// Rarely there will be no chosen version, so we need to check that
 			if (instance.version != null) {
@@ -440,22 +461,25 @@ public class Launcher {
 				}
 
 				if (instance.proxy) {
-					String[] args = Release.getReleaseByName(instance.version).getJson().getProxyArgs().split(" ");
+					String[] args = Release.getReleaseByName(instance.version).getInfo().getProxyArgs().split(" ");
 					for (String s : args) {
 						if (s.equals("")) continue;
 						params.add(s);
 					}
 				}
+				String token = null;
 
 				// Add the rest of params and launch the wrapper
 				params.add("-Djava.util.Arrays.useLegacyMergeSort=true");
+				//params.add("-Duser.home=" + instance.gameDir);
 				params.add("-cp");
 				params.add(BC.get() + "launcher" + File.separator + "betacraft_wrapper.jar" + add);
 				params.add("org.betacraft.launcher.Launcher");
 				params.add("wrap");
 				params.add(getNickname());
 				if (MojangLogging.userProfile != null) {
-					params.add(getAuthToken(true));
+					token = getAuthToken(true);
+					params.add(token);
 				} else {
 					params.add("0");
 				}
@@ -463,29 +487,32 @@ public class Launcher {
 				params.add(mppass);
 				params.add(currentInstance.name);
 				System.out.println(params.toString());
-				Logger.a(MojangLogging.userProfile != null ? params.toString().replaceAll(getAuthToken(true), "[censored sessionid]") : params.toString());
+				Logger.a(token != null ? params.toString().replaceAll(token, "[censored sessionid]") : params.toString());
+
 				ProcessBuilder builder = new ProcessBuilder(params);
+				//builder.redirectOutput(Redirect.appendTo(new File(BC.get(), "output-client.log")));
 				new File(instance.gameDir).mkdirs();
+				//builder.environment().put("APPDATA", instance.gameDir);
 				builder.directory(new File(instance.gameDir));
-				//builder.start();
 
 				// Close the launcher if desired
 				if (!instance.keepopen) {
-					builder.start();
 					Window.quit(false);
 				}
 
 				// For debugging
 				Process process = builder.start();
-				InputStream err = process.getInputStream();
-				InputStreamReader isr = new InputStreamReader(err);
-				BufferedReader br = new BufferedReader(isr);
+				InputStream output = process.getInputStream(), err = process.getErrorStream();
+				InputStreamReader isr_log = new InputStreamReader(output), isr_err = new InputStreamReader(err);
+				BufferedReader br_log = new BufferedReader(isr_log), br_err = new BufferedReader(isr_err);
 				String line1;
-				while ((line1 = br.readLine()) != null) {
+				while ((line1 = br_log.readLine()) != null || (line1 = br_err.readLine()) != null) {
+					if (token != null) line1 = line1.replaceAll(token, "[censored sessionid]");
 					Logger.logClient(line1);
 				}
 				Logger.logClient("End of client input");
 				Logger.a("Client closed.");
+
 				if (!instance.keepopen) {
 					Window.quit(true);
 				}
@@ -499,10 +526,10 @@ public class Launcher {
 	}
 
 	public static void writeDefault() {
-		setProperty(SETTINGS, "language", "English");
-		setProperty(SETTINGS, "lastInstance", "(default instance)");
-		setProperty(SETTINGS, "tab", Tab.CHANGELOG.name());
-		setProperty(SETTINGS, "version", "1");
+		Util.setProperty(BC.SETTINGS, "language", "English");
+		Util.setProperty(BC.SETTINGS, "lastInstance", "(default instance)");
+		Util.setProperty(BC.SETTINGS, "tab", Tab.CHANGELOG.name());
+		Util.setProperty(BC.SETTINGS, "version", "1");
 	}
 
 	public static void removeRecursively(File folder, boolean deleteFolderItself, boolean deleteOnlyFiles) {
@@ -529,9 +556,9 @@ public class Launcher {
 	}
 
 	public static void downloadLaunchMethod(String version) {
-		ReleaseJson json = Release.getReleaseByName(version).getJson();
-		if (!json.getLaunchMethodLink().equals("")) {
-			if (downloadWithButtonOutput(json.getLaunchMethodLink(), new File(BC.get() + "launcher" + File.separator + "launch-methods", json.getLaunchMethod() + ".jar")) == DownloadResult.FAILED_WITHOUT_BACKUP) {
+		VersionInfo json = Release.getReleaseByName(version).getInfo();
+		if (!json.getLaunchMethodURL().equals("")) {
+			if (downloadWithButtonOutput(json.getLaunchMethodURL(), new File(BC.get() + "launcher" + File.separator + "launch-methods", json.getLaunchMethod() + ".jar")) == DownloadResult.FAILED_WITHOUT_BACKUP) {
 				JOptionPane.showMessageDialog(null, "Couldn't download the launch method for this version.", "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
@@ -539,7 +566,7 @@ public class Launcher {
 
 	public static void downloadAddons(String version) {
 		for (String s : Launcher.currentInstance.addons) {
-			if (downloadWithButtonOutput("https://betacraft.pl/launcher/assets/addons/" + s + ".jar", new File(BC.get() + "launcher" + File.separator + "addons", s + ".jar")) == DownloadResult.FAILED_WITHOUT_BACKUP) {
+			if (downloadWithButtonOutput("https://betacraft.pl/launcher/assets/addons/1.09_10/" + s + ".jar", new File(BC.get() + "launcher" + File.separator + "addons", s + ".jar")) == DownloadResult.FAILED_WITHOUT_BACKUP) {
 				JOptionPane.showMessageDialog(null, "Couldn't download addon: " + s, "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
@@ -547,8 +574,8 @@ public class Launcher {
 
 	public static boolean isLaunchMethodReady(String version) {
 		boolean bol1 = true;
-		ReleaseJson json = Release.getReleaseByName(version).getJson();
-		if (!json.getLaunchMethodLink().equals("")) {
+		VersionInfo json = Release.getReleaseByName(version).getInfo();
+		if (!json.getLaunchMethodURL().equals("")) {
 			if (new File(BC.get() + "launcher" + File.separator + "launch-methods", json.getLaunchMethod() + ".jar").exists() == false) {
 				bol1 = false;
 			}
@@ -590,14 +617,12 @@ public class Launcher {
 			String natives = s.nextLine().split(":")[1];
 			s.close();
 
-			if (!libs.equals(Launcher.getProperty(SETTINGS, "libs-version"))) {
-				Launcher.setProperty(SETTINGS, "libs-version", libs);
-				Launcher.setProperty(SETTINGS, "natives-version", natives);
+			if (!libs.equals(Util.getProperty(BC.SETTINGS, "libs-version"))) {
+				Util.setProperty(BC.SETTINGS, "libs-version", libs);
 				return false;
 			}
-			if (!natives.equals(Launcher.getProperty(SETTINGS, "natives-version"))) {
-				Launcher.setProperty(SETTINGS, "libs-version", libs);
-				Launcher.setProperty(SETTINGS, "natives-version", natives);
+			if (!natives.equals(Util.getProperty(BC.SETTINGS, "natives-version"))) {
+				Util.setProperty(BC.SETTINGS, "natives-version", natives);
 				return false;
 			}
 			return true;
@@ -639,7 +664,7 @@ public class Launcher {
 		case OK:
 		}
 
-		Unrar(dest1.toPath().toString(), destNatives.toPath().toString(), true);
+		totalThreads.add(Util.Unrar(dest1.toPath().toString(), destNatives.toPath().toString(), true));
 
 		File dest2 = new File(destLibs, "libs.zip");
 		switch (downloadWithButtonOutput(link2, dest2)) {
@@ -648,7 +673,7 @@ public class Launcher {
 		case OK:
 		}
 
-		Unrar(dest2.toPath().toString(), destLibs.toPath().toString(), true);
+		totalThreads.add(Util.Unrar(dest2.toPath().toString(), destLibs.toPath().toString(), true));
 		return true;
 	}
 
@@ -701,6 +726,7 @@ public class Launcher {
 			}
 			outputst.close();
 			inputst.close();
+			backupfile.delete();
 			return DownloadResult.OK;
 		} catch (Exception ex) {
 			Logger.a("A critical error has occurred while attempting to download a file from: " + link);
@@ -713,59 +739,14 @@ public class Launcher {
 			// Restore the copy if existed
 			if (backupfile.exists()) {
 				try {
-					Files.copy(backupfile.toPath(), folder.toPath(), StandardCopyOption.REPLACE_EXISTING);
+					Files.move(backupfile.toPath(), folder.toPath(), StandardCopyOption.REPLACE_EXISTING);
 				} catch (IOException e) {}
-
-				// Remove the backup file
-				backupfile.delete();
 
 				// We had a backup, so we're returning this value
 				return DownloadResult.FAILED_WITH_BACKUP;
 			}
 			return DownloadResult.FAILED_WITHOUT_BACKUP;
 		}
-	}
-
-	public static void Unrar(String filepath, String SRC, boolean delete) {
-		Thread unrarthread = new Thread() {
-			public void run() {
-				FileInputStream fis;
-				byte[] buffer = new byte[1024];
-				try {
-					fis = new FileInputStream(filepath);
-					ZipInputStream zis = new ZipInputStream(fis);
-					ZipEntry entry = zis.getNextEntry();
-					while (entry != null) {
-						if (entry.isDirectory()) {
-							entry = zis.getNextEntry();
-							continue;
-						}
-						String fileName = entry.getName();
-						File newFile = new File(SRC + File.separator + fileName);
-
-						new File(newFile.getParent()).mkdirs();
-						FileOutputStream fos = new FileOutputStream(newFile);
-						int length;
-						while ((length = zis.read(buffer)) > 0) {
-							fos.write(buffer, 0, length);
-						}
-
-						fos.close();
-						zis.closeEntry();
-						entry = zis.getNextEntry();
-					}
-					zis.closeEntry();
-					zis.close();
-					fis.close();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-					Logger.printException(ex);
-				}
-				if (delete) new File(filepath).delete();
-			}
-		};
-		totalThreads.add(unrarthread);
-		unrarthread.start();
 	}
 
 	public static void downloadUpdate(boolean release) {
@@ -775,38 +756,41 @@ public class Launcher {
 			boolean yes = false;
 
 			// Format the message
-			String update_name = update.startsWith("!") ? update.replace("!", "") : update; 
+			String update_name = update.startsWith("!") ? update.substring(1) : update; 
 			String rr = Lang.UPDATE_FOUND.replaceAll("%s", update_name);
 
-			// Ask if the user wants this update or not
-			int result = JOptionPane.showConfirmDialog(null, rr, Lang.OPTIONS_UPDATE_HEADER, JOptionPane.YES_NO_OPTION);
-			if (result == JOptionPane.YES_OPTION) {
-				Logger.a("The user wants to update to: " + update_name);
-				yes = true;
+			if (!update.startsWith("!")) {
+				// Ask if the user wants this update or not
+				int result = JOptionPane.showConfirmDialog(null, rr, Lang.OPTIONS_UPDATE_HEADER, JOptionPane.YES_NO_OPTION);
+				if (result == JOptionPane.YES_OPTION) {
+					Logger.a("The user wants to update to: " + update_name);
+					yes = true;
+				} else {
+					Logger.a("The user doesn't want to update. The launcher stays at version: " + VERSION);
+				}
 			} else {
-				Logger.a("The user doesn't want to update. The launcher stays at version: " + VERSION);
+				Logger.a("Forced update to: " + update_name);
 			}
 			// If the user accepted the update, or it is a mandatory update, download it
 			if (yes || update.startsWith("!")) {
-				update = update.startsWith("!") ? update.substring(1) : update;
 				// Display downloading dialogue
 				//DownloadFrame dl = new DownloadFrame(update_name);
 				String ending = ".jar";
-				if (Launcher.currentPath.toPath().toString().endsWith(".exe")) {
+				if (BC.currentPath.toPath().toString().endsWith(".exe")) {
 					ending = ".exe";
 				}
 				if (BC.portable) {
 					ending = "-portable" + ending;
 				}
 
-				String url = "https://betacraft.pl/launcher/launcher-" + update + ending;
-				if (!release) url = "https://betacraft.pl/launcher/pre-" + update + ending;
+				String url = "https://betacraft.pl/launcher/launcher-" + update_name + ending;
+				if (!release) url = "https://betacraft.pl/launcher/launcher-" + update_name + ending;
 
 				// Download the update
 				download(url, new File(BC.get(), "betacraft.jar$tmp"));
 
 				// Launch the new version to finish updating
-				String[] args = new String[] {"java", "-jar", BC.get() + "betacraft.jar$tmp", "update", Launcher.currentPath.toPath().toString()};
+				String[] args = new String[] {"java", "-jar", BC.get() + "betacraft.jar$tmp", "update", BC.currentPath.toPath().toString()};
 				Runtime.getRuntime().exec(args);
 
 				// Close this process
@@ -816,40 +800,6 @@ public class Launcher {
 			Logger.a("An error has occurred while updating the launcher!");
 			ex.printStackTrace();
 			Logger.printException(ex);
-		}
-	}
-
-	public static void write(File file, String[] lines, boolean append) {
-		write(file, lines, append, "UTF-8");
-	}
-
-	public static void write(File file, String[] lines, boolean append, String charset) {
-		try {
-			// Create new file, if it doesn't already exist
-			file.createNewFile();
-		} catch (IOException e) {
-			System.out.println(file.toPath().toString());
-			e.printStackTrace();
-			Logger.printException(e);
-		}
-		OutputStreamWriter writer = null;
-		try {
-			// Write in UTF-8
-			writer = new OutputStreamWriter(
-					new FileOutputStream(file, append), charset);
-			for (int i = 0; i < lines.length; i++) {
-				// Skip empty lines
-				if (lines[i] != null) {
-					writer.write(lines[i] + "\n");
-				}
-			}
-		} catch (Exception ex) {
-			Logger.a("A critical error occurred while attempting to write to file: " + file);
-			ex.printStackTrace();
-			Logger.printException(ex);
-		} finally {
-			// Close the file
-			try {writer.close();} catch (Exception ex) {}
 		}
 	}
 
@@ -899,174 +849,11 @@ public class Launcher {
 		return MojangLogging.username;
 	}
 
-	public static void readLastLogin() {
-		try {
-			final File lastLogin = new File(BC.get(), "lastlogin");
-			final Cipher cipher = getCipher(2, "bcpasswordfile");
-			DataInputStream dis;
-			if (cipher != null) {
-				dis = new DataInputStream(new CipherInputStream(new FileInputStream(lastLogin), cipher));
-			}
-			else {
-				dis = new DataInputStream(new FileInputStream(lastLogin));
-			}
-			MojangLogging.email = dis.readUTF();
-			MojangLogging.password = dis.readUTF();
-			MojangLogging.username = dis.readUTF();
-			dis.close();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			Logger.printException(ex);
-		}
-	}
-
-	public static void saveLastLogin() {
-		try {
-			final File lastLogin = new File(BC.get(), "lastlogin");
-			final Cipher cipher = getCipher(1, "bcpasswordfile");
-			DataOutputStream dos;
-			if (cipher != null) {
-				dos = new DataOutputStream(new CipherOutputStream(new FileOutputStream(lastLogin), cipher));
-			}
-			else {
-				dos = new DataOutputStream(new FileOutputStream(lastLogin));
-			}
-			boolean rememberpassword = Launcher.getProperty(Launcher.SETTINGS, "remember-password").equals("true");
-			dos.writeUTF(MojangLogging.email);
-			if (rememberpassword) {
-				dos.writeUTF(MojangLogging.password);
-			} else {
-				dos.writeUTF("");
-			}
-			dos.writeUTF(MojangLogging.username);
-			
-			dos.close();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			Logger.printException(ex);
-		}
-	}
-
-	private static Cipher getCipher(final int mode, final String password) throws Exception {
-		final Random random = new Random(37635689L);
-		final byte[] salt = new byte[8];
-		random.nextBytes(salt);
-		final PBEParameterSpec pbeParamSpec = new PBEParameterSpec(salt, 5);
-		final SecretKey pbeKey = SecretKeyFactory.getInstance("PBEWithMD5AndDES").generateSecret(new PBEKeySpec(password.toCharArray()));
-		final Cipher cipher = Cipher.getInstance("PBEWithMD5AndDES");
-		cipher.init(mode, pbeKey, pbeParamSpec);
-		return cipher;
-	}
-
 	public static String getAuthToken(boolean fulltoken) {
 		if (MojangLogging.userProfile != null) {
 			if (fulltoken) return "token:" + MojangLogging.userProfile.get("accessToken") + ":" + MojangLogging.userProfile.get("selectedProfile.id");  
 			return MojangLogging.userProfile.get("accessToken");
 		}
 		return "0";
-	}
-
-	public static String[] read(File file, String charset) {
-		try {
-			// Create new, if doesn't exist
-			if (file.createNewFile()) {
-				Logger.a("Created a new file: " + file);
-			}
-		} catch (IOException e) {
-			System.out.println(file.toPath().toString());
-			e.printStackTrace();
-			Logger.printException(e);
-		}
-		InputStreamReader reader = null;
-		try {
-			// Read in UTF-8
-			reader = new InputStreamReader(
-					new FileInputStream(file), charset);
-			StringBuilder inputB = new StringBuilder();
-			char[] buffer = new char[1024];
-			while (true) {
-				int readcount = reader.read(buffer);
-				if (readcount < 0) break;
-				inputB.append(buffer, 0, readcount);
-			}
-			return inputB.toString().split("\n");
-		} catch (Exception ex) {
-			Logger.a("A critical error occurred while reading from file: " + file);
-			ex.printStackTrace();
-			Logger.printException(ex);
-		} finally {
-			// Close the file
-			try {reader.close();} catch (Exception ex) {}
-		}
-		return null;
-	}
-
-	public static void setProperty(File file, String property, String value) {
-		setProperty(file, property, value, "UTF-8");
-	}
-
-	public static void setProperty(File file, String property, String value, String charset) {
-		// Read the lines
-		String[] lines = read(file, charset);
-		String[] newlines = new String[lines.length + 1];
-
-		// Try to find the property wanted to be set
-		boolean found = false;
-		for (int i = 0; i < lines.length; i++) {
-			if (lines[i] == null) continue;
-			if (lines[i].startsWith(property + ":")) {
-				// The wanted property has been found, so we're going to replace its value
-				newlines[i] = property + ":" + value;
-				found = true;
-				continue;
-			}
-			// The property didn't match, just take this line further
-			newlines[i] = lines[i];
-		}
-
-		if (!found) {
-			// There was no wanted property in the file, so we're going to append it to the file 
-			write(file, new String[] {property + ":" + value}, true, charset);
-			return;
-		}
-
-		// Write to file, without appending
-		write(file, newlines, false, charset);
-	}
-
-	public static String getProperty(File file, String property) {
-		return getProperty(file, property, "UTF-8");
-	}
-
-	public static String getProperty(File file, String property, String charset) {
-		String[] lines = read(file, charset);
-		String value = "";
-		for (int i = 0; i < lines.length; i++) {
-			// If the array is empty, ignore it
-			if (lines[i] == null) continue;
-
-			// Check if the property matches
-			if (lines[i].startsWith(property + ":")) {
-				value = lines[i].substring(property.length()+1, lines[i].length());
-				break;
-			}
-		}
-		return value;
-	}
-
-	public static String[] excludeExistant(File file, String[] properties, String charset) {
-		String[] lines = read(file, charset);
-		for (int i = 0; i < lines.length; i++) {
-			// If the array is empty, ignore it
-			if (lines[i] == null) continue;
-
-			for (int i1 = 0; i1 < properties.length; i1++) {
-				// If the property matches, remove it from array
-				if (lines[i].startsWith(properties[i1] + ":")) {
-					properties[i1] = null;
-				}
-			}
-		}
-		return properties;
 	}
 }

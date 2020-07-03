@@ -5,23 +5,27 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 
+import javax.imageio.ImageIO;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
+import org.betacraft.launcher.BC;
 import org.betacraft.launcher.Lang;
-import org.betacraft.launcher.Launcher;
 import org.betacraft.launcher.Logger;
 
 public class ClassicWrapper extends Wrapper {
@@ -145,6 +149,30 @@ public class ClassicWrapper extends Wrapper {
 					System.exit(0);
 				}
 			});
+			gameFrame.addKeyListener(new KeyListener() {
+
+				@Override
+				public void keyPressed(KeyEvent e) {
+					System.out.println("Sex!");
+					if (e.getKeyCode() == 113) {
+						try {
+							BufferedImage bufferedImage = new BufferedImage(ClassicWrapper.this.getWidth(), ClassicWrapper.this.getHeight(), BufferedImage.TYPE_INT_RGB);
+							Graphics2D g2d = bufferedImage.createGraphics();
+							ClassicWrapper.this.printAll(g2d);
+
+							ImageIO.write(bufferedImage, "png", new File(BC.get() + "screencum.png"));
+						} catch (Throwable t) {
+							t.printStackTrace();
+						}
+					}
+				}
+
+				@Override
+				public void keyReleased(KeyEvent arg0) {}
+
+				@Override
+				public void keyTyped(KeyEvent arg0) {}
+			});
 
 			gameFrame.addComponentListener(listener);
 
@@ -157,18 +185,6 @@ public class ClassicWrapper extends Wrapper {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
-		}
-	}
-
-	@Override
-	public URL getDocumentBase() {
-		try {
-			return new URL("http://www.minecraft.net:" + portCompat + "/game/");
-		}
-		catch (MalformedURLException e) {
-			e.printStackTrace();
-			Logger.printException(e);
-			return null;
 		}
 	}
 

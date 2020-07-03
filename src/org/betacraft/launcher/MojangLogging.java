@@ -34,8 +34,8 @@ public class MojangLogging {
 			con.setConnectTimeout(15000);
 			con.setReadTimeout(15000);
 			String request = "{\"agent\": "
-							+ "{\"name\": \"Minecraft\", "
-							+ "\"version\": 1}, "
+					+ "{\"name\": \"Minecraft\", "
+					+ "\"version\": 1}, "
 					+ "\"username\": \"" + player + "\", "
 					+ "\"password\": \"" + password + "\"}";
 			con.setRequestProperty("Content-Type", "application/json");

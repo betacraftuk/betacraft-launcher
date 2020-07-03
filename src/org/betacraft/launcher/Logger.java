@@ -32,7 +32,7 @@ public class Logger {
 
 		System.out.println(all);
 		lastMessage = all;
-		Launcher.write(file, new String[] {all}, append);
+		Util.write(file, new String[] {all}, append);
 	}
 
 	public static void printException(Throwable ex) {

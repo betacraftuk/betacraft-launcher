@@ -3,87 +3,90 @@ package org.betacraft.launcher;
 import java.io.File;
 import java.util.Date;
 
-public class ReleaseJson {
+import org.betacraft.launcher.Release.VersionInfo;
+
+public class ReleaseJson implements VersionInfo {
 	private long releaseTimestamp = 0;
 	private long timestamp = 0;
 	private String download = "";
 	private String launchMethod = "";
 	private String launchMethodLink = "";
-	private String proxyArgs = "";
+	private String proxyArgs = "-Dhttp.proxyHost=betacraft.pl"; // keep this as default
 	private String otherName = "";
-	private String version;
-	private File json;
+	private String protocol = "";
+	private int fileVersion = -1;
+	private final String version;
+	public final File json;
 
-	public boolean online;
-	public boolean custom;
+	// later ffs TODO
+	//public String mainClass = "net.minecraft.client.MinecraftApplet";
+	//public boolean applet = true;
 
-	public ReleaseJson(String version, boolean online, boolean custom) {
+	public boolean custom = false;
+
+	public ReleaseJson(String version) {
 		this.version = version;
-		this.online = online;
-		this.custom = custom;
-		initJson();
+		this.json = new File(BC.get() + "versions" + File.separator + "jsons", version + ".info");
+		readJson();
 	}
 
-	public void initJson() {
+	public void readJson() {
 		try {
-			if (this.custom && (!jsonExists() || Launcher.forceUpdate)) downloadJson();
-			json = new File(BC.get() + "versions" + File.separator + "jsons", version + ".info");
-			String[] toSet = Launcher.excludeExistant(json, new String[] {"release-date", "compile-date", "url", "launch-method", "launch-method-link", "proxy-args", "other-name"}, "UTF-8");
-			for (String set : toSet) {
-				if (set != null) {
-					if (set.equals("release-date")) Launcher.setProperty(json, set, Long.toString(releaseTimestamp));
-					else if (set.equals("compile-date")) Launcher.setProperty(json, set, Long.toString(timestamp));
-					else if (set.equals("launch-method")) Launcher.setProperty(json, set, launchMethod);
-					else if (set.equals("proxy-args")) Launcher.setProperty(json, set, proxyArgs);
-					else Launcher.setProperty(json, set, "");
+			String releaseDate = Util.getProperty(json, "release-date");
+			String compileDate = Util.getProperty(json, "compile-date");
+			try {
+				releaseTimestamp = Long.parseLong(releaseDate);
+			} catch (Throwable ex) {
+				Logger.a("Version " + this.version + " has an invalid `release-date` parameter.");
+			}
+
+			try {
+				timestamp = Long.parseLong(compileDate);
+			} catch (Throwable ex) {
+				Logger.a("Version " + this.version + " has an invalid `compile-date` parameter.");
+			}
+
+			download = Util.getProperty(json, "url");
+			launchMethod = Util.getProperty(json, "launch-method");
+			launchMethodLink = Util.getProperty(json, "launch-method-link");
+
+			String proxy = Util.hasProperty(json, "proxy-args", "UTF-8") ? Util.getProperty(json, "proxy-args") : proxyArgs;
+			proxyArgs = proxy;
+			otherName = Util.getProperty(json, "other-name");
+			protocol = Util.getProperty(json, "protocolVersion");
+
+			try {
+				custom = Boolean.parseBoolean(Util.getProperty(json, "custom"));
+			} catch (Throwable t) {
+				Logger.a("Version " + this.version + " has an invalid `custom` parameter.");
+			}
+
+			try {
+				fileVersion = Integer.parseInt(Util.getProperty(json, "info-ver"));
+			} catch (Throwable t) {
+				Logger.a("Version " + this.version + " has an invalid `file-ver` parameter.");
+				if (!Util.hasProperty(json, "file-ver", "UTF-8")) {
+					this.fileVersion = 0;
 				}
 			}
-
-			releaseTimestamp = Long.parseLong(Launcher.getProperty(json, "release-date"));
-			timestamp = Long.parseLong(Launcher.getProperty(json, "compile-date"));
-			download = Launcher.getProperty(json, "url");
-			launchMethod = Launcher.getProperty(json, "launch-method");
-			launchMethodLink = Launcher.getProperty(json, "launch-method-link");
-			proxyArgs = Launcher.getProperty(json, "proxy-args");
-			otherName = Launcher.getProperty(json, "other-name");
+			//mainClass = Util.getProperty(json, "main-class");
+			//applet = Util.getProperty(json, "applet").equals("true");
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
 		}
-	}
-
-	public boolean jsonExists() {
-		try {
-			File json = new File(BC.get() + "versions" + File.separator + "jsons", version + ".info");
-			if (json.exists() && !json.isDirectory() && json.length() > 100) {
-				return true;
-			}
-			return false;
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			Logger.printException(ex);
-			return false;
-		}
-	}
-
-	public void downloadJson() {
-		if (this.online) Launcher.download("https://betacraft.pl/launcher/assets/jsons/" + version + ".info", new File(BC.get() + "versions" + File.separator + "jsons", version + ".info"));
 	}
 
 	public String getVersion() {
 		return this.version;
 	}
 
-	public String getCompileDate() {
-		return new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss z").format(new Date(this.timestamp));
+	public Date getCompileDate() {
+		return new Date(this.timestamp);
 	}
 
-	public String getReleaseDate() {
-		return new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss z").format(new Date(this.releaseTimestamp));
-	}
-
-	public long getReleaseTimestamp() {
-		return this.releaseTimestamp;
+	public Date getReleaseDate() {
+		return new Date(this.releaseTimestamp);
 	}
 
 	public String getOtherName() {
@@ -98,23 +101,36 @@ public class ReleaseJson {
 		return this.launchMethod;
 	}
 
-	public String getLaunchMethodLink() {
+	public String getLaunchMethodURL() {
 		return this.launchMethodLink;
 	}
 
-	public String getCustomEntry(String entryname) {
-		return Launcher.getProperty(json, entryname);
+	public String getEntry(String entryname) {
+		return Util.getProperty(json, entryname);
 	}
 
-	public void downloadLaunchMethod() {
-		Launcher.download(this.launchMethodLink, new File(BC.get() + "launcher" + File.separator + "launch-methods", launchMethod + ".class"));
+	public void setEntry(String entry, String value) {
+		Util.setProperty(json, entry, value);
+		this.readJson();
 	}
 
 	public String getDownloadURL() {
 		return this.download;
 	}
 
-	public void download() {
-		Launcher.download(this.download, new File(BC.get() + "versions", version + ".jar"));
+	public String getProtocol() {
+		return this.protocol;
+	}
+
+	public int getFileVersion() {
+		return this.fileVersion;
+	}
+
+	public boolean isCustom() {
+		return this.custom;
+	}
+
+	public static boolean exists(String name) {
+		return new File(BC.get() + "versions/jsons/", name + ".info").exists();
 	}
 }

@@ -5,6 +5,13 @@ import java.io.File;
 import javax.swing.JOptionPane;
 
 public class BC {
+	public static File currentPath;
+	public static File SETTINGS;
+
+	// TODO better check this before release
+	public static boolean prerelease = false;
+	public static boolean nightly = false;
+
 	public static boolean portable = false;
 	public static boolean wrapped = false;
 
@@ -32,7 +39,7 @@ public class BC {
 		} else {
 			Logger.a("Your operating system is not supported.");
 			JOptionPane.showMessageDialog(null, "Your operating system is not supported ;(", "I'm sorry, but", JOptionPane.WARNING_MESSAGE);
-			Window.quit(true);
+			System.exit(0);
 			return null;
 		}
 
@@ -42,8 +49,8 @@ public class BC {
 	}
 
 	public static String prefBC() {
-		if (wrapped) return Launcher.currentPath.getAbsoluteFile().getParentFile().getParentFile().getParent();
-		return Launcher.currentPath.getAbsoluteFile().getParent();
+		if (wrapped) return currentPath.getAbsoluteFile().getParentFile().getParentFile().getParent();
+		return currentPath.getAbsoluteFile().getParent();
 	}
 
 	public static String trimBetaCraftDir(String path) {

@@ -168,20 +168,20 @@ public class Classic12aWrapper extends Wrapper {
 		try {
 			this.thread.join(5000L);
 		} catch (InterruptedException e) {
-            try {
-            	for (final Field mcField : mainClass.getDeclaredFields()) {
-    				String name = mcField.getType().getName();
-    				if (name.contains("mojang")) {
-    					final Class<?> clazz = classLoader.loadClass(name);
-    					mcField.setAccessible(true);
-    					clazz.getDeclaredMethod("destroy", null).invoke(run);
-    				}
-    			}
-            }
-            catch (Exception ee) {
-                ee.printStackTrace();
-            }
-        } catch (Exception ex) {
+			try {
+				for (final Field mcField : mainClass.getDeclaredFields()) {
+					String name = mcField.getType().getName();
+					if (name.contains("mojang")) {
+						final Class<?> clazz = classLoader.loadClass(name);
+						mcField.setAccessible(true);
+						clazz.getDeclaredMethod("destroy", null).invoke(run);
+					}
+				}
+			}
+			catch (Exception ee) {
+				ee.printStackTrace();
+			}
+		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
 		}

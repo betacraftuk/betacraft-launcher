@@ -6,7 +6,6 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.geom.Point2D;
@@ -30,11 +29,11 @@ public class BottomPanel extends JPanel {
 			Logger.printException(e2);
 			return;
 		}
-		
-		
+
+
 		GridBagConstraints constr = new GridBagConstraints();
-		
-		
+
+
 		JPanel left = new JPanel();
 		left.setLayout(new GridBagLayout());
 		left.setOpaque(false);
@@ -50,7 +49,7 @@ public class BottomPanel extends JPanel {
 		constr.gridy = 2;
 		constr.insets = new Insets(0, 50, 0, 50);
 		left.add(Window.settingsButton, constr);
-		
+
 		JPanel center = new JPanel();
 		/*center.setOpaque(false);
 		GridLayout l = new GridLayout(0, 1);
@@ -80,7 +79,7 @@ public class BottomPanel extends JPanel {
 		constr.insets = new Insets(0, 2, 0, 0);
 		//constr.ipady = 10;
 		center.add(Window.playButton, constr);
-		
+
 		JPanel right = new JPanel();
 		right.setLayout(new GridBagLayout());
 		right.setOpaque(false);
@@ -111,9 +110,9 @@ public class BottomPanel extends JPanel {
 		constr.gridx = 0;
 		constr.weightx = 1.0;
 		constr.insets = new Insets(0, 0, 0, 0);
-		
+
 		GridBagConstraints constr1 = new GridBagConstraints();
-		
+
 
 		constr1.fill = GridBagConstraints.BOTH;
 		constr1.gridwidth = 1;

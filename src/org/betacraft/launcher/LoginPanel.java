@@ -17,7 +17,7 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-public class LoginPanel extends JFrame {
+public class LoginPanel extends JFrame implements LanguageElement {
 
 	static JCheckBox rememberpassword;
 
@@ -77,7 +77,7 @@ public class LoginPanel extends JFrame {
 		rememberpassword.setForeground(Color.LIGHT_GRAY);
 		rememberpassword.setOpaque(false);
 		//rememberpassword.setEnabled(false);
-		String entry = Launcher.getProperty(Launcher.SETTINGS, "remember-password");
+		String entry = Util.getProperty(BC.SETTINGS, "remember-password");
 		boolean remember = false;
 		if (!entry.equals("")) remember = Boolean.parseBoolean(entry);
 		rememberpassword.setSelected(remember);
@@ -105,9 +105,9 @@ public class LoginPanel extends JFrame {
 				} else {
 					new MojangLogging().authenticate(email.getText(), password.getText());
 				}
-				Launcher.setProperty(Launcher.SETTINGS, "remember-password", Boolean.toString(rememberpassword.isSelected()));
+				Util.setProperty(BC.SETTINGS, "remember-password", Boolean.toString(rememberpassword.isSelected()));
 				if (!rememberpassword.isSelected()) MojangLogging.password = "";
-				Launcher.saveLastLogin();
+				Util.saveLastLogin();
 				setVisible(false);
 				Window.loginPanel = null;
 			}
@@ -120,5 +120,14 @@ public class LoginPanel extends JFrame {
 		this.pack();
 		setLocationRelativeTo(Window.mainWindow);
 		setVisible(true);
+	}
+
+	public void update() {
+		this.setTitle(Lang.LOGIN_TITLE);
+		emailText.setText(Lang.LOGIN_EMAIL_NICKNAME);
+		passwordText.setText(Lang.LOGIN_PASSWORD);
+		rememberpassword.setText(Lang.LOGIN_REMEMBER_PASSWORD);
+		OKButton.setText(Lang.OPTIONS_OK);
+		this.pack();
 	}
 }

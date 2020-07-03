@@ -16,7 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
-public class SelectServerVersion extends JFrame {
+public class SelectServerVersion extends JFrame implements LanguageElement {
 	static JList list;
 	static DefaultListModel listModel;
 	static JScrollPane listScroller;
@@ -25,7 +25,10 @@ public class SelectServerVersion extends JFrame {
 	static JPanel panel;
 	static GridBagConstraints constr;
 
-	public SelectServerVersion(ArrayList<Release> thelist, final String mppass, final String address) {
+	public String preferredVersion;
+
+	public SelectServerVersion(ArrayList<Release> thelist, final String mppass, final String address, final String preferredVersion) {
+		this.preferredVersion = preferredVersion;
 		this.setIconImage(Window.img);
 		this.setMinimumSize(new Dimension(282, 169));
 
@@ -58,7 +61,7 @@ public class SelectServerVersion extends JFrame {
 				Launcher.currentInstance.version = ver.getName();
 				Launcher.setInstance(Launcher.currentInstance);
 				Launcher.currentInstance.saveInstance();
-				Launcher.saveLastLogin();
+				Util.saveLastLogin();
 				Window.mainWindow.playButton.setEnabled(false);
 				new Thread() {
 					public void run() {
@@ -68,7 +71,7 @@ public class SelectServerVersion extends JFrame {
 						// Update the button state
 						Window.mainWindow.setStatus(Window.mainWindow.playButton, Lang.WINDOW_PLAY);
 						Window.mainWindow.playButton.setEnabled(true);
-						new Launcher().launchGame(Launcher.currentInstance, address, mppass, null);
+						new Launcher().launchGame(Launcher.currentInstance, address, mppass);
 					}
 				}.start();
 			}
@@ -80,15 +83,24 @@ public class SelectServerVersion extends JFrame {
 		this.setVisible(true);
 	}
 
+	public void update() {
+		this.setTitle(Lang.WINDOW_SELECT_VERSION);
+		OKButton.setText(Lang.OPTIONS_OK);
+		this.pack();
+	}
+
 	public void makeList(ArrayList<Release> thelist) {
-		int index = 0;
+		int index = -1;
 		listModel = new DefaultListModel();
 		for (int i = 0; i < thelist.size(); i++) {
 			Release item = thelist.get(i);
 			listModel.addElement(item);
-			if (i == thelist.size()-1) {
+			if (item.getName().equals(preferredVersion)) {
 				index = i;
 			}
+		}
+		if (index == -1) {
+			index = thelist.size()-1;
 		}
 
 		constr.weighty = 1.0;

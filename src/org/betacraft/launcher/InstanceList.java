@@ -16,7 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 
-public class InstanceList extends JFrame {
+public class InstanceList extends JFrame implements LanguageElement {
 	static JList list;
 	static DefaultListModel listModel;
 	static JScrollPane listScroller;
@@ -76,6 +76,12 @@ public class InstanceList extends JFrame {
 		this.pack();
 		this.setLocationRelativeTo(Window.mainWindow);
 		this.setVisible(true);
+	}
+
+	public void update() {
+		this.setTitle(Lang.SELECT_INSTANCE_TITLE);
+		OKButton.setText(Lang.OPTIONS_OK);
+		this.pack();
 	}
 
 	public void makeList() {

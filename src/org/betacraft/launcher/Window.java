@@ -23,7 +23,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class Window extends JFrame implements ActionListener {
+public class Window extends JFrame implements ActionListener, LanguageElement {
 
 	static JLabel selectedInstanceDisplay = null;
 	static JButton playButton, selectVersionButton, settingsButton, langButton;
@@ -63,7 +63,7 @@ public class Window extends JFrame implements ActionListener {
 		mainWindow = this;
 		setMinimumSize(new Dimension(800, 480));
 		setPreferredSize(new Dimension(800, 480));
-		setTitle(Lang.WINDOW_TITLE);
+		setTitle(Lang.WINDOW_TITLE + (BC.nightly ? " [NIGHTLY]" : ""));
 		setLayout(new BorderLayout());
 		setLocationRelativeTo(null);
 
@@ -110,7 +110,7 @@ public class Window extends JFrame implements ActionListener {
 		});
 
 		bottomPanel = new BottomPanel();
-		String tabname = Launcher.getProperty(Launcher.SETTINGS, "tab");
+		String tabname = Util.getProperty(BC.SETTINGS, "tab");
 		Tab tab = tabname.equals("") ? Tab.CHANGELOG : Tab.valueOf(tabname.toUpperCase());
 		setTab(tab);
 		this.add(Window.bottomPanel, BorderLayout.SOUTH);
@@ -136,7 +136,7 @@ public class Window extends JFrame implements ActionListener {
 				setTab(Tab.CHANGELOG);
 			}
 		});
-		
+
 		tabinstances.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -152,7 +152,7 @@ public class Window extends JFrame implements ActionListener {
 				}
 			}
 		});
-		
+
 		tabservers.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -199,54 +199,97 @@ public class Window extends JFrame implements ActionListener {
 			}
 		});
 		this.pack();
+		playButton.requestFocus();
+	}
+
+	public void update() {
+		this.setTitle(Lang.WINDOW_TITLE + (BC.nightly ? " [NIGHTLY]" : ""));
+		if (MojangLogging.userProfile == null) loginButton.setText(Lang.LOGIN_BUTTON);
+		else loginButton.setText(Lang.LOGOUT_BUTTON);
+		playButton.setText(Lang.WINDOW_PLAY);
+		selectVersionButton.setText(Lang.WINDOW_SELECT_VERSION);
+		credits.setText(Lang.WINDOW_CREDITS);
+		settingsButton.setText(Lang.WINDOW_OPTIONS);
+		langButton.setText(Lang.WINDOW_LANGUAGE);
+		tabchangelog.setText(Lang.TAB_CHANGELOG);
+		tabinstances.setText(Lang.TAB_INSTANCES);
+		tabservers.setText(Lang.TAB_SERVERS);
+		positionButtons();
+		this.pack();
 	}
 
 	public static void setTab(Tab tab) {
+		if (Window.centerPanel != null) mainWindow.remove(Window.centerPanel);
+		centerPanel = new WebsitePanel().getEmptyTabFor(tab);
+		Window.tab = Tab.SERVER_LIST;
+		mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
+		mainWindow.pack();
 		if (tab == Tab.CHANGELOG) {
-			if (Window.centerPanel != null) mainWindow.remove(Window.centerPanel);
-			centerPanel = new WebsitePanel().getUpdateNews(true);
-			Window.tab = Tab.CHANGELOG;
-			mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
-			mainWindow.pack();
+			new Thread() {
+				public void run() {
+					if (Window.centerPanel != null) mainWindow.remove(Window.centerPanel);
+					centerPanel = new WebsitePanel().getUpdateNews(true);
+					Window.tab = Tab.CHANGELOG;
+					mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
+					mainWindow.pack();
+				}
+			}.start();
 		} else if (tab == Tab.SERVER_LIST) {
-			if (Window.centerPanel != null) mainWindow.remove(Window.centerPanel);
-			centerPanel = new WebsitePanel().getServers(true);
-			Window.tab = Tab.SERVER_LIST;
-			mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
-			mainWindow.pack();
+			new Thread() {
+				public void run() {
+					if (Window.centerPanel != null) mainWindow.remove(Window.centerPanel);
+					centerPanel = new WebsitePanel().getServers(true);
+					Window.tab = Tab.SERVER_LIST;
+					mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
+					mainWindow.pack();
+				}
+			}.start();
 		}
 	}
 
 	public static void positionButtons() {
 		// Find the most wide button and set its width to other buttons
-		JButton largest = selectVersionButton;
-		if (largest.getPreferredSize().getWidth() < langButton.getPreferredSize().getWidth()) {
-			largest = langButton;
+		// Make copies to allow for estimating the preferred size on runtime
+		JButton copyVersion = new JButton(selectVersionButton.getText());
+		JButton copyLanguag = new JButton(langButton.getText());
+		JButton copyInstanc = new JButton(langButton.getText());
+		JButton largest = copyVersion;
+		if (largest.getPreferredSize().getWidth() < copyLanguag.getPreferredSize().getWidth()) {
+			largest = copyLanguag;
 		}
-		if (largest.getPreferredSize().getWidth() < settingsButton.getPreferredSize().getWidth()) {
-			largest = settingsButton;
+		if (largest.getPreferredSize().getWidth() < copyInstanc.getPreferredSize().getWidth()) {
+			largest = copyInstanc;
 		}
 		selectVersionButton.setPreferredSize(largest.getPreferredSize());
+		selectVersionButton.setSize(largest.getPreferredSize());
 		langButton.setPreferredSize(largest.getPreferredSize());
+		langButton.setSize(largest.getPreferredSize());
 		settingsButton.setPreferredSize(largest.getPreferredSize());
+		settingsButton.setSize(largest.getPreferredSize());
 
-		largest = tabservers;
-		if (largest.getPreferredSize().getWidth() < tabinstances.getPreferredSize().getWidth()) {
-			largest = tabinstances;
+		JButton copyTabChan = new JButton(tabchangelog.getText());
+		JButton copyTabInst = new JButton(tabinstances.getText());
+		JButton copyTabServ = new JButton(tabservers.getText());
+		largest = copyTabServ;
+		if (largest.getPreferredSize().getWidth() < copyTabInst.getPreferredSize().getWidth()) {
+			largest = copyTabInst;
 		}
-		if (largest.getPreferredSize().getWidth() < tabchangelog.getPreferredSize().getWidth()) {
-			largest = tabchangelog;
+		if (largest.getPreferredSize().getWidth() < copyTabChan.getPreferredSize().getWidth()) {
+			largest = copyTabChan;
 		}
 		tabchangelog.setPreferredSize(largest.getPreferredSize());
+		tabchangelog.setSize(largest.getPreferredSize());
 		tabinstances.setPreferredSize(largest.getPreferredSize());
+		tabinstances.setSize(largest.getPreferredSize());
 		tabservers.setPreferredSize(largest.getPreferredSize());
+		tabservers.setSize(largest.getPreferredSize());
 	}
 
 	public static void quit(boolean close) {
 		if (mainWindow != null) mainWindow.setVisible(false);
-		if (mainWindow != null) mainWindow.dispose();
-		Launcher.saveLastLogin();
-		Launcher.setProperty(Launcher.SETTINGS, "tab", tab.name());
+		if (mainWindow != null && close) mainWindow.dispose();
+		Util.saveLastLogin();
+		Util.setProperty(BC.SETTINGS, "tab", tab.name());
 		if (close) {
 			for (Thread t : Launcher.totalThreads) {
 				while (t.isAlive());
@@ -260,9 +303,10 @@ public class Window extends JFrame implements ActionListener {
 		Object source = e.getSource();
 
 		// Initialize other windows if needed
-		if (source == selectVersionButton) {
+		if (source == selectVersionButton && Release.versions.size() > 0) {
 			if (versionsList == null) new SelectVersion();
 			else versionsList.setVisible(true);
+			SelectVersion.list.requestFocus();
 		}
 		if (source == settingsButton) {
 			if (instanceSettings == null) new InstanceSettings();
@@ -274,11 +318,19 @@ public class Window extends JFrame implements ActionListener {
 		}
 
 		if (source == playButton) {
-			Launcher.saveLastLogin();
+			Util.saveLastLogin();
 			playButton.setEnabled(false);
 			try {
 				new Thread() {
 					public void run() {
+						int last = Launcher.totalThreads.size();
+						while (last > 0) {
+							last = Launcher.totalThreads.size();
+							try {
+								// wtf is wrong with java
+								Thread.sleep(1L);
+							} catch (InterruptedException e) {}
+						}
 						setStatus(playButton, Lang.WINDOW_DOWNLOADING);
 
 						Launcher.initStartup();

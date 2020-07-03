@@ -13,12 +13,9 @@ import java.awt.event.WindowEvent;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.betacraft.launcher.Lang;
@@ -36,34 +33,9 @@ public class Classic15aWrapper extends Wrapper {
 				addons);
 	}
 
-	public void askForServer() {
-		if (this.serverAddress != null) {
-			String[] ipstuff = serverAddress.split(":");
-			params.put("server", ipstuff[0]);
-			params.put("port", ipstuff[1]);
-			params.put("mppass", this.mppass);
-		} else {
-			String server = JOptionPane.showInputDialog(this, Lang.WRAP_SERVER, Lang.WRAP_SERVER_TITLE, JOptionPane.DEFAULT_OPTION);//JOptionPane.showInputDialog(null, Lang.WRAP_SERVER, "");
-			String port = "5565";
-			if (server != null && !server.equals("")) {
-				String IP = server;
-				if (IP.contains(":")) {
-					String[] params1 = server.split(":");
-					IP = params1[0];
-					port = params1[1];
-				}
-				if (!server.equals("")) {
-					System.out.println("Accepted server parameters: " + server);
-					params.put("server", IP);
-					params.put("port", port);
-					params.put("mppass", this.mppass);
-				}
-			}
-		}
-	}
-
 	@Override
 	public void play() {
+		this.defaultPort = "5565";
 		this.askForServer();
 		try {
 			this.loadJars();
@@ -199,20 +171,20 @@ public class Classic15aWrapper extends Wrapper {
 		try {
 			this.thread.join(5000L);
 		} catch (InterruptedException e) {
-            try {
-            	for (final Field mcField : mainClass.getDeclaredFields()) {
-    				String name = mcField.getType().getName();
-    				if (name.contains("mojang")) {
-    					final Class<?> clazz = classLoader.loadClass(name);
-    					mcField.setAccessible(true);
-    					clazz.getDeclaredMethod("a", null).invoke(run);
-    				}
-    			}
-            }
-            catch (Exception ee) {
-                ee.printStackTrace();
-            }
-        } catch (Exception ex) {
+			try {
+				for (final Field mcField : mainClass.getDeclaredFields()) {
+					String name = mcField.getType().getName();
+					if (name.contains("mojang")) {
+						final Class<?> clazz = classLoader.loadClass(name);
+						mcField.setAccessible(true);
+						clazz.getDeclaredMethod("a", null).invoke(run);
+					}
+				}
+			}
+			catch (Exception ee) {
+				ee.printStackTrace();
+			}
+		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
 		}
@@ -220,18 +192,18 @@ public class Classic15aWrapper extends Wrapper {
 
 	public void setResolution(Runnable run, Canvas canvas, Class<?> clazz) {
 		try {
-			
+
 			Field resource = clazz.getDeclaredField("f");
 			resource.setAccessible(true);
 			resource.set(run, this.getDocumentBase().getHost() + ":" + this.getDocumentBase().getPort());
-	        if (this.getParameter("username") != null && this.getParameter("sessionid") != null) {
-	        	Field credentials = clazz.getDeclaredField("e");
-	        	credentials.setAccessible(true);
-	        	Object credinstance = this.classLoader.loadClass("com.mojang.minecraft.a").getConstructor(String.class, String.class).newInstance(this.getParameter("username"), this.getParameter("sessionid"));
-	        	
-	        	credentials.set(run, credinstance);
-	        }
-	        if (this.getParameter("server") != null) {
+			if (this.getParameter("username") != null && this.getParameter("sessionid") != null) {
+				Field credentials = clazz.getDeclaredField("e");
+				credentials.setAccessible(true);
+				Object credinstance = this.classLoader.loadClass("com.mojang.minecraft.a").getConstructor(String.class, String.class).newInstance(this.getParameter("username"), this.getParameter("sessionid"));
+
+				credentials.set(run, credinstance);
+			}
+			if (this.getParameter("server") != null) {
 				int port = Integer.parseInt(this.getParameter("port"));
 				try {
 					Class c = this.classLoader.loadClass("com.mojang.minecraft.net.b");
@@ -251,14 +223,14 @@ public class Classic15aWrapper extends Wrapper {
 				// previous method, but this has hardcoded port
 				//clazz.getDeclaredMethod("a", String.class, int.class).invoke(run, this.getParameter("server"), port);
 			}
-	        if (this.getParameter("loadmap_user") != null && this.getParameter("loadmap_id") != null) {
-	        	Field mapuser = clazz.getDeclaredField("j");
-	        	mapuser.setAccessible(true);
-	        	mapuser.set(run, this.getParameter("loadmap_user"));
-	        	Field mapid = clazz.getDeclaredField("k");
-	        	mapid.setAccessible(true);
-	        	mapid.set(run, Integer.parseInt(this.getParameter("loadmap_id")));
-	        }
+			if (this.getParameter("loadmap_user") != null && this.getParameter("loadmap_id") != null) {
+				Field mapuser = clazz.getDeclaredField("j");
+				mapuser.setAccessible(true);
+				mapuser.set(run, this.getParameter("loadmap_user"));
+				Field mapid = clazz.getDeclaredField("k");
+				mapid.setAccessible(true);
+				mapid.set(run, Integer.parseInt(this.getParameter("loadmap_id")));
+			}
 			for (final Field appletModeField : clazz.getDeclaredFields()) {
 				if (appletModeField.getType().getName().equalsIgnoreCase("boolean") && Modifier.isPublic(appletModeField.getModifiers())) {
 					appletModeField.setAccessible(true);
@@ -281,18 +253,6 @@ public class Classic15aWrapper extends Wrapper {
 			addonsPostAppletInit(this.addons);
 		} catch (Exception ex) {
 			ex.printStackTrace();
-		}
-	}
-
-	@Override
-	public URL getDocumentBase() {
-		try {
-			return new URL("http://www.minecraft.net:" + portCompat + "/game/");
-		}
-		catch (MalformedURLException e) {
-			e.printStackTrace();
-			Logger.printException(e);
-			return null;
 		}
 	}
 }

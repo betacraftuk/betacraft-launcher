@@ -25,7 +25,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-public class InstanceSettings extends JFrame {
+public class InstanceSettings extends JFrame implements LanguageElement {
 
 	public JCheckBox proxyCheck;
 	public JCheckBox keepOpenCheck;
@@ -45,6 +45,11 @@ public class InstanceSettings extends JFrame {
 	public JButton dirChooser;
 	public JTextField instanceName;
 	public JLabel instanceIcon;
+	public JButton chooseIcon;
+	public JLabel removelabel;
+	public JLabel instanceNameText;
+	public JButton addons;
+	public JButton modrepo;
 	static Image img = null;
 	static Image image = null;
 
@@ -103,7 +108,7 @@ public class InstanceSettings extends JFrame {
 		proxyCheck.setOpaque(false);
 		proxyCheck.setSelected(Launcher.currentInstance.proxy);
 		panel.add(proxyCheck, constr);
-		
+
 		constr.insets = new Insets(2, 10, 0, 10);
 		constr.gridy++;
 		keepOpenCheck = new JCheckBox(Lang.OPTIONS_KEEP_OPEN);
@@ -187,7 +192,7 @@ public class InstanceSettings extends JFrame {
 		instanceSettings.setLayout(new GridBagLayout());
 		JButton remove = new JButton("x");
 		int height = (int) remove.getPreferredSize().getWidth();
-		//remove.setPreferredSize(new Dimension(height, height));
+
 		remove.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -205,10 +210,10 @@ public class InstanceSettings extends JFrame {
 				}
 			}
 		});
-		JLabel removelabel = new JLabel(Lang.INSTANCE_REMOVE_TITLE);
-		JLabel instanceNameText = new JLabel(Lang.INSTANCE_NAME);
+		removelabel = new JLabel(Lang.INSTANCE_REMOVE_TITLE);
+		instanceNameText = new JLabel(Lang.INSTANCE_NAME);
 		instanceIcon = new JLabel(new ImageIcon(Launcher.currentInstance.getIcon()));
-		JButton chooseIcon = new JButton(Lang.INSTANCE_CHANGE_ICON_NAME);
+		chooseIcon = new JButton(Lang.INSTANCE_CHANGE_ICON_NAME);
 		chooseIcon.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -229,7 +234,7 @@ public class InstanceSettings extends JFrame {
 				}
 			}
 		});
-		JButton addons = new JButton(Lang.INSTANCE_SELECT_ADDONS);
+		addons = new JButton(Lang.INSTANCE_SELECT_ADDONS);
 		addons.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -237,7 +242,7 @@ public class InstanceSettings extends JFrame {
 				else Window.addonsList.setVisible(true);
 			}
 		});
-		JButton modrepo = new JButton(Lang.INSTANCE_MODS_REPOSITORY);
+		modrepo = new JButton(Lang.INSTANCE_MODS_REPOSITORY);
 		modrepo.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -360,6 +365,27 @@ public class InstanceSettings extends JFrame {
 		dimensions2.getDocument().addDocumentListener(doc);
 
 		this.setMinimumSize(this.getPreferredSize().getSize());
+		OKButton.requestFocus();
+	}
+
+	public void update() {
+		this.setTitle(Lang.OPTIONS_TITLE);
+		proxyCheck.setText(Lang.OPTIONS_PROXY);
+		keepOpenCheck.setText(Lang.OPTIONS_KEEP_OPEN);
+		RPCCheck.setText(Lang.OPTIONS_RPC);
+		parametersText.setText(Lang.OPTIONS_LAUNCH_ARGS);
+		dirChooser.setText(Lang.INSTANCE_GAME_DIRECTORY);
+		dimensions1Text.setText(Lang.OPTIONS_WIDTH);
+		dimensions2Text.setText(Lang.OPTIONS_HEIGHT);
+		removelabel.setText(Lang.INSTANCE_REMOVE_TITLE);
+		instanceNameText.setText(Lang.INSTANCE_NAME);
+		chooseIcon.setText(Lang.INSTANCE_CHANGE_ICON_NAME);
+		addons.setText(Lang.INSTANCE_SELECT_ADDONS);
+		modrepo.setText(Lang.INSTANCE_MODS_REPOSITORY);
+		forceUpdate.setText(Lang.FORCE_UPDATE);
+		OKButton.setText(Lang.OPTIONS_OK);
+		this.setMinimumSize(this.getPreferredSize().getSize());
+		this.pack();
 	}
 
 	/*public void updateInfo() {
@@ -392,6 +418,6 @@ public class InstanceSettings extends JFrame {
 			Launcher.setInstance(Launcher.currentInstance.renameInstance(instanceName.getText()));
 		}
 		Launcher.currentInstance.saveInstance();
-		Launcher.setProperty(Launcher.SETTINGS, "lastInstance", Launcher.currentInstance.name);
+		Util.setProperty(BC.SETTINGS, "lastInstance", Launcher.currentInstance.name);
 	}
 }

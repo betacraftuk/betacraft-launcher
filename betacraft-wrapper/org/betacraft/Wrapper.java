@@ -8,8 +8,11 @@ import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.lang.reflect.Field;
@@ -22,13 +25,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import org.betacraft.Addon.WhatToDo;
 import org.betacraft.launcher.BC;
 import org.betacraft.launcher.Lang;
-import org.betacraft.launcher.Launcher;
 import org.betacraft.launcher.Logger;
 
 import net.arikia.dev.drpc.DiscordEventHandlers;
@@ -70,10 +73,10 @@ public class Wrapper extends Applet implements AppletStub {
 	/** Preferred height of the game applet */
 	public int height = 480;
 
-	public String proxyCompat = "www.minecraft.net";
-	public String portCompat = "80";
+	public int portCompat = 80;
 	public String serverAddress = null;
 	public String mppass = null;
+	public String defaultPort = "25565";
 
 	/** List of addons to be applied to this instance */
 	public ArrayList<Addon> addons = new ArrayList<>();
@@ -105,9 +108,18 @@ public class Wrapper extends Applet implements AppletStub {
 		params.put("sessionid", sessionid);
 		params.put("haspaid", "true");
 
+		if (server != null && server.contains(":")) {
+			params.put("server", server.split(":")[0]);
+			params.put("port", server.split(":")[1]);
+		}
+
 		this.version = version;
 		this.session = sessionid;
-		launchType = launchMethod;
+		this.launchType = launchMethod;
+		if (this.launchType.equalsIgnoreCase("")) {
+			System.out.println("LAUNCH METHOD ISN'T SPECIFIED!!! CANNOT PROCEED! CLOSING!");
+			System.exit(0);
+		}
 		this.mainFolder = mainFolder;
 		this.height = height;
 		this.width = width;
@@ -119,14 +131,10 @@ public class Wrapper extends Applet implements AppletStub {
 
 		new File(this.mainFolder).mkdirs();
 
-		String proxy = System.getProperty("http.proxyHost");
 		String port = System.getProperty("http.proxyPort");
 
-		if (proxy != null) {
-			this.proxyCompat = proxy;
-		}
 		if (port != null) {
-			this.portCompat = port;
+			this.portCompat = Integer.parseInt(port);
 		}
 
 		if (this.discord) {
@@ -202,26 +210,45 @@ public class Wrapper extends Applet implements AppletStub {
 	}
 
 	/**
-	 * Asks the client for server credentials.
+	 * Asks the user for server credentials.
 	 */
 	public void askForServer() {
 		if (this.serverAddress != null) {
-			String[] ipstuff = serverAddress.split(":");
-			params.put("server", ipstuff[0]);
-			params.put("port", ipstuff[1]);
 			params.put("mppass", this.mppass);
 		} else {
-			String server = JOptionPane.showInputDialog(this, Lang.WRAP_SERVER, Lang.WRAP_SERVER_TITLE, JOptionPane.DEFAULT_OPTION);//JOptionPane.showInputDialog(null, Lang.WRAP_SERVER, "");
-			String port = "25565";
+			String server = JOptionPane.showInputDialog(this, Lang.WRAP_SERVER, Lang.WRAP_SERVER_TITLE, JOptionPane.DEFAULT_OPTION);
+			String port = this.defaultPort;
 			if (server != null && !server.equals("")) {
 				String IP = server;
-				if (IP.contains(":")) {
+				if (server.startsWith("retrocraft://")) {
+					// retrocraft://<ip>/<port>/<version>/<mppass>
+					String[] splitted = server.split("/");
+					IP = splitted[2];
+					port = splitted[3];
+					this.mppass = splitted[5];
+				} else if (server.startsWith("mc://")) {
+					// mc://<ip>:<port>/<username>/<mppass>
+					String[] splitted = server.split("/");
+					String[] hostport = splitted[2].split(":");
+					IP = hostport[0];
+					port = hostport[1];
+					this.mppass = splitted[4];
+				} else if (server.startsWith("join://")) {
+					// join://<ip>:<port>/<mppass>/<protocol>/<prefferedversion>
+					String[] splitted = server.split("/");
+					String[] hostport = splitted[2].split(":");
+					IP = hostport[0];
+					port = hostport[1];
+					this.mppass = splitted[3];
+				} else if (IP.contains(":")) {
+					// <ip>:<port>
 					String[] params1 = server.split(":");
 					IP = params1[0];
 					port = params1[1];
 				}
+				// <ip>
 				if (!server.equals("")) {
-					System.out.println("Accepted server parameters: " + server);
+					System.out.println("Accepted server parameters: " + IP + ":" + port + this.mppass != null ? " + mppass" : "");
 					params.put("server", IP);
 					params.put("port", port);
 					params.put("mppass", this.mppass);
@@ -275,56 +302,35 @@ public class Wrapper extends Applet implements AppletStub {
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
-				Logger.printException(ex);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
-		String launchType = null;
 
 		// I know this looks terrible, but it works!
 		try {
 			// Classic
 			mainClass = classLoader.loadClass("com.mojang.minecraft.MinecraftApplet");
-			launchType = "classicmp"; // Force MP because we have no way of knowing if the client supports MP or not.
 		} catch (ClassNotFoundException ex) {
 			try {
 				mainClass = classLoader.loadClass("com.mojang.rubydung.RubyDung");
-				launchType = "rd";
 
 			} catch (ClassNotFoundException ex2) {
 				try {
 					mainClass = classLoader.loadClass("com.mojang.minecraft.RubyDung");
-					launchType = "mc";
 
 				} catch (ClassNotFoundException ex3) {
 					try {
 						// Indev+
 						mainClass = classLoader.loadClass("net.minecraft.client.MinecraftApplet");
-						launchType = "indev";
 					} catch (ClassNotFoundException ex4) {
 						try {
 							mainClass = classLoader.loadClass("M");
-							launchType = "4k";
 						} catch (ClassNotFoundException ex5) {}
 					}
 				}// catch (Exception ex3) {}
 			}// catch (Exception ex2) {}
 		}
-		// Don't force the launch type if the info file knows it better.
-		if (this.launchType.equals("") &&
-				launchType.equalsIgnoreCase("classicmp")) {
-			new ClassicMPWrapper(params.get("username"), this.window_name, this.version, params.get("sessionid"), this.mainFolder, this.height, this.width, this.discord, launchType, this.serverAddress, this.mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, this.icon, this.ogaddons);
-			return;
-		} else if (this.launchType.equals("") && (launchType.equalsIgnoreCase("rd") || launchType.equalsIgnoreCase("mc"))) {
-			new PreClassicWrapper(params.get("username"), this.window_name, this.version, params.get("sessionid"), this.mainFolder, this.height, this.width, this.discord, launchType, this.serverAddress, this.mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, this.icon, this.ogaddons);
-			return;
-		} else if (this.launchType.equals("") && launchType.equalsIgnoreCase("4k")) {
-			new FkWrapper(params.get("username"), this.window_name, this.version, params.get("sessionid"), this.mainFolder, this.height, this.width, this.discord, launchType, this.serverAddress, this.mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, this.icon, this.ogaddons);
-			return;
-		}
-		if (this.launchType.equals("")) this.launchType = launchType;
 
 		try {
 			mainClassInstance = mainClass.newInstance();
@@ -359,12 +365,12 @@ public class Wrapper extends Applet implements AppletStub {
 				}
 			}
 		} catch (ClassNotFoundException ex) {
-			JOptionPane.showMessageDialog(null, "Error code 6: Couldn't satisfy the wrapper with a valid .jar file. Check your version or launch configuration file.", "Error", JOptionPane.INFORMATION_MESSAGE);
+			String err = "Error code 6 (MISSING): Couldn't satisfy the wrapper with a valid .jar file. Check your version JAR or launch configuration file.";
+			System.out.println(err);
+			JOptionPane.showMessageDialog(null, err, "Error", JOptionPane.INFORMATION_MESSAGE);
 			ex.printStackTrace();
-			Logger.printException(ex);
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -386,7 +392,7 @@ public class Wrapper extends Applet implements AppletStub {
 				files[i + 1] = BC.get() + "bin/" + libs[i];
 			}
 
-			String nativesPath = BC.get() + "bin/natives";
+			String nativesPath = BC.get() + "bin/natives/";
 			System.setProperty("org.lwjgl.librarypath", nativesPath);
 			System.setProperty("net.java.games.input.librarypath", nativesPath);
 
@@ -399,7 +405,6 @@ public class Wrapper extends Applet implements AppletStub {
 			loadMainClass(url);
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -431,6 +436,7 @@ public class Wrapper extends Applet implements AppletStub {
 			gameFrame.setVisible(true);
 
 			Applet a = (Applet) mainClassInstance;
+			a.setLayout(new BorderLayout());
 			a.setStub(this);
 			a.resize(width, height);
 			a.setMinimumSize(new Dimension(width, height));
@@ -450,13 +456,38 @@ public class Wrapper extends Applet implements AppletStub {
 
 			// Start Discord RPC
 			if (discord) discordThread.start();
-		} catch (Exception ex) {
+		} catch (Throwable ex) {
 			System.out.println("A critical error has occurred!");
-			System.out.print(ex.toString());
+			ex.printStackTrace();
 		}
 	}
 
 	public void addHooks() {
+		panel.addKeyListener(new KeyListener() {
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				System.out.println("Sex!");
+				if (e.getKeyCode() == 113) {
+					Graphics g = panel.getGraphics().create();
+					try {
+						BufferedImage bufferedImage = new BufferedImage(panel.getWidth(), panel.getHeight(), BufferedImage.TYPE_INT_RGB);
+						Graphics g2d = bufferedImage.getGraphics();
+						panel.printAll(g2d);
+
+						ImageIO.write(bufferedImage, "png", new File(BC.get() + "screencum.png"));
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
+				}
+			}
+
+			@Override
+			public void keyReleased(KeyEvent arg0) {}
+
+			@Override
+			public void keyTyped(KeyEvent arg0) {}
+		});
 		gameFrame.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(final WindowEvent e) {
@@ -537,38 +568,6 @@ public class Wrapper extends Applet implements AppletStub {
 			try {
 				if (mainClassInstance instanceof Applet) {
 					((Applet) mainClassInstance).start();
-					/*try {
-						for (Field mcfield : mainClass.getDeclaredFields()) {
-							if (!mcfield.getType().getName().contains("java") && !mcfield.getType().getName().contains("long")) {
-								mcfield.setAccessible(true);
-								Class clazz1 = mcfield.getType().asSubclass(Runnable.class);
-								Object mc = mcfield.get(mainClassInstance);
-								for (Field resourcethreadfield : clazz1.getDeclaredFields()) {
-									try {
-										if (resourcethreadfield.getType().getName().equals("com.mojang.minecraft.c")) {
-											resourcethreadfield.setAccessible(true);
-											Class clazz = resourcethreadfield.getType().asSubclass(Thread.class);
-											Thread resourcethread = (Thread) resourcethreadfield.get(mc);
-											for (Field fileparentfield : clazz.getDeclaredFields()) {
-												if (fileparentfield.getType().getName().equals("java.io.File")) {
-													File file = new File(this.mainFolder, "classicresources/");
-													file.mkdirs();
-													fileparentfield.setAccessible(true);
-													fileparentfield.set(resourcethread, file);
-													break;
-												}
-											}
-											break;
-										}
-									} catch (Exception ex) {
-										ex.printStackTrace();
-									}
-								}
-							}
-						}
-					} catch (Exception ex) {
-						ex.printStackTrace();
-					}*/
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -599,7 +598,6 @@ public class Wrapper extends Applet implements AppletStub {
 			return !stop;
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 			return true;
 		}
 	}
@@ -617,7 +615,6 @@ public class Wrapper extends Applet implements AppletStub {
 			return !stop;
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 			return true;
 		}
 	}
@@ -625,11 +622,17 @@ public class Wrapper extends Applet implements AppletStub {
 	@Override
 	public URL getDocumentBase() {
 		try {
-			return new URL("http://www.minecraft.net/game/");
+			URL url = new URL("http://www.minecraft.net/game/");
+			if (this.mainClass != null) {
+				if (mainClassInstance.getClass().getCanonicalName().startsWith("com.mojang")) {
+					url = new URL("http", "www.minecraft.net", portCompat, "/game/", null);
+				}
+			}
+			System.out.println(url.toString());
+			return url;
 		}
-		catch (MalformedURLException e) {
+		catch (Exception e) {
 			e.printStackTrace();
-			Logger.printException(e);
 			return null;
 		}
 	}
@@ -641,7 +644,6 @@ public class Wrapper extends Applet implements AppletStub {
 		}
 		catch (MalformedURLException e) {
 			e.printStackTrace();
-			Logger.printException(e);
 			return null;
 		}
 	}
