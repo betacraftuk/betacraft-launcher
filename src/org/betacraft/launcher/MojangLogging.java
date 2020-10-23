@@ -19,6 +19,7 @@ public class MojangLogging {
 	protected static String username = "";
 	protected static String password = "";
 
+	// TODO: replace the authentication method for the next major version
 	public boolean authenticate(String player, String password) {
 		MojangLogging.email = player;
 		MojangLogging.password = password;
@@ -68,6 +69,7 @@ public class MojangLogging {
 			Window.nick_input.setEnabled(false);
 			Window.loginButton.setText(Lang.LOGOUT_BUTTON);
 			Logger.a("Logged in successfully.");
+			Window.setTab(Window.tab);
 			return true;
 		} catch (ArrayIndexOutOfBoundsException ex) {
 			ex.printStackTrace();

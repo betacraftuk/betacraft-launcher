@@ -1,9 +1,15 @@
 package org.betacraft.launcher;
 
 import java.awt.Color;
+import java.io.DataOutputStream;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
@@ -125,9 +131,32 @@ public class WebsitePanel extends JPanel {
 			new Thread() {
 				public void run() {
 					try {
-						textPane.setPage(new URL("https://betacraft.pl/server.php?user=" + Launcher.getNickname() + "&token=" + Launcher.getAuthToken(true)));
-					}
-					catch (Exception ex) {
+						HttpURLConnection con = (HttpURLConnection) new URL("https://betacraft.pl/server.jsp").openConnection();
+						con.setRequestMethod("POST");
+						con.setDoInput(true);
+						con.setDoOutput(true);
+						con.setUseCaches(false);
+						con.setConnectTimeout(5000);
+						con.connect();
+
+						DataOutputStream output = new DataOutputStream(con.getOutputStream());
+						output.writeUTF(Launcher.getNickname());
+						output.writeUTF(Launcher.getAuthToken(true));
+						output.flush();
+						output.close();
+						InputStream instream = con.getInputStream();
+						Scanner s = new Scanner(instream, "UTF-8");
+						StringBuilder bob = new StringBuilder();
+						while (s.hasNextLine()) {
+							bob.append(s.nextLine());
+						}
+						s.close();
+						instream.close();
+						textPane.setText(bob.toString());
+					} catch (SocketTimeoutException | UnknownHostException ex) {
+						textPane.setContentType("text/html");
+						textPane.setText("<html><body bgcolor=\"black\"><font color=\"red\"><br><br><br><br><br><center><h1>" + Lang.TAB_SRV_FAILED + "</h1><br>" + Lang.ERR_NO_CONNECTION + "</center></font></body></html>");
+					} catch (Exception ex) {
 						ex.printStackTrace();
 						Logger.printException(ex);
 						textPane.setContentType("text/html");
@@ -169,9 +198,23 @@ public class WebsitePanel extends JPanel {
 			new Thread() {
 				public void run() {
 					try {
-						textPane.setPage(new URL("https://betacraft.pl/versions/changelog/" + Util.getProperty(BC.SETTINGS, "language") + ".html"));
-					}
-					catch (Exception ex) {
+						HttpURLConnection con = (HttpURLConnection) new URL("https://betacraft.pl/versions/changelog/" + Util.getProperty(BC.SETTINGS, "language") + ".html").openConnection();
+						con.setDoInput(true);
+						con.setDoOutput(false);
+						con.setConnectTimeout(5000);
+						con.connect();
+						Scanner s = new Scanner(con.getInputStream(), "UTF-8");
+						StringBuilder bob = new StringBuilder();
+						while (s.hasNextLine()) {
+							bob.append(s.nextLine());
+						}
+						textPane.setText(bob.toString());
+						s.close();
+						con.disconnect();
+					} catch (SocketTimeoutException | UnknownHostException ex) {
+						textPane.setContentType("text/html");
+						textPane.setText("<html><body bgcolor=\"black\"><font color=\"red\"><br><br><br><br><br><center><h1>" + Lang.TAB_CL_FAILED + "</h1><br>" + Lang.ERR_NO_CONNECTION + "</center></font></body></html>");
+					} catch (Throwable ex) {
 						ex.printStackTrace();
 						Logger.printException(ex);
 						textPane.setContentType("text/html");

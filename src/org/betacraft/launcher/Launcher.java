@@ -45,7 +45,7 @@ import org.betacraft.launcher.themes.WindowsThemeSetter;
 
 /** Main class */
 public class Launcher {
-	public static String VERSION = "1.09_10"; // TODO Always update this
+	public static String VERSION = "1.09_11"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
@@ -490,7 +490,7 @@ public class Launcher {
 				Logger.a(token != null ? params.toString().replaceAll(token, "[censored sessionid]") : params.toString());
 
 				ProcessBuilder builder = new ProcessBuilder(params);
-				//builder.redirectOutput(Redirect.appendTo(new File(BC.get(), "output-client.log")));
+				builder.redirectOutput(ProcessBuilder.Redirect.INHERIT);
 				new File(instance.gameDir).mkdirs();
 				//builder.environment().put("APPDATA", instance.gameDir);
 				builder.directory(new File(instance.gameDir));

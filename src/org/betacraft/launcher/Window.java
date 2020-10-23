@@ -102,6 +102,7 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 					MojangLogging.email = "";
 					MojangLogging.password = "";
 					MojangLogging.userProfile = null;
+					Window.setTab(Window.tab);
 				} else {
 					if (loginPanel == null) new LoginPanel();
 					else loginPanel.setVisible(true);
