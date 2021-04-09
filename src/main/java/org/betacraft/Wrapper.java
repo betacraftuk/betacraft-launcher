@@ -78,6 +78,9 @@ public class Wrapper extends Applet implements AppletStub {
 	public ArrayList<Addon> addons = new ArrayList<>();
 	public ArrayList<Class<Addon>> ogaddons = new ArrayList<>();
 
+	/** Tells whether lwjgl dependencies have been already loaded or not */
+	public boolean libraries_loaded = false;
+
 	/**
 	 * Initializes the Wrapper class & enables the game
 	 * 
@@ -113,7 +116,7 @@ public class Wrapper extends Applet implements AppletStub {
 		this.session = sessionid;
 		this.launchType = launchMethod;
 		if (this.launchType.equalsIgnoreCase("")) {
-			System.out.println("LAUNCH METHOD ISN'T SPECIFIED!!! CANNOT PROCEED! CLOSING!");
+			System.err.println("LAUNCH METHOD ISN'T SPECIFIED!!! CANNOT PROCEED! CLOSING!");
 			System.exit(0);
 		}
 		this.mainFolder = mainFolder;
@@ -132,6 +135,10 @@ public class Wrapper extends Applet implements AppletStub {
 		if (port != null) {
 			this.portCompat = Integer.parseInt(port);
 		}
+
+		try {
+			this.libraries_loaded = Boolean.parseBoolean(System.getProperty("betacraft.loaded_libraries"));
+		} catch (Throwable t) {}
 
 		if (this.discord) {
 			String applicationId = "567450523603566617";
@@ -244,7 +251,7 @@ public class Wrapper extends Applet implements AppletStub {
 				}
 				// <ip>
 				if (!server.equals("")) {
-					System.out.println("Accepted server parameters: " + IP + ":" + port + this.mppass != null ? " + mppass" : "");
+					System.err.println("Accepted server parameters: " + IP + ":" + port + this.mppass != null ? " + mppass" : "");
 					params.put("server", IP);
 					params.put("port", port);
 					params.put("mppass", this.mppass);
@@ -276,25 +283,16 @@ public class Wrapper extends Applet implements AppletStub {
 		try {
 			classLoader = null;
 			URL[] old = url.clone();
-			URL[] neww = new URL[old.length/* + ogaddons.size()*/];
+			URL[] neww = new URL[old.length];
 			int i;
 			for (i = 0; i < old.length; i++) {
 				neww[i] = old[i];
 			}
-			/*if (i < neww.length) {
-				for (String c : ogaddons) {
-					neww[i] = new File(c).toURI().toURL();
-					i++;
-				}
-			}*/
 			classLoader = new BCClassLoader(neww);
 			try {
 				for (Class<Addon> c : ogaddons) {
-					/*String[] split = c.split("\\.");
-					String split2[] = split[split.length - 2].split(File.separator);
-					Class<?> addon = Launcher.class.getClassLoader().loadClass(split2[split2.length - 1]);*/
 					this.loadAddon((Addon) c.newInstance());
-					System.out.println("- " + c);
+					System.err.println("- " + c);
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
@@ -362,10 +360,17 @@ public class Wrapper extends Applet implements AppletStub {
 			}
 		} catch (ClassNotFoundException ex) {
 			String err = "Error code 6 (MISSING): Couldn't satisfy the wrapper with a valid .jar file. Check your version JAR or launch configuration file.";
-			System.out.println(err);
+			System.err.println(err);
 			JOptionPane.showMessageDialog(gameFrame, err, "Error", JOptionPane.INFORMATION_MESSAGE);
 			ex.printStackTrace();
-		} catch (Exception ex) {
+			System.exit(0);
+		} catch (NoClassDefFoundError ex) {
+			String err = "Error code 5 (LIB_MISSING): Some of the required libraries are missing. Select \"Force update\" in instance settings to re-download them.";
+			System.err.println(err);
+			JOptionPane.showMessageDialog(gameFrame, err, "Error", JOptionPane.INFORMATION_MESSAGE);
+			ex.printStackTrace();
+			System.exit(0);
+		} catch (Throwable ex) {
 			ex.printStackTrace();
 		}
 	}
@@ -380,12 +385,14 @@ public class Wrapper extends Applet implements AppletStub {
 			});
 
 			// Glue everything Minecraft needs for running
-			String[] files = new String[libs.length + 1];
+			String[] files = new String[1 + (this.libraries_loaded ? 0 : libs.length)];
 
 			files[0] = BC.get() + "versions/" + version + ".jar";
 
-			for (int i = 0; i < libs.length; i++) {
-				files[i + 1] = BC.get() + "bin/" + libs[i];
+			if (!this.libraries_loaded) {
+				for (int i = 0; i < libs.length; i++) {
+					files[i + 1] = BC.get() + "bin/" + libs[i];
+				}
 			}
 
 			String nativesPath = BC.get() + "bin/natives";
@@ -394,7 +401,7 @@ public class Wrapper extends Applet implements AppletStub {
 
 			final URL[] url = new URL[files.length];
 			for (int i = 0; i < files.length; i++) {
-				System.out.println(files[i]);
+				System.err.println(files[i]);
 				url[i] = new File(files[i]).toURI().toURL();
 			}
 
@@ -453,7 +460,7 @@ public class Wrapper extends Applet implements AppletStub {
 			// Start Discord RPC
 			if (discord) discordThread.start();
 		} catch (Throwable ex) {
-			System.out.println("A critical error has occurred!");
+			System.err.println("A critical error has occurred!");
 			ex.printStackTrace();
 		}
 	}
@@ -599,7 +606,7 @@ public class Wrapper extends Applet implements AppletStub {
 					url = new URL("http", "www.minecraft.net", portCompat, "/game/", null);
 				}
 			}
-			System.out.println(url.toString());
+			System.err.println(url.toString());
 			return url;
 		}
 		catch (Exception e) {
@@ -621,7 +628,7 @@ public class Wrapper extends Applet implements AppletStub {
 
 	@Override
 	public String getParameter(final String paramName) {
-		System.out.println("Client asked for a parameter: " + paramName);
+		System.err.println("Client asked for a parameter: " + paramName);
 		if (params.containsKey(paramName)) {
 			return params.get(paramName);
 		}

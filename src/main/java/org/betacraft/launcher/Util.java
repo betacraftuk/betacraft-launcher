@@ -20,9 +20,12 @@ import pl.betacraft.auth.Accounts;
 import pl.betacraft.auth.Authenticator;
 import pl.betacraft.auth.Credentials;
 import pl.betacraft.auth.Credentials.AccountType;
+import pl.betacraft.auth.DownloadRequest;
+import pl.betacraft.auth.DownloadResponse;
 import pl.betacraft.auth.MicrosoftAuth;
 import pl.betacraft.auth.MojangAuth;
 import pl.betacraft.auth.NoAuth;
+import pl.betacraft.json.lib.MouseFixMacOSJson;
 
 public class Util {
 	public static final Gson gson = new Gson();
@@ -212,13 +215,17 @@ public class Util {
 		return properties;
 	}
 
-	public static Thread Unrar(String filepath, String SRC, boolean delete) {
+	public static Thread unzip(File source, File dest_folder, boolean delete) {
+		return unzip(source.toPath().toString(), dest_folder.toPath().toString(), delete);
+	}
+
+	public static Thread unzip(String source, String dest_folder, boolean delete) {
 		Thread unrarthread = new Thread() {
 			public void run() {
 				FileInputStream fis;
 				byte[] buffer = new byte[1024];
 				try {
-					fis = new FileInputStream(filepath);
+					fis = new FileInputStream(source);
 					ZipInputStream zis = new ZipInputStream(fis);
 					ZipEntry entry = zis.getNextEntry();
 					while (entry != null) {
@@ -227,7 +234,7 @@ public class Util {
 							continue;
 						}
 						String fileName = entry.getName();
-						File newFile = new File(SRC + File.separator + fileName);
+						File newFile = new File(dest_folder + File.separator + fileName);
 
 						new File(newFile.getParent()).mkdirs();
 						FileOutputStream fos = new FileOutputStream(newFile);
@@ -247,54 +254,12 @@ public class Util {
 					ex.printStackTrace();
 					Logger.printException(ex);
 				}
-				if (delete) new File(filepath).delete();
+				if (delete) new File(source).delete();
 				if (!Util.isStandalone()) Launcher.totalThreads.remove(this);
 			}
 		};
 		unrarthread.start();
 		return unrarthread;
-	}
-
-	public static void zip(String filepath, String SRC, boolean delete) {
-		Thread zipthread = new Thread() {
-			public void run() {
-				FileInputStream fis;
-				byte[] buffer = new byte[1024];
-				try {
-					fis = new FileInputStream(filepath);
-					ZipInputStream zis = new ZipInputStream(fis);
-					ZipEntry entry = zis.getNextEntry();
-					while (entry != null) {
-						if (entry.isDirectory()) {
-							entry = zis.getNextEntry();
-							continue;
-						}
-						String fileName = entry.getName();
-						File newFile = new File(SRC + File.separator + fileName);
-
-						new File(newFile.getParent()).mkdirs();
-						FileOutputStream fos = new FileOutputStream(newFile);
-						int length;
-						while ((length = zis.read(buffer)) > 0) {
-							fos.write(buffer, 0, length);
-						}
-
-						fos.close();
-						zis.closeEntry();
-						entry = zis.getNextEntry();
-					}
-					zis.closeEntry();
-					zis.close();
-					fis.close();
-				} catch (Exception ex) {
-					ex.printStackTrace();
-					Logger.printException(ex);
-				}
-				if (delete) new File(filepath).delete();
-				if (!isStandalone()) Launcher.totalThreads.remove(this);
-			}
-		};
-		zipthread.start();
 	}
 
 	public static String[] read(File file, String charset) {
@@ -367,6 +332,53 @@ public class Util {
 		} catch (Throwable t) {
 			t.printStackTrace();
 			return null;
+		}
+	}
+
+	public static boolean installMacOSFix(MouseFixMacOSJson json, boolean force) {
+		File javaagent = new File(BC.get() + "launcher/macos-javaagent.jar");
+		File lwjgl = new File(BC.get() + "launcher/macos-mousefix-lwjgl.jar");
+
+		File classes_folder = new File(BC.get() + "launcher/macos-java-mod/");
+		File classes_temp_zip = new File(BC.get() + "launcher/macos-mousefix.zip");
+
+		String local_javaagent_sha1 = javaagent.exists() ? getSHA1(javaagent) : null;
+		String local_lwjgl_sha1 = lwjgl.exists() ? getSHA1(lwjgl): null;
+		String local_javamod_sha1 = Util.getProperty(BC.SETTINGS, "macosMouseFixClassesVersion");
+
+		try {
+			if (local_javaagent_sha1 == null || !local_javaagent_sha1.equals(json.agent_sha1) || force) {
+				DownloadResponse agent_req = new DownloadRequest("http://files.betacraft.pl/launcher/assets/macos-javaagent.jar", javaagent.toPath().toString(), json.agent_sha1, false).perform();
+				if (agent_req.result != DownloadResult.OK) {
+					Logger.a("Failed to download macos javaagent");
+					return false;
+				}
+			}
+			if (local_lwjgl_sha1 == null || !local_lwjgl_sha1.equals(json.lwjgl_sha1) || force) {
+				DownloadResponse lwjgl_req = new DownloadRequest("http://files.betacraft.pl/launcher/assets/macos-mousefix-lwjgl.jar", lwjgl.toPath().toString(), json.lwjgl_sha1, false).perform();
+				if (lwjgl_req.result != DownloadResult.OK) {
+					Logger.a("Failed to download macos-mousefix.zip");
+					return false;
+				}
+			}
+			if (local_javamod_sha1 == null || !local_javamod_sha1.equals(json.classes_sha1) || force) {
+				DownloadResponse classes_req = new DownloadRequest("http://files.betacraft.pl/launcher/assets/macos-mousefix.zip", classes_temp_zip.toPath().toString(), json.classes_sha1, false).perform();
+				if (classes_req.result != DownloadResult.OK) {
+					Logger.a("Failed to download macos-mousefix.zip");
+					return false;
+				} else {
+					if (classes_folder.exists() && classes_folder.list().length != 0) {
+						Launcher.removeRecursively(classes_folder, false, false);
+					}
+					classes_folder.mkdirs();
+					Util.setProperty(BC.SETTINGS, "macosMouseFixClassesVersion", json.classes_sha1);
+					Launcher.totalThreads.add(unzip(classes_temp_zip, classes_folder, true));
+				}
+			}
+			return true;
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return false;
 		}
 	}
 

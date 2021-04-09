@@ -49,10 +49,11 @@ import pl.betacraft.auth.CustomRequest;
 import pl.betacraft.auth.CustomResponse;
 import pl.betacraft.auth.DownloadRequest;
 import pl.betacraft.auth.DownloadResponse;
+import pl.betacraft.json.lib.MouseFixMacOSJson;
 
 /** Main class */
 public class Launcher {
-	public static String VERSION = "1.09_12"; // TODO Always update this
+	public static String VERSION = "1.09_13-pre1"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
@@ -61,7 +62,7 @@ public class Launcher {
     public static Accounts accounts = new Accounts();
 
 	public static void main(String[] args) {
-        System.out.println("Java version: " + System.getProperty("java.version"));
+        System.out.println("Java version: " + System.getProperty("java.vendor") + ", " + System.getProperty("java.runtime.name") + ", " + System.getProperty("java.runtime.version"));
 		long nano = System.nanoTime();
 		try {
 			// Fix for Java having a cross-platform look and feel
@@ -155,24 +156,23 @@ public class Launcher {
 			ArrayList<Class<Addon>> addons = new ArrayList<>();
 			if (!currentInstance.addons.isEmpty()) {
 				try {
-					System.out.println("Loading addons...");
+					System.err.println("Loading addons...");
 					for (String s : currentInstance.addons) {
 						try {
 							String path = BC.get() + "launcher" + File.separator + "addons" + File.separator + s + ".jar";
-							System.out.println(path);
+							System.err.println(path);
 							URLClassLoader loader = new URLClassLoader(new URL[] {
 									new File(path).toURI().toURL()
 							});
 
-							System.out.println("- " + s);
+							System.err.println("- " + s);
 							loadClasses(path, loader);
 							Class<Addon> c = (Class<Addon>) loader.loadClass(s);
 							addons.add(c);
 							loader.close();
 						} catch (Exception ex) {
+							System.err.println("An error occurred while loading an addon: " + s);
 							ex.printStackTrace();
-							Logger.a("An error occurred while loading an addon: " + s);
-							Logger.printException(ex);
 						}
 					}
 				} catch (Exception ex) {
@@ -185,7 +185,7 @@ public class Launcher {
 				meth = WrapperDetector.getLaunchMethod(BC.get() + "versions/" + currentInstance.version + ".jar");
 				if (meth.equals("custom")) {
 					String err = "Error code 7 (ERRCONFIG): Couldn't determine the launch method for your JAR. Configure your version configuration file: " + BC.get() + "versions/jsons/" + currentInstance.version + ".info";
-					System.out.println(err);
+					System.err.println(err);
 					JOptionPane.showMessageDialog(Window.mainWindow, err, "Error", JOptionPane.INFORMATION_MESSAGE);
 					System.exit(0);
 				}
@@ -193,7 +193,7 @@ public class Launcher {
 
 			/*if (meth.equals("1.6")) {
 				String err = "Error code 8 (UNSUPPORTED): Versions 1.6+ are not supported yet.";
-				System.out.println(err);
+				System.err.println(err);
 				JOptionPane.showMessageDialog(null, err, "Error", JOptionPane.INFORMATION_MESSAGE);
 				System.exit(0);
 			}*/
@@ -228,7 +228,7 @@ public class Launcher {
 					});
 
 					loadClasses(path, loader);
-					System.out.println("Launch method: " + meth);
+					System.err.println("Launch method: " + meth);
 					Class c = loader.loadClass(meth);
 					Constructor con = c.getConstructor(String.class, String.class, String.class, String.class, String.class, Integer.class, Integer.class, Boolean.class, String.class, String.class, String.class, String.class, String.class, Image.class, ArrayList.class);
 					con.newInstance(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
@@ -257,7 +257,7 @@ public class Launcher {
 		new File(BC.get() + "bin" + File.separator + "natives").mkdirs();
 
 		Logger.a("BetaCraft Launcher JE v" + VERSION + " loading...");
-		Logger.a("Java version: " + System.getProperty("java.version"));
+		Logger.a("Java version: " + System.getProperty("java.vendor") + ", " + System.getProperty("java.runtime.name") + ", " + System.getProperty("java.runtime.version"));
 		Logger.a("Portable: " + BC.portable);
 		Logger.a("EXE: " + BC.currentPath.toPath().toString().endsWith(".exe"));
 		Logger.a("Prerelease: " + BC.prerelease);
@@ -411,6 +411,16 @@ public class Launcher {
 			Launcher.downloadAddons(Launcher.currentInstance.version);
 		}
 
+		if (OS.isMac()) {
+			if ("true".equalsIgnoreCase(info.getEntry("macos-mousefix"))) {
+				String json = new CustomRequest("http://files.betacraft.pl/launcher/assets/macos-mousefix.json").perform().response;
+				if (json != null) {
+					MouseFixMacOSJson mousefix_json = Util.gsonPretty.fromJson(json, MouseFixMacOSJson.class);
+					Util.installMacOSFix(mousefix_json, Launcher.forceUpdate);
+				}
+			}
+		}
+
 		// Download the latest libs and natives
 		if (!Launcher.checkDepends() || Launcher.forceUpdate) {
 			if (!Launcher.downloadDepends()) {
@@ -473,6 +483,11 @@ public class Launcher {
 
 				// Let the user overwrite this argument - put it before the custom ones
                 params.add("-Djava.util.Arrays.useLegacyMergeSort=true");
+
+                // Required to fix the following on MacOS: Classic, Indev after 0129-2, Infdev and Alpha to 1.0.1
+                if (OS.isMac() && "true".equalsIgnoreCase(Release.getReleaseByName(instance.version).getInfo().getEntry("macos-mousefix"))) {
+                	params.add("-javaagent:" + BC.get() + "launcher/macos-javaagent.jar=" + BC.get());
+                }
 
 				// Add custom parameters from options
 				if (instance.launchArgs != null && !instance.launchArgs.equals("")) {
@@ -685,8 +700,8 @@ public class Launcher {
         destNatives.mkdirs();
 
         // Lastly, schedule zips for extraction
-        totalThreads.add(Util.Unrar(dest1.toPath().toString(), destNatives.toPath().toString(), true));
-        totalThreads.add(Util.Unrar(dest2.toPath().toString(), destLibs.toPath().toString(), true));
+        totalThreads.add(Util.unzip(dest1, destNatives, true));
+        totalThreads.add(Util.unzip(dest2, destLibs, true));
 		return true;
 	}
 

@@ -21,8 +21,6 @@ import pl.betacraft.auth.MojangAuth;
 
 public class LoginPanel extends JFrame implements LanguageElement {
 
-	//static JCheckBox rememberaccount;
-
 	static JLabel emailText;
 	static JTextField email;
 
@@ -36,7 +34,7 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		this.setIconImage(Window.img);
 		setTitle(Lang.LOGIN_TITLE);
 		setResizable(true);
-		this.setMinimumSize(new Dimension(360, 240));
+		this.setMinimumSize(new Dimension(360, 200));
 
 		JPanel panel = new InstanceSettings.OptionsPanel();
 		panel.setLayout(new GridBagLayout());

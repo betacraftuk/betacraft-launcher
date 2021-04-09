@@ -34,25 +34,18 @@ public class ClassicWrapper extends Wrapper {
 	public void loadMainClass(URL[] url) {
 		try {
 			URL[] old = url.clone();
-			URL[] neww = new URL[old.length/* + ogaddons.size()*/];
+			URL[] neww = new URL[old.length];
+
 			int i;
 			for (i = 0; i < old.length; i++) {
 				neww[i] = old[i];
 			}
-			/*if (i < neww.length) {
-				for (String c : ogaddons) {
-					neww[i] = new File(c).toURI().toURL();
-					i++;
-				}
-			}*/
+
 			classLoader = new BCClassLoader(neww);
 			try {
 				for (Class<Addon> c : ogaddons) {
-					/*String[] split = c.split("\\.");
-					String split2[] = split[split.length - 2].split(File.separator);
-					Class<?> addon = classLoader.loadClass(split2[split2.length - 1]);*/
 					this.loadAddon((Addon) c.newInstance());
-					System.out.println("- " + c);
+					System.err.println("- " + c);
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();

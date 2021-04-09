@@ -36,17 +36,13 @@ public class PreClassicWrapper2 extends Wrapper {
 	public void loadMainClass(URL[] url) {
 		try {
 			URL[] old = url.clone();
-			URL[] neww = new URL[old.length/* + ogaddons.size()*/ + 1];
+			URL[] neww = new URL[old.length + 1];
+
 			int i;
 			for (i = 0; i < old.length; i++) {
 				neww[i] = old[i];
 			}
-			/*if (i < neww.length - 1) {
-				for (String c : ogaddons) {
-					neww[i] = new File(c).toURI().toURL();
-					i++;
-				}
-			}*/
+
 			neww[neww.length-1] = new File(BC.get() + "launcher/", "PreClassic.jar").toURI().toURL();
 			classLoader = new BCClassLoader(neww);
 			try {
@@ -64,9 +60,6 @@ public class PreClassicWrapper2 extends Wrapper {
 			}
 			try {
 				for (Class<Addon> c : ogaddons) {
-					/*String[] split = c.split("\\.");
-					String split2[] = split[split.length - 2].split(File.separator);
-					Class<?> addon = classLoader.loadClass(split2[split2.length - 1]);*/
 					this.loadAddon((Addon) c.newInstance());
 					System.out.println("- " + c);
 				}

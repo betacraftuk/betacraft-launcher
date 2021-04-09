@@ -34,7 +34,7 @@ public class RequestUtil {
 		try {
 			URL url = new URL(req.REQUEST_URL);
 			con = (HttpURLConnection) url.openConnection();
-			if (req.REQUEST_URL.startsWith("https:")) {
+			if (req.REQUEST_URL.startsWith("https:") && Cert.sslSocketFactory != null) {
 				((HttpsURLConnection)con).setSSLSocketFactory(Cert.sslSocketFactory);
 			}
 
@@ -108,7 +108,7 @@ public class RequestUtil {
 			if (debug) System.out.println("OUTCOME TO: " + req.REQUEST_URL);
 			URL url = new URL(req.REQUEST_URL);
 			con = (HttpURLConnection) url.openConnection();
-			if (req.REQUEST_URL.startsWith("https:")) {
+			if (req.REQUEST_URL.startsWith("https:") && Cert.sslSocketFactory != null) {
 				((HttpsURLConnection)con).setSSLSocketFactory(Cert.sslSocketFactory);
 			}
 

@@ -24,17 +24,13 @@ public class PreClassicWrapper extends Wrapper {
 		try {
 			classLoader = null;
 			URL[] old = url.clone();
-			URL[] neww = new URL[old.length/* + ogaddons.size()*/];
+			URL[] neww = new URL[old.length];
+
 			int i;
 			for (i = 0; i < old.length; i++) {
 				neww[i] = old[i];
 			}
-			/*if (i < neww.length) {
-				for (String c : ogaddons) {
-					neww[i] = new File(c).toURI().toURL();
-					i++;
-				}
-			}*/
+
 			classLoader = new BCClassLoader(neww);
 		} catch (Exception ex) {
 			ex.printStackTrace();
@@ -55,24 +51,17 @@ public class PreClassicWrapper extends Wrapper {
 		}
 		try {
 			for (Class<Addon> c : ogaddons) {
-				/*String[] split = c.split("\\.");
-				String split2[] = split[split.length - 2].split(File.separator);
-				Class<?> addon = classLoader.loadClass(split2[split2.length - 1]);*/
 				this.loadAddon((Addon) c.newInstance());
-				System.out.println("- " + c);
+				System.err.println("- " + c);
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
 		}
 		try {
-			//PreClassicHooker r = new PreClassicHooker(this.width, this.height, this.ver_prefix, this.icon, appletClass);
-			//Class e = classLoader.loadClass("org.betacraft.PreClassicHooker");
-			//Constructor constr = e.getConstructor(int.class, int.class, String.class, Image.class, Class.class);
-			//PreClassicHooker run = (PreClassicHooker) constr.newInstance(this.width, this.height, this.ver_prefix, this.icon, appletClass);
 			mainClassInstance = mainClass.newInstance();
 			if (!this.addonsPreAppletInit(this.addons)) return;
-			System.out.println(mainClassInstance.getClass().getName());
+			System.err.println(mainClassInstance.getClass().getName());
 			Thread t = new Thread() {
 				public void run() {
 					((Runnable)mainClassInstance).run();
