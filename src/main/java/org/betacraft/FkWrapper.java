@@ -6,13 +6,12 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Image;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.io.File;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 
-import javax.swing.JPanel;
-
+import org.betacraft.launcher.BC;
 import org.betacraft.launcher.Logger;
 
 public class FkWrapper extends Wrapper {
@@ -24,6 +23,17 @@ public class FkWrapper extends Wrapper {
 				img, addons);
 	}
 
+	public void loadJars() {
+		try {
+			final URL[] url = new URL[1];
+			url[0] = new File(BC.get() + "versions/" + version + ".jar").toURI().toURL();
+
+			loadMainClass(url);
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+	}
+
 	@Override
 	public void loadMainClass(URL[] url) {
 		try {
@@ -33,7 +43,7 @@ public class FkWrapper extends Wrapper {
 			for (i = 0; i < old.length; i++) {
 				neww[i] = old[i];
 			}
-			classLoader = new BCClassLoader(neww);
+			classLoader = new URLClassLoader(neww);
 			try {
 				for (Class<Addon> c : ogaddons) {
 					this.loadAddon((Addon) c.newInstance());
@@ -61,52 +71,27 @@ public class FkWrapper extends Wrapper {
 			gameFrame.setTitle(window_name);
 			gameFrame.setIconImage(this.icon);
 			gameFrame.setBackground(Color.BLACK);
-
-			// This is needed for the window size
-			panel = new JPanel();
-			panel.setLayout(new BorderLayout());
-			gameFrame.setLayout(new BorderLayout());
-
-			panel.setBackground(Color.BLACK);
-			panel.setPreferredSize(new Dimension(width, height)); // 854, 480
-
-			gameFrame.add(panel, "Center");
-			gameFrame.pack();
 			gameFrame.setLocationRelativeTo(null);
 			gameFrame.setVisible(true);
+
 			Applet a = (Applet) mainClassInstance;
 
 			a.setStub(this);
 			a.resize(width, height);
-			a.setMinimumSize(new Dimension(width, height));
-
-			gameFrame.addWindowListener(new WindowAdapter() {
-				@Override
-				public void windowClosing(final WindowEvent e) {
-					stop();
-					destroy();
-					gameFrame.setVisible(false);
-					gameFrame.dispose();
-					System.exit(0);
-				}
-			});
+			a.setSize(new Dimension(width, height));
 
 			// Add game's applet to this window
 			this.setLayout(new BorderLayout());
 			this.add(a, "Center");
 
-			gameFrame.removeAll();
 			gameFrame.setLayout(new BorderLayout());
 			gameFrame.add(this, "Center");
 			this.init();
 			active = true;
 			this.start();
-			Runtime.getRuntime().addShutdownHook(new Thread() {
-				@Override
-				public void run() {
-					FkWrapper.this.stop();
-				}
-			});
+
+			this.addHooks();
+
 			gameFrame.validate();
 
 			// Start Discord RPC

@@ -8,8 +8,6 @@ import java.awt.Frame;
 import java.awt.Image;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -21,6 +19,8 @@ import javax.swing.JPanel;
 import org.betacraft.launcher.Lang;
 import org.betacraft.launcher.Logger;
 import org.betacraft.launcher.OS;
+
+import net.arikia.dev.drpc.DiscordRPC;
 
 // Pretends to be MinecraftApplet
 public class Classic12aWrapper extends Wrapper {
@@ -45,63 +45,66 @@ public class Classic12aWrapper extends Wrapper {
 			gameFrame.setIconImage(this.icon);
 			gameFrame.setBackground(Color.BLACK);
 
-			// This is needed for the window size
-			panel = new JPanel();
-			panel.setLayout(new BorderLayout());
-			gameFrame.setLayout(new BorderLayout());
-			JLabel infolabel1 = new JLabel(Lang.WRAP_CLASSIC_RESIZE);
-			infolabel1.setBackground(Color.BLACK);
-			infolabel1.setForeground(Color.WHITE);
-			panel.add(infolabel1, BorderLayout.CENTER);
-			panel.setBackground(Color.BLACK);
-			panel.setPreferredSize(new Dimension(width, height));
+			if (this.resize_applet) {
+				// This is needed for the window size
+				panel = new JPanel();
+				panel.setLayout(new BorderLayout());
+				gameFrame.setLayout(new BorderLayout());
+				panel.setBackground(Color.BLACK);
+				panel.setPreferredSize(new Dimension(width, height));
 
-			panel.addMouseListener(new MouseListener() {
+				JLabel infolabel1 = new JLabel(Lang.WRAP_CLASSIC_RESIZE);
+				infolabel1.setBackground(Color.BLACK);
+				infolabel1.setForeground(Color.WHITE);
+				panel.add(infolabel1, BorderLayout.CENTER);
 
-				public void mouseClicked(MouseEvent e) {
-					gameFrame.removeAll();
-					gameFrame.setLayout(new BorderLayout());
-					gameFrame.add(Classic12aWrapper.this, "Center");
-					Classic12aWrapper.this.init();
-					active = true;
-					Classic12aWrapper.this.start();
-					Runtime.getRuntime().addShutdownHook(new Thread() {
-						@Override
-						public void run() {
-							Classic12aWrapper.this.stop();
-						}
-					});
-					gameFrame.validate();
-				}
+				gameFrame.add(panel, "Center");
+				gameFrame.pack();
 
-				public void mouseEntered(MouseEvent arg0) {}
-				public void mouseExited(MouseEvent arg0) {}
-				public void mousePressed(MouseEvent arg0) {}
-				public void mouseReleased(MouseEvent arg0) {}
+				panel.addMouseListener(new MouseListener() {
 
-			});
+					public void mouseClicked(MouseEvent e) {
+						gameFrame.removeAll();
+						gameFrame.setLayout(new BorderLayout());
+						gameFrame.add(Classic12aWrapper.this, "Center");
+						Classic12aWrapper.this.init();
+						active = true;
+						Classic12aWrapper.this.start();
 
-			gameFrame.add(panel, "Center");
-			gameFrame.pack();
+						gameFrame.validate();
+
+						// Start Discord RPC
+						if (discord) discordThread.start();
+					}
+
+					public void mouseEntered(MouseEvent arg0) {}
+					public void mouseExited(MouseEvent arg0) {}
+					public void mousePressed(MouseEvent arg0) {}
+					public void mouseReleased(MouseEvent arg0) {}
+
+				});
+			}
+
 			gameFrame.setLocationRelativeTo(null);
 			gameFrame.setVisible(true);
 
-			gameFrame.addWindowListener(new WindowAdapter() {
-				@Override
-				public void windowClosing(final WindowEvent e) {
-					stop();
-					destroy();
-					gameFrame.setVisible(false);
-					gameFrame.dispose();
-					System.exit(0);
-				}
-			});
-
 			// Add game's applet to this window
 			this.setLayout(new BorderLayout());
+			this.addHooks();
 
-			// Start Discord RPC
-			if (discord) discordThread.start();
+			if (!this.resize_applet) {
+				gameFrame.removeAll();
+				gameFrame.setLayout(new BorderLayout());
+				gameFrame.add(Classic12aWrapper.this, "Center");
+				Classic12aWrapper.this.init();
+				active = true;
+				Classic12aWrapper.this.start();
+
+				gameFrame.validate();
+
+				// Start Discord RPC
+				if (discord) discordThread.start();
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
@@ -134,6 +137,12 @@ public class Classic12aWrapper extends Wrapper {
 
 	@Override
 	public void stop() {
+		if (!active) {
+			return;
+		}
+		// Shutdown the RPC correctly
+		if (discord) DiscordRPC.discordShutdown();
+		active = false;
 		try {
 			for (final Field mcField : mainClass.getDeclaredFields()) {
 				String name = mcField.getType().getName();
@@ -164,6 +173,9 @@ public class Classic12aWrapper extends Wrapper {
 
 	@Override
 	public void destroy() {
+		if (!active) {
+			return;
+		}
 		this.stop();
 		try {
 			this.thread.join(5000L);

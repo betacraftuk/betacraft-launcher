@@ -3,11 +3,16 @@ package org.betacraft;
 import java.applet.Applet;
 import java.applet.AppletStub;
 import java.awt.BorderLayout;
+import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -22,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -46,7 +52,7 @@ public class Wrapper extends Applet implements AppletStub {
 	/** Version to be launched */
 	public String version;
 	/** Class loader for linking the game and libraries */
-	public BCClassLoader classLoader;
+	public URLClassLoader classLoader;
 	/** Minecraft's main class */
 	public Class mainClass;
 	/** Discord RPC */
@@ -68,6 +74,8 @@ public class Wrapper extends Applet implements AppletStub {
 	public int width = 854;
 	/** Preferred height of the game applet */
 	public int height = 480;
+	public boolean resize_applet = false;
+	public boolean ask_for_server = false;
 
 	public int portCompat = 80;
 	public String serverAddress = null;
@@ -140,6 +148,14 @@ public class Wrapper extends Applet implements AppletStub {
 			this.libraries_loaded = Boolean.parseBoolean(System.getProperty("betacraft.loaded_libraries"));
 		} catch (Throwable t) {}
 
+		try {
+			this.resize_applet = Boolean.parseBoolean(System.getProperty("betacraft.resize_applet"));
+		}  catch (Throwable t) {}
+
+		try {
+			this.ask_for_server = Boolean.parseBoolean(System.getProperty("betacraft.ask_for_server"));
+		}  catch (Throwable t) {}
+
 		if (this.discord) {
 			String applicationId = "567450523603566617";
 			DiscordEventHandlers handlers = new DiscordEventHandlers();
@@ -175,14 +191,6 @@ public class Wrapper extends Applet implements AppletStub {
 						e.printStackTrace();
 					}
 				}
-				/*String[] name = a1.split("\\.");
-				if (name[name.length - 2].equals(addon)) {
-					try {
-						loadAddon((Addon) classLoader.loadClass(name[name.length - 2]).newInstance());
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}*/
 			}
 		}
 		this.addons.add(a);
@@ -195,15 +203,15 @@ public class Wrapper extends Applet implements AppletStub {
 		return false;
 	}
 
-	public static class DiscordThread extends Thread {
+	public class DiscordThread extends Thread {
 
 		DiscordThread() {
 			super("RPC-Callback-Handler");
 		}
 
 		// Update the RPC
-		public synchronized void start() {
-			while (!Thread.currentThread().isInterrupted()) {
+		public void run() {
+			while (active) {
 				DiscordRPC.discordRunCallbacks();
 				try {
 					Thread.sleep(2000);
@@ -288,7 +296,7 @@ public class Wrapper extends Applet implements AppletStub {
 			for (i = 0; i < old.length; i++) {
 				neww[i] = old[i];
 			}
-			classLoader = new BCClassLoader(neww);
+			classLoader = new URLClassLoader(neww);
 			try {
 				for (Class<Addon> c : ogaddons) {
 					this.loadAddon((Addon) c.newInstance());
@@ -412,8 +420,8 @@ public class Wrapper extends Applet implements AppletStub {
 	}
 
 	public void play() {
+		if (this.ask_for_server) this.askForServer();
 		try {
-
 			this.loadJars();
 
 			// Replace the main game folder to .betacraft
@@ -426,39 +434,80 @@ public class Wrapper extends Applet implements AppletStub {
 			gameFrame.setIconImage(this.icon);
 			gameFrame.setBackground(Color.BLACK);
 
-			// This is needed for the window size
-			panel = new JPanel();
-			panel.setLayout(new BorderLayout());
-			gameFrame.setLayout(new BorderLayout());
-			panel.setBackground(Color.BLACK);
-			panel.setPreferredSize(new Dimension(width, height)); // 854, 480
+			Applet a = (Applet) mainClassInstance;
 
-			gameFrame.add(panel, "Center");
-			gameFrame.pack();
+			if (this.resize_applet) {
+				// This is needed for the window size
+				panel = new JPanel();
+				panel.setLayout(new BorderLayout());
+				gameFrame.setLayout(new BorderLayout());
+				panel.setBackground(Color.BLACK);
+				panel.setPreferredSize(new Dimension(width, height)); // 854, 480
+
+				JLabel infolabel1 = new JLabel(Lang.WRAP_CLASSIC_RESIZE);
+				infolabel1.setBackground(Color.BLACK);
+				infolabel1.setForeground(Color.WHITE);
+				panel.add(infolabel1, BorderLayout.CENTER);
+
+				gameFrame.add(panel, "Center");
+				gameFrame.pack();
+
+				panel.addMouseListener(new MouseListener() {
+
+					public void mouseClicked(MouseEvent e) {
+						width = panel.getWidth();
+						height = panel.getHeight();
+						a.resize(width, height);
+						a.setSize(new Dimension(width, height));
+						gameFrame.removeAll();
+						gameFrame.setLayout(new BorderLayout());
+						gameFrame.add(Wrapper.this, "Center");
+						Wrapper.this.init();
+						active = true;
+						Wrapper.this.start();
+
+						gameFrame.validate();
+
+						// Start Discord RPC
+						if (discord) discordThread.start();
+					}
+
+					public void mouseEntered(MouseEvent arg0) {}
+					public void mouseExited(MouseEvent arg0) {}
+					public void mousePressed(MouseEvent arg0) {}
+					public void mouseReleased(MouseEvent arg0) {}
+
+				});
+			}
+
+			
 			gameFrame.setLocationRelativeTo(null);
 			gameFrame.setVisible(true);
 
-			Applet a = (Applet) mainClassInstance;
 			a.setLayout(new BorderLayout());
 			a.setStub(this);
-			a.resize(width, height);
-			a.setMinimumSize(new Dimension(width, height));
-
-			this.addHooks();
 
 			// Add game's applet to this window
 			this.setLayout(new BorderLayout());
 			this.add(a, "Center");
-			gameFrame.removeAll();
-			gameFrame.setLayout(new BorderLayout());
-			gameFrame.add(Wrapper.this, "Center");
-			this.init();
-			active = true;
-			this.start();
-			gameFrame.validate();
+			this.addHooks();
 
-			// Start Discord RPC
-			if (discord) discordThread.start();
+			if (!this.resize_applet) {
+				a.resize(width, height);
+				a.setSize(new Dimension(width, height));
+
+				//gameFrame.removeAll();
+				//gameFrame.setLayout(new BorderLayout());
+				gameFrame.add(Wrapper.this, "Center");
+				Wrapper.this.init();
+				active = true;
+				Wrapper.this.start();
+
+				gameFrame.validate();
+
+				// Start Discord RPC
+				if (discord) discordThread.start();
+			}
 		} catch (Throwable ex) {
 			System.err.println("A critical error has occurred!");
 			ex.printStackTrace();
@@ -469,18 +518,11 @@ public class Wrapper extends Applet implements AppletStub {
 		gameFrame.addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(final WindowEvent e) {
-				stop();
+				//stop();
 				destroy();
 				gameFrame.setVisible(false);
 				gameFrame.dispose();
 				System.exit(0);
-			}
-		});
-
-		Runtime.getRuntime().addShutdownHook(new Thread() {
-			@Override
-			public void run() {
-				Wrapper.this.stop();
 			}
 		});
 	}
@@ -511,6 +553,9 @@ public class Wrapper extends Applet implements AppletStub {
 
 	@Override
 	public void stop() {
+		if (!active) {
+			return;
+		}
 		// Shutdown the RPC correctly
 		if (discord) DiscordRPC.discordShutdown();
 		active = false;
@@ -528,6 +573,9 @@ public class Wrapper extends Applet implements AppletStub {
 
 	@Override
 	public void destroy() {
+		if (!active) {
+			return;
+		}
 		if (mainClassInstance != null) {
 			try {
 				if (mainClassInstance instanceof Applet) {
@@ -558,7 +606,35 @@ public class Wrapper extends Applet implements AppletStub {
 	public void init() {
 		if (mainClassInstance != null) {
 			if (!this.addonsPreAppletInit(this.addons)) return;
+			//System.setProperty("user.home", mainFolder);
 			((Applet)mainClassInstance).init();
+
+			// Linux mouse fix, really ugly
+			if ("true".equalsIgnoreCase(System.getProperty("betacraft.linux_mousefix_earlyclassic"))) {
+				try {
+					for (final Field mcField : mainClass.getDeclaredFields()) {
+						String name = mcField.getType().getName();
+						if (name.contains("mojang")) {
+							final Class<?> clazz = classLoader.loadClass(name);
+							mcField.setAccessible(true);
+							Object mc = mcField.get(mainClassInstance);
+
+							for (final Field appletModeField : clazz.getDeclaredFields()) {
+								if (appletModeField.getType().getName().equalsIgnoreCase("boolean") && Modifier.isPublic(appletModeField.getModifiers())) {
+									appletModeField.setAccessible(true);
+									appletModeField.set(mc, false);
+									System.err.println("Linux mouse fix for early classic has been applied");
+									break;
+								}
+							}
+							break;
+						}
+					}
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+			}
+
 			if (!this.addonsPostAppletInit(this.addons)) return;
 		}
 	}
@@ -633,17 +709,5 @@ public class Wrapper extends Applet implements AppletStub {
 			return params.get(paramName);
 		}
 		return null;
-	}
-
-	public class BCClassLoader extends URLClassLoader {
-
-		public BCClassLoader(URL[] u) {
-			super(u);
-		}
-
-		@Override
-		public Class<?> loadClass(String name) throws ClassNotFoundException {
-			return super.loadClass(name);
-		}
 	}
 }

@@ -36,7 +36,7 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 
 	public static void loadMods() {
 		try {
-			final URL url = new URL("http://betacraft.pl/launcher/assets/mods/1.09_10/list.txt");
+			final URL url = new URL("http://files.betacraft.pl/launcher/assets/mods/1.09_10/list.txt");
 
 			InputStream onlineListStream = null;
 			try {
@@ -223,7 +223,7 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 		pane.setContentType("text/html;charset=UTF-8");
 		pane.addHyperlinkListener(WebsitePanel.EXTERNAL_HYPERLINK_LISTENER);
 		try {
-			pane.setPage(new URL("http://betacraft.pl/launcher/assets/mods/" + name + ".html"));
+			pane.setPage(new URL("http://files.betacraft.pl/launcher/assets/mods/" + name + ".html"));
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);

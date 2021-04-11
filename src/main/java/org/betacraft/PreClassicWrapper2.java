@@ -14,6 +14,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 
 import javax.swing.JLabel;
@@ -44,7 +45,7 @@ public class PreClassicWrapper2 extends Wrapper {
 			}
 
 			neww[neww.length-1] = new File(BC.get() + "launcher/", "PreClassic.jar").toURI().toURL();
-			classLoader = new BCClassLoader(neww);
+			classLoader = new URLClassLoader(neww);
 			try {
 				mainClass = classLoader.loadClass("com.mojang.rubydung.RubyDung");
 				this.launchType = "rd";

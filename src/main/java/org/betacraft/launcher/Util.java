@@ -348,21 +348,21 @@ public class Util {
 
 		try {
 			if (local_javaagent_sha1 == null || !local_javaagent_sha1.equals(json.agent_sha1) || force) {
-				DownloadResponse agent_req = new DownloadRequest("http://files.betacraft.pl/launcher/assets/macos-javaagent.jar", javaagent.toPath().toString(), json.agent_sha1, false).perform();
+				DownloadResponse agent_req = new DownloadRequest(json.agent_url, javaagent.toPath().toString(), json.agent_sha1, false).perform();
 				if (agent_req.result != DownloadResult.OK) {
 					Logger.a("Failed to download macos javaagent");
 					return false;
 				}
 			}
 			if (local_lwjgl_sha1 == null || !local_lwjgl_sha1.equals(json.lwjgl_sha1) || force) {
-				DownloadResponse lwjgl_req = new DownloadRequest("http://files.betacraft.pl/launcher/assets/macos-mousefix-lwjgl.jar", lwjgl.toPath().toString(), json.lwjgl_sha1, false).perform();
+				DownloadResponse lwjgl_req = new DownloadRequest(json.lwjgl_url, lwjgl.toPath().toString(), json.lwjgl_sha1, false).perform();
 				if (lwjgl_req.result != DownloadResult.OK) {
 					Logger.a("Failed to download macos-mousefix.zip");
 					return false;
 				}
 			}
 			if (local_javamod_sha1 == null || !local_javamod_sha1.equals(json.classes_sha1) || force) {
-				DownloadResponse classes_req = new DownloadRequest("http://files.betacraft.pl/launcher/assets/macos-mousefix.zip", classes_temp_zip.toPath().toString(), json.classes_sha1, false).perform();
+				DownloadResponse classes_req = new DownloadRequest(json.classes_url, classes_temp_zip.toPath().toString(), json.classes_sha1, false).perform();
 				if (classes_req.result != DownloadResult.OK) {
 					Logger.a("Failed to download macos-mousefix.zip");
 					return false;

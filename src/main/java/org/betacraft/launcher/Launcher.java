@@ -28,8 +28,6 @@ import javax.swing.UIManager;
 
 import org.betacraft.Classic12aWrapper;
 import org.betacraft.Classic15aWrapper;
-import org.betacraft.ClassicMPWrapper;
-import org.betacraft.ClassicWrapper;
 import org.betacraft.CommandLine;
 import org.betacraft.FkWrapper;
 import org.betacraft.Minecraft13w16a;
@@ -53,16 +51,16 @@ import pl.betacraft.json.lib.MouseFixMacOSJson;
 
 /** Main class */
 public class Launcher {
-	public static String VERSION = "1.09_13-pre1"; // TODO Always update this
+	public static String VERSION = "1.09_13-pre2"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
 	public static ArrayList<Thread> totalThreads = new ArrayList<>();
 	public static Authenticator auth;
-    public static Accounts accounts = new Accounts();
+	public static Accounts accounts = new Accounts();
 
 	public static void main(String[] args) {
-        System.out.println("Java version: " + System.getProperty("java.vendor") + ", " + System.getProperty("java.runtime.name") + ", " + System.getProperty("java.runtime.version"));
+		System.out.println("Java version: " + System.getProperty("java.vendor") + ", " + System.getProperty("java.runtime.name") + ", " + System.getProperty("java.runtime.version"));
 		long nano = System.nanoTime();
 		try {
 			// Fix for Java having a cross-platform look and feel
@@ -208,11 +206,11 @@ public class Launcher {
 				new Classic12aWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 			} else if (meth.equalsIgnoreCase("classic15a")) {
 				new Classic15aWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
-			} else if (meth.equalsIgnoreCase("classic")) {
-				new ClassicWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
-			} else if (meth.equalsIgnoreCase("classicmp")) {
-				new ClassicMPWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
-			} else if (meth.equalsIgnoreCase("indev")) {
+//			} else if (meth.equalsIgnoreCase("classic")) {
+//				new ClassicWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+//			} else if (meth.equalsIgnoreCase("classicmp")) {
+//				new ClassicMPWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+			} else if (meth.equalsIgnoreCase("indev") || meth.equalsIgnoreCase("classicmp") || meth.equalsIgnoreCase("classic")) {
 				new Wrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 			} else if (meth.equalsIgnoreCase("commandline")) {
 				new CommandLine(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
@@ -264,7 +262,7 @@ public class Launcher {
 		Logger.a("Nightly: " + BC.nightly);
 
 		Cert.download();
-        Cert.prepare();
+		Cert.prepare();
 
 		// Load language pack
 		Lang.refresh(false, false);
@@ -383,8 +381,17 @@ public class Launcher {
 		// Download Discord RPC if the checkbox is selected
 		if (Launcher.currentInstance.RPC) {
 			File rpc = new File(BC.get() + "launcher/", "discord_rpc.jar");
+			if (rpc.exists()) {
+				try {
+					String sha1 = Util.getSHA1(rpc);
+					String expected_hash = new CustomRequest("http://files.betacraft.pl/launcher/assets/discord_rpc.sha1").perform().response.replace("\n", "");
+					if (!sha1.equals(expected_hash)) {
+						Launcher.downloadWithButtonOutput("http://files.betacraft.pl/launcher/assets/discord_rpc.jar", rpc);
+					}
+				} catch (Throwable t) {}
+			}
 			if (!rpc.exists() || Launcher.forceUpdate) {
-				Launcher.downloadWithButtonOutput("http://betacraft.pl/launcher/assets/1.09_02/discord_rpc.jar", rpc);
+				Launcher.downloadWithButtonOutput("http://files.betacraft.pl/launcher/assets/discord_rpc.jar", rpc);
 			}
 		}
 
@@ -454,7 +461,7 @@ public class Launcher {
 				}
 
 				if (OS.ARCH.contains("x86")) {
-				    params.add("-Xss1M");
+					params.add("-Xss1M");
 				}
 
 				// Additional parameters:
@@ -482,12 +489,27 @@ public class Launcher {
 				}*/
 
 				// Let the user overwrite this argument - put it before the custom ones
-                params.add("-Djava.util.Arrays.useLegacyMergeSort=true");
+				params.add("-Djava.util.Arrays.useLegacyMergeSort=true");
 
-                // Required to fix the following on MacOS: Classic, Indev after 0129-2, Infdev and Alpha to 1.0.1
-                if (OS.isMac() && "true".equalsIgnoreCase(Release.getReleaseByName(instance.version).getInfo().getEntry("macos-mousefix"))) {
-                	params.add("-javaagent:" + BC.get() + "launcher/macos-javaagent.jar=" + BC.get());
-                }
+				VersionInfo info = Release.getReleaseByName(instance.version).getInfo();
+
+				// Required to fix the following on MacOS: Classic, Indev after 0129-2, Infdev and Alpha to 1.0.1
+				if (OS.isMac() && "true".equalsIgnoreCase(info.getEntry("macos-mousefix"))) {
+					params.add("-javaagent:" + BC.get() + "launcher/macos-javaagent.jar=" + BC.get());
+				}
+
+				if (OS.isLinux() && "true".equalsIgnoreCase(info.getEntry("linux-mousefix-earlyclassic"))) {
+					params.add("-Dbetacraft.linux_mousefix_earlyclassic=true");
+				}
+
+				// Classic and early Indev
+				if ("true".equalsIgnoreCase(info.getEntry("resize-applet"))) {
+					params.add("-Dbetacraft.resize_applet=true");
+				}
+
+				if (info.getProtocol() != null && "classicmp".equals(info.getLaunchMethod())) {
+					params.add("-Dbetacraft.ask_for_server=true");
+				}
 
 				// Add custom parameters from options
 				if (instance.launchArgs != null && !instance.launchArgs.equals("")) {
@@ -495,7 +517,7 @@ public class Launcher {
 				}
 
 				if (instance.proxy) {
-					String[] args = Release.getReleaseByName(instance.version).getInfo().getProxyArgs().split(" ");
+					String[] args = info.getProxyArgs().split(" ");
 					for (String s : args) {
 						if (s.equals("")) continue;
 						params.add(s);
@@ -594,7 +616,7 @@ public class Launcher {
 
 	public static void downloadAddons(String version) {
 		for (String s : Launcher.currentInstance.addons) {
-			if (!downloadWithButtonOutput("http://betacraft.pl/launcher/assets/addons/1.09_10/" + s + ".jar", new File(BC.get() + "launcher" + File.separator + "addons", s + ".jar")).isPositive()) {
+			if (!downloadWithButtonOutput("http://files.betacraft.pl/launcher/assets/addons/1.09_10/" + s + ".jar", new File(BC.get() + "launcher" + File.separator + "addons", s + ".jar")).isPositive()) {
 				JOptionPane.showMessageDialog(Window.mainWindow, "Couldn't download addon: " + s, "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
@@ -639,7 +661,7 @@ public class Launcher {
 			return false;
 		}
 		try {
-			URL url = new URL("http://betacraft.pl/launcher/assets/depends-version.txt");
+			URL url = new URL("http://files.betacraft.pl/launcher/assets/depends-version.txt");
 			Scanner s = new Scanner(url.openStream(), "UTF-8");
 			String libs = s.nextLine().split(":")[1];
 			String natives = s.nextLine().split(":")[1];
@@ -648,7 +670,7 @@ public class Launcher {
 			boolean lastNativesMatch = natives.equals(Util.getProperty(BC.SETTINGS, "natives-version"));
 
 			if (!lastLibsMatch || !lastNativesMatch) {
-			    return false;
+				return false;
 			}
 			return true;
 		} catch (Throwable t) {
@@ -664,44 +686,44 @@ public class Launcher {
 		File destLibs = new File(BC.get() + "bin" + File.separator);
 		File destNatives = new File(BC.get() + "bin" + File.separator + "natives" + File.separator);
 
-		String link1 = "http://betacraft.pl/launcher/assets/natives-windows.zip";
-		String link2 = "http://betacraft.pl/launcher/assets/libs-windows.zip";
+		String link1 = "http://files.betacraft.pl/launcher/assets/natives-windows.zip";
+		String link2 = "http://files.betacraft.pl/launcher/assets/libs-windows.zip";
 		if (OS.isLinux()) {
-			link2 = "http://betacraft.pl/launcher/assets/libs-linux.zip";
-			link1 = "http://betacraft.pl/launcher/assets/natives-linux.zip";
+			link2 = "http://files.betacraft.pl/launcher/assets/libs-linux.zip";
+			link1 = "http://files.betacraft.pl/launcher/assets/natives-linux.zip";
 		}
 		if (OS.isMac()) {
-			link2 = "http://betacraft.pl/launcher/assets/libs-osx.zip";
-			link1 = "http://betacraft.pl/launcher/assets/natives-osx.zip";
+			link2 = "http://files.betacraft.pl/launcher/assets/libs-osx.zip";
+			link1 = "http://files.betacraft.pl/launcher/assets/natives-osx.zip";
 		}
 
 		File dest1 = new File(BC.get() + "launcher/", "natives.zip");
 		if (!downloadWithButtonOutput(link1, dest1).isPositive()) {
-		    return false;
+			return false;
 		}
 
 		File dest2 = new File(BC.get() + "launcher/", "libs.zip");
 		if (!downloadWithButtonOutput(link2, dest2).isPositive()) {
-		    return false;
+			return false;
 		}
 
 		// Update the local memory with depends' version
-		CustomResponse res = new CustomRequest("http://betacraft.pl/launcher/assets/depends-version.txt").perform();
-        Scanner s = new Scanner(res.response);
-        String libs = s.nextLine().split(":")[1];
-        String natives = s.nextLine().split(":")[1];
-        s.close();
+		CustomResponse res = new CustomRequest("http://files.betacraft.pl/launcher/assets/depends-version.txt").perform();
+		Scanner s = new Scanner(res.response);
+		String libs = s.nextLine().split(":")[1];
+		String natives = s.nextLine().split(":")[1];
+		s.close();
 		Util.setProperty(BC.SETTINGS, "libs-version", libs);
-        Util.setProperty(BC.SETTINGS, "natives-version", natives);
+		Util.setProperty(BC.SETTINGS, "natives-version", natives);
 
-        // If everything went ok, delete the 'bin' folder contents
-        removeRecursively(destNatives, true, false);
-        removeRecursively(destLibs, false, false);
-        destNatives.mkdirs();
+		// If everything went ok, delete the 'bin' folder contents
+		removeRecursively(destNatives, true, false);
+		removeRecursively(destLibs, false, false);
+		destNatives.mkdirs();
 
-        // Lastly, schedule zips for extraction
-        totalThreads.add(Util.unzip(dest1, destNatives, true));
-        totalThreads.add(Util.unzip(dest2, destLibs, true));
+		// Lastly, schedule zips for extraction
+		totalThreads.add(Util.unzip(dest1, destNatives, true));
+		totalThreads.add(Util.unzip(dest2, destLibs, true));
 		return true;
 	}
 
@@ -726,9 +748,9 @@ public class Launcher {
 	}
 
 	public static DownloadResult downloadWithButtonOutput(String link, File folder) {
-	    SwingUtilities.invokeLater(() -> {
-	        Window.setStatus(Window.playButton, "Downloading: " + BC.trimBetaCraftDir(folder.toPath().toString()));
-	    });
+		SwingUtilities.invokeLater(() -> {
+			Window.setStatus(Window.playButton, "Downloading: " + BC.trimBetaCraftDir(folder.toPath().toString()));
+		});
 		return download(link, folder);
 	}
 
@@ -737,48 +759,48 @@ public class Launcher {
 
 		DownloadResponse response = new DownloadRequest(link, folder.toPath().toString(), null, true).perform();
 		return response.result;
-//		// Get a backup file that we will use to restore the file if the upload fails
-//		File backupfile = new File(BC.get() + "launcher" + File.separator + "backup.tmp");
-//		try {
-//			Logger.a("Destination: " + folder.toPath().toString());
-//			// If the file already exists, make a copy of it
-//			if (!folder.createNewFile()) {
-//				backupfile.createNewFile();
-//				Files.copy(folder.toPath(), backupfile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//			}
-//
-//			// Start download
-//			URL url = new URL(link);
-//			BufferedInputStream inputst = new BufferedInputStream(url.openStream());
-//			FileOutputStream outputst = new FileOutputStream(folder);
-//			byte[] buffer = new byte[1024];
-//			int count = 0;
-//			while((count = inputst.read(buffer, 0, 1024)) != -1) {
-//				outputst.write(buffer, 0, count);
-//			}
-//			outputst.close();
-//			inputst.close();
-//			backupfile.delete();
-//			return DownloadResult.OK;
-//		} catch (Exception ex) {
-//			Logger.a("A critical error has occurred while attempting to download a file from: " + link);
-//			ex.printStackTrace();
-//			Logger.printException(ex);
-//
-//			// Delete the failed download
-//			folder.delete();
-//
-//			// Restore the copy if existed
-//			if (backupfile.exists()) {
-//				try {
-//					Files.move(backupfile.toPath(), folder.toPath(), StandardCopyOption.REPLACE_EXISTING);
-//				} catch (IOException e) {}
-//
-//				// We had a backup, so we're returning this value
-//				return DownloadResult.FAILED_WITH_BACKUP;
-//			}
-//			return DownloadResult.FAILED_WITHOUT_BACKUP;
-//		}
+		//		// Get a backup file that we will use to restore the file if the upload fails
+		//		File backupfile = new File(BC.get() + "launcher" + File.separator + "backup.tmp");
+		//		try {
+		//			Logger.a("Destination: " + folder.toPath().toString());
+		//			// If the file already exists, make a copy of it
+		//			if (!folder.createNewFile()) {
+		//				backupfile.createNewFile();
+		//				Files.copy(folder.toPath(), backupfile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		//			}
+		//
+		//			// Start download
+		//			URL url = new URL(link);
+		//			BufferedInputStream inputst = new BufferedInputStream(url.openStream());
+		//			FileOutputStream outputst = new FileOutputStream(folder);
+		//			byte[] buffer = new byte[1024];
+		//			int count = 0;
+		//			while((count = inputst.read(buffer, 0, 1024)) != -1) {
+		//				outputst.write(buffer, 0, count);
+		//			}
+		//			outputst.close();
+		//			inputst.close();
+		//			backupfile.delete();
+		//			return DownloadResult.OK;
+		//		} catch (Exception ex) {
+		//			Logger.a("A critical error has occurred while attempting to download a file from: " + link);
+		//			ex.printStackTrace();
+		//			Logger.printException(ex);
+		//
+		//			// Delete the failed download
+		//			folder.delete();
+		//
+		//			// Restore the copy if existed
+		//			if (backupfile.exists()) {
+		//				try {
+		//					Files.move(backupfile.toPath(), folder.toPath(), StandardCopyOption.REPLACE_EXISTING);
+		//				} catch (IOException e) {}
+		//
+		//				// We had a backup, so we're returning this value
+		//				return DownloadResult.FAILED_WITH_BACKUP;
+		//			}
+		//			return DownloadResult.FAILED_WITHOUT_BACKUP;
+		//		}
 	}
 
 	public static void downloadUpdate(boolean release) {
@@ -816,8 +838,8 @@ public class Launcher {
 					ending = "-portable" + ending;
 				}
 
-				String url = "http://betacraft.pl/launcher/launcher-" + update_name + ending;
-				if (!release) url = "http://betacraft.pl/launcher/launcher-" + update_name + ending;
+				String url = "http://files.betacraft.pl/launcher/launcher-" + update_name + ending;
+				if (!release) url = "http://files.betacraft.pl/launcher/launcher-" + update_name + ending;
 
 				// Download the update
 				download(url, new File(BC.get(), "betacraft.jar$tmp"));
@@ -855,8 +877,8 @@ public class Launcher {
 
 	public static String getUpdate(boolean release) {
 		try {
-			String Url = "http://betacraft.pl/launcher/rel.txt";
-			if (!release) Url = "http://betacraft.pl/launcher/pre.txt";
+			String Url = "http://files.betacraft.pl/launcher/rel.txt";
+			if (!release) Url = "http://files.betacraft.pl/launcher/pre.txt";
 			URL url = new URL(Url);
 			Scanner s = new Scanner(url.openStream(), "UTF-8");
 			String update = s.nextLine().split(":")[1];
@@ -876,28 +898,28 @@ public class Launcher {
 	}
 
 	public static String getNickname() {
-        Credentials c = auth.getCredentials();
-        if (c != null) {
-            String name = c.username;
-            if (name != null && name.length() > 0) {
-                return name;
-            }
-        }
-        return "";
-    }
+		Credentials c = auth.getCredentials();
+		if (c != null) {
+			String name = c.username;
+			if (name != null && name.length() > 0) {
+				return name;
+			}
+		}
+		return "";
+	}
 
-    public static String getAuthToken() {
-        Credentials c = auth.getCredentials();
-        if (c != null) {
-            String token = c.access_token;
-            if (token != null && token.length() > 0) {
-                return token;
-            }
-        }
-        return "-";
-    }
+	public static String getAuthToken() {
+		Credentials c = auth.getCredentials();
+		if (c != null) {
+			String token = c.access_token;
+			if (token != null && token.length() > 0) {
+				return token;
+			}
+		}
+		return "-";
+	}
 
-    public static void clearCookies() {
-        java.net.CookieHandler.setDefault(new java.net.CookieManager());
-    }
+	public static void clearCookies() {
+		java.net.CookieHandler.setDefault(new java.net.CookieManager());
+	}
 }

@@ -216,6 +216,7 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 		else loginButton.setText(Lang.LOGOUT_BUTTON);
 		playButton.setText(Lang.WINDOW_PLAY);
 		selectVersionButton.setText(Lang.WINDOW_SELECT_VERSION);
+		settingsButton.setText(Lang.WINDOW_OPTIONS);
 		langButton.setText(Lang.WINDOW_LANGUAGE);
 		tabchangelog.setText(Lang.TAB_CHANGELOG);
 		tabinstances.setText(Lang.TAB_INSTANCES);

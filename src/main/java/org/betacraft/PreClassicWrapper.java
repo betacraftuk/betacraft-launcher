@@ -1,9 +1,9 @@
 package org.betacraft;
 
 import java.awt.Image;
-import java.io.File;
 import java.lang.Thread.State;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 
 import org.betacraft.launcher.Logger;
@@ -31,7 +31,7 @@ public class PreClassicWrapper extends Wrapper {
 				neww[i] = old[i];
 			}
 
-			classLoader = new BCClassLoader(neww);
+			classLoader = new URLClassLoader(neww);
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);

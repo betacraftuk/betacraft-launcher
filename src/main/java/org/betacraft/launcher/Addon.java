@@ -38,7 +38,7 @@ public class Addon {
 		pane.setContentType("text/html;charset=UTF-8");
 		pane.addHyperlinkListener(WebsitePanel.EXTERNAL_HYPERLINK_LISTENER);
 		try {
-			pane.setPage(new URL("http://betacraft.pl/launcher/assets/addons/" + this.name + ".html"));
+			pane.setPage(new URL("http://files.betacraft.pl/launcher/assets/addons/" + this.name + ".html"));
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
@@ -61,7 +61,7 @@ public class Addon {
 				}
 			});
 
-			final URL url = new URL("http://betacraft.pl/launcher/assets/addons/1.09_10/list.txt");
+			final URL url = new URL("http://files.betacraft.pl/launcher/assets/addons/1.09_10/list.txt");
 
 			InputStream onlineListStream = null;
 			try {
