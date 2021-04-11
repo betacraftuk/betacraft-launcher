@@ -11,6 +11,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 
+import javax.swing.JPanel;
+
 import org.betacraft.launcher.BC;
 import org.betacraft.launcher.Logger;
 
@@ -71,6 +73,16 @@ public class FkWrapper extends Wrapper {
 			gameFrame.setTitle(window_name);
 			gameFrame.setIconImage(this.icon);
 			gameFrame.setBackground(Color.BLACK);
+
+			// This is needed for the window size
+			panel = new JPanel();
+			panel.setLayout(new BorderLayout());
+			gameFrame.setLayout(new BorderLayout());
+			panel.setBackground(Color.BLACK);
+			panel.setPreferredSize(new Dimension(width, height)); // 854, 480
+
+			gameFrame.add(panel, "Center");
+			gameFrame.pack();
 			gameFrame.setLocationRelativeTo(null);
 			gameFrame.setVisible(true);
 
@@ -84,6 +96,7 @@ public class FkWrapper extends Wrapper {
 			this.setLayout(new BorderLayout());
 			this.add(a, "Center");
 
+			gameFrame.removeAll();
 			gameFrame.setLayout(new BorderLayout());
 			gameFrame.add(this, "Center");
 			this.init();

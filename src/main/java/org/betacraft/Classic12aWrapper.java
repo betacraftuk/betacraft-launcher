@@ -45,21 +45,19 @@ public class Classic12aWrapper extends Wrapper {
 			gameFrame.setIconImage(this.icon);
 			gameFrame.setBackground(Color.BLACK);
 
+			// This is needed for the window size
+			panel = new JPanel();
+			panel.setLayout(new BorderLayout());
+			gameFrame.setLayout(new BorderLayout());
+			panel.setBackground(Color.BLACK);
+			panel.setPreferredSize(new Dimension(width, height));
+
 			if (this.resize_applet) {
-				// This is needed for the window size
-				panel = new JPanel();
-				panel.setLayout(new BorderLayout());
-				gameFrame.setLayout(new BorderLayout());
-				panel.setBackground(Color.BLACK);
-				panel.setPreferredSize(new Dimension(width, height));
 
 				JLabel infolabel1 = new JLabel(Lang.WRAP_CLASSIC_RESIZE);
 				infolabel1.setBackground(Color.BLACK);
 				infolabel1.setForeground(Color.WHITE);
 				panel.add(infolabel1, BorderLayout.CENTER);
-
-				gameFrame.add(panel, "Center");
-				gameFrame.pack();
 
 				panel.addMouseListener(new MouseListener() {
 
@@ -85,6 +83,8 @@ public class Classic12aWrapper extends Wrapper {
 				});
 			}
 
+			gameFrame.add(panel, "Center");
+			gameFrame.pack();
 			gameFrame.setLocationRelativeTo(null);
 			gameFrame.setVisible(true);
 
