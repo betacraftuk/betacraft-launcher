@@ -3,14 +3,11 @@ package org.betacraft;
 import java.applet.Applet;
 import java.applet.AppletStub;
 import java.awt.BorderLayout;
-import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
@@ -708,5 +705,12 @@ public class Wrapper extends Applet implements AppletStub {
 			return params.get(paramName);
 		}
 		return null;
+	}
+
+	// Backwards compatibility, eh
+	public class BCClassLoader extends URLClassLoader {
+		public BCClassLoader(URL[] urls) {
+			super(urls);
+		}
 	}
 }

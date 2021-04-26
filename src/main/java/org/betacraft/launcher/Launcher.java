@@ -51,7 +51,7 @@ import pl.betacraft.json.lib.MouseFixMacOSJson;
 
 /** Main class */
 public class Launcher {
-	public static String VERSION = "1.09_13-pre2"; // TODO Always update this
+	public static String VERSION = "1.09_13-pre3"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
@@ -60,7 +60,7 @@ public class Launcher {
 	public static Accounts accounts = new Accounts();
 
 	public static void main(String[] args) {
-		System.out.println("Java version: " + System.getProperty("java.vendor") + ", " + System.getProperty("java.runtime.name") + ", " + System.getProperty("java.runtime.version"));
+		System.err.println("Java version: " + System.getProperty("java.vendor") + ", " + System.getProperty("java.runtime.name") + ", " + System.getProperty("java.runtime.version"));
 		long nano = System.nanoTime();
 		try {
 			// Fix for Java having a cross-platform look and feel
@@ -509,6 +509,11 @@ public class Launcher {
 
 				if (info.getProtocol() != null && "classicmp".equals(info.getLaunchMethod())) {
 					params.add("-Dbetacraft.ask_for_server=true");
+				}
+
+				if (OS.isMac()) {
+					params.add("-Xdock:name=" + instance.name);
+					params.add("-Xdock:icon=" + instance.getIconLocation());
 				}
 
 				// Add custom parameters from options

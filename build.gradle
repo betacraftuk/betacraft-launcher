@@ -23,6 +23,44 @@ jar {
 	}
 }
 
+task osxBuildApp {
+	dependsOn jar
+
+	doLast {
+		def dist = "${buildDir}/app/BetaCraft Launcher.app"
+		mkdir("$dist/Contents/MacOS")
+		mkdir("$dist/Contents/Resources")
+		copy {
+			from "${buildDir}/../src/main/app/Info.plist"
+			into "$dist/Contents"
+		}
+		copy {
+			from "${buildDir}/../src/main/app/PkgInfo"
+			into "$dist/Contents"
+		}
+		copy {
+			from "${buildDir}/../src/main/app/BetaCraft Launcher"
+			into "$dist/Contents/MacOS"
+		}
+		copy {
+			from "${buildDir}/../src/main/app/icon.icns"
+			into "$dist/Contents/Resources"
+		}
+		copy {
+			from "${buildDir}/libs/${project.name}.jar"
+			into "$dist/Contents/MacOS"
+		}
+		exec {
+			commandLine('rm', "${buildDir}/libs/BetaCraft-Launcher-macOS.zip")
+			commandLine("chmod", "+x", "$dist/Contents/MacOS/BetaCraft Launcher")
+			workingDir "${buildDir}/app/"
+			commandLine('zip', '-rvX', "../libs/BetaCraft-Launcher-macOS.zip", '.')
+		}
+	}
+}
+
+build.dependsOn osxBuildApp
+
 configurations {
 	extraLibs
 }

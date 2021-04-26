@@ -1,6 +1,7 @@
 package org.betacraft.launcher;
 
 import java.awt.Image;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -143,6 +144,16 @@ public class Instance {
 		cloned.gameDir = this.gameDir;
 		cloned.version = this.version;
 		return cloned;
+	}
+
+	public String getIconLocation() throws IOException {
+		File imgFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".png");
+		File defaultImg = new File(BC.get() + "launcher" + File.separator + "default_icon.png");
+		if (!imgFile.exists()) {
+			Files.copy(this.getClass().getClassLoader().getResourceAsStream("icons/favicon.png"), defaultImg.toPath(), StandardCopyOption.REPLACE_EXISTING);
+			return defaultImg.toPath().toString();
+		}
+		return imgFile.toPath().toString();
 	}
 
 	public Image getIcon() {

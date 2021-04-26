@@ -10,6 +10,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
@@ -162,7 +163,12 @@ public class Classic12aWrapper extends Wrapper {
 							runningField.set(run, false);
 						}
 					}
-					clazz.getDeclaredMethod("stop", null).invoke(run);
+					Method real12a = clazz.getDeclaredMethod("a", null);
+					if (real12a == null) {
+						// 12a-dev
+						real12a = clazz.getDeclaredMethod("stop", null);
+					}
+					real12a.invoke(run);
 				}
 			}
 		} catch (Exception ex) {
@@ -186,7 +192,12 @@ public class Classic12aWrapper extends Wrapper {
 					if (name.contains("mojang")) {
 						final Class<?> clazz = classLoader.loadClass(name);
 						mcField.setAccessible(true);
-						clazz.getDeclaredMethod("destroy", null).invoke(run);
+						Method real12a = clazz.getDeclaredMethod("a", null);
+						if (real12a == null) {
+							// 12a-dev
+							real12a = clazz.getDeclaredMethod("destroy", null);
+						}
+						real12a.invoke(run);
 					}
 				}
 			}
@@ -201,6 +212,14 @@ public class Classic12aWrapper extends Wrapper {
 
 	public void setResolution(Runnable run, Canvas canvas, Class<?> clazz) {
 		try {
+			for (Field widthHeightField : clazz.getDeclaredFields()) {
+				if (widthHeightField.getName().equals("a")) {
+					widthHeightField.set(run, panel.getWidth());
+				}
+				if (widthHeightField.getName().equals("b")) {
+					widthHeightField.set(run, panel.getHeight());
+				}
+			}
 			for (final Field appletModeField : clazz.getDeclaredFields()) {
 				if (appletModeField.getType().getName().equalsIgnoreCase("boolean") && Modifier.isPublic(appletModeField.getModifiers())) {
 					appletModeField.setAccessible(true);
