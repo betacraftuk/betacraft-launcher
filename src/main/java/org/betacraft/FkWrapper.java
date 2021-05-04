@@ -65,6 +65,7 @@ public class FkWrapper extends Wrapper {
 
 	@Override
 	public void play() {
+		if (this.ask_for_server) this.askForServer();
 		try {
 			this.loadJars();
 

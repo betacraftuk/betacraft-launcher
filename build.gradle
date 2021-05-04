@@ -1,8 +1,5 @@
 apply plugin: 'java'
 
-compileJava.options.fork = true
-compileJava.options.forkOptions.executable = '/opt/jdk1.8.0_05/bin/javac'
-
 repositories {
 	mavenCentral()
 	flatDir {
@@ -51,10 +48,8 @@ task osxBuildApp {
 			into "$dist/Contents/MacOS"
 		}
 		exec {
-			commandLine('rm', "${buildDir}/libs/BetaCraft-Launcher-macOS.zip")
-			commandLine("chmod", "+x", "$dist/Contents/MacOS/BetaCraft Launcher")
 			workingDir "${buildDir}/app/"
-			commandLine('zip', '-rvX', "../libs/BetaCraft-Launcher-macOS.zip", '.')
+			commandLine('zip', '-rvFSX', "../libs/BetaCraft-Launcher-macOS.zip", '.')
 		}
 	}
 }
