@@ -54,8 +54,6 @@ task osxBuildApp {
 	}
 }
 
-build.dependsOn osxBuildApp
-
 configurations {
 	extraLibs
 }
