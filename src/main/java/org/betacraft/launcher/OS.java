@@ -3,6 +3,7 @@ package org.betacraft.launcher;
 public class OS {
 	public static String OS = System.getProperty("os.name").toLowerCase();
 	public static String ARCH = System.getProperty("os.arch");
+	public static String VER = System.getProperty("os.version").toLowerCase();
 
 	public static boolean isWindows() {
 		return (OS.indexOf("win") >= 0);

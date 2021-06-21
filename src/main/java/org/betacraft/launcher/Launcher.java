@@ -37,8 +37,6 @@ import org.betacraft.Wrapper;
 import org.betacraft.WrapperDetector;
 import org.betacraft.launcher.Release.VersionInfo;
 import org.betacraft.launcher.Window.Tab;
-import org.betacraft.launcher.themes.LinuxThemeSetter;
-import org.betacraft.launcher.themes.WindowsThemeSetter;
 
 import pl.betacraft.auth.Accounts;
 import pl.betacraft.auth.Authenticator;
@@ -51,7 +49,7 @@ import pl.betacraft.json.lib.MouseFixMacOSJson;
 
 /** Main class */
 public class Launcher {
-	public static String VERSION = "1.09_13-pre3"; // TODO Always update this
+	public static String VERSION = "1.09_13-pre4"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
@@ -59,20 +57,35 @@ public class Launcher {
 	public static Authenticator auth;
 	public static Accounts accounts = new Accounts();
 
+	public static String JAVA_HOME = System.getProperty("java.home");
+
 	public static void main(String[] args) {
-		System.err.println("Java version: " + System.getProperty("java.vendor") + ", " + System.getProperty("java.runtime.name") + ", " + System.getProperty("java.runtime.version"));
+		String javaver = System.getProperty("java.runtime.version");
+		String javadistro = System.getProperty("java.vendor");
+		System.err.println("Java version: " + javadistro + ", " + System.getProperty("java.runtime.name") + ", " + javaver);
+		System.err.println("System: " + OS.OS + ", " + OS.VER + ", " + OS.ARCH);
 		long nano = System.nanoTime();
-		try {
-			// Fix for Java having a cross-platform look and feel
-			if (OS.isWindows()) WindowsThemeSetter.setWindowsLook();
-			else if (OS.isLinux()) LinuxThemeSetter.setLinuxLook();
-		} catch (Exception ex) {
-			// why
+
+		lookandfeel: {
+			if (OS.VER.contains("arch") || OS.VER.contains("manjaro")) {
+				if (javaver != null && javaver.startsWith("16") &&
+						javadistro != null && !javadistro.toLowerCase().contains("azul")) {
+					// afaik, only azul's java 16 isn't broken on arch
+					break lookandfeel;
+				}
+			}
 			try {
-				UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-			} catch (Exception ex1) {
-				ex1.printStackTrace();
-				Logger.printException(ex1);
+				// Fix for Java having a cross-platform look and feel
+				if (OS.isWindows()) UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+				else if (OS.isLinux()) UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+			} catch (Exception ex) {
+				// why
+				try {
+					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+				} catch (Exception ex1) {
+					ex1.printStackTrace();
+					Logger.printException(ex1);
+				}
 			}
 		}
 
@@ -345,7 +358,7 @@ public class Launcher {
 	public static void restart() {
 		try {
 			ArrayList<String> params = new ArrayList<String>();
-			params.add("java");
+			params.add(new File(JAVA_HOME, "bin/java" + (OS.isWindows() ? ".exe" : "")).toPath().toString());
 			params.add("-jar");
 			params.add(BC.currentPath.toPath().toString());
 			ProcessBuilder builder = new ProcessBuilder(params);
@@ -450,14 +463,13 @@ public class Launcher {
 				}
 				ArrayList<String> params = new ArrayList<String>();
 
+				params.add(new File(JAVA_HOME, "bin/java" + (OS.isWindows() ? ".exe" : "")).toPath().toString());
+
 				// The colon in the launch arguments is different for Windows
 				String colon = ":";
 				if (OS.isWindows()) {
-					// Does it even show the console with "java"?
-					params.add("javaw");
 					colon = ";";
-				} else {
-					params.add("java");
+					params.add("-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump");
 				}
 
 				if (OS.ARCH.contains("x86")) {

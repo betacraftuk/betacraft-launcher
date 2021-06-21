@@ -41,7 +41,7 @@ public class MicrosoftAuth implements Authenticator {
 
 	public void showPrompt() {
 		if (!Util.hasJFX()) {
-			JOptionPane.showMessageDialog(Window.mainWindow, Lang.LOGIN_MICROSOFT_NO_JFX_CONTENT, Lang.LOGIN_MICROSOFT_NO_JFX_TITLE, JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(Window.mainWindow, Lang.LOGIN_MICROSOFT_NO_JFX_CONTENT.replace("\\n", "\n"), Lang.LOGIN_MICROSOFT_NO_JFX_TITLE, JOptionPane.ERROR_MESSAGE);
 			Logger.a("No JFX detected!");
 		}
 		this.prompt = new MSPrompt(this);

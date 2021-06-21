@@ -333,7 +333,7 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String LOGIN_MICROSOFT_NO_XBOX = "No Xbox account registered";
 	public static String LOGIN_MICROSOFT_NO_MINECRAFT = "You don't own Minecraft on this account.";
 	public static String LOGIN_MICROSOFT_NO_JFX_TITLE = "No JFX detected.";
-	public static String LOGIN_MICROSOFT_NO_JFX_CONTENT = "You need to additionally install JavaFX in order to login with Microsoft.\nAlternatively, you can install JRE 8 from: https://java.com";
+	public static String LOGIN_MICROSOFT_NO_JFX_CONTENT = "You need to additionally install JavaFX in order to login with Microsoft.\nIt's recommended to install JRE 8 from: https://java.com";
 
 	public static String LOGIN_FAILED = "Failed to log in";
 	public static String LOGIN_FAILED_INVALID_CREDENTIALS = "Invalid e-mail or password.";
