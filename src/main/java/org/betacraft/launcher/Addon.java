@@ -1,6 +1,5 @@
 package org.betacraft.launcher;
 
-import java.awt.Color;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.InputStream;
@@ -9,24 +8,26 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
 import javax.swing.JEditorPane;
-import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
-import javax.swing.border.MatteBorder;
 
 public class Addon {
+	public static String addonVer = "1.09_13";
 	public String name;
+	public String onlinehash;
 	public boolean online;
 	public JScrollPane info;
 
 	// When you click on "Show info" button, you get a new window popping,
 	// with just the page embed about the addon. Same for mods. TODO
 
-	public Addon(String name, boolean online) {
+	public Addon(String name, String hash, boolean online) {
 		this.name = name;
+		this.onlinehash = hash;
 		this.online = online;
 		this.info = getInfo();
 	}
@@ -38,7 +39,7 @@ public class Addon {
 		pane.setContentType("text/html;charset=UTF-8");
 		pane.addHyperlinkListener(WebsitePanel.EXTERNAL_HYPERLINK_LISTENER);
 		try {
-			pane.setPage(new URL("http://files.betacraft.pl/launcher/assets/addons/" + this.name + ".html"));
+			pane.setPage(new URL("http://files.betacraft.pl/launcher/assets/addons/" + addonVer + "/" + this.name + ".html"));
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
@@ -50,7 +51,7 @@ public class Addon {
 		return scrlPane;
 	}
 
-	public static ArrayList<Addon> addons = new ArrayList<Addon>();
+	public static HashMap<String, Addon> addons = new HashMap<String, Addon>();
 
 	public static void loadAddons() {
 		try {
@@ -61,7 +62,7 @@ public class Addon {
 				}
 			});
 
-			final URL url = new URL("http://files.betacraft.pl/launcher/assets/addons/1.09_10/list.txt");
+			final URL url = new URL("http://files.betacraft.pl/launcher/assets/addons/" + addonVer + "/list.txt");
 
 			InputStream onlineListStream = null;
 			try {
@@ -83,7 +84,8 @@ public class Addon {
 			// If connection failed, load the offline list
 			if (onlineListStream == null) {
 				for (String s : offlineAddons) {
-					addons.add(new Addon(s.substring(0, s.length() -4), false));
+					String name = s.substring(0, s.length() -4);
+					addons.put(name, new Addon(name, null, false));
 				}
 				return;
 			}
@@ -91,12 +93,16 @@ public class Addon {
 			// Scan the offline list for online duplicates,
 			Scanner onlineListScanner = new Scanner(onlineListStream, "UTF-8");
 			for (String ver : scan(onlineListScanner)) {
+				if (ver == null) continue;
+				String[] split = ver.split("`");
+				String addonname = split[0];
+				String addonhash = split[1];
 
 				for (int i = 0; i < offlineAddons.length; i++) {
-					if (offlineAddons[i] != null && ver != null) {
+					if (offlineAddons[i] != null) {
 						// From x.class to x
 						// If the addon from offline list matches the addon from online list 
-						if (offlineAddons[i].substring(0, offlineAddons[i].length() -4).equals(ver)) {
+						if (offlineAddons[i].substring(0, offlineAddons[i].length() -4).equals(addonname)) {
 							// ... Then remove it from the offline addons list
 							// Otherwise it would appear doubled in the list
 							offlineAddons[i] = null;
@@ -105,14 +111,15 @@ public class Addon {
 				}
 
 				// Add the online addon to the addons list
-				addons.add(new Addon(ver, true));
+				addons.put(addonname, new Addon(addonname, addonhash, true));
 			}
 
 			// Add offline addons to the addons list
 			for (int i = 0; i < offlineAddons.length; i++) {
 				// Skip previously removed duplicates
 				if (offlineAddons[i] == null) continue;
-				addons.add(new Addon(offlineAddons[i].substring(0, offlineAddons[i].length() -4), false));
+				String name = offlineAddons[i].substring(0, offlineAddons[i].length() -4);
+				addons.put(name, new Addon(name, null, false));
 			}
 
 			// Close the connection

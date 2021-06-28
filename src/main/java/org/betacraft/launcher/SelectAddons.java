@@ -7,13 +7,14 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -22,7 +23,6 @@ import org.betacraft.launcher.VersionSorter.Order;
 public class SelectAddons extends JFrame implements ActionListener, LanguageElement {
 
 	static JScrollPane listScroller;
-	static JButton more_button;
 	static JButton OK;
 	static Order order = Order.FROM_OLDEST;
 	static JPanel panel;
@@ -47,7 +47,6 @@ public class SelectAddons extends JFrame implements ActionListener, LanguageElem
 
 	public void update() {
 		this.setTitle(Lang.ADDON_LIST_TITLE);
-		more_button.setText(Lang.ADDON_SHOW_INFO);
 		OK.setText(Lang.OPTIONS_OK);
 		this.pack();
 	}
@@ -66,12 +65,6 @@ public class SelectAddons extends JFrame implements ActionListener, LanguageElem
 		constr.gridwidth = GridBagConstraints.RELATIVE;
 		constr.weightx = 1.0;
 
-		more_button = new JButton(Lang.ADDON_SHOW_INFO);
-		more_button.addActionListener(this);
-
-		panel.add(more_button, constr);
-		this.add(panel, BorderLayout.NORTH);
-
 		panel = new JPanel();
 		panel.setLayout(new GridBagLayout());
 		constr.gridy = 2;
@@ -86,62 +79,65 @@ public class SelectAddons extends JFrame implements ActionListener, LanguageElem
 
 		panel = new JPanel();
 		panel.setLayout(new GridBagLayout());
-		//constr.fill = GridBagConstraints.HORIZONTAL;
-		//constr.insets = new Insets(5, 5, 0, 5);
-		//constr.gridwidth = 1;
-		//constr.gridheight = 1;
-		//constr.weightx = 0.0;
-		//constr.gridx = 1;
-		//if (addoninfo) {
-		//JScrollPane pane = new JScrollPane();
-		//pane.setPreferredSize(new Dimension(100, 100));
-		//panel.add(pane, constr);
-		//}
-		//this.add(panel, BorderLayout.CENTER);
 	}
 
 	protected void updateList() {
 		checkboxes.clear();
 		JPanel listpanel = new JPanel();
 		listpanel.setLayout(new GridBagLayout());
-		listpanel.setMaximumSize(new Dimension(282, 300));
+		//listpanel.setMaximumSize(new Dimension(282, 300));
 
 		GridBagConstraints constr1 = new GridBagConstraints();
 
 		constr1.gridx = 0;
 		constr1.gridy = 0;
 		constr1.fill = GridBagConstraints.HORIZONTAL;
-		constr1.weightx = 1.0;
-		//constr1.insets = new Insets(10, 10, 0, 10);
-		for (Addon item : Addon.addons) {
-			JCheckBox checkbox = new JCheckBox(item.name);
+		constr1.weightx = 0.0;
+		constr1.insets = new Insets(5, 5, 0, 5);
+
+		for (Addon item : Addon.addons.values()) {
+			JCheckBox checkbox = new JCheckBox();
 			for (String addon : Launcher.currentInstance.addons) {
 				if (addon.equals(item.name)) checkbox.setSelected(true);
 			}
 
-			listpanel.add(checkbox, constr1);
-			checkbox.addFocusListener(new FocusListener() {
+			JLabel label = new JLabel(item.name);
+			label.addMouseListener(new MouseListener() {
 
-				@Override
-				public void focusGained(FocusEvent arg0) {
-					lastFocus = (JCheckBox) arg0.getSource();
+				public void mousePressed(MouseEvent e) {
+					String name = ((JLabel)e.getSource()).getText();
+					Addon a = Addon.addons.get(name);
+					new BrowserWindow(a.getInfo());
 				}
-				public void focusLost(FocusEvent arg0) {}
+
+				public void mouseClicked(MouseEvent e) {}
+				public void mouseReleased(MouseEvent e) {}
+				public void mouseEntered(MouseEvent e) {}
+				public void mouseExited(MouseEvent e) {}
 
 			});
+
+			listpanel.add(checkbox, constr1);
+			constr1.gridx = 1;
+			constr1.weightx = 1.0;
+			listpanel.add(label, constr1);
+			constr1.gridx = 0;
+			constr1.weightx = 0.0;
+
 			checkboxes.add(checkbox);
 			constr1.gridy++;
 		}
-		//listpanel.validate();
 
 		constr.weighty = 1.0;
 		constr.gridheight = GridBagConstraints.RELATIVE;
 		constr.gridy = 1;
+		constr.insets = new Insets(5, 5, 5, 5);
 
 		if (listScroller != null) panel.remove(listScroller);
 
 		listScroller = new JScrollPane(listpanel);
 		listScroller.setWheelScrollingEnabled(true);
+		listScroller.getVerticalScrollBar().setUnitIncrement(10);
 		panel.add(listScroller, constr);
 	}
 
@@ -158,20 +154,11 @@ public class SelectAddons extends JFrame implements ActionListener, LanguageElem
 		Launcher.currentInstance.saveInstance();
 	}
 
-	JCheckBox lastFocus = null;
-
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == OK) {
 			saveAddons();
 			Window.addonsList = null;
-		} else if (e.getSource() == more_button) {
-			if (lastFocus == null) return;
-			for (Addon a : Addon.addons) {
-				if (a.name.equals(lastFocus.getText())) {
-					new BrowserWindow(a.getInfo());
-				}
-			}
 		}
 	}
 }

@@ -49,7 +49,7 @@ import pl.betacraft.json.lib.MouseFixMacOSJson;
 
 /** Main class */
 public class Launcher {
-	public static String VERSION = "1.09_13-pre4"; // TODO Always update this
+	public static String VERSION = "1.09_13-pre5"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
@@ -427,9 +427,8 @@ public class Launcher {
 		if (!Launcher.isLaunchMethodReady(Launcher.currentInstance.version) || Launcher.forceUpdate) {
 			Launcher.downloadLaunchMethod(Launcher.currentInstance.version);
 		}
-		if (!Launcher.areAddonsReady(Launcher.currentInstance.version) || Launcher.forceUpdate) {
-			Launcher.downloadAddons(Launcher.currentInstance.version);
-		}
+
+		Launcher.readyAddons(Launcher.currentInstance, Launcher.forceUpdate);
 
 		if (OS.isMac()) {
 			if ("true".equalsIgnoreCase(info.getEntry("macos-mousefix"))) {
@@ -631,14 +630,6 @@ public class Launcher {
 		}
 	}
 
-	public static void downloadAddons(String version) {
-		for (String s : Launcher.currentInstance.addons) {
-			if (!downloadWithButtonOutput("http://files.betacraft.pl/launcher/assets/addons/1.09_10/" + s + ".jar", new File(BC.get() + "launcher" + File.separator + "addons", s + ".jar")).isPositive()) {
-				JOptionPane.showMessageDialog(Window.mainWindow, "Couldn't download addon: " + s, "Error", JOptionPane.ERROR_MESSAGE);
-			}
-		}
-	}
-
 	public static boolean isLaunchMethodReady(String version) {
 		boolean bol1 = true;
 		VersionInfo json = Release.getReleaseByName(version).getInfo();
@@ -650,14 +641,26 @@ public class Launcher {
 		return bol1;
 	}
 
-	public static boolean areAddonsReady(String version) {
-		boolean bol2 = true;
-		for (String s : Launcher.currentInstance.addons) {
-			if (new File(BC.get() + "launcher" + File.separator + "addons", s + ".jar").exists() == false) {
-				bol2 = false;
+	public static void readyAddons(Instance instance, boolean force) {
+		for (String s : instance.addons) {
+			boolean download = false;
+
+			Addon a = Addon.addons.get(s);
+			File destination = new File(BC.get() + "launcher" + File.separator + "addons", s + ".jar");
+
+			if (!destination.exists()) {
+				download = true;
+			} else if (a.online) {
+				String filehash = Util.getSHA1(destination);
+				if (!filehash.equalsIgnoreCase(a.onlinehash)) {
+					download = true;
+				}
+			}
+
+			if (download && !downloadWithButtonOutput("http://files.betacraft.pl/launcher/assets/addons/" + Addon.addonVer + "/" + s + ".jar", destination).isPositive()) {
+				JOptionPane.showMessageDialog(Window.mainWindow, "Couldn't download addon: " + s, "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
-		return bol2;
 	}
 
 	public static boolean isVersionReady(String version) {
