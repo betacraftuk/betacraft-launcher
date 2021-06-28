@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -51,7 +52,7 @@ public class SelectAddons extends JFrame implements ActionListener, LanguageElem
 		this.pack();
 	}
 
-	protected static ArrayList<JCheckBox> checkboxes = new ArrayList<JCheckBox>();
+	protected static HashMap<JCheckBox, String> checkboxes = new HashMap<JCheckBox, String>();
 
 	protected void makeList(boolean addoninfo) {
 
@@ -124,7 +125,7 @@ public class SelectAddons extends JFrame implements ActionListener, LanguageElem
 			constr1.gridx = 0;
 			constr1.weightx = 0.0;
 
-			checkboxes.add(checkbox);
+			checkboxes.put(checkbox, item.name);
 			constr1.gridy++;
 		}
 
@@ -143,10 +144,10 @@ public class SelectAddons extends JFrame implements ActionListener, LanguageElem
 
 	public void saveAddons() {
 		ArrayList<String> elist = new ArrayList<String>();
-		for (int i = 0; i < checkboxes.size(); i++) {
-			JCheckBox checkbox = checkboxes.get(i);
+		for (JCheckBox checkbox : checkboxes.keySet()) {
+			String name = checkboxes.get(checkbox);
 			if (checkbox.isSelected()) {
-				elist.add(checkbox.getText());
+				elist.add(name);
 			}
 		}
 		Launcher.currentInstance.setAddons(elist);
