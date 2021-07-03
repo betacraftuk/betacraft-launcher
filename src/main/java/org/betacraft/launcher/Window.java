@@ -105,7 +105,6 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 					Launcher.auth.authenticate();
 
 					Window.nick_input.setText(Launcher.getNickname());
-					Window.setTab(Window.tab);
 					// since there's basically no account selector, this must do... awkward
 					if (Launcher.auth instanceof NoAuth) {
 						nick_input.setEnabled(true);
@@ -226,29 +225,31 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 	}
 
 	public static void setTab(Tab tab) {
-		if (Window.centerPanel != null) mainWindow.remove(Window.centerPanel);
-		centerPanel = new WebsitePanel().getEmptyTabFor(tab);
-		Window.tab = Tab.SERVER_LIST;
-		mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
-		mainWindow.setPreferredSize(mainWindow.getSize());
-		mainWindow.pack();
+//		if (Window.centerPanel != null) mainWindow.remove(Window.centerPanel);
+//		centerPanel = new WebsitePanel().getEmptyTabFor(tab);
+//		Window.tab = Tab.SERVER_LIST;
+//		mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
+//		mainWindow.setPreferredSize(mainWindow.getSize());
+//		mainWindow.pack();
 		if (tab == Tab.CHANGELOG) {
 			new Thread() {
 				public void run() {
-					if (Window.centerPanel != null) mainWindow.remove(Window.centerPanel);
+					if (Window.centerPanel != null) mainWindow.getContentPane().remove(Window.centerPanel);
 					centerPanel = new WebsitePanel().getUpdateNews(true);
 					Window.tab = Tab.CHANGELOG;
 					mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
+					mainWindow.setPreferredSize(mainWindow.getSize());
 					mainWindow.pack();
 				}
 			}.start();
 		} else if (tab == Tab.SERVER_LIST) {
 			new Thread() {
 				public void run() {
-					if (Window.centerPanel != null) mainWindow.remove(Window.centerPanel);
+					if (Window.centerPanel != null) mainWindow.getContentPane().remove(Window.centerPanel);
 					centerPanel = new WebsitePanel().getServers(true);
 					Window.tab = Tab.SERVER_LIST;
 					mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
+					mainWindow.setPreferredSize(mainWindow.getSize());
 					mainWindow.pack();
 				}
 			}.start();

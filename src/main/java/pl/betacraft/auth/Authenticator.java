@@ -21,7 +21,6 @@ public interface Authenticator {
 			Window.nick_input.setText(Launcher.getNickname());
 			Window.nick_input.setEnabled(false);
 			Window.loginButton.setText(Lang.LOGOUT_BUTTON);
-			Window.setTab(Window.tab);
 		});
 	};
 }
