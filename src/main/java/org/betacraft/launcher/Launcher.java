@@ -45,11 +45,12 @@ import pl.betacraft.auth.CustomRequest;
 import pl.betacraft.auth.CustomResponse;
 import pl.betacraft.auth.DownloadRequest;
 import pl.betacraft.auth.DownloadResponse;
+import pl.betacraft.auth.NoAuth;
 import pl.betacraft.json.lib.MouseFixMacOSJson;
 
 /** Main class */
 public class Launcher {
-	public static String VERSION = "1.09_13"; // TODO Always update this
+	public static String VERSION = "1.09_14-pre1"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
@@ -151,9 +152,10 @@ public class Launcher {
 			String sessionid = args[2];
 			String server = args[3].equals("-") ? null : args[3];
 			String mppass = args[4].equals("-") ? "0" : args[4];
+			String uuid = args[5];
 			// Convert arguments to work with Wrapper
 			StringBuilder split = new StringBuilder();
-			for (int i = 5; i < args.length; i++) {
+			for (int i = 6; i < args.length; i++) {
 				split.append(args[i] + " ");
 			}
 			String instanceName = split.toString();
@@ -218,13 +220,13 @@ public class Launcher {
 			} else if (meth.equalsIgnoreCase("classic12a")) {
 				new Classic12aWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 			} else if (meth.equalsIgnoreCase("classic15a")) {
-				new Classic15aWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+				new Classic15aWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, uuid, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 //			} else if (meth.equalsIgnoreCase("classic")) {
 //				new ClassicWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 //			} else if (meth.equalsIgnoreCase("classicmp")) {
 //				new ClassicMPWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 			} else if (meth.equalsIgnoreCase("indev") || meth.equalsIgnoreCase("classicmp") || meth.equalsIgnoreCase("classic")) {
-				new Wrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
+				new Wrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, uuid, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 			} else if (meth.equalsIgnoreCase("commandline")) {
 				new CommandLine(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 			} else if (meth.equalsIgnoreCase("1.6")) {
@@ -518,6 +520,10 @@ public class Launcher {
 					params.add("-Dbetacraft.resize_applet=true");
 				}
 
+				if ("true".equalsIgnoreCase(info.getEntry("do-not-get-mppass"))) {
+					params.add("-Dbetacraft.obtainMPpass=false");
+				}
+
 				if (info.getProtocol() != null && "classicmp".equals(info.getLaunchMethod())) {
 					params.add("-Dbetacraft.ask_for_server=true");
 				}
@@ -551,6 +557,11 @@ public class Launcher {
 				params.add(token);
 				params.add(server);
 				params.add(mppass);
+				if (!(Launcher.auth instanceof NoAuth)) {
+					params.add(Launcher.auth.getCredentials().local_uuid);
+				} else {
+					params.add("-");
+				}
 				params.add(currentInstance.name);
 				System.out.println(params.toString());
 				Logger.a(!token.equals("-") ? params.toString().replaceAll(token, "[censored sessionid]") : params.toString());

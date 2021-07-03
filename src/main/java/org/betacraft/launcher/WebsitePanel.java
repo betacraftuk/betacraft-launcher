@@ -1,7 +1,6 @@
 package org.betacraft.launcher;
 
 import java.awt.Color;
-import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
@@ -141,11 +140,6 @@ public class WebsitePanel extends JPanel {
 						con.setConnectTimeout(5000);
 						con.connect();
 
-						DataOutputStream output = new DataOutputStream(con.getOutputStream());
-						output.writeUTF(Launcher.getNickname());
-						output.writeUTF(Launcher.getAuthToken());
-						output.flush();
-						output.close();
 						InputStream instream = con.getInputStream();
 						Scanner s = new Scanner(instream, "UTF-8");
 						StringBuilder bob = new StringBuilder();

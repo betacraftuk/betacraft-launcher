@@ -29,7 +29,7 @@ public class PreClassicWrapper2 extends Wrapper {
 	public PreClassicWrapper2(String user, String ver_prefix, String version, String sessionid, String mainFolder, int height,
 			int width, boolean RPC, String launchMethod, String server, String mppass, String USR, String VER,
 			Image img, ArrayList addons) {
-		super(user, ver_prefix, version, sessionid, mainFolder, height, width, RPC, launchMethod, server, mppass, USR, VER,
+		super(user, ver_prefix, version, sessionid, mainFolder, height, width, RPC, launchMethod, server, mppass, null, USR, VER,
 				img, addons);
 	}
 

@@ -27,9 +27,9 @@ public class Classic15aWrapper extends Wrapper {
 	public Thread thread;
 
 	public Classic15aWrapper(String user, String ver_prefix, String version, String sessionid, String mainFolder,
-			Integer height, Integer width, Boolean RPC, String launchMethod, String server, String mppass, String USR,
-			String VER, Image img, ArrayList addons) {
-		super(user, ver_prefix, version, sessionid, mainFolder, height, width, RPC, launchMethod, server, mppass, USR, VER, img,
+			Integer height, Integer width, Boolean RPC, String launchMethod, String server, String mppass, String uuid,
+			String USR, String VER, Image img, ArrayList addons) {
+		super(user, ver_prefix, version, sessionid, mainFolder, height, width, RPC, launchMethod, server, mppass, uuid, USR, VER, img,
 				addons);
 	}
 

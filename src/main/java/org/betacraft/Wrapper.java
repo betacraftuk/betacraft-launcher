@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -31,19 +32,24 @@ import javax.swing.JPanel;
 import org.betacraft.Addon.WhatToDo;
 import org.betacraft.launcher.BC;
 import org.betacraft.launcher.Lang;
+import org.betacraft.launcher.Launcher;
 import org.betacraft.launcher.Logger;
 
 import net.arikia.dev.drpc.DiscordEventHandlers;
 import net.arikia.dev.drpc.DiscordRPC;
 import net.arikia.dev.drpc.DiscordRichPresence;
+import pl.betacraft.auth.CustomRequest;
+import pl.betacraft.auth.jsons.mojang.session.JoinServerRequest;
 
 
 public class Wrapper extends Applet implements AppletStub {
 
 	/** Client parameters */
 	public final Map<String, String> params = new HashMap<String, String>();
-	/** Session id for premium authentication */
+	/** Session id for server authentication */
 	public String session;
+	/** User ID required to get mppass */
+	public String uuid;
 	/** Instance's folder */
 	public String mainFolder;
 	/** Version to be launched */
@@ -105,7 +111,7 @@ public class Wrapper extends Applet implements AppletStub {
 	 * @param img - Icon for the window frame
 	 * @param addons - List of addons to apply to this instance
 	 */
-	public Wrapper(String user, String ver_prefix, String version, String sessionid, String mainFolder, Integer height, Integer width, Boolean RPC, String launchMethod, String server, String mppass, String USR, String VER, Image img, ArrayList addons) {
+	public Wrapper(String user, String ver_prefix, String version, String sessionid, String mainFolder, Integer height, Integer width, Boolean RPC, String launchMethod, String server, String mppass, String uuid, String USR, String VER, Image img, ArrayList addons) {
 		ogaddons = (ArrayList<Class<Addon>>)addons;
 
 		params.put("username", user);
@@ -119,6 +125,7 @@ public class Wrapper extends Applet implements AppletStub {
 
 		this.version = version;
 		this.session = sessionid;
+		this.uuid = uuid;
 		this.launchType = launchMethod;
 		if (this.launchType.equalsIgnoreCase("")) {
 			System.err.println("LAUNCH METHOD ISN'T SPECIFIED!!! CANNOT PROCEED! CLOSING!");
@@ -217,11 +224,46 @@ public class Wrapper extends Applet implements AppletStub {
 		}
 	}
 
+	public void getMPpass(String server) {
+		if (this.uuid == null || this.uuid.equals("-")) {
+			this.mppass = "0";
+			return;
+		}
+
+		boolean getmppass = System.getProperty("betacraft.obtainMPpass", "true").equalsIgnoreCase("true");
+		try {
+			String host = server.split(":")[0];
+			InetAddress addr = InetAddress.getByName(host);
+			String numerical = addr.getHostAddress();
+			server = server.replace(host, numerical);
+			System.out.println("Sending joinServer request...");
+
+			new JoinServerRequest(this.session, this.uuid, server).perform();
+			System.out.println("Done!");
+			// Let 15a and 16a servers do their own auth
+			if (getmppass) {
+				System.out.println("Obtaining mppass...");
+				this.mppass = new CustomRequest("https://betacraft.pl/api/getmppass.jsp?user=" + this.params.get("username") + "&server=" + server).perform().response;
+				if (this.mppass == null || this.mppass.equals("FAILED") || this.mppass.equals("SERVER NOT FOUND")) {
+					// failed to get mppass :(
+					System.out.println("Failed to get mppass for: " + server);
+					this.mppass = "0";
+				}
+				System.out.println("Done!");
+			}
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+	}
+
 	/**
 	 * Asks the user for server credentials.
 	 */
 	public void askForServer() {
 		if (this.serverAddress != null) {
+			if (this.mppass.length() < 32) {
+				this.getMPpass(this.serverAddress);
+			}
 			params.put("mppass", this.mppass);
 		} else {
 			String server = JOptionPane.showInputDialog(this, Lang.WRAP_SERVER, Lang.WRAP_SERVER_TITLE, JOptionPane.DEFAULT_OPTION);
@@ -254,6 +296,11 @@ public class Wrapper extends Applet implements AppletStub {
 					IP = params1[0];
 					port = params1[1];
 				}
+
+				if (this.mppass.length() < 32) {
+					this.getMPpass(IP + ":" + port);
+				}
+
 				// <ip>
 				if (!server.equals("")) {
 					System.err.println("Accepted server parameters: " + IP + ":" + port + this.mppass != null ? " + mppass" : "");
