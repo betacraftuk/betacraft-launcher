@@ -131,8 +131,8 @@ public class WebsitePanel extends JPanel {
 			new Thread() {
 				public void run() {
 					try {
-						HttpsURLConnection con = (HttpsURLConnection) new URL("https://betacraft.pl/server.jsp").openConnection();
-						con.setSSLSocketFactory(Cert.sslSocketFactory);
+						HttpURLConnection con = (HttpURLConnection) new URL("http://betacraft.pl/server.jsp").openConnection();
+						//con.setSSLSocketFactory(Cert.sslSocketFactory);
 						con.setRequestMethod("POST");
 						con.setDoInput(true);
 						con.setDoOutput(true);

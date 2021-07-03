@@ -243,7 +243,8 @@ public class Wrapper extends Applet implements AppletStub {
 			// Let 15a and 16a servers do their own auth
 			if (getmppass) {
 				System.out.println("Obtaining mppass...");
-				this.mppass = new CustomRequest("https://betacraft.pl/api/getmppass.jsp?user=" + this.params.get("username") + "&server=" + server).perform().response;
+				// 
+				this.mppass = new CustomRequest("http://api.betacraft.pl/getmppass.jsp?user=" + this.params.get("username") + "&server=" + server).perform().response;
 				if (this.mppass == null || this.mppass.equals("FAILED") || this.mppass.equals("SERVER NOT FOUND")) {
 					// failed to get mppass :(
 					System.out.println("Failed to get mppass for: " + server);

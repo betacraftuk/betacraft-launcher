@@ -6,10 +6,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import javax.net.ssl.HttpsURLConnection;
-
-import org.betacraft.launcher.Cert;
-
 import com.google.gson.Gson;
 
 public class RequestUtil {
@@ -34,9 +30,6 @@ public class RequestUtil {
 		try {
 			URL url = new URL(req.REQUEST_URL);
 			con = (HttpURLConnection) url.openConnection();
-			if (req.REQUEST_URL.startsWith("https:") && Cert.sslSocketFactory != null) {
-				((HttpsURLConnection)con).setSSLSocketFactory(Cert.sslSocketFactory);
-			}
 
 			for (String key : req.PROPERTIES.keySet()) {
 				con.addRequestProperty(key, req.PROPERTIES.get(key));
@@ -108,9 +101,6 @@ public class RequestUtil {
 			if (debug) System.out.println("OUTCOME TO: " + req.REQUEST_URL);
 			URL url = new URL(req.REQUEST_URL);
 			con = (HttpURLConnection) url.openConnection();
-			if (req.REQUEST_URL.startsWith("https:") && Cert.sslSocketFactory != null) {
-				((HttpsURLConnection)con).setSSLSocketFactory(Cert.sslSocketFactory);
-			}
 
 			con.setRequestMethod("GET");
 			con.setReadTimeout(15000);

@@ -50,7 +50,7 @@ import pl.betacraft.json.lib.MouseFixMacOSJson;
 
 /** Main class */
 public class Launcher {
-	public static String VERSION = "1.09_14-pre2"; // TODO Always update this
+	public static String VERSION = "1.09_14-pre3"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
@@ -275,9 +275,6 @@ public class Launcher {
 		Logger.a("EXE: " + BC.currentPath.toPath().toString().endsWith(".exe"));
 		Logger.a("Prerelease: " + BC.prerelease);
 		Logger.a("Nightly: " + BC.nightly);
-
-		Cert.download();
-		Cert.prepare();
 
 		// Load language pack
 		Lang.refresh(false, false);
@@ -532,6 +529,8 @@ public class Launcher {
 					params.add("-Xdock:name=" + instance.name);
 					params.add("-Xdock:icon=" + instance.getIconLocation());
 				}
+
+				params.add("-Dhttp.nonProxyHosts=api.betacraft.pl");
 
 				// Add custom parameters from options
 				if (instance.launchArgs != null && !instance.launchArgs.equals("")) {
