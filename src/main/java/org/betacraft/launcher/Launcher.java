@@ -50,7 +50,7 @@ import pl.betacraft.json.lib.MouseFixMacOSJson;
 
 /** Main class */
 public class Launcher {
-	public static String VERSION = "1.09_14-pre3"; // TODO Always update this
+	public static String VERSION = "1.09_14"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
@@ -66,26 +66,29 @@ public class Launcher {
 		System.err.println("Java version: " + javadistro + ", " + System.getProperty("java.runtime.name") + ", " + javaver);
 		System.err.println("System: " + OS.OS + ", " + OS.VER + ", " + OS.ARCH);
 		long nano = System.nanoTime();
+		boolean systemlookandfeel = Boolean.parseBoolean(System.getProperty("betacraft.systemLookAndFeel", "true"));
 
-		lookandfeel: {
-			if (OS.VER.contains("arch") || OS.VER.contains("manjaro")) {
-				if (javaver != null && javaver.startsWith("16") &&
-						javadistro != null && !javadistro.toLowerCase().contains("azul")) {
-					// afaik, only azul's java 16 isn't broken on arch
-					break lookandfeel;
+		if (systemlookandfeel) {
+			lookandfeel: {
+				if (OS.VER.contains("arch") || OS.VER.contains("manjaro")) {
+					if (javaver != null && javaver.startsWith("16") &&
+							javadistro != null && !javadistro.toLowerCase().contains("azul")) {
+						// afaik, only azul's java 16 isn't broken on arch
+						break lookandfeel;
+					}
 				}
-			}
-			try {
-				// Fix for Java having a cross-platform look and feel
-				if (OS.isWindows()) UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-				else if (OS.isLinux()) UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
-			} catch (Exception ex) {
-				// why
 				try {
-					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-				} catch (Exception ex1) {
-					ex1.printStackTrace();
-					Logger.printException(ex1);
+					// Fix for Java having a cross-platform look and feel
+					if (OS.isWindows()) UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+					else if (OS.isLinux()) UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+				} catch (Exception ex) {
+					// why
+					try {
+						UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+					} catch (Exception ex1) {
+						ex1.printStackTrace();
+						Logger.printException(ex1);
+					}
 				}
 			}
 		}
