@@ -31,9 +31,9 @@ public class Util {
 	public static final Gson gson = new Gson();
 	public static final Gson gsonPretty = new GsonBuilder().setPrettyPrinting().create();
 	public static final int jsonVersion = 1;
-	public static final File accountsFile = new File(BC.get() + "launcher/accounts.json");
-	public static final File cert_file = new File(BC.get() + "launcher/ssl_cert.crt");
-	public static final File old_lastlogin = new File(BC.get() + "lastlogin");
+	public static final File accountsFile = new File(BC.path() + "launcher/accounts.json");
+	public static final File cert_file = new File(BC.path() + "launcher/ssl_cert.crt");
+	public static final File old_lastlogin = new File(BC.path() + "lastlogin");
 
 	private static void setupAccountConfiguration() {
 		try {
@@ -336,11 +336,11 @@ public class Util {
 	}
 
 	public static boolean installMacOSFix(MouseFixMacOSJson json, boolean force) {
-		File javaagent = new File(BC.get() + "launcher/macos-javaagent.jar");
-		File lwjgl = new File(BC.get() + "launcher/macos-mousefix-lwjgl.jar");
+		File javaagent = new File(BC.path() + "launcher/macos-javaagent.jar");
+		File lwjgl = new File(BC.path() + "launcher/macos-mousefix-lwjgl.jar");
 
-		File classes_folder = new File(BC.get() + "launcher/macos-java-mod/");
-		File classes_temp_zip = new File(BC.get() + "launcher/macos-mousefix.zip");
+		File classes_folder = new File(BC.path() + "launcher/macos-java-mod/");
+		File classes_temp_zip = new File(BC.path() + "launcher/macos-mousefix.zip");
 
 		String local_javaagent_sha1 = javaagent.exists() ? getSHA1(javaagent) : null;
 		String local_lwjgl_sha1 = lwjgl.exists() ? getSHA1(lwjgl): null;

@@ -28,7 +28,7 @@ public class FkWrapper extends Wrapper {
 	public void loadJars() {
 		try {
 			final URL[] url = new URL[1];
-			url[0] = new File(BC.get() + "versions/" + version + ".jar").toURI().toURL();
+			url[0] = new File(BC.path() + "versions/" + version + ".jar").toURI().toURL();
 
 			loadMainClass(url);
 		} catch (Throwable t) {

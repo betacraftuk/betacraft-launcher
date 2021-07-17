@@ -61,7 +61,7 @@ public class Release {
 
 	public static ArrayList<VersionInfo> offlineVersionList() {
 		ArrayList<VersionInfo> list = new ArrayList<>();
-		File versionsFolder = new File(BC.get() + "versions/");
+		File versionsFolder = new File(BC.path() + "versions/");
 		File fakejsonsFolder = new File(versionsFolder, "jsons/");
 		// Get all representations of locally saved versions
 		String[] offlinejars = versionsFolder.list(new FilenameFilter() {
@@ -199,20 +199,20 @@ public class Release {
 		}
 
 		public boolean hasJar() {
-			File jar = new File(BC.get() + "versions/", name + ".jar");
+			File jar = new File(BC.path() + "versions/", name + ".jar");
 			return jar.exists() && jar.isFile();
 		}
 
 		public boolean hasFakeJson() {
-			File fakeJson = new File(BC.get() + "versions/jsons/", name + ".info");
+			File fakeJson = new File(BC.path() + "versions/jsons/", name + ".info");
 			return fakeJson.exists() && fakeJson.isFile();
 		}
 	}
 
 	/*public static void initVersions() throws IOException {
 		versions.clear();
-		//Launcher.download("https://betacraft.pl/launcher/assets/jsons.zip", new File(BC.get() + "versions" + File.separator + "jsons" + File.separator + "$jsons.zip"));
-		//Launcher.totalThreads.add(Util.Unrar(new File(BC.get() + "versions" + File.separator + "jsons" + File.separator + "$jsons.zip").toPath().toString(), new File(BC.get() + "versions" + File.separator + "jsons" + File.separator).toPath().toString(), false));
+		//Launcher.download("https://betacraft.pl/launcher/assets/jsons.zip", new File(BC.path() + "versions" + File.separator + "jsons" + File.separator + "$jsons.zip"));
+		//Launcher.totalThreads.add(Util.Unrar(new File(BC.path() + "versions" + File.separator + "jsons" + File.separator + "$jsons.zip").toPath().toString(), new File(BC.path() + "versions" + File.separator + "jsons" + File.separator).toPath().toString(), false));
 		String[] offlineVersions = getOfflineVersions();
 
 		try {
@@ -289,8 +289,8 @@ public class Release {
 
 	protected static String[] getOfflineVersions() {
 		// Get the versions folder
-		File file = new File(BC.get() + "versions" + File.separator);
-		File file1 = new File(BC.get() + "versions" + File.separator + "jsons" + File.separator);
+		File file = new File(BC.path() + "versions" + File.separator);
+		File file1 = new File(BC.path() + "versions" + File.separator + "jsons" + File.separator);
 
 		// Take only files that are of jar type
 		String[] offlineVersions = file.list(new FilenameFilter() {
@@ -333,7 +333,7 @@ public class Release {
 		String[] offlineVersions = getOfflineVersions();
 		try {
 			// Scan the offline version list, but don't update the file (false)
-			Scanner fileScanner = new Scanner(new File(BC.get() + "launcher" + File.separator + "version_index"), "UTF-8");
+			Scanner fileScanner = new Scanner(new File(BC.path() + "launcher" + File.separator + "version_index"), "UTF-8");
 			ArrayList<String> offlineVersionsList = scan(fileScanner, false);
 
 			for (String r: offlineVersionsList) {
@@ -376,7 +376,7 @@ public class Release {
 
 	protected static ArrayList<String> scan(Scanner scanner, boolean save) {
 		ArrayList<String> results = new ArrayList<String>();
-		String folder = BC.get() + "launcher" + File.separator;
+		String folder = BC.path() + "launcher" + File.separator;
 		String[] filecontent = new String[400];
 		int i = 1;
 
@@ -478,7 +478,7 @@ public class Release {
 		}
 
 		default void downloadJson() {
-			Launcher.download("http://files.betacraft.pl/launcher/assets/jsons/" + this.getVersion() + ".info", new File(BC.get() + "versions" + File.separator + "jsons", this.getVersion() + ".info"));
+			Launcher.download("http://files.betacraft.pl/launcher/assets/jsons/" + this.getVersion() + ".info", new File(BC.path() + "versions" + File.separator + "jsons", this.getVersion() + ".info"));
 		}
 	}
 }

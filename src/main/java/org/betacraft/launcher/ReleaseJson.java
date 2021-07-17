@@ -22,7 +22,7 @@ public class ReleaseJson implements VersionInfo {
 
 	public ReleaseJson(String version) {
 		this.version = version;
-		this.json = new File(BC.get() + "versions" + File.separator + "jsons", version + ".info");
+		this.json = new File(BC.path() + "versions" + File.separator + "jsons", version + ".info");
 		readJson();
 	}
 
@@ -127,6 +127,6 @@ public class ReleaseJson implements VersionInfo {
 	}
 
 	public static boolean exists(String name) {
-		return new File(BC.get() + "versions/jsons/", name + ".info").exists();
+		return new File(BC.path() + "versions/jsons/", name + ".info").exists();
 	}
 }

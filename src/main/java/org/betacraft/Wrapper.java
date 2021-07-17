@@ -430,7 +430,7 @@ public class Wrapper extends Applet implements AppletStub {
 
 	public void loadJars() {
 		try {
-			String[] libs = new File(BC.get(), "bin/").list(new FilenameFilter() {
+			String[] libs = new File(BC.path(), "bin/").list(new FilenameFilter() {
 				@Override
 				public boolean accept(File dir, String fileName) {
 					return fileName.endsWith(".jar");
@@ -440,15 +440,15 @@ public class Wrapper extends Applet implements AppletStub {
 			// Glue everything Minecraft needs for running
 			String[] files = new String[1 + (this.libraries_loaded ? 0 : libs.length)];
 
-			files[0] = BC.get() + "versions/" + version + ".jar";
+			files[0] = BC.path() + "versions/" + version + ".jar";
 
 			if (!this.libraries_loaded) {
 				for (int i = 0; i < libs.length; i++) {
-					files[i + 1] = BC.get() + "bin/" + libs[i];
+					files[i + 1] = BC.path() + "bin/" + libs[i];
 				}
 			}
 
-			String nativesPath = BC.get() + "bin/natives";
+			String nativesPath = BC.path() + "bin/natives";
 			System.setProperty("org.lwjgl.librarypath", nativesPath);
 			System.setProperty("net.java.games.input.librarypath", nativesPath);
 
