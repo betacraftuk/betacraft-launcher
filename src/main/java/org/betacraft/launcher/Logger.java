@@ -9,11 +9,11 @@ public class Logger {
 	public static String lastMessage = "";
 
 	public static void a(Object obj) {
-		log(new File(BC.get() + "launcher", "launcher.log"), true, obj);
+		log(new File(BC.path() + "launcher", "launcher.log"), true, obj);
 	}
 
 	public static void logClient(Object obj) {
-		log(new File(BC.get(), "output-client.log"), true, obj);
+		log(new File(BC.path(), "output-client.log"), true, obj);
 	}
 
 	public static void log(File file, boolean append, Object value) {

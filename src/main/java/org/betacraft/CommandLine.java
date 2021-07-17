@@ -23,13 +23,13 @@ public class CommandLine extends Wrapper {
 		try {
 			ArrayList<String> params = new ArrayList<>();
 			params.add("java");
-			String nativesPath = BC.get() + "bin/natives";
+			String nativesPath = BC.path() + "bin/natives";
 
 			params.add("-Djava.util.Arrays.useLegacyMergeSort=true");
 			params.add("-Dorg.lwjgl.librarypath=" + nativesPath);
 			params.add("-Dnet.java.games.input.librarypath=" + nativesPath);
 			params.add("-cp");
-			params.add(BC.get() + "bin/lwjgl.jar:" + BC.get() + "bin/lwjgl_util.jar:" + BC.get() + "bin/jinput.jar:" + BC.get() + "versions/" + this.version + ".jar");
+			params.add(BC.path() + "bin/lwjgl.jar:" + BC.path() + "bin/lwjgl_util.jar:" + BC.path() + "bin/jinput.jar:" + BC.path() + "versions/" + this.version + ".jar");
 			params.add("net.minecraft.client.Minecraft");
 			params.add(this.params.get("username"));
 			params.add(this.params.get("sessionid"));

@@ -154,7 +154,7 @@ public class Lang extends JFrame implements LanguageElement {
 	}
 
 	public static boolean downloaded(String lang) {
-		File file = new File(BC.get() + "launcher" + File.separator + "lang" + File.separator + lang + ".txt");
+		File file = new File(BC.path() + "launcher" + File.separator + "lang" + File.separator + lang + ".txt");
 		if (file.exists()) {
 			return true;
 		}
@@ -162,7 +162,7 @@ public class Lang extends JFrame implements LanguageElement {
 	}
 
 	public static DownloadResult download(String lang) {
-		DownloadResult download = Launcher.download("http://betacraft.pl/lang/" + locale_id + "/" + lang + ".txt", new File(BC.get() + "launcher" + File.separator + "lang", lang + ".txt"));
+		DownloadResult download = Launcher.download("http://betacraft.pl/lang/" + locale_id + "/" + lang + ".txt", new File(BC.path() + "launcher" + File.separator + "lang", lang + ".txt"));
 		if (!download.isPositive()) {
 			JOptionPane.showMessageDialog(Window.mainWindow, "No Internet connection", "Language file download failed!", JOptionPane.ERROR_MESSAGE);
 		}
@@ -174,7 +174,7 @@ public class Lang extends JFrame implements LanguageElement {
 		if (lang == null) {
 			lang = "English";
 		}
-		File file = new File(BC.get() + "launcher" + File.separator + "lang" + File.separator +  lang + ".txt");
+		File file = new File(BC.path() + "launcher" + File.separator + "lang" + File.separator +  lang + ".txt");
 		if ((download && !download(lang).isPositive()) || !file.exists()) {
 			applyNamesSwing();
 			return;

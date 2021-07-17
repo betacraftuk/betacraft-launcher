@@ -149,7 +149,7 @@ public class Launcher {
 		// Launch the game if wanted
 		if (args.length > 0 && args[0].equals("wrap")) {
 			BC.wrapped = true;
-			BC.SETTINGS = new File(BC.get() + "launcher", "launcher.settings");
+			BC.SETTINGS = new File(BC.path() + "launcher", "launcher.settings");
 			Lang.refresh(false, false);
 			String username = args[1];
 			String sessionid = args[2];
@@ -175,7 +175,7 @@ public class Launcher {
 					System.err.println("Loading addons...");
 					for (String s : currentInstance.addons) {
 						try {
-							String path = BC.get() + "launcher" + File.separator + "addons" + File.separator + s + ".jar";
+							String path = BC.path() + "launcher" + File.separator + "addons" + File.separator + s + ".jar";
 							System.err.println(path);
 							URLClassLoader loader = new URLClassLoader(new URL[] {
 									new File(path).toURI().toURL()
@@ -198,9 +198,9 @@ public class Launcher {
 			}
 
 			if (meth == null || meth.equalsIgnoreCase("")) { // assume the version
-				meth = WrapperDetector.getLaunchMethod(BC.get() + "versions/" + currentInstance.version + ".jar");
+				meth = WrapperDetector.getLaunchMethod(BC.path() + "versions/" + currentInstance.version + ".jar");
 				if (meth.equals("custom")) {
-					String err = "Error code 7 (ERRCONFIG): Couldn't determine the launch method for your JAR. Configure your version configuration file: " + BC.get() + "versions/jsons/" + currentInstance.version + ".info";
+					String err = "Error code 7 (ERRCONFIG): Couldn't determine the launch method for your JAR. Configure your version configuration file: " + BC.path() + "versions/jsons/" + currentInstance.version + ".info";
 					System.err.println(err);
 					JOptionPane.showMessageDialog(Window.mainWindow, err, "Error", JOptionPane.INFORMATION_MESSAGE);
 					System.exit(0);
@@ -216,7 +216,7 @@ public class Launcher {
 
 			Logger.a("Loaded in: " + (System.nanoTime() - nano) + " ns");
 			if (meth.equalsIgnoreCase("rd") || meth.equalsIgnoreCase("mc")) {
-				new Launcher().extractFromJar("/PreClassic.jar", new File(BC.get() + "launcher/", "PreClassic.jar"));
+				new Launcher().extractFromJar("/PreClassic.jar", new File(BC.path() + "launcher/", "PreClassic.jar"));
 				new PreClassicWrapper2(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 			} else if (meth.equalsIgnoreCase("preclassic")) {
 				new PreClassicWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
@@ -238,7 +238,7 @@ public class Launcher {
 				new FkWrapper(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 			} else {
 				try {
-					String path = BC.get() + "launcher" + File.separator + "launch-methods" + File.separator + meth + ".jar";
+					String path = BC.path() + "launcher" + File.separator + "launch-methods" + File.separator + meth + ".jar";
 					URLClassLoader loader = new URLClassLoader(new URL[] {
 							new File(path).toURI().toURL()
 					});
@@ -257,20 +257,20 @@ public class Launcher {
 			return;
 		}
 
-		BC.SETTINGS = new File(BC.get() + "launcher", "launcher.settings");
+		BC.SETTINGS = new File(BC.path() + "launcher", "launcher.settings");
 
 		if (BC.SETTINGS.exists() && !Util.getProperty(BC.SETTINGS, "version").equals("1")) {
-			removeRecursively(new File(BC.get() + "launcher"), true, false);
+			removeRecursively(new File(BC.path() + "launcher"), true, false);
 			writeDefault();
 		}
 
 		// Create required directories
-		new File(BC.get() + "versions" + File.separator + "jsons").mkdirs();
-		new File(BC.get() + "launcher" + File.separator + "lang").mkdirs();
-		new File(BC.get() + "launcher" + File.separator + "addons").mkdirs();
-		new File(BC.get() + "launcher" + File.separator + "instances").mkdirs();
-		new File(BC.get() + "launcher" + File.separator + "launch-methods").mkdirs();
-		new File(BC.get() + "bin" + File.separator + "natives").mkdirs();
+		new File(BC.path() + "versions" + File.separator + "jsons").mkdirs();
+		new File(BC.path() + "launcher" + File.separator + "lang").mkdirs();
+		new File(BC.path() + "launcher" + File.separator + "addons").mkdirs();
+		new File(BC.path() + "launcher" + File.separator + "instances").mkdirs();
+		new File(BC.path() + "launcher" + File.separator + "launch-methods").mkdirs();
+		new File(BC.path() + "bin" + File.separator + "natives").mkdirs();
 
 		Logger.a("BetaCraft Launcher JE v" + VERSION + " loading...");
 		Logger.a("Java version: " + System.getProperty("java.vendor") + ", " + System.getProperty("java.runtime.name") + ", " + System.getProperty("java.runtime.version"));
@@ -379,7 +379,7 @@ public class Launcher {
 	}
 
 	public static void initStartup() {
-		File wrapper = new File(BC.get() + "launcher", "betacraft_wrapper.jar");
+		File wrapper = new File(BC.path() + "launcher", "betacraft_wrapper.jar");
 		if (BC.currentPath.length() != wrapper.length()) {
 			try {
 				Files.copy(BC.currentPath.toPath(), wrapper.toPath(), StandardCopyOption.REPLACE_EXISTING);
@@ -395,7 +395,7 @@ public class Launcher {
 
 		// Download Discord RPC if the checkbox is selected
 		if (Launcher.currentInstance.RPC) {
-			File rpc = new File(BC.get() + "launcher/", "discord_rpc.jar");
+			File rpc = new File(BC.path() + "launcher/", "discord_rpc.jar");
 			if (rpc.exists()) {
 				try {
 					String sha1 = Util.getSHA1(rpc);
@@ -482,23 +482,23 @@ public class Launcher {
 				String add = "";
 				if (instance.RPC) {
 					// Add DRPC to the launch arguments
-					add = colon + BC.get() + "launcher" + File.separator + "discord_rpc.jar";
+					add = colon + BC.path() + "launcher" + File.separator + "discord_rpc.jar";
 				}
 
 				/*String lm = Release.getReleaseByName(instance.version).getJson().getLaunchMethod();
 				if (lm.equals("rd") || lm.equals("mc")) {
 					add = add + colon + new File(getVerFolder(), instance.version + ".jar").toPath().toString();
-					String[] libs = new File(BC.get(), "bin/").list(new FilenameFilter() {
+					String[] libs = new File(BC.path(), "bin/").list(new FilenameFilter() {
 						@Override
 						public boolean accept(File dir, String fileName) {
 							return fileName.endsWith(".jar");
 						}
 					});
 					for (String lib : libs) {
-						add = add + colon + new File(BC.get() + "bin/", lib).toPath().toString();
+						add = add + colon + new File(BC.path() + "bin/", lib).toPath().toString();
 					}
-					params.add("-Dorg.lwjgl.librarypath=" + BC.get() + "bin/natives/");
-					params.add("-Dnet.java.games.input.librarypath=" + BC.get() + "bin/natives/");
+					params.add("-Dorg.lwjgl.librarypath=" + BC.path() + "bin/natives/");
+					params.add("-Dnet.java.games.input.librarypath=" + BC.path() + "bin/natives/");
 				}*/
 
 				// Let the user overwrite this argument - put it before the custom ones
@@ -508,7 +508,7 @@ public class Launcher {
 
 				// Required to fix the following on MacOS: Classic, Indev after 0129-2, Infdev and Alpha to 1.0.1
 				if (OS.isMac() && "true".equalsIgnoreCase(info.getEntry("macos-mousefix"))) {
-					params.add("-javaagent:" + BC.get() + "launcher/macos-javaagent.jar=" + BC.get());
+					params.add("-javaagent:" + BC.path() + "launcher/macos-javaagent.jar=" + BC.path());
 				}
 
 				if (OS.isLinux() && "true".equalsIgnoreCase(info.getEntry("linux-mousefix-earlyclassic"))) {
@@ -552,7 +552,7 @@ public class Launcher {
 				// Add the rest of params and launch the wrapper
 				//params.add("-Duser.home=" + instance.gameDir);
 				params.add("-cp");
-				params.add(BC.get() + "launcher" + File.separator + "betacraft_wrapper.jar" + add);
+				params.add(BC.path() + "launcher" + File.separator + "betacraft_wrapper.jar" + add);
 				params.add("org.betacraft.launcher.Launcher");
 				params.add("wrap");
 				params.add(getNickname());
@@ -631,13 +631,13 @@ public class Launcher {
 	}
 
 	public static File getVerFolder() {
-		return new File(BC.get() + "versions" + File.separator);
+		return new File(BC.path() + "versions" + File.separator);
 	}
 
 	public static void downloadLaunchMethod(String version) {
 		VersionInfo json = Release.getReleaseByName(version).getInfo();
 		if (!json.getLaunchMethodURL().equals("")) {
-			if (!downloadWithButtonOutput(json.getLaunchMethodURL(), new File(BC.get() + "launcher" + File.separator + "launch-methods", json.getLaunchMethod() + ".jar")).isPositive()) {
+			if (!downloadWithButtonOutput(json.getLaunchMethodURL(), new File(BC.path() + "launcher" + File.separator + "launch-methods", json.getLaunchMethod() + ".jar")).isPositive()) {
 				JOptionPane.showMessageDialog(Window.mainWindow, "Couldn't download the launch method for this version.", "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
@@ -647,7 +647,7 @@ public class Launcher {
 		boolean bol1 = true;
 		VersionInfo json = Release.getReleaseByName(version).getInfo();
 		if (json.getLaunchMethodURL() != null) {
-			if (new File(BC.get() + "launcher" + File.separator + "launch-methods", json.getLaunchMethod() + ".jar").exists() == false) {
+			if (new File(BC.path() + "launcher" + File.separator + "launch-methods", json.getLaunchMethod() + ".jar").exists() == false) {
 				bol1 = false;
 			}
 		}
@@ -659,7 +659,7 @@ public class Launcher {
 			boolean download = false;
 
 			Addon a = Addon.addons.get(s);
-			File destination = new File(BC.get() + "launcher" + File.separator + "addons", s + ".jar");
+			File destination = new File(BC.path() + "launcher" + File.separator + "addons", s + ".jar");
 
 			if (!destination.exists()) {
 				download = true;
@@ -686,7 +686,7 @@ public class Launcher {
 	}
 
 	public static boolean checkDepends() {
-		File bin = new File(BC.get() + "bin");
+		File bin = new File(BC.path() + "bin");
 		if (bin.listFiles().length <= 1) {
 			return false;
 		}
@@ -716,8 +716,8 @@ public class Launcher {
 	}
 
 	public static boolean downloadDepends() {
-		File destLibs = new File(BC.get() + "bin" + File.separator);
-		File destNatives = new File(BC.get() + "bin" + File.separator + "natives" + File.separator);
+		File destLibs = new File(BC.path() + "bin" + File.separator);
+		File destNatives = new File(BC.path() + "bin" + File.separator + "natives" + File.separator);
 
 		String link1 = "http://files.betacraft.pl/launcher/assets/natives-windows.zip";
 		String link2 = "http://files.betacraft.pl/launcher/assets/libs-windows.zip";
@@ -730,12 +730,12 @@ public class Launcher {
 			link1 = "http://files.betacraft.pl/launcher/assets/natives-osx.zip";
 		}
 
-		File dest1 = new File(BC.get() + "launcher/", "natives.zip");
+		File dest1 = new File(BC.path() + "launcher/", "natives.zip");
 		if (!downloadWithButtonOutput(link1, dest1).isPositive()) {
 			return false;
 		}
 
-		File dest2 = new File(BC.get() + "launcher/", "libs.zip");
+		File dest2 = new File(BC.path() + "launcher/", "libs.zip");
 		if (!downloadWithButtonOutput(link2, dest2).isPositive()) {
 			return false;
 		}
@@ -793,7 +793,7 @@ public class Launcher {
 		DownloadResponse response = new DownloadRequest(link, folder.toPath().toString(), null, true).perform();
 		return response.result;
 		//		// Get a backup file that we will use to restore the file if the upload fails
-		//		File backupfile = new File(BC.get() + "launcher" + File.separator + "backup.tmp");
+		//		File backupfile = new File(BC.path() + "launcher" + File.separator + "backup.tmp");
 		//		try {
 		//			Logger.a("Destination: " + folder.toPath().toString());
 		//			// If the file already exists, make a copy of it
@@ -875,10 +875,10 @@ public class Launcher {
 				if (!release) url = "http://files.betacraft.pl/launcher/launcher-" + update_name + ending;
 
 				// Download the update
-				download(url, new File(BC.get(), "betacraft.jar$tmp"));
+				download(url, new File(BC.path(), "betacraft.jar$tmp"));
 
 				// Launch the new version to finish updating
-				String[] args = new String[] {"java", "-jar", BC.get() + "betacraft.jar$tmp", "update", BC.currentPath.toPath().toString()};
+				String[] args = new String[] {"java", "-jar", BC.path() + "betacraft.jar$tmp", "update", BC.currentPath.toPath().toString()};
 				Runtime.getRuntime().exec(args);
 
 				// Close this process

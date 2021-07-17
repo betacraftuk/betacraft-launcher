@@ -40,12 +40,12 @@ public class Instance {
 
 	public static Instance newInstance(String name) {
 		// Use default settings
-		return new Instance(name, "-Xmx512M", "b1.7.3", 854, 480, true, false, true, new ArrayList<String>(), BC.get() + name + "/");
+		return new Instance(name, "-Xmx512M", "b1.7.3", 854, 480, true, false, true, new ArrayList<String>(), BC.path() + name + "/");
 	}
 
 	public static Instance loadInstance(String name) {
 		try {
-			File instanceFile = new File(BC.get() + "launcher" + File.separator + "instances", name + ".txt");
+			File instanceFile = new File(BC.path() + "launcher" + File.separator + "instances", name + ".txt");
 			if (!instanceFile.exists()) {
 				System.out.println(instanceFile.toPath().toString());
 				Logger.printException(new Exception("Instance file is null!"));
@@ -89,7 +89,7 @@ public class Instance {
 
 	public void saveInstance() {
 		try {
-			File instanceFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".txt");
+			File instanceFile = new File(BC.path() + "launcher" + File.separator + "instances", this.name + ".txt");
 			if (!instanceFile.exists()) instanceFile.createNewFile();
 			Util.setProperty(instanceFile, "name", this.name);
 			Util.setProperty(instanceFile, "launchArgs", this.launchArgs);
@@ -117,17 +117,17 @@ public class Instance {
 	}
 
 	public void removeInstance() {
-		File instanceFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".txt");
+		File instanceFile = new File(BC.path() + "launcher" + File.separator + "instances", this.name + ".txt");
 		if (instanceFile.exists()) instanceFile.delete();
 	}
 
 	public Instance renameInstance(String newName) {
 		Instance renamed = this.clone(newName);
 
-		File instanceFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".txt");
+		File instanceFile = new File(BC.path() + "launcher" + File.separator + "instances", this.name + ".txt");
 		if (instanceFile.exists()) instanceFile.delete();
-		File iconFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".png");
-		if (iconFile.exists()) iconFile.renameTo(new File(BC.get() + "launcher" + File.separator + "instances", newName + ".png"));
+		File iconFile = new File(BC.path() + "launcher" + File.separator + "instances", this.name + ".png");
+		if (iconFile.exists()) iconFile.renameTo(new File(BC.path() + "launcher" + File.separator + "instances", newName + ".png"));
 
 		return renamed;
 	}
@@ -147,8 +147,8 @@ public class Instance {
 	}
 
 	public String getIconLocation() throws IOException {
-		File imgFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".png");
-		File defaultImg = new File(BC.get() + "launcher" + File.separator + "default_icon.png");
+		File imgFile = new File(BC.path() + "launcher" + File.separator + "instances", this.name + ".png");
+		File defaultImg = new File(BC.path() + "launcher" + File.separator + "default_icon.png");
 		if (!imgFile.exists()) {
 			Files.copy(this.getClass().getClassLoader().getResourceAsStream("icons/favicon.png"), defaultImg.toPath(), StandardCopyOption.REPLACE_EXISTING);
 			return defaultImg.toPath().toString();
@@ -158,7 +158,7 @@ public class Instance {
 
 	public Image getIcon() {
 		try {
-			File imgFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".png");
+			File imgFile = new File(BC.path() + "launcher" + File.separator + "instances", this.name + ".png");
 			if (!imgFile.exists()) {
 				return ImageIO.read(this.getClass().getClassLoader().getResourceAsStream("icons/favicon.png"));
 			}
@@ -175,7 +175,7 @@ public class Instance {
 
 	public void setIcon(File path) {
 		try {
-			File imgFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".png");
+			File imgFile = new File(BC.path() + "launcher" + File.separator + "instances", this.name + ".png");
 			if (path == null) {
 				imgFile.delete();
 				return;
@@ -204,7 +204,7 @@ public class Instance {
 
 	public static ArrayList<String> getInstances() {
 		ArrayList<String> list = new ArrayList<String>();
-		File file = new File(BC.get() + "launcher" + File.separator + "instances");
+		File file = new File(BC.path() + "launcher" + File.separator + "instances");
 		String[] rawlist = file.list(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
 				return name.endsWith(".txt");

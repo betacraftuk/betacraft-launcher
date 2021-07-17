@@ -141,7 +141,7 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser dirChooser = new JFileChooser();
-				dirChooser.setCurrentDirectory(new java.io.File(BC.get()));
+				dirChooser.setCurrentDirectory(new java.io.File(BC.path()));
 				dirChooser.setDialogTitle(Lang.INSTANCE_GAME_DIRECTORY_TITLE);
 				dirChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				dirChooser.setAcceptAllFileFilterUsed(false);

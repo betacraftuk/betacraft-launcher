@@ -29,14 +29,14 @@ public class Minecraft13w16a extends Wrapper {
 		try {
 			ArrayList<String> params = new ArrayList<>();
 			params.add("java");
-			String nativesPath = BC.get() + "bin/natives";
+			String nativesPath = BC.path() + "bin/natives";
 
 			//params.add("-Djava.util.Arrays.useLegacyMergeSort=true");
 			params.add("-Dorg.lwjgl.librarypath=" + nativesPath);
 			params.add("-Dnet.java.games.input.librarypath=" + nativesPath);
 			params.add("-Xmx1G");
 			params.add("-cp");
-			File[] list = new File(BC.get() + "bin/").listFiles(new FilenameFilter() {
+			File[] list = new File(BC.path() + "bin/").listFiles(new FilenameFilter() {
 				@Override
 				public boolean accept(File dir, String fileName) {
 					return fileName.endsWith(".jar");
@@ -46,9 +46,9 @@ public class Minecraft13w16a extends Wrapper {
 			for (File f : list) {
 				bld.append(f.toPath().toString() + ":");
 			}
-			bld.append(BC.get() + "versions/" + this.version + ".jar");
+			bld.append(BC.path() + "versions/" + this.version + ".jar");
 			params.add(bld.toString());
-			//params.add(BC.get() + "bin/lwjgl.jar:" + BC.get() + "bin/lwjgl_util.jar:" + BC.get() + "bin/jinput.jar:" + BC.get() + "versions/" + this.version + ".jar");
+			//params.add(BC.path() + "bin/lwjgl.jar:" + BC.path() + "bin/lwjgl_util.jar:" + BC.path() + "bin/jinput.jar:" + BC.path() + "versions/" + this.version + ".jar");
 			params.add("net.minecraft.client.main.Main");
 			params.add("--username");
 			params.add(this.params.get("username"));

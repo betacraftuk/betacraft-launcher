@@ -33,7 +33,7 @@ public class DownloadRequest extends Request {
 
 	public DownloadResponse perform() {
 		File file = new File(this.destination);
-		File backupfile = new File(BC.get() + "launcher" + File.separator + "backup.tmp");
+		File backupfile = new File(BC.path() + "launcher" + File.separator + "backup.tmp");
 		boolean dl_failed = false;
 		String err = null;
 

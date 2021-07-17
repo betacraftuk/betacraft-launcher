@@ -55,7 +55,7 @@ public class Addon {
 
 	public static void loadAddons() {
 		try {
-			String[] offlineAddons = new File(BC.get() + "launcher" + File.separator + "addons" + File.separator).list(new FilenameFilter() {
+			String[] offlineAddons = new File(BC.path() + "launcher" + File.separator + "addons" + File.separator).list(new FilenameFilter() {
 				@Override
 				public boolean accept(File dir, String fileName) {
 					return fileName.endsWith(".jar");

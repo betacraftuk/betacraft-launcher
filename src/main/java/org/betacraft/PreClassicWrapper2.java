@@ -44,7 +44,7 @@ public class PreClassicWrapper2 extends Wrapper {
 				neww[i] = old[i];
 			}
 
-			neww[neww.length-1] = new File(BC.get() + "launcher/", "PreClassic.jar").toURI().toURL();
+			neww[neww.length-1] = new File(BC.path() + "launcher/", "PreClassic.jar").toURI().toURL();
 			classLoader = new URLClassLoader(neww);
 			try {
 				mainClass = classLoader.loadClass("com.mojang.rubydung.RubyDung");

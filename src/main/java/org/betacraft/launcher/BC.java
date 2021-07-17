@@ -15,22 +15,12 @@ public class BC {
 	public static boolean portable = false;
 	public static boolean wrapped = false;
 
-	public static String get() {
-		if (OS.isWindows()) {
-			return windowsPath();
-		} else {
-			return path();
-		}
-	}
-
-	public static String windowsPath() {
-		if (portable) return prefBC() + "\\.betacraft\\";
-		return System.getenv("APPDATA") + "\\.betacraft\\";
-	}
-
 	public static String path() {
 		String folder = null;
-		if (OS.isLinux()) {
+		if (OS.isWindows()) {
+			folder = System.getenv("APPDATA") + "\\.betacraft\\";
+			if (portable) folder = prefBC() + "\\.betacraft\\";
+		} else if (OS.isLinux()) {
 			folder = System.getProperty("user.home") + "/.betacraft/";
 			if (portable) folder = prefBC() + "/.betacraft/";
 		} else if (OS.isMac()) {
@@ -54,6 +44,6 @@ public class BC {
 	}
 
 	public static String trimBetaCraftDir(String path) {
-		return path.substring(BC.get().length());
+		return path.substring(BC.path().length());
 	}
 }
