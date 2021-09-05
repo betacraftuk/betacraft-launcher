@@ -1,5 +1,6 @@
 package org.betacraft.launcher;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -7,9 +8,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.URI;
 import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -25,6 +28,7 @@ import pl.betacraft.auth.DownloadResponse;
 import pl.betacraft.auth.MicrosoftAuth;
 import pl.betacraft.auth.MojangAuth;
 import pl.betacraft.auth.NoAuth;
+import pl.betacraft.auth.RequestUtil;
 import pl.betacraft.json.lib.MouseFixMacOSJson;
 
 public class Util {
@@ -78,11 +82,16 @@ public class Util {
 				setupAccountConfiguration();
 				return;
 			}
-			Accounts accs = gson.fromJson(new String(Files.readAllBytes(accountsFile.toPath()), "UTF-8"), Accounts.class);
-			if (accs.accounts == null) {
+			Accounts accs = null;
+			try {
+				accs = gson.fromJson(new String(Files.readAllBytes(accountsFile.toPath()), "UTF-8"), Accounts.class);
+			} catch (Throwable t) {}
+
+			if (accs == null || accs.accounts == null) {
 				setupAccountConfiguration();
 				return;
 			}
+
 			for (Credentials c: accs.accounts) {
 				if (c.local_uuid != null && c.local_uuid.equals(accs.current)) {
 					Launcher.auth = getAuthenticator(c);
@@ -388,6 +397,133 @@ public class Util {
 			return true;
 		} catch (Throwable t) {
 			return false;
+		}
+	}
+
+	public static void registerProtocol() {
+		try {
+			if (OS.isWindows()) {
+				if (!hasRegistryKey("HKCU\\Software\\Classes\\betacraft")) {
+					addRegistryKey("HKCU\\Software\\Classes\\betacraft", "/t", "REG_SZ", "/d", "URL:betacraft");
+					addRegistryKey("HKCU\\Software\\Classes\\betacraft", "/v", "URL Protocol", "/t", "REG_SZ");
+
+					addRegistryKey("HKCU\\Software\\Classes\\betacraft\\shell\\open\\command", "/ve", "/t", "REG_SZ", "/d", "\"\\\"" + BC.currentPath.toPath().toString() + "\\\" \\\"%1\\\"\"");
+				} else {
+					// always make sure the reference is up to date
+					if (!getRegistryKeyValue("HKCU\\Software\\Classes\\betacraft\\shell\\open\\command", null).contains(BC.currentPath.toPath().toString())) {
+						addRegistryKey("HKCU\\Software\\Classes\\betacraft\\shell\\open\\command", "/ve", "/f", "/t", "REG_SZ", "/d", "\"\\\"" + BC.currentPath.toPath().toString() + "\\\" \\\"%1\\\"\"");
+					}
+				}
+			} else if (OS.isLinux()) {
+				File local = new File(System.getProperty("user.home"), ".local/share/");
+				File icon = new File(local, "icons/betacraft.png");
+				String content = "[Desktop Entry]\n" + 
+						"Name=BetaCraft Launcher\n" + 
+						"Comment=BetaCraft - a Minecraft launcher\n" + 
+						"Exec=\"" + Launcher.javaRuntime.toPath().toString() + "\" -jar " + BC.currentPath.toPath().toString() + " %U\n" + 
+						"Icon=" + icon.toPath().toString() + "\n" + 
+						"Type=Application\n" + 
+						"Categories=Game;\n" + 
+						"MimeType=x-scheme-handler/betacraft;";
+				File desktopfile = new File(local, "applications/betacraft-launcher.desktop");
+				Files.write(desktopfile.toPath(), content.getBytes("UTF-8"));
+				byte[] png = RequestUtil.readInputStream(Launcher.class.getClassLoader().getResourceAsStream("icons/icon.png"));
+				Files.write(icon.toPath(), png);
+
+				Runtime.getRuntime().exec("xdg-mime default betacraft-launcher.desktop x-scheme-handler/betacraft");
+			}
+			// macos is handled automatically (?) TODO buy a mac and add proper support for it
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+	}
+
+	public static boolean hasRegistryKey(String... key) {
+		try {
+			ArrayList<String> start = new ArrayList<>();
+			start.add("reg");
+			start.add("query");
+			start.addAll(Arrays.asList(key));
+			System.out.println("Regcommand: " + start);
+			Process p = Runtime.getRuntime().exec(start.toArray(new String[0]));
+			InputStreamReader isr_log = new InputStreamReader(p.getErrorStream());
+			BufferedReader br_log = new BufferedReader(isr_log);
+			StringBuilder strb = new StringBuilder();
+			String line = null;
+			while ((line = br_log.readLine()) != null) {
+				strb.append(line + "\n");
+			}
+			System.out.println(strb.toString());
+			if (strb.toString().contains("ERROR") || p.exitValue() != 0) {
+				return false;
+			}
+			return true;
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return false;
+		}
+	}
+
+	public static String getRegistryKeyValue(String location, String key) {
+		try {
+			ArrayList<String> start = new ArrayList<>();
+			start.add("reg");
+			start.add("query");
+			start.add(location);
+			if (key != null) {
+				start.add("/v");
+				start.add(key);
+			}
+			System.out.println("Regcommand: " + start);
+			Process p = Runtime.getRuntime().exec(start.toArray(new String[0]));
+			InputStreamReader isr_log = new InputStreamReader(p.getInputStream());
+			BufferedReader br_log = new BufferedReader(isr_log);
+			StringBuilder strb = new StringBuilder();
+			String line = null;
+			while ((line = br_log.readLine()) != null) {
+				strb.append(line + "\n");
+			}
+			String all = strb.toString();
+			System.out.println(all);
+			if (all == null || !all.contains("\t") || p.exitValue() != 0) {
+				return "";
+			} else {
+				return all.split("\t")[2];
+			}
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return "";
+		}
+	}
+
+	public static void addRegistryKey(String... key) {
+		try {
+			ArrayList<String> start = new ArrayList<>();
+			start.add("reg");
+			start.add("add");
+			start.addAll(Arrays.asList(key));
+			System.out.println("Regcommand: " + start);
+			Process p = Runtime.getRuntime().exec(start.toArray(new String[0]));
+			InputStreamReader isr_log = new InputStreamReader(p.getErrorStream());
+			BufferedReader br_log = new BufferedReader(isr_log);
+			StringBuilder strb = new StringBuilder();
+			String line = null;
+			while ((line = br_log.readLine()) != null) {
+				strb.append(line + "\n");
+			}
+			System.out.println(strb.toString());
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+	}
+
+	public static void openURL(final URI uri) {
+		try {
+			final Object invoke = Class.forName("java.awt.Desktop").getMethod("getDesktop", (Class<?>[])new Class[0]).invoke(null, new Object[0]);
+			invoke.getClass().getMethod("browse", URI.class).invoke(invoke, uri);
+		}
+		catch (Throwable t) {
+			System.out.println("Failed to open link in a web browser: " + uri.toString());
 		}
 	}
 }

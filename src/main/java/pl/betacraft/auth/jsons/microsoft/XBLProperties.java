@@ -11,7 +11,7 @@ public class XBLProperties {
 
 	public XBLProperties(String ms_accessToken) {
 		try {
-			RpsTicket = URLEncoder.encode(ms_accessToken, "UTF-8");
+			RpsTicket = "d=" + URLEncoder.encode(ms_accessToken, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}

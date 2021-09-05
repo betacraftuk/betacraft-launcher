@@ -220,7 +220,7 @@ public class Lang extends JFrame implements LanguageElement {
 		LOGIN_EMAIL_NICKNAME = Util.getProperty(file, "login_email_nickname", charset);
 		LOGIN_PASSWORD = Util.getProperty(file, "login_password", charset);
 		LOGIN_MOJANG_HEADER = Util.getProperty(file, "login_mojang_header", charset);
-		LOGIN_MICROSOFT_BUTTON = Util.getProperty(file, "login_microsoft_button", charset);
+		LOGIN_MICROSOFT_HEADER = Util.getProperty(file, "login_microsoft_header", charset);
 		LOGIN_MICROSOFT_TITLE = Util.getProperty(file, "login_microsoft_title", charset);
 		LOGIN_MICROSOFT_ERROR = Util.getProperty(file, "login_microsoft_error", charset);
 		LOGIN_MICROSOFT_PARENT = Util.getProperty(file, "login_microsoft_parent", charset);
@@ -326,7 +326,9 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String LOGIN_EMAIL_NICKNAME = "E-mail:";
 	public static String LOGIN_PASSWORD = "Password:";
 	public static String LOGIN_MOJANG_HEADER = "... or login with a Mojang account:";
-	public static String LOGIN_MICROSOFT_BUTTON = "Login with Microsoft";
+	public static String LOGIN_MICROSOFT_HEADER = "Login with Microsoft:";
+	public static String LOGIN_MICROSOFT_BROWSER = "via browser";
+	public static String LOGIN_MICROSOFT_PROMPT = "via prompt";
 	public static String LOGIN_MICROSOFT_TITLE = "Login with your Microsoft account";
 	public static String LOGIN_MICROSOFT_ERROR = "Microsoft authentication error";
 	public static String LOGIN_MICROSOFT_PARENT = "Parental approval required. Add this account to Family to login.";
@@ -335,7 +337,7 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String LOGIN_MICROSOFT_NO_JFX_TITLE = "No JFX detected.";
 	public static String LOGIN_MICROSOFT_NO_JFX_CONTENT = "You need to additionally install JavaFX in order to login with Microsoft.\nIt's recommended to install JRE 8 from: https://java.com";
 
-	public static String LOGIN_FAILED = "Failed to log in";
+	public static String LOGIN_FAILED = "Failed to complete the login process";
 	public static String LOGIN_FAILED_INVALID_CREDENTIALS = "Invalid e-mail or password.";
 
 	public static String INSTANCE_GAME_DIRECTORY = "Game directory";

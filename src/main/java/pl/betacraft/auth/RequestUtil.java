@@ -56,24 +56,11 @@ public class RequestUtil {
 			out.close();
 
 			// Read response
-			InputStream in = con.getInputStream();
-
-			byte[] buffer = new byte[4096];
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			int count = in.available();
-			while ((count = in.read(buffer)) > 0) {
-				baos.write(buffer, 0, count);
-			}
-			byte[] data = baos.toByteArray();
-			return data;
+			return readInputStream(con.getInputStream());
 		} catch (Throwable t) {
 			t.printStackTrace();
 			try {
-				InputStream in = con.getErrorStream();
-				byte[] bytearr = new byte[in.available()];
-				in.read(bytearr);
-				in.close();
-				return bytearr;
+				return readInputStream(con.getErrorStream());
 			} catch (Throwable t1) {
 				t1.printStackTrace();
 				return null;
@@ -113,8 +100,20 @@ public class RequestUtil {
 			}
 
 			// Read response
-			InputStream in = con.getInputStream();
+			return readInputStream(con.getInputStream());
+		} catch (Throwable t) {
+			try {
+				return readInputStream(con.getErrorStream());
+			} catch (Throwable t1) {
+				t.printStackTrace();
+				t1.printStackTrace();
+				return null;
+			}
+		}
+	}
 
+	public static byte[] readInputStream(InputStream in) {
+		try {
 			byte[] buffer = new byte[4096];
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			int count = in.available();
@@ -124,17 +123,8 @@ public class RequestUtil {
 			byte[] data = baos.toByteArray();
 			return data;
 		} catch (Throwable t) {
-			try {
-				InputStream in = con.getErrorStream();
-				byte[] bytearr = new byte[in.available()];
-				in.read(bytearr);
-				in.close();
-				return bytearr;
-			} catch (Throwable t1) {
-				t.printStackTrace();
-				t1.printStackTrace();
-				return null;
-			}
+			t.printStackTrace();
+			return null;
 		}
 	}
 }

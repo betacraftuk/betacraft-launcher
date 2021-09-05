@@ -48,6 +48,8 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 
 	public static Tab tab = Tab.CHANGELOG;
 
+	private AwaitingOperation op;
+
 	// Launcher's icon
 	public static BufferedImage img;
 
@@ -374,6 +376,17 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 			}
 		};
 		SwingUtilities.invokeLater(set);
+	}
+
+	public void waitForInput() {
+		op = new AwaitingOperation();
+		op.start();
+	}
+
+	public void input() {
+		if (op != null) op.interrupt();
+		op = null;
+		this.requestFocus();
 	}
 
 	public enum Tab {

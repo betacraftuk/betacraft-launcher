@@ -28,8 +28,8 @@ import pl.betacraft.auth.jsons.microsoft.XSTSAuthRequest;
 
 public class MicrosoftAuth implements Authenticator {
 
-	public static final String REDIRECT_URI = "https://login.live.com/oauth20_desktop.srf";
-	public static final String CLIENT_ID = "00000000402b5328";
+	public static final String REDIRECT_URI = "betacraft://msaresponse";
+	public static final String CLIENT_ID = "8075fa74-4091-4356-a0b8-a7c118ef121c";
 
 	public String code;
 	public Credentials credentials = null;
@@ -43,8 +43,9 @@ public class MicrosoftAuth implements Authenticator {
 		if (!Util.hasJFX()) {
 			JOptionPane.showMessageDialog(Window.mainWindow, Lang.LOGIN_MICROSOFT_NO_JFX_CONTENT.replace("\\n", "\n"), Lang.LOGIN_MICROSOFT_NO_JFX_TITLE, JOptionPane.ERROR_MESSAGE);
 			Logger.a("No JFX detected!");
+		} else {
+			this.prompt = new MSPrompt(this);
 		}
-		this.prompt = new MSPrompt(this);
 	}
 
 	private void clearFields() {
@@ -67,20 +68,20 @@ public class MicrosoftAuth implements Authenticator {
 		} else if (this.code != null) { // how
 			msres = new MicrosoftAuthRequest(this.code).perform();
 		}
-		if (msres == null) {
+		if (msres == null || msres.isEmpty()) {
 			System.out.println("MicrosoftAuth failed!");
 			return false;
 		}
 
 		// Xbox stuff
 		XBLXSTSAuthResponse xblres = new XBLAuthRequest(msres.access_token).perform();
-		if (xblres == null) {
+		if (xblres == null || xblres.isEmpty()) {
 			System.out.println("XBL failed!");
 			return false;
 		}
 
 		XBLXSTSAuthResponse xstsres = new XSTSAuthRequest(xblres.Token).perform();
-		if (xstsres == null) {
+		if (xstsres == null || xblres.isEmpty()) {
 			System.out.println("XSTS failed!");
 			return false;
 		}
@@ -112,13 +113,13 @@ public class MicrosoftAuth implements Authenticator {
 		}
 
 		MinecraftAuthResponse mcres = new MinecraftAuthRequest(xblres.DisplayClaims.xui[0].uhs, xstsres.Token).perform();
-		if (mcres == null) {
+		if (mcres == null || mcres.isEmpty()) {
 			System.out.println("MinecraftAuth failed!");
 			return false;
 		}
 
 		MinecraftGameOwnResponse mcgores = new MinecraftGameOwnRequest(mcres.access_token).perform();
-		if (mcgores == null) {
+		if (mcgores == null || mcgores.isEmpty()) {
 			System.out.println("MinecraftOwnership failed!");
 			return false;
 		}
@@ -135,7 +136,7 @@ public class MicrosoftAuth implements Authenticator {
 		}
 
 		MinecraftProfileResponse mcpres = new MinecraftProfileRequest(mcres.access_token).perform();
-		if (mcpres == null) {
+		if (mcpres == null || mcpres.isEmpty()) {
 			System.out.println("MinecraftProfile failed!");
 			return false;
 		}
@@ -152,7 +153,11 @@ public class MicrosoftAuth implements Authenticator {
 			this.credentials.local_uuid = mcpres.id;
 			this.credentials.account_type = AccountType.MICROSOFT;
 			Launcher.accounts.addAccount(this.credentials);
+
+			Launcher.accounts.setCurrent(this.getCredentials());
+			Launcher.auth = this;
 			this.authSuccess();
+
 			System.out.println("USERNAME: " + this.credentials.username);
 			System.out.println("ACC_UUID: " + this.credentials.local_uuid);
 		}

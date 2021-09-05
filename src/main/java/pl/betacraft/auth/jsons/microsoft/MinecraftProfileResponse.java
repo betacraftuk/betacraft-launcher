@@ -6,4 +6,8 @@ public class MinecraftProfileResponse extends MinecraftErrorResponse {
 	public String name;
 	public MinecraftTextureProperty[] skins;
 	public MinecraftTextureProperty[] capes;
+
+	public boolean isEmpty() {
+		return this.name == null && this.id == null;
+	}
 }

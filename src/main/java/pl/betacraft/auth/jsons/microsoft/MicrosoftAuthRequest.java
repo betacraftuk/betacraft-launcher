@@ -14,8 +14,7 @@ public class MicrosoftAuthRequest extends Request {
 		POST_DATA = "client_id=" + MicrosoftAuth.CLIENT_ID +
 				"&code=" + code +
 				"&grant_type=authorization_code" +
-				"&redirect_uri=" + MicrosoftAuth.REDIRECT_URI +
-				"&scope=service::user.auth.xboxlive.com::MBI_SSL";
+				"&redirect_uri=" + MicrosoftAuth.REDIRECT_URI;
 		PROPERTIES.put("Content-Type", "application/x-www-form-urlencoded");
 	}
 

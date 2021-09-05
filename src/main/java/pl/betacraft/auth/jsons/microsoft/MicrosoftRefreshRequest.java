@@ -14,8 +14,7 @@ public class MicrosoftRefreshRequest extends Request {
 		POST_DATA = "client_id=" + MicrosoftAuth.CLIENT_ID +
 				"&refresh_token=" + refresh_token +
 				"&grant_type=refresh_token" +
-				"&redirect_uri=" + MicrosoftAuth.REDIRECT_URI +
-				"&scope=service::user.auth.xboxlive.com::MBI_SSL";
+				"&redirect_uri=" + MicrosoftAuth.REDIRECT_URI;
 		PROPERTIES.put("Content-Type", "application/x-www-form-urlencoded");
 	}
 

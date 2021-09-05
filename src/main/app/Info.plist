@@ -18,12 +18,16 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
+	<key>CFBundleSignature</key>
+	<string>LOCL</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.games</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.8.5</string>
+	<string>10.7.1</string>
+	<key>NSUIElement</key>
+	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
@@ -33,5 +37,16 @@
 	<string>Main</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>BetaCraft</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>betacraft</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

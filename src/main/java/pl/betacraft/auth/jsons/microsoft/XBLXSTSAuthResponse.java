@@ -6,4 +6,8 @@ public class XBLXSTSAuthResponse extends XSTSErrorResponse {
 	public String NotAfter;
 	public String Token;
 	public XBLDisplayClaims DisplayClaims;
+
+	public boolean isEmpty() {
+		return this.Token == null && this.NotAfter == null && this.IssueInstant == null;
+	}
 }

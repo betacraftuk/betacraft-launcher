@@ -4,13 +4,11 @@ import java.awt.Color;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
-import java.net.URI;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import javax.net.ssl.HttpsURLConnection;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -28,7 +26,7 @@ public class WebsitePanel extends JPanel {
 		public void hyperlinkUpdate(final HyperlinkEvent hyperlinkEvent) {
 			if (hyperlinkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
 				try {
-					openLink(hyperlinkEvent.getURL().toURI());
+					Util.openURL(hyperlinkEvent.getURL().toURI());
 				}
 				catch (Exception ex) {
 					ex.printStackTrace();
@@ -67,7 +65,7 @@ public class WebsitePanel extends JPanel {
 					return;
 				} else {
 					try {
-						openLink(hyperlinkEvent.getURL().toURI());
+						Util.openURL(hyperlinkEvent.getURL().toURI());
 					}
 					catch (Exception ex) {
 						ex.printStackTrace();
@@ -79,16 +77,6 @@ public class WebsitePanel extends JPanel {
 	};
 
 	public WebsitePanel() {}
-
-	public static void openLink(final URI uri) {
-		try {
-			final Object invoke = Class.forName("java.awt.Desktop").getMethod("getDesktop", (Class<?>[])new Class[0]).invoke(null, new Object[0]);
-			invoke.getClass().getMethod("browse", URI.class).invoke(invoke, uri);
-		}
-		catch (Throwable t) {
-			System.out.println("Failed to open link in a web browser: " + uri.toString());
-		}
-	}
 
 	public JScrollPane getInstances() {
 

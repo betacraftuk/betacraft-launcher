@@ -11,4 +11,8 @@ public class MicrosoftAuthResponse extends Response {
 	public String refresh_token;
 	public String user_id;
 	public String foci;
+
+	public boolean isEmpty() {
+		return this.token_type == null && this.scope == null && this.access_token == null && this.refresh_token == null && this.user_id == null;
+	}
 }

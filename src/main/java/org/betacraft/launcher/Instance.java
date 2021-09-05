@@ -1,7 +1,6 @@
 package org.betacraft.launcher;
 
 import java.awt.Image;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -52,32 +51,37 @@ public class Instance {
 				return null;
 			}
 			Instance instance = newInstance(name);
-			instance.launchArgs = Util.getProperty(instanceFile, "launchArgs");
-			String addonz1 = Util.getProperty(instanceFile, "addons");
-			String[] addonz = addonz1.split(",");
-			if (!addonz1.equals("")) {
-				for (String addon : addonz) {
-					if (instance.addons.contains(addon)) continue;
-					instance.addons.add(addon);
-				}
-			}
-			instance.gameDir = Util.getProperty(instanceFile, "gameDir");
-			instance.version = Util.getProperty(instanceFile, "version");
-
-			String width = Util.getProperty(instanceFile, "width");
-			String height = Util.getProperty(instanceFile, "height");
-
 			try {
-				instance.width = Integer.parseInt(width);
-				instance.height = Integer.parseInt(height);
-			} catch (NumberFormatException exx) {
-				Logger.a("Failed to parse width and height parameters in instance: " + name);
-				return null;
-			}
+				instance.launchArgs = Util.getProperty(instanceFile, "launchArgs");
+				String addonz1 = Util.getProperty(instanceFile, "addons");
+				String[] addonz = addonz1.split(",");
+				if (!addonz1.equals("")) {
+					for (String addon : addonz) {
+						if (instance.addons.contains(addon)) continue;
+						instance.addons.add(addon);
+					}
+				}
+				instance.gameDir = Util.getProperty(instanceFile, "gameDir");
+				instance.version = Util.getProperty(instanceFile, "version");
 
-			instance.proxy = Boolean.parseBoolean(Util.getProperty(instanceFile, "proxy"));
-			instance.keepopen = Boolean.parseBoolean(Util.getProperty(instanceFile, "keepopen"));
-			instance.RPC = Boolean.parseBoolean(Util.getProperty(instanceFile, "RPC"));
+				String width = Util.getProperty(instanceFile, "width");
+				String height = Util.getProperty(instanceFile, "height");
+
+				try {
+					instance.width = Integer.parseInt(width);
+					instance.height = Integer.parseInt(height);
+				} catch (NumberFormatException exx) {
+					Logger.a("Failed to parse width and height parameters in instance: " + name);
+					return null;
+				}
+
+				instance.proxy = Boolean.parseBoolean(Util.getProperty(instanceFile, "proxy"));
+				instance.keepopen = Boolean.parseBoolean(Util.getProperty(instanceFile, "keepopen"));
+				instance.RPC = Boolean.parseBoolean(Util.getProperty(instanceFile, "RPC"));
+			} catch (Throwable t) {
+				Logger.a("Instance '" + name + "' is corrupted!");
+				t.printStackTrace();
+			}
 			return instance;
 		} catch (Exception ex) {
 			Logger.a("Failed to load instance: " + name);

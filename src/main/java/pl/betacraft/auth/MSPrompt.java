@@ -48,6 +48,7 @@ public class MSPrompt extends JFrame {
 					"?client_id=" + MicrosoftAuth.CLIENT_ID + 
 					"&response_type=code" + 
 					"&scope=service::user.auth.xboxlive.com::MBI_SSL" +
+					"&prompt=select_account" +
 					"&redirect_uri=" + MicrosoftAuth.REDIRECT_URI);
 			//reShow();
 		});

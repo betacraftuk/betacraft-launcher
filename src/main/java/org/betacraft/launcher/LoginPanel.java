@@ -8,13 +8,16 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.net.URL;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
 
 import pl.betacraft.auth.MicrosoftAuth;
 import pl.betacraft.auth.MojangAuth;
@@ -34,7 +37,7 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		this.setIconImage(Window.img);
 		setTitle(Lang.LOGIN_TITLE);
 		setResizable(true);
-		this.setMinimumSize(new Dimension(360, 200));
+		this.setMinimumSize(new Dimension(400, 200));
 
 		JPanel panel = new InstanceSettings.OptionsPanel();
 		panel.setLayout(new GridBagLayout());
@@ -44,11 +47,38 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		constr.gridx = 0;
 		constr.gridy = 0;
 		constr.fill = GridBagConstraints.BOTH;
-		constr.gridwidth = 4;
+		constr.gridwidth = 1;
 		constr.weightx = 1.0;
 		constr.insets = new Insets(10, 10, 0, 10);
-		JButton microsoftauth = new JButton(Lang.LOGIN_MICROSOFT_BUTTON);
-		microsoftauth.addActionListener(new ActionListener() {
+		JLabel microsoftlabel = new JLabel(Lang.LOGIN_MICROSOFT_HEADER);
+		microsoftlabel.setForeground(Color.LIGHT_GRAY);
+		panel.add(microsoftlabel, constr);
+		constr.gridx = 1;
+		JButton microsoftbrowser = new JButton(Lang.LOGIN_MICROSOFT_BROWSER);
+		microsoftbrowser.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					Util.openURL(new URL("https://login.live.com/oauth20_authorize.srf" + 
+							"?client_id=" + MicrosoftAuth.CLIENT_ID + 
+							"&response_type=code" + 
+							"&scope=XboxLive.signin%20offline_access" +
+							"&prompt=login" +
+							"&redirect_uri=" + MicrosoftAuth.REDIRECT_URI).toURI());
+
+					//Window.quit(true);
+					setVisible(false);
+					Window.loginPanel = null;
+					Window.mainWindow.waitForInput();
+				} catch (Throwable t) {
+					t.printStackTrace();
+				}
+			}
+		});
+		panel.add(microsoftbrowser, constr);
+		constr.gridx = 2;
+		JButton microsoftjfx = new JButton(Lang.LOGIN_MICROSOFT_PROMPT);
+		microsoftjfx.setEnabled(Util.hasJFX());
+		microsoftjfx.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				MicrosoftAuth auth = new MicrosoftAuth(null);
 				setVisible(false);
@@ -56,7 +86,17 @@ public class LoginPanel extends JFrame implements LanguageElement {
 				auth.showPrompt();
 			}
 		});
-		panel.add(microsoftauth, constr);
+		panel.add(microsoftjfx, constr);
+//		JButton microsoftauth = new JButton(Lang.LOGIN_MICROSOFT_BUTTON);
+//		microsoftauth.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				MicrosoftAuth auth = new MicrosoftAuth(null);
+//				setVisible(false);
+//				Window.loginPanel = null;
+//				auth.showPrompt();
+//			}
+//		});
+//		panel.add(microsoftauth, constr);
 
 		constr.gridy++;
 		constr.fill = GridBagConstraints.HORIZONTAL;
@@ -138,11 +178,13 @@ public class LoginPanel extends JFrame implements LanguageElement {
 
 	public static void continueMSA(MicrosoftAuth auth) {
 		if (auth.authenticate()) {
-			Launcher.auth = auth;
-			Launcher.accounts.setCurrent(auth.getCredentials());
-			Launcher.auth = auth;
 			Util.saveAccounts();
+		} else {
+			SwingUtilities.invokeLater(() -> {
+				JOptionPane.showMessageDialog(Window.mainWindow, Lang.LOGIN_FAILED, Lang.LOGIN_MICROSOFT_ERROR, JOptionPane.ERROR_MESSAGE);
+			});
 		}
+		Window.mainWindow.input();
 	}
 
 	public void update() {
