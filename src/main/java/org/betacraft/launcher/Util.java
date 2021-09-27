@@ -400,120 +400,57 @@ public class Util {
 		}
 	}
 
-	public static void registerProtocol() {
+	public static String getFullJavaVersion() {
+		String line = null;
 		try {
-			if (OS.isWindows()) {
-				if (!hasRegistryKey("HKCU\\Software\\Classes\\betacraft")) {
-					addRegistryKey("HKCU\\Software\\Classes\\betacraft", "/t", "REG_SZ", "/d", "URL:betacraft");
-					addRegistryKey("HKCU\\Software\\Classes\\betacraft", "/v", "URL Protocol", "/t", "REG_SZ");
-
-					addRegistryKey("HKCU\\Software\\Classes\\betacraft\\shell\\open\\command", "/ve", "/t", "REG_SZ", "/d", "\"\\\"" + BC.currentPath.toPath().toString() + "\\\" \\\"%1\\\"\"");
-				} else {
-					// always make sure the reference is up to date
-					if (!getRegistryKeyValue("HKCU\\Software\\Classes\\betacraft\\shell\\open\\command", null).contains(BC.currentPath.toPath().toString())) {
-						addRegistryKey("HKCU\\Software\\Classes\\betacraft\\shell\\open\\command", "/ve", "/f", "/t", "REG_SZ", "/d", "\"\\\"" + BC.currentPath.toPath().toString() + "\\\" \\\"%1\\\"\"");
-					}
+			ArrayList<String> arl = new ArrayList<>();
+			arl.add(Launcher.javaRuntime.toPath().toString());
+			arl.add("-version");
+			ProcessBuilder pb = new ProcessBuilder(arl);
+			Process p = pb.start();
+			InputStreamReader isr_log = new InputStreamReader(p.getErrorStream());
+			BufferedReader br_log = new BufferedReader(isr_log);
+			while ((line = br_log.readLine()) != null) {
+				if (line.contains("version")) {
+					p.destroyForcibly();
+					break;
 				}
-			} else if (OS.isLinux()) {
-				File local = new File(System.getProperty("user.home"), ".local/share/");
-				File icon = new File(local, "icons/betacraft.png");
-				String content = "[Desktop Entry]\n" + 
-						"Name=BetaCraft Launcher\n" + 
-						"Comment=BetaCraft - a Minecraft launcher\n" + 
-						"Exec=\"" + Launcher.javaRuntime.toPath().toString() + "\" -jar " + BC.currentPath.toPath().toString() + " %U\n" + 
-						"Icon=" + icon.toPath().toString() + "\n" + 
-						"Type=Application\n" + 
-						"Categories=Game;\n" + 
-						"MimeType=x-scheme-handler/betacraft;";
-				File desktopfile = new File(local, "applications/betacraft-launcher.desktop");
-				Files.write(desktopfile.toPath(), content.getBytes("UTF-8"));
-				byte[] png = RequestUtil.readInputStream(Launcher.class.getClassLoader().getResourceAsStream("icons/icon.png"));
-				Files.write(icon.toPath(), png);
-
-				Runtime.getRuntime().exec("xdg-mime default betacraft-launcher.desktop x-scheme-handler/betacraft");
 			}
-			// macos is handled automatically (?) TODO buy a mac and add proper support for it
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
+		// java version "1.8.0_281" ---> 1.8.0_281"
+		String verstart = line.substring(line.indexOf("\"")+1);
+		// 1.8.0_281" ---> 1.8.0_281
+		String fullver = verstart.substring(0, verstart.indexOf("\""));
+
+		return fullver;
 	}
 
-	public static boolean hasRegistryKey(String... key) {
-		try {
-			ArrayList<String> start = new ArrayList<>();
-			start.add("reg");
-			start.add("query");
-			start.addAll(Arrays.asList(key));
-			System.out.println("Regcommand: " + start);
-			Process p = Runtime.getRuntime().exec(start.toArray(new String[0]));
-			InputStreamReader isr_log = new InputStreamReader(p.getErrorStream());
-			BufferedReader br_log = new BufferedReader(isr_log);
-			StringBuilder strb = new StringBuilder();
-			String line = null;
-			while ((line = br_log.readLine()) != null) {
-				strb.append(line + "\n");
+	public static String getJavaVersion() {
+		String fullver = getFullJavaVersion();
+
+		// This basically filters out the actual core version, skipping all the fancy stuff
+		String whitelist = "0123456789.";
+		for (int i = 0; i < fullver.length(); i++) {
+			if (!whitelist.contains(Character.toString(fullver.charAt(i)))) {
+				fullver = fullver.substring(0, i);
 			}
-			System.out.println(strb.toString());
-			if (strb.toString().contains("ERROR") || p.exitValue() != 0) {
-				return false;
-			}
-			return true;
-		} catch (Throwable t) {
-			t.printStackTrace();
-			return false;
 		}
+		return fullver;
 	}
 
-	public static String getRegistryKeyValue(String location, String key) {
-		try {
-			ArrayList<String> start = new ArrayList<>();
-			start.add("reg");
-			start.add("query");
-			start.add(location);
-			if (key != null) {
-				start.add("/v");
-				start.add(key);
+	public static int getMajorJavaVersion() {
+		String ver = getJavaVersion();
+		if (ver.startsWith("1.")) {
+			return Integer.parseInt(ver.split("\\.")[1]);
+		} else {
+			int cut = ver.indexOf('.'); 
+			if (cut == -1) {
+				cut = ver.length();
 			}
-			System.out.println("Regcommand: " + start);
-			Process p = Runtime.getRuntime().exec(start.toArray(new String[0]));
-			InputStreamReader isr_log = new InputStreamReader(p.getInputStream());
-			BufferedReader br_log = new BufferedReader(isr_log);
-			StringBuilder strb = new StringBuilder();
-			String line = null;
-			while ((line = br_log.readLine()) != null) {
-				strb.append(line + "\n");
-			}
-			String all = strb.toString();
-			System.out.println(all);
-			if (all == null || !all.contains("\t") || p.exitValue() != 0) {
-				return "";
-			} else {
-				return all.split("\t")[2];
-			}
-		} catch (Throwable t) {
-			t.printStackTrace();
-			return "";
-		}
-	}
 
-	public static void addRegistryKey(String... key) {
-		try {
-			ArrayList<String> start = new ArrayList<>();
-			start.add("reg");
-			start.add("add");
-			start.addAll(Arrays.asList(key));
-			System.out.println("Regcommand: " + start);
-			Process p = Runtime.getRuntime().exec(start.toArray(new String[0]));
-			InputStreamReader isr_log = new InputStreamReader(p.getErrorStream());
-			BufferedReader br_log = new BufferedReader(isr_log);
-			StringBuilder strb = new StringBuilder();
-			String line = null;
-			while ((line = br_log.readLine()) != null) {
-				strb.append(line + "\n");
-			}
-			System.out.println(strb.toString());
-		} catch (Throwable t) {
-			t.printStackTrace();
+			return Integer.parseInt(ver.substring(0, cut));
 		}
 	}
 

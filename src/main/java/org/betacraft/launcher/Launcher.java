@@ -53,7 +53,7 @@ import pl.betacraft.json.lib.MouseFixMacOSJson;
 
 /** Main class */
 public class Launcher {
-	public static String VERSION = "1.09_15-pre1"; // TODO Always update this
+	public static String VERSION = "1.09_15-pre2"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
@@ -329,7 +329,6 @@ public class Launcher {
 			ex.printStackTrace();
 			Logger.printException(ex);
 		}
-		Util.registerProtocol();
 
 		Logger.a("Loaded in: " + (System.nanoTime() - nano) + " ns");
 	}

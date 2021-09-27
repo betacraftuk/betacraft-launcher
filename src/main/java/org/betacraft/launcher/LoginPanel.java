@@ -50,11 +50,9 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		constr.gridwidth = 1;
 		constr.weightx = 1.0;
 		constr.insets = new Insets(10, 10, 0, 10);
-		JLabel microsoftlabel = new JLabel(Lang.LOGIN_MICROSOFT_HEADER);
-		microsoftlabel.setForeground(Color.LIGHT_GRAY);
-		panel.add(microsoftlabel, constr);
-		constr.gridx = 1;
-		JButton microsoftbrowser = new JButton(Lang.LOGIN_MICROSOFT_BROWSER);
+
+		constr.gridwidth = 3;
+		JButton microsoftbrowser = new JButton(Lang.LOGIN_MICROSOFT_HEADER);
 		microsoftbrowser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
@@ -62,7 +60,7 @@ public class LoginPanel extends JFrame implements LanguageElement {
 							"?client_id=" + MicrosoftAuth.CLIENT_ID + 
 							"&response_type=code" + 
 							"&scope=XboxLive.signin%20offline_access" +
-							"&prompt=login" +
+							"&prompt=select_account" +
 							"&redirect_uri=" + MicrosoftAuth.REDIRECT_URI).toURI());
 
 					//Window.quit(true);
@@ -75,18 +73,6 @@ public class LoginPanel extends JFrame implements LanguageElement {
 			}
 		});
 		panel.add(microsoftbrowser, constr);
-		constr.gridx = 2;
-		JButton microsoftjfx = new JButton(Lang.LOGIN_MICROSOFT_PROMPT);
-		microsoftjfx.setEnabled(Util.hasJFX());
-		microsoftjfx.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				MicrosoftAuth auth = new MicrosoftAuth(null);
-				setVisible(false);
-				Window.loginPanel = null;
-				auth.showPrompt();
-			}
-		});
-		panel.add(microsoftjfx, constr);
 //		JButton microsoftauth = new JButton(Lang.LOGIN_MICROSOFT_BUTTON);
 //		microsoftauth.addActionListener(new ActionListener() {
 //			public void actionPerformed(ActionEvent e) {

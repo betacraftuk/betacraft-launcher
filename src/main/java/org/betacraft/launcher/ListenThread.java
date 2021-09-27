@@ -1,6 +1,10 @@
 package org.betacraft.launcher;
 
-import java.io.DataInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -25,19 +29,33 @@ public class ListenThread extends Thread {
 			while (running) {
 				Socket sock = this.socket.accept();
 				try {
-					DataInputStream bais = new DataInputStream(sock.getInputStream());
-					String action = bais.readUTF();
+					byte[] bytes = readInputStreamBytes(sock.getInputStream());
+					String http = new String(bytes, "UTF-8");
+					System.out.println(http);
 					// msa
-					if (action.startsWith(MicrosoftAuth.REDIRECT_URI)) {
+					if (http.startsWith("GET " + MicrosoftAuth.AUTH_URI)) {
 						System.out.println("Received Microsoft login response");
 						MicrosoftAuth msa = new MicrosoftAuth(null);
-						msa.code = action.substring(action.indexOf("=")+1);
+						msa.code = http.substring(http.indexOf("=")+1, http.indexOf(" HTTP/"));
 						try {
 							LoginPanel.continueMSA(msa);
 						} catch (Throwable t) {
 							t.printStackTrace();
 						}
+					} else {
+						sock.close();
+						continue;
 					}
+					BufferedWriter bos = new BufferedWriter(
+							new OutputStreamWriter(
+									new BufferedOutputStream(sock.getOutputStream()), "UTF-8"));
+					bos.write("HTTP/1.1 200 OK\r\n" +
+							"Content-Type: text/html\r\n" +
+							"\r\n\r\n");
+					bos.write("<html> <head> <title>All done!</title> <script> window.onload = function() { window.close(); } </script> </head> <body> <center><h1>You can now close this tab.</h1></center> </html>");
+					bos.flush();
+					bos.close();
+					sock.close();
 				} catch (Throwable t) {}
 			}
 			// close on exit
@@ -54,6 +72,22 @@ public class ListenThread extends Thread {
 			return true;
 		} catch (Throwable t) {
 			return false;
+		}
+	}
+
+	public static byte[] readInputStreamBytes(InputStream in) {
+		try {
+			byte[] buffer = new byte[4096];
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			while (in.available() > 0) {
+				in.read(buffer);
+				baos.write(buffer);
+			}
+			byte[] data = baos.toByteArray();
+			return data;
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return null;
 		}
 	}
 }

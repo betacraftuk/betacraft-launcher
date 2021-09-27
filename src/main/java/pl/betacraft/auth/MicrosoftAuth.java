@@ -28,7 +28,8 @@ import pl.betacraft.auth.jsons.microsoft.XSTSAuthRequest;
 
 public class MicrosoftAuth implements Authenticator {
 
-	public static final String REDIRECT_URI = "betacraft://msaresponse";
+	public static final String AUTH_URI = "/msaresponse";
+	public static final String REDIRECT_URI = "http://localhost:11799/msaresponse";
 	public static final String CLIENT_ID = "8075fa74-4091-4356-a0b8-a7c118ef121c";
 
 	public String code;

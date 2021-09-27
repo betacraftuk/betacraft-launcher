@@ -326,7 +326,7 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String LOGIN_EMAIL_NICKNAME = "E-mail:";
 	public static String LOGIN_PASSWORD = "Password:";
 	public static String LOGIN_MOJANG_HEADER = "... or login with a Mojang account:";
-	public static String LOGIN_MICROSOFT_HEADER = "Login with Microsoft:";
+	public static String LOGIN_MICROSOFT_HEADER = "Login with Microsoft";
 	public static String LOGIN_MICROSOFT_BROWSER = "via browser";
 	public static String LOGIN_MICROSOFT_PROMPT = "via prompt";
 	public static String LOGIN_MICROSOFT_TITLE = "Login with your Microsoft account";
