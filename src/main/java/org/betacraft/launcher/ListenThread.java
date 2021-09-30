@@ -28,6 +28,7 @@ public class ListenThread extends Thread {
 		try {
 			while (running) {
 				Socket sock = this.socket.accept();
+				System.out.println("oh yes");
 				try {
 					byte[] bytes = readInputStreamBytes(sock.getInputStream());
 					String http = new String(bytes, "UTF-8");
@@ -35,6 +36,9 @@ public class ListenThread extends Thread {
 					// msa
 					if (http.startsWith("GET " + MicrosoftAuth.AUTH_URI)) {
 						System.out.println("Received Microsoft login response");
+
+						respond(sock);
+
 						MicrosoftAuth msa = new MicrosoftAuth(null);
 						msa.code = http.substring(http.indexOf("=")+1, http.indexOf(" HTTP/"));
 						try {
@@ -46,16 +50,6 @@ public class ListenThread extends Thread {
 						sock.close();
 						continue;
 					}
-					BufferedWriter bos = new BufferedWriter(
-							new OutputStreamWriter(
-									new BufferedOutputStream(sock.getOutputStream()), "UTF-8"));
-					bos.write("HTTP/1.1 200 OK\r\n" +
-							"Content-Type: text/html\r\n" +
-							"\r\n\r\n");
-					bos.write("<html> <head> <title>All done!</title> <script> window.onload = function() { window.close(); } </script> </head> <body> <center><h1>You can now close this tab.</h1></center> </html>");
-					bos.flush();
-					bos.close();
-					sock.close();
 				} catch (Throwable t) {}
 			}
 			// close on exit
@@ -88,6 +82,24 @@ public class ListenThread extends Thread {
 		} catch (Throwable t) {
 			t.printStackTrace();
 			return null;
+		}
+	}
+
+	public static void respond(Socket sock) {
+		try {
+			BufferedWriter bos = new BufferedWriter(
+					new OutputStreamWriter(
+							new BufferedOutputStream(sock.getOutputStream()), "UTF-8"));
+			bos.write("HTTP/1.1 200 OK\r\n" +
+					"Content-Type: text/html\r\n" +
+					"\r\n\r\n");
+			bos.write("<html> <head> <title>All done!</title> </head> <body> <center><h1>You can now close this tab.</h1></center> </html>");
+			bos.flush();
+			bos.close();
+			sock.close();
+		} catch (Throwable t) {
+			t.printStackTrace();
+			Logger.printException(t);
 		}
 	}
 }

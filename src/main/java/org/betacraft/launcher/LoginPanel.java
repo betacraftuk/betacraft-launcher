@@ -52,7 +52,7 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		constr.insets = new Insets(10, 10, 0, 10);
 
 		constr.gridwidth = 3;
-		JButton microsoftbrowser = new JButton(Lang.LOGIN_MICROSOFT_HEADER);
+		JButton microsoftbrowser = new JButton(Lang.LOGIN_MICROSOFT_BUTTON);
 		microsoftbrowser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
