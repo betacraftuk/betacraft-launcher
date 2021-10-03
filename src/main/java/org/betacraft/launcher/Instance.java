@@ -46,7 +46,7 @@ public class Instance {
 		try {
 			File instanceFile = new File(BC.get() + "launcher" + File.separator + "instances", name + ".txt");
 			if (!instanceFile.exists()) {
-				System.out.println(instanceFile.toPath().toString());
+				System.out.println(instanceFile.getPath());
 				Logger.printException(new Exception("Instance file is null!"));
 				return null;
 			}
@@ -155,9 +155,9 @@ public class Instance {
 		File defaultImg = new File(BC.get() + "launcher" + File.separator + "default_icon.png");
 		if (!imgFile.exists()) {
 			Files.copy(this.getClass().getClassLoader().getResourceAsStream("icons/favicon.png"), defaultImg.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			return defaultImg.toPath().toString();
+			return defaultImg.getPath();
 		}
-		return imgFile.toPath().toString();
+		return imgFile.getPath();
 	}
 
 	public Image getIcon() {

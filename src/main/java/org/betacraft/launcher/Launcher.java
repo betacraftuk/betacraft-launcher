@@ -156,7 +156,7 @@ public class Launcher {
 				ArrayList<String> pa = new ArrayList<String>();
 				pa.add("java");
 				pa.add("-jar");
-				pa.add(dest.toPath().toString());
+				pa.add(dest.getPath());
 				new ProcessBuilder(pa).start();
 
 				// Exit this process, its job is done
@@ -298,7 +298,7 @@ public class Launcher {
 		Logger.a("BetaCraft Launcher JE v" + VERSION + " loading...");
 		Logger.a("Java version: " + System.getProperty("java.vendor") + ", " + System.getProperty("java.runtime.name") + ", " + System.getProperty("java.runtime.version"));
 		Logger.a("Portable: " + BC.portable);
-		Logger.a("EXE: " + BC.currentPath.toPath().toString().endsWith(".exe"));
+		Logger.a("EXE: " + BC.currentPath.getPath().endsWith(".exe"));
 		Logger.a("Prerelease: " + BC.prerelease);
 		Logger.a("Nightly: " + BC.nightly);
 
@@ -335,8 +335,8 @@ public class Launcher {
 
 	public void extractFromJar(String filepath, File to) {
 		try {
-			Logger.a("Extracting \"" + filepath + "\" to \"" + to.toPath().toString() + "\"");
-			Files.copy(getClass().getResourceAsStream(filepath), Paths.get(to.toPath().toString()), StandardCopyOption.REPLACE_EXISTING);
+			Logger.a("Extracting \"" + filepath + "\" to \"" + to.getPath() + "\"");
+			Files.copy(getClass().getResourceAsStream(filepath), to.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
@@ -345,8 +345,8 @@ public class Launcher {
 
 	public void packToJar(String filepath, File to) {
 		try {
-			Logger.a("Extracting \"" + filepath + "\" to \"" + to.toPath().toString() + "\"");
-			Files.copy(getClass().getResourceAsStream(filepath), Paths.get(to.toPath().toString()), StandardCopyOption.REPLACE_EXISTING);
+			Logger.a("Extracting \"" + filepath + "\" to \"" + to.getPath() + "\"");
+			Files.copy(getClass().getResourceAsStream(filepath), to.toPath(), StandardCopyOption.REPLACE_EXISTING);
 		} catch (IOException ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
@@ -383,9 +383,9 @@ public class Launcher {
 	public static void restart() {
 		try {
 			ArrayList<String> params = new ArrayList<String>();
-			params.add(new File(JAVA_HOME, "bin/java" + (OS.isWindows() ? ".exe" : "")).toPath().toString());
+			params.add(new File(JAVA_HOME, "bin/java" + (OS.isWindows() ? ".exe" : "")).getPath());
 			params.add("-jar");
-			params.add(BC.currentPath.toPath().toString());
+			params.add(BC.currentPath.getPath());
 			ProcessBuilder builder = new ProcessBuilder(params);
 			builder.start();
 		} catch (Exception ex) {
@@ -487,7 +487,7 @@ public class Launcher {
 				}
 				ArrayList<String> params = new ArrayList<String>();
 
-				params.add(new File(JAVA_HOME, "bin/java" + (OS.isWindows() ? ".exe" : "")).toPath().toString());
+				params.add(new File(JAVA_HOME, "bin/java" + (OS.isWindows() ? ".exe" : "")).getPath());
 
 				// The colon in the launch arguments is different for Windows
 				String colon = ":";
@@ -805,7 +805,7 @@ public class Launcher {
 
 	public static DownloadResult downloadWithButtonOutput(String link, File folder) {
 		SwingUtilities.invokeLater(() -> {
-			Window.setStatus(Window.playButton, "Downloading: " + BC.trimBetaCraftDir(folder.toPath().toString()));
+			Window.setStatus(Window.playButton, "Downloading: " + BC.trimBetaCraftDir(folder.getPath()));
 		});
 		return download(link, folder);
 	}
@@ -813,7 +813,7 @@ public class Launcher {
 	public static DownloadResult download(String link, File folder) {
 		Logger.a("Download started from: " + link);
 
-		DownloadResponse response = new DownloadRequest(link, folder.toPath().toString(), null, true).perform();
+		DownloadResponse response = new DownloadRequest(link, folder.getPath(), null, true).perform();
 		return response.result;
 		//		// Get a backup file that we will use to restore the file if the upload fails
 		//		File backupfile = new File(BC.get() + "launcher" + File.separator + "backup.tmp");
@@ -887,7 +887,7 @@ public class Launcher {
 				// Display downloading dialogue
 				//DownloadFrame dl = new DownloadFrame(update_name);
 				String ending = ".jar";
-				if (BC.currentPath.toPath().toString().endsWith(".exe")) {
+				if (BC.currentPath.getPath().endsWith(".exe")) {
 					ending = ".exe";
 				}
 				if (BC.portable) {
@@ -901,7 +901,7 @@ public class Launcher {
 				download(url, new File(BC.get(), "betacraft.jar$tmp"));
 
 				// Launch the new version to finish updating
-				String[] args = new String[] {"java", "-jar", BC.get() + "betacraft.jar$tmp", "update", BC.currentPath.toPath().toString()};
+				String[] args = new String[] {"java", "-jar", BC.get() + "betacraft.jar$tmp", "update", BC.currentPath.getPath()};
 				Runtime.getRuntime().exec(args);
 
 				// Close this process

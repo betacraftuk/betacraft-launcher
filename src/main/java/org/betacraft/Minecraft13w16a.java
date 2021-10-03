@@ -44,7 +44,7 @@ public class Minecraft13w16a extends Wrapper {
 			});
 			StringBuilder bld = new StringBuilder();
 			for (File f : list) {
-				bld.append(f.toPath().toString() + ":");
+				bld.append(f.getPath() + ":");
 			}
 			bld.append(BC.get() + "versions/" + this.version + ".jar");
 			params.add(bld.toString());

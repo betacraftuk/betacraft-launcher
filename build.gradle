@@ -1,6 +1,5 @@
 plugins {
 	id 'java'
-	id 'org.openjfx.javafxplugin' version '0.0.10'
 }
 
 compileJava {
@@ -63,11 +62,6 @@ task osxBuildApp {
 
 configurations {
 	extraLibs
-}
-
-javafx {
-    version = "16"
-    modules = [ 'javafx.graphics', 'javafx.swing', 'javafx.web' ]
 }
 
 dependencies {

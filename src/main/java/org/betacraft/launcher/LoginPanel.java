@@ -165,10 +165,13 @@ public class LoginPanel extends JFrame implements LanguageElement {
 	public static void continueMSA(MicrosoftAuth auth) {
 		if (auth.authenticate()) {
 			Util.saveAccounts();
-		} else {
-			SwingUtilities.invokeLater(() -> {
-				JOptionPane.showMessageDialog(Window.mainWindow, Lang.LOGIN_FAILED, Lang.LOGIN_MICROSOFT_ERROR, JOptionPane.ERROR_MESSAGE);
-			});
+
+// 		i think it's not required because handled in microsoft auth class
+
+//		} else {
+//			SwingUtilities.invokeLater(() -> {
+//				JOptionPane.showMessageDialog(Window.mainWindow, Lang.LOGIN_FAILED, Lang.LOGIN_MICROSOFT_ERROR, JOptionPane.ERROR_MESSAGE);
+//			});
 		}
 		Window.mainWindow.input();
 	}
@@ -177,7 +180,7 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		this.setTitle(Lang.LOGIN_TITLE);
 		emailText.setText(Lang.LOGIN_EMAIL_NICKNAME);
 		passwordText.setText(Lang.LOGIN_PASSWORD);
-		//		rememberaccount.setText(Lang.LOGIN_REMEMBER_PASSWORD);
+//		rememberaccount.setText(Lang.LOGIN_REMEMBER_PASSWORD);
 		OKButton.setText(Lang.OPTIONS_OK);
 		this.pack();
 	}
