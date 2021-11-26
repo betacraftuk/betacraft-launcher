@@ -20,7 +20,7 @@ public class Release {
 	// hardcoded launcher one, the file gets deleted. Should do the thing, eh?
 
 	public enum VersionRepository {
-		BETACRAFT("http://files.betacraft.pl/launcher/assets/version_list.txt"),
+		BETACRAFT("http://files.betacraft.uk/launcher/assets/version_list.txt"),
 		CUSTOM(null);
 
 		private String link;
@@ -478,7 +478,7 @@ public class Release {
 		}
 
 		default void downloadJson() {
-			Launcher.download("http://files.betacraft.pl/launcher/assets/jsons/" + this.getVersion() + ".info", new File(BC.get() + "versions" + File.separator + "jsons", this.getVersion() + ".info"));
+			Launcher.download("http://files.betacraft.uk/launcher/assets/jsons/" + this.getVersion() + ".info", new File(BC.get() + "versions" + File.separator + "jsons", this.getVersion() + ".info"));
 		}
 	}
 }

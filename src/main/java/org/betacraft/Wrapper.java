@@ -170,7 +170,7 @@ public class Wrapper extends Applet implements AppletStub {
 			presence.state = VER + ": " + version;
 			presence.details = String.format(USR, user);
 			presence.largeImageKey = "bc";
-			presence.largeImageText = "Download at betacraft.pl";
+			presence.largeImageText = "Download at betacraft.uk";
 			DiscordRPC.discordUpdatePresence(presence);
 			discordThread = new DiscordThread();
 		}
@@ -244,7 +244,7 @@ public class Wrapper extends Applet implements AppletStub {
 			if (getmppass) {
 				System.out.println("Obtaining mppass...");
 				// 
-				this.mppass = new CustomRequest("http://api.betacraft.pl/getmppass.jsp?user=" + this.params.get("username") + "&server=" + server).perform().response;
+				this.mppass = new CustomRequest("http://api.betacraft.uk/getmppass.jsp?user=" + this.params.get("username") + "&server=" + server).perform().response;
 				if (this.mppass == null || this.mppass.equals("FAILED") || this.mppass.equals("SERVER NOT FOUND")) {
 					// failed to get mppass :(
 					System.out.println("Failed to get mppass for: " + server);

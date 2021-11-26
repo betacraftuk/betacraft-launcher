@@ -33,7 +33,7 @@ public class Lang extends JFrame implements LanguageElement {
 	static JPanel panel;
 	static GridBagConstraints constr;
 
-	public static String locale_id = "1.09_11";
+	public static String locale_id = "1.09_15";
 
 	public Lang() {
 		Logger.a("Language option window has been opened.");
@@ -105,7 +105,7 @@ public class Lang extends JFrame implements LanguageElement {
 	}
 
 	public void initLang() throws IOException {
-		URL url = new URL("http://betacraft.pl/lang/" + locale_id + "/index.html");
+		URL url = new URL("http://files.betacraft.uk/launcher/assets/lang/" + locale_id + "/list.txt");
 
 		Scanner scanner = new Scanner(url.openStream(), "UTF-8");
 		String now;
@@ -162,7 +162,7 @@ public class Lang extends JFrame implements LanguageElement {
 	}
 
 	public static DownloadResult download(String lang) {
-		DownloadResult download = Launcher.download("http://betacraft.pl/lang/" + locale_id + "/" + lang + ".txt", new File(BC.get() + "launcher" + File.separator + "lang", lang + ".txt"));
+		DownloadResult download = Launcher.download("http://files.betacraft.uk/launcher/assets/lang/" + locale_id + "/" + lang + ".txt", new File(BC.get() + "launcher" + File.separator + "lang", lang + ".txt"));
 		if (!download.isPositive()) {
 			JOptionPane.showMessageDialog(Window.mainWindow, "No Internet connection", "Language file download failed!", JOptionPane.ERROR_MESSAGE);
 		}

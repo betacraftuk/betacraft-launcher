@@ -53,7 +53,7 @@ import pl.betacraft.json.lib.MouseFixMacOSJson;
 
 /** Main class */
 public class Launcher {
-	public static String VERSION = "1.09_15-pre3"; // TODO Always update this
+	public static String VERSION = "1.09_15"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
@@ -422,14 +422,14 @@ public class Launcher {
 			if (rpc.exists()) {
 				try {
 					String sha1 = Util.getSHA1(rpc);
-					String expected_hash = new CustomRequest("http://files.betacraft.pl/launcher/assets/discord_rpc.sha1").perform().response.replace("\n", "");
+					String expected_hash = new CustomRequest("http://files.betacraft.uk/launcher/assets/discord_rpc.sha1").perform().response.replace("\n", "");
 					if (!sha1.equals(expected_hash)) {
-						Launcher.downloadWithButtonOutput("http://files.betacraft.pl/launcher/assets/discord_rpc.jar", rpc);
+						Launcher.downloadWithButtonOutput("http://files.betacraft.uk/launcher/assets/discord_rpc.jar", rpc);
 					}
 				} catch (Throwable t) {}
 			}
 			if (!rpc.exists() || Launcher.forceUpdate) {
-				Launcher.downloadWithButtonOutput("http://files.betacraft.pl/launcher/assets/discord_rpc.jar", rpc);
+				Launcher.downloadWithButtonOutput("http://files.betacraft.uk/launcher/assets/discord_rpc.jar", rpc);
 			}
 		}
 
@@ -457,7 +457,7 @@ public class Launcher {
 
 		if (OS.isMac()) {
 			if ("true".equalsIgnoreCase(info.getEntry("macos-mousefix"))) {
-				String json = new CustomRequest("http://files.betacraft.pl/launcher/assets/macos-mousefix.json").perform().response;
+				String json = new CustomRequest("http://files.betacraft.uk/launcher/assets/macos-mousefix.json").perform().response;
 				if (json != null) {
 					MouseFixMacOSJson mousefix_json = Util.gsonPretty.fromJson(json, MouseFixMacOSJson.class);
 					Util.installMacOSFix(mousefix_json, Launcher.forceUpdate);
@@ -556,7 +556,7 @@ public class Launcher {
 					params.add("-Xdock:icon=" + instance.getIconLocation());
 				}
 
-				params.add("-Dhttp.nonProxyHosts=api.betacraft.pl");
+				params.add("-Dhttp.nonProxyHosts=api.betacraft.uk");
 
 				// Add custom parameters from options
 				if (instance.launchArgs != null && !instance.launchArgs.equals("")) {
@@ -693,7 +693,7 @@ public class Launcher {
 				}
 			}
 
-			if (download && !downloadWithButtonOutput("http://files.betacraft.pl/launcher/assets/addons/" + Addon.addonVer + "/" + s + ".jar", destination).isPositive()) {
+			if (download && !downloadWithButtonOutput("http://files.betacraft.uk/launcher/assets/addons/" + Addon.addonVer + "/" + s + ".jar", destination).isPositive()) {
 				JOptionPane.showMessageDialog(Window.mainWindow, "Couldn't download addon: " + s, "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
@@ -717,7 +717,7 @@ public class Launcher {
 			return false;
 		}
 		try {
-			URL url = new URL("http://files.betacraft.pl/launcher/assets/depends-version.txt");
+			URL url = new URL("http://files.betacraft.uk/launcher/assets/depends-version.txt");
 			Scanner s = new Scanner(url.openStream(), "UTF-8");
 			String libs = s.nextLine().split(":")[1];
 			String natives = s.nextLine().split(":")[1];
@@ -742,15 +742,15 @@ public class Launcher {
 		File destLibs = new File(BC.get() + "bin" + File.separator);
 		File destNatives = new File(BC.get() + "bin" + File.separator + "natives" + File.separator);
 
-		String link1 = "http://files.betacraft.pl/launcher/assets/natives-windows.zip";
-		String link2 = "http://files.betacraft.pl/launcher/assets/libs-windows.zip";
+		String link1 = "http://files.betacraft.uk/launcher/assets/natives-windows.zip";
+		String link2 = "http://files.betacraft.uk/launcher/assets/libs-windows.zip";
 		if (OS.isLinux()) {
-			link2 = "http://files.betacraft.pl/launcher/assets/libs-linux.zip";
-			link1 = "http://files.betacraft.pl/launcher/assets/natives-linux.zip";
+			link2 = "http://files.betacraft.uk/launcher/assets/libs-linux.zip";
+			link1 = "http://files.betacraft.uk/launcher/assets/natives-linux.zip";
 		}
 		if (OS.isMac()) {
-			link2 = "http://files.betacraft.pl/launcher/assets/libs-osx.zip";
-			link1 = "http://files.betacraft.pl/launcher/assets/natives-osx.zip";
+			link2 = "http://files.betacraft.uk/launcher/assets/libs-osx.zip";
+			link1 = "http://files.betacraft.uk/launcher/assets/natives-osx.zip";
 		}
 
 		File dest1 = new File(BC.get() + "launcher/", "natives.zip");
@@ -764,7 +764,7 @@ public class Launcher {
 		}
 
 		// Update the local memory with depends' version
-		CustomResponse res = new CustomRequest("http://files.betacraft.pl/launcher/assets/depends-version.txt").perform();
+		CustomResponse res = new CustomRequest("http://files.betacraft.uk/launcher/assets/depends-version.txt").perform();
 		Scanner s = new Scanner(res.response);
 		String libs = s.nextLine().split(":")[1];
 		String natives = s.nextLine().split(":")[1];
@@ -894,8 +894,8 @@ public class Launcher {
 					ending = "-portable" + ending;
 				}
 
-				String url = "http://files.betacraft.pl/launcher/launcher-" + update_name + ending;
-				if (!release) url = "http://files.betacraft.pl/launcher/launcher-" + update_name + ending;
+				String url = "http://files.betacraft.uk/launcher/launcher-" + update_name + ending;
+				if (!release) url = "http://files.betacraft.uk/launcher/launcher-" + update_name + ending;
 
 				// Download the update
 				download(url, new File(BC.get(), "betacraft.jar$tmp"));
@@ -933,8 +933,8 @@ public class Launcher {
 
 	public static String getUpdate(boolean release) {
 		try {
-			String Url = "http://files.betacraft.pl/launcher/rel.txt";
-			if (!release) Url = "http://files.betacraft.pl/launcher/pre.txt";
+			String Url = "http://files.betacraft.uk/launcher/rel.txt";
+			if (!release) Url = "http://files.betacraft.uk/launcher/pre.txt";
 			URL url = new URL(Url);
 			Scanner s = new Scanner(url.openStream(), "UTF-8");
 			String update = s.nextLine().split(":")[1];

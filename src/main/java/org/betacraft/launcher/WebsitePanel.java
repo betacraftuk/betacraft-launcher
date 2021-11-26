@@ -119,7 +119,7 @@ public class WebsitePanel extends JPanel {
 			new Thread() {
 				public void run() {
 					try {
-						HttpURLConnection con = (HttpURLConnection) new URL("http://betacraft.pl/server.jsp").openConnection();
+						HttpURLConnection con = (HttpURLConnection) new URL("http://betacraft.uk/serverlist").openConnection();
 						//con.setSSLSocketFactory(Cert.sslSocketFactory);
 						con.setRequestMethod("POST");
 						con.setDoInput(true);
@@ -182,7 +182,7 @@ public class WebsitePanel extends JPanel {
 			new Thread() {
 				public void run() {
 					try {
-						HttpURLConnection con = (HttpURLConnection) new URL("http://betacraft.pl/versions/changelog/" + Util.getProperty(BC.SETTINGS, "language") + ".html").openConnection();
+						HttpURLConnection con = (HttpURLConnection) new URL("http://files.betacraft.uk/launcher/changelog/" + Util.getProperty(BC.SETTINGS, "language") + ".html").openConnection();
 						con.setDoInput(true);
 						con.setDoOutput(false);
 						con.setConnectTimeout(5000);

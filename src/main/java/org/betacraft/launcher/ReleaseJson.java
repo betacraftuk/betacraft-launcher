@@ -11,7 +11,7 @@ public class ReleaseJson implements VersionInfo {
 	private String download = "";
 	private String launchMethod = "";
 	private String launchMethodLink = "";
-	private String proxyArgs = "-Dhttp.proxyHost=betacraft.pl"; // keep this as default
+	private String proxyArgs = "-Dhttp.proxyHost=betacraft.uk"; // keep this as default
 	private String otherName = "";
 	private String protocol = "";
 	private int fileVersion = -1;
