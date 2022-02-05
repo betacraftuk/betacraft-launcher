@@ -2,6 +2,7 @@ package pl.betacraft.auth;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.Date;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -15,6 +16,7 @@ public class Credentials {
 	public String local_uuid;
 	public String username;
 	public String name;
+	public Long expires_at;
 	public AccountType account_type;
 
 	public static Credentials[] load(File credentials) {
@@ -40,8 +42,6 @@ public class Credentials {
 	public enum AccountType {
 		MOJANG,
 		MICROSOFT,
-		OFFLINE,
-		TWITCH,
-		BETACRAFT;
+		OFFLINE;
 	}
 }

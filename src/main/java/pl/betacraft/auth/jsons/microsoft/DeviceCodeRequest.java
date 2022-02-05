@@ -7,25 +7,24 @@ import pl.betacraft.auth.MicrosoftAuth;
 import pl.betacraft.auth.Request;
 import pl.betacraft.auth.RequestUtil;
 
-public class MicrosoftRefreshRequest extends Request {
+public class DeviceCodeRequest extends Request {
 
-	public MicrosoftRefreshRequest(String refresh_token) {
-		REQUEST_URL = "https://login.live.com/oauth20_token.srf";
-		POST_DATA = "client_id=" + MicrosoftAuth.CLIENT_ID +
-				"&refresh_token=" + refresh_token +
-				"&grant_type=refresh_token" +
-				"&redirect_uri=" + MicrosoftAuth.REDIRECT_URI;
+	public DeviceCodeRequest() {
+		REQUEST_URL = "https://login.microsoftonline.com/consumers/oauth2/v2.0/devicecode";
 		PROPERTIES.put("Content-Type", "application/x-www-form-urlencoded");
+
+		POST_DATA = "client_id=" + MicrosoftAuth.CLIENT_ID +
+				"&scope=XboxLive.signin offline_access";
 	}
 
 	@Override
-	public MicrosoftAuthResponse perform() {
+	public DeviceCodeResponse perform() {
 		Gson gson = new Gson();
 		String response = RequestUtil.performPOSTRequest(this);
 
-		MicrosoftAuthResponse ret;
+		DeviceCodeResponse ret;
 		try {
-			ret = gson.fromJson(response, MicrosoftAuthResponse.class);
+			ret = gson.fromJson(response, DeviceCodeResponse.class);
 		} catch (JsonParseException ex) {
 			return null;
 		}

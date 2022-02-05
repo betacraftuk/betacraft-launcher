@@ -8,7 +8,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URL;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -21,6 +20,8 @@ import javax.swing.SwingUtilities;
 
 import pl.betacraft.auth.MicrosoftAuth;
 import pl.betacraft.auth.MojangAuth;
+import pl.betacraft.auth.jsons.microsoft.DeviceCodeRequest;
+import pl.betacraft.auth.jsons.microsoft.DeviceCodeResponse;
 
 public class LoginPanel extends JFrame implements LanguageElement {
 
@@ -56,17 +57,18 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		microsoftbrowser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Util.openURL(new URL("https://login.live.com/oauth20_authorize.srf" + 
-							"?client_id=" + MicrosoftAuth.CLIENT_ID + 
-							"&response_type=code" + 
-							"&scope=XboxLive.signin%20offline_access" +
-							"&prompt=select_account" +
-							"&redirect_uri=" + MicrosoftAuth.REDIRECT_URI).toURI());
+//					Util.openURL(new URL("https://login.live.com/oauth20_authorize.srf" + 
+//							"?client_id=" + MicrosoftAuth.CLIENT_ID + 
+//							"&response_type=code" + 
+//							"&scope=XboxLive.signin%20offline_access" +
+//							"&prompt=select_account" +
+//							"&redirect_uri=" + MicrosoftAuth.REDIRECT_URI).toURI());
 
 					//Window.quit(true);
+					DeviceCodeResponse dcr = new DeviceCodeRequest().perform();
+					new AwaitingMSALogin(dcr.verification_uri, dcr.user_code, dcr.device_code, dcr.expires_in, dcr.interval);
 					setVisible(false);
 					Window.loginPanel = null;
-					Window.mainWindow.waitForInput();
 				} catch (Throwable t) {
 					t.printStackTrace();
 				}
@@ -170,7 +172,7 @@ public class LoginPanel extends JFrame implements LanguageElement {
 				JOptionPane.showMessageDialog(Window.mainWindow, Lang.LOGIN_FAILED, Lang.LOGIN_MICROSOFT_ERROR, JOptionPane.ERROR_MESSAGE);
 			});
 		}
-		Window.mainWindow.input();
+		Window.mainWindow.requestFocus();
 	}
 
 	public void update() {

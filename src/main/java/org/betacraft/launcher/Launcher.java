@@ -2,14 +2,11 @@ package org.betacraft.launcher;
 
 import java.awt.Image;
 import java.io.BufferedReader;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
@@ -53,7 +50,7 @@ import pl.betacraft.json.lib.MouseFixMacOSJson;
 
 /** Main class */
 public class Launcher {
-	public static String VERSION = "1.09_15"; // TODO Always update this
+	public static String VERSION = "1.09_16-pre1"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
@@ -65,24 +62,6 @@ public class Launcher {
 	public static File javaRuntime = new File(JAVA_HOME, "bin/java" + (OS.isWindows() ? ".exe" : ""));
 
 	public static void main(String[] args) {
-
-		if (ListenThread.isAvailable()) {
-			new ListenThread().start();
-		} else if (args.length > 0 && !args[0].equals("wrap") && !args[0].equals("update")) {
-			try {
-				Socket socket = new Socket();
-				socket.connect(new InetSocketAddress(11799), 5000);
-				DataOutputStream dout = new DataOutputStream(socket.getOutputStream());
-				dout.writeUTF(args[0]);
-				dout.flush();
-				dout.close();
-				socket.close();
-
-				System.exit(0);
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
-		}
 
 		String javaver = System.getProperty("java.runtime.version");
 		String javadistro = System.getProperty("java.vendor");

@@ -391,15 +391,6 @@ public class Util {
 		}
 	}
 
-	public static boolean hasJFX() {
-		try {
-			javafx.scene.Parent.class.getName();
-			return true;
-		} catch (Throwable t) {
-			return false;
-		}
-	}
-
 	public static String getFullJavaVersion() {
 		String line = null;
 		try {
