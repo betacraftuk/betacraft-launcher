@@ -481,7 +481,7 @@ public class Launcher {
 					params.add("-Xdock:icon=" + instance.getIconLocation());
 				}
 
-				params.add("-Dhttp.nonProxyHosts=api.betacraft.uk");
+				params.add("-Dhttp.nonProxyHosts=api.betacraft.uk|files.betacraft.uk");
 
 				// Add custom parameters from options
 				if (instance.launchArgs != null && !instance.launchArgs.equals("")) {
