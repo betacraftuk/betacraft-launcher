@@ -23,7 +23,7 @@ import pl.betacraft.auth.jsons.microsoft.XBLAuthRequest;
 import pl.betacraft.auth.jsons.microsoft.XBLXSTSAuthResponse;
 import pl.betacraft.auth.jsons.microsoft.XSTSAuthRequest;
 
-public class MicrosoftAuth implements Authenticator {
+public class MicrosoftAuth extends Authenticator {
 
 	public static final String CLIENT_ID = "8075fa74-4091-4356-a0b8-a7c118ef121c";
 
@@ -60,26 +60,17 @@ public class MicrosoftAuth implements Authenticator {
 		if (xstsres.Identity != null) {
 			if (xstsres.XErr == 2148916233L) {
 				System.out.println("No Xbox account registered");
-				SwingUtilities.invokeLater(() -> {
-					JOptionPane.showMessageDialog(Window.mainWindow, Lang.LOGIN_MICROSOFT_NO_XBOX, Lang.LOGIN_MICROSOFT_ERROR, JOptionPane.ERROR_MESSAGE);
-				});
-				Launcher.clearCookies();
+				displayError(xstsres, Lang.LOGIN_MICROSOFT_NO_XBOX, Lang.LOGIN_MICROSOFT_ERROR);
 				// no xbox account registered
 				return false;
 			} else if (xstsres.XErr == 2148916238L) {
 				System.out.println("PARENTAL CONTROL");
-				SwingUtilities.invokeLater(() -> {
-					JOptionPane.showMessageDialog(Window.mainWindow, Lang.LOGIN_MICROSOFT_PARENT, Lang.LOGIN_MICROSOFT_ERROR, JOptionPane.ERROR_MESSAGE);
-				});
-				Launcher.clearCookies();
+				displayError(xstsres, Lang.LOGIN_MICROSOFT_PARENT, Lang.LOGIN_MICROSOFT_ERROR);
 				// parental control thingy, user has to be added to a Family by an adult
 				return false;
 			} else {
 				System.out.println("Unexpected error: " + xstsres.XErr);
-				SwingUtilities.invokeLater(() -> {
-					JOptionPane.showMessageDialog(Window.mainWindow, String.format(Lang.UNEXPECTED_ERROR, xstsres.XErr), Lang.LOGIN_MICROSOFT_ERROR, JOptionPane.ERROR_MESSAGE);
-				});
-				Launcher.clearCookies();
+				displayError(xstsres, String.format(Lang.UNEXPECTED_ERROR, xstsres.XErr), Lang.LOGIN_MICROSOFT_ERROR);
 			}
 		}
 
@@ -96,12 +87,8 @@ public class MicrosoftAuth implements Authenticator {
 		}
 
 		if (mcgores.items == null || mcgores.items.length == 0) {
-			SwingUtilities.invokeLater(() -> {
-				JOptionPane.showMessageDialog(Window.mainWindow, Lang.LOGIN_MICROSOFT_NO_MINECRAFT, Lang.LOGIN_MICROSOFT_ERROR, JOptionPane.ERROR_MESSAGE);
-			});
-			Launcher.clearCookies();
 			if (mcgores.error != null) {
-				displayError(mcgores);
+				displayError(mcgores, Lang.LOGIN_MICROSOFT_NO_MINECRAFT, Lang.LOGIN_MICROSOFT_ERROR);
 			}
 			return false;
 		}
@@ -113,7 +100,7 @@ public class MicrosoftAuth implements Authenticator {
 		}
 
 		if (mcpres.error != null) {
-			displayError(mcpres);
+			displayError(mcpres, Lang.LOGIN_MICROSOFT_NO_MINECRAFT, Lang.LOGIN_MICROSOFT_ERROR);
 			return false;
 		} else {
 			this.clearFields();
@@ -146,7 +133,7 @@ public class MicrosoftAuth implements Authenticator {
 		return this.credentials;
 	}
 
-	public static void displayError(Object error) {
+	public static void displayError(Object error, final String title, final String msg) {
 		System.out.println("-Stack of " + error.getClass().getSimpleName() + "-");
 		for (Field f : error.getClass().getDeclaredFields()) {
 			if (!Modifier.isTransient(f.getModifiers())) {
@@ -156,6 +143,11 @@ public class MicrosoftAuth implements Authenticator {
 				} catch (Throwable t) {}
 			}
 		}
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				JOptionPane.showMessageDialog(Window.mainWindow, msg, title, JOptionPane.ERROR_MESSAGE);
+			}
+		});
 		System.out.println("-----------------");
 	}
 }

@@ -16,7 +16,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
 
 public class Addon {
-	public static String addonVer = "1.09_13";
+	public static String addonVer = "1.09_16";
 	public String name;
 	public String onlinehash;
 	public boolean online;
@@ -56,7 +56,6 @@ public class Addon {
 	public static void loadAddons() {
 		try {
 			String[] offlineAddons = new File(BC.get() + "launcher" + File.separator + "addons" + File.separator).list(new FilenameFilter() {
-				@Override
 				public boolean accept(File dir, String fileName) {
 					return fileName.endsWith(".jar");
 				}

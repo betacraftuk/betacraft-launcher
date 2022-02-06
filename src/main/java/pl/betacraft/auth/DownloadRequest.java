@@ -1,13 +1,11 @@
 package pl.betacraft.auth;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.Map;
 
 import org.betacraft.launcher.BC;
 import org.betacraft.launcher.DownloadResult;
+import org.betacraft.launcher.Util;
 
 import pl.betacraft.auth.CustomRequest.RequestType;
 
@@ -46,12 +44,12 @@ public class DownloadRequest extends Request {
 			// Save a copy of the current file in case of failure
 			if (!file.createNewFile()) {
 				backupfile.createNewFile();
-				Files.copy(file.toPath(), backupfile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+				Util.copy(file, backupfile);
 			}
 
 			byte[] data = RequestUtil.performRawGETRequest(this);
 			if (data != null) {
-				Files.write(file.toPath(), data);
+				Util.writeBytes(file, data);
 			} else {
 				dl_failed = true;
 			}
@@ -67,9 +65,9 @@ public class DownloadRequest extends Request {
 		if (backupfile.exists()) {
 			if (dl_failed) {
 				try {
-					Files.copy(backupfile.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
+					Util.copy(backupfile, file);
 					result = DownloadResult.FAILED_WITH_BACKUP;
-				} catch (IOException e) {
+				} catch (Throwable e) {
 					result = DownloadResult.FAILED_WITHOUT_BACKUP;
 					file.delete();
 				}

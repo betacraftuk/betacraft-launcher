@@ -24,6 +24,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import pl.betacraft.auth.NoAuth;
+import pl.betacraft.auth.jsons.microsoft.MinecraftAuthRequest;
 
 public class Window extends JFrame implements ActionListener, LanguageElement {
 
@@ -44,11 +45,9 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 	public static Lang lang = null;
 	public static SelectAddons addonsList = null;
 	public static SelectVersion versionsList = null;
-	public static LoginPanel loginPanel = null;
+	public static AuthWindow loginPanel = null;
 
 	public static Tab tab = Tab.CHANGELOG;
-
-	private AwaitingMSALogin op;
 
 	// Launcher's icon
 	public static BufferedImage img;
@@ -93,13 +92,12 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 
 			public void change() {
 				Launcher.auth.getCredentials().username = nick_input.getText();
-				//System.out.println(Launcher.auth.getCredentials().username); // DEBUG
 			}
 		});
 
 		loginButton.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
+				new MinecraftAuthRequest("", "").perform();
 				if (!nick_input.isEnabled()) {
 					Launcher.auth.invalidate();
 					Launcher.auth = Util.getAuthenticator(Launcher.accounts.accounts.get(0));
@@ -113,7 +111,7 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 						loginButton.setText(Lang.LOGIN_BUTTON);
 					}
 				} else {
-					if (loginPanel == null) loginPanel = new LoginPanel();
+					if (loginPanel == null) loginPanel = new AuthWindow();
 					else loginPanel.setVisible(true);
 				}
 			}
@@ -141,21 +139,14 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 		positionButtons();
 
 		tabchangelog.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				setTab(Tab.CHANGELOG);
 			}
 		});
 
 		tabinstances.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (Window.tab != Tab.INSTANCES) {
-					/*mainWindow.remove(Window.centerPanel);
-					centerPanel = new WebsitePanel().getInstances();
-					Window.tab = Tab.INSTANCES;
-					mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
-					mainWindow.pack();*/
 
 					if (instanceList == null) new InstanceList();
 					else instanceList.setVisible(true);
@@ -164,7 +155,6 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 		});
 
 		tabservers.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				setTab(Tab.SERVER_LIST);
 			}
@@ -188,8 +178,8 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 
 		this.add(stuffz, BorderLayout.NORTH);
 
-		// Buttons are being added in LoginPanel.paintComponent()
-		// because it will put them above the bottom panel's background
+		// Buttons are being added in AuthWindow.paintComponent()
+		// because it will put them above the bottom panel's background? (TODO verify)
 
 		// Add some texture to the components
 		selectedInstanceDisplay.setForeground(Color.WHITE);
@@ -213,8 +203,12 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 
 	public void update() {
 		this.setTitle(Lang.WINDOW_TITLE + (BC.nightly ? " [NIGHTLY]" : ""));
-		if (Launcher.auth instanceof NoAuth) loginButton.setText(Lang.LOGIN_BUTTON);
-		else loginButton.setText(Lang.LOGOUT_BUTTON);
+
+		if (Launcher.auth instanceof NoAuth)
+			loginButton.setText(Lang.LOGIN_BUTTON);
+		else
+			loginButton.setText(Lang.LOGOUT_BUTTON);
+
 		playButton.setText(Lang.WINDOW_PLAY);
 		selectVersionButton.setText(Lang.WINDOW_SELECT_VERSION);
 		settingsButton.setText(Lang.WINDOW_OPTIONS);
@@ -222,17 +216,13 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 		tabchangelog.setText(Lang.TAB_CHANGELOG);
 		tabinstances.setText(Lang.TAB_INSTANCES);
 		tabservers.setText(Lang.TAB_SERVERS);
+
 		positionButtons();
 		this.pack();
 	}
 
 	public static void setTab(Tab tab) {
-//		if (Window.centerPanel != null) mainWindow.remove(Window.centerPanel);
-//		centerPanel = new WebsitePanel().getEmptyTabFor(tab);
-//		Window.tab = Tab.SERVER_LIST;
-//		mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
-//		mainWindow.setPreferredSize(mainWindow.getSize());
-//		mainWindow.pack();
+
 		if (tab == Tab.CHANGELOG) {
 			new Thread() {
 				public void run() {
@@ -309,7 +299,6 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 		}
 	}
 
-	@Override
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 

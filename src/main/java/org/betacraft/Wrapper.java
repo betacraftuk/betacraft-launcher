@@ -32,7 +32,6 @@ import javax.swing.JPanel;
 import org.betacraft.Addon.WhatToDo;
 import org.betacraft.launcher.BC;
 import org.betacraft.launcher.Lang;
-import org.betacraft.launcher.Launcher;
 import org.betacraft.launcher.Logger;
 
 import net.arikia.dev.drpc.DiscordEventHandlers;
@@ -86,8 +85,8 @@ public class Wrapper extends Applet implements AppletStub {
 	public String defaultPort = "25565";
 
 	/** List of addons to be applied to this instance */
-	public ArrayList<Addon> addons = new ArrayList<>();
-	public ArrayList<Class<Addon>> ogaddons = new ArrayList<>();
+	public ArrayList<Addon> addons = new ArrayList<Addon>();
+	public ArrayList<Class<Addon>> ogaddons = new ArrayList<Class<Addon>>();
 
 	/** Tells whether lwjgl dependencies have been already loaded or not */
 	public boolean libraries_loaded = false;
@@ -161,7 +160,7 @@ public class Wrapper extends Applet implements AppletStub {
 		}  catch (Throwable t) {}
 
 		if (this.discord) {
-			String applicationId = "567450523603566617";
+			String applicationId = "939918927989973052";
 			DiscordEventHandlers handlers = new DiscordEventHandlers();
 			DiscordRPC.discordInitialize(applicationId, handlers, true);
 
@@ -169,7 +168,7 @@ public class Wrapper extends Applet implements AppletStub {
 			presence.startTimestamp = System.currentTimeMillis() / 1000;
 			presence.state = VER + ": " + version;
 			presence.details = String.format(USR, user);
-			presence.largeImageKey = "bc";
+			presence.largeImageKey = "logo_betacraft_1024";
 			presence.largeImageText = "Download at betacraft.uk";
 			DiscordRPC.discordUpdatePresence(presence);
 			discordThread = new DiscordThread();
@@ -431,7 +430,6 @@ public class Wrapper extends Applet implements AppletStub {
 	public void loadJars() {
 		try {
 			String[] libs = new File(BC.get(), "bin/").list(new FilenameFilter() {
-				@Override
 				public boolean accept(File dir, String fileName) {
 					return fileName.endsWith(".jar");
 				}
@@ -486,7 +484,7 @@ public class Wrapper extends Applet implements AppletStub {
 			panel.setBackground(Color.BLACK);
 			panel.setPreferredSize(new Dimension(width, height)); // 854, 480
 
-			Applet a = (Applet) mainClassInstance;
+			final Applet a = (Applet) mainClassInstance;
 
 			if (this.resize_applet) {
 
@@ -571,7 +569,6 @@ public class Wrapper extends Applet implements AppletStub {
 		});
 	}
 
-	@Override
 	public void appletResize(int width, int height) {}
 
 	@Override
@@ -753,12 +750,5 @@ public class Wrapper extends Applet implements AppletStub {
 			return params.get(paramName);
 		}
 		return null;
-	}
-
-	// Backwards compatibility, eh
-	public class BCClassLoader extends URLClassLoader {
-		public BCClassLoader(URL[] urls) {
-			super(urls);
-		}
 	}
 }

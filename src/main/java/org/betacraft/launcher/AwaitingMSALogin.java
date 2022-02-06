@@ -56,43 +56,28 @@ public class AwaitingMSALogin extends JFrame {
 		constr.weightx = 0.0;
 		constr.fill = GridBagConstraints.HORIZONTAL;
 		constr.insets = new Insets(10, 10, 0, 10);
-
-		// autofocus
-		MouseListener ml = new MouseListener() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (e.getSource() instanceof JTextComponent) {
-					((JTextComponent)e.getSource()).selectAll();
-				}
-			}
-
-			public void mousePressed(MouseEvent e) {}
-			public void mouseReleased(MouseEvent e) {}
-			public void mouseEntered(MouseEvent e) {}
-			public void mouseExited(MouseEvent e) {}
-		};
 		
 		JPanel panel = new OptionsPanel();
 		panel.setLayout(new GridBagLayout());
 
-		JLabel label1 = new JLabel("To proceed, open up:");
+		JLabel label1 = new JLabel("To proceed, open up:"); // TODO translation
 		label1.setForeground(Color.LIGHT_GRAY);
 		JTextField tf = new JTextField(this.url);
 		tf.setEditable(false);
-		tf.addMouseListener(ml);
-		JLabel label2 = new JLabel("in a browser and type the code:");
+		tf.addMouseListener(autofocus);
+		JLabel label2 = new JLabel("in a browser and type the code:"); // TODO translation
 		label2.setForeground(Color.LIGHT_GRAY);
 
 		JTextPane tp = new JTextPane();
 		tp.setEditable(false);
-		//tp.setContentType("text/html;charset=UTF-8");
 		tp.setText(this.usercode);
 		tp.setOpaque(false);
 		tp.setForeground(Color.LIGHT_GRAY);
 		tp.setBorder(null);
-		tp.setFont(new Font(Font.MONOSPACED, Font.BOLD, 20));
+		// Courier New seems to be available across all supported platforms
+		tp.setFont(new Font("Courier New", Font.BOLD, 20));
 		tp.setDisabledTextColor(Color.WHITE);
-		tp.addMouseListener(ml);
+		tp.addMouseListener(autofocus);
 
 		panel.add(label1, constr);
 		constr.gridy++;
@@ -116,7 +101,6 @@ public class AwaitingMSALogin extends JFrame {
 
 		JButton cancelButton = new JButton(Lang.CANCEL);
 		cancelButton.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (checkThread != null) checkThread.interrupt();
 				AwaitingMSALogin.this.setVisible(false);
@@ -160,7 +144,7 @@ public class AwaitingMSALogin extends JFrame {
 							
 							MicrosoftAuth msa = new MicrosoftAuth(cred);
 							
-							LoginPanel.continueMSA(msa);
+							AuthWindow.continueMSA(msa);
 							break;
 						}
 					} else {
@@ -174,4 +158,17 @@ public class AwaitingMSALogin extends JFrame {
 			}
 		}
 	}
+
+	public static MouseListener autofocus = new MouseListener() {
+		public void mouseClicked(MouseEvent e) {
+			if (e.getSource() instanceof JTextComponent) {
+				((JTextComponent)e.getSource()).selectAll();
+			}
+		}
+
+		public void mousePressed(MouseEvent e) {}
+		public void mouseReleased(MouseEvent e) {}
+		public void mouseEntered(MouseEvent e) {}
+		public void mouseExited(MouseEvent e) {}
+	};
 }

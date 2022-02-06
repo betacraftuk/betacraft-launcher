@@ -13,9 +13,9 @@ import net.arikia.dev.drpc.DiscordRPC;
 public class PreClassicWrapper extends Wrapper {
 
 	public PreClassicWrapper(String user, String ver_prefix, String version, String sessionid, String mainFolder,
-			int height, int width, boolean RPC, String launchMethod, String server, String mppass, String USR,
+			int height, int width, boolean RPC, String launchMethod, String server, String mppass, String uuid, String USR,
 			String VER, Image img, ArrayList addons) {
-		super(user, ver_prefix, version, sessionid, mainFolder, height, width, RPC, launchMethod, server, mppass, null, USR, VER,
+		super(user, ver_prefix, version, sessionid, mainFolder, height, width, RPC, launchMethod, server, mppass, uuid, USR, VER,
 				img, addons);
 	}
 

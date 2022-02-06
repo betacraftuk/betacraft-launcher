@@ -105,7 +105,7 @@ public class PreClassicWrapper2 extends Wrapper {
 			panel.add(infolabel1, BorderLayout.CENTER);
 			panel.setBackground(Color.BLACK);
 			panel.setPreferredSize(new Dimension(width, height));
-			Applet a = (Applet) mainClassInstance;
+			final Applet a = (Applet) mainClassInstance;
 
 			final ComponentAdapter listener = new ComponentAdapter() {
 				public void componentResized(ComponentEvent componentEvent) {

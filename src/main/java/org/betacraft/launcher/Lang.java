@@ -36,7 +36,7 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String locale_id = "1.09_15";
 
 	public Lang() {
-		Logger.a("Language option window has been opened.");
+		Logger.a("Language option window opened.");
 		this.setIconImage(Window.img);
 		this.setMinimumSize(new Dimension(282, 386));
 
@@ -73,7 +73,6 @@ public class Lang extends JFrame implements LanguageElement {
 		if (panelnull) {
 			OKButton = new JButton(Lang.OPTIONS_OK);
 			OKButton.addActionListener(new ActionListener() {
-				@Override
 				public void actionPerformed(ActionEvent e) {
 					setLang();
 					Window.lang = null;
@@ -101,7 +100,7 @@ public class Lang extends JFrame implements LanguageElement {
 		}
 		Util.setProperty(BC.SETTINGS, "language", lang);
 		setVisible(false);
-		Launcher.restart();
+		Launcher.restart(Launcher.javaRuntime.getAbsolutePath());
 	}
 
 	public void initLang() throws IOException {
@@ -132,7 +131,7 @@ public class Lang extends JFrame implements LanguageElement {
 		list = new JList(listModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setLayoutOrientation(JList.VERTICAL);
-		list.setVisibleRowCount(3);
+		list.setVisibleRowCount(10);
 		list.setSelectedIndex(index);
 
 		if (listScroller != null) panel.remove(listScroller);

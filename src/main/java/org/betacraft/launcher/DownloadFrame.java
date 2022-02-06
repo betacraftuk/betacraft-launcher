@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.WindowConstants;
 
+// TODO redo this before next major release
 public class DownloadFrame extends JFrame {
 	public JProgressBar bar;
 	public int size;
@@ -40,13 +41,10 @@ public class DownloadFrame extends JFrame {
 
 		JLabel label = new JLabel("Downloading Launcher v" + update + " ...");
 		bar = new JProgressBar();
-		//bar.setIndeterminate(true);
 		panel.add(bar, constr);
 
 		label.setBounds(30, 10, 340, 20);
 		this.getContentPane().add(label, BorderLayout.CENTER);
-		//this.pack();
-		//this.add(bar);
 		setVisible(true);
 	}
 

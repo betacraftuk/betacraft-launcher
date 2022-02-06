@@ -23,7 +23,7 @@ import pl.betacraft.auth.MojangAuth;
 import pl.betacraft.auth.jsons.microsoft.DeviceCodeRequest;
 import pl.betacraft.auth.jsons.microsoft.DeviceCodeResponse;
 
-public class LoginPanel extends JFrame implements LanguageElement {
+public class AuthWindow extends JFrame implements LanguageElement {
 
 	static JLabel emailText;
 	static JTextField email;
@@ -33,8 +33,8 @@ public class LoginPanel extends JFrame implements LanguageElement {
 
 	static JButton OKButton;
 
-	public LoginPanel() {
-		Logger.a("Auth window has been opened.");
+	public AuthWindow() {
+		Logger.a("Auth window opened.");
 		this.setIconImage(Window.img);
 		setTitle(Lang.LOGIN_TITLE);
 		setResizable(true);
@@ -57,14 +57,6 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		microsoftbrowser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-//					Util.openURL(new URL("https://login.live.com/oauth20_authorize.srf" + 
-//							"?client_id=" + MicrosoftAuth.CLIENT_ID + 
-//							"&response_type=code" + 
-//							"&scope=XboxLive.signin%20offline_access" +
-//							"&prompt=select_account" +
-//							"&redirect_uri=" + MicrosoftAuth.REDIRECT_URI).toURI());
-
-					//Window.quit(true);
 					DeviceCodeResponse dcr = new DeviceCodeRequest().perform();
 					new AwaitingMSALogin(dcr.verification_uri, dcr.user_code, dcr.device_code, dcr.expires_in, dcr.interval);
 					setVisible(false);
@@ -75,16 +67,6 @@ public class LoginPanel extends JFrame implements LanguageElement {
 			}
 		});
 		panel.add(microsoftbrowser, constr);
-//		JButton microsoftauth = new JButton(Lang.LOGIN_MICROSOFT_BUTTON);
-//		microsoftauth.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				MicrosoftAuth auth = new MicrosoftAuth(null);
-//				setVisible(false);
-//				Window.loginPanel = null;
-//				auth.showPrompt();
-//			}
-//		});
-//		panel.add(microsoftauth, constr);
 
 		constr.gridy++;
 		constr.fill = GridBagConstraints.HORIZONTAL;
@@ -117,11 +99,6 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		password = new JPasswordField("", 6);
 		panel.add(password, constr);
 
-		//constr.gridy++;
-		//rememberaccount = new JCheckBox(Lang.LOGIN_REMEMBER_PASSWORD);
-		//rememberaccount.setForeground(Color.LIGHT_GRAY);
-		//rememberaccount.setOpaque(false);
-		//panel.add(rememberaccount, constr);
 		// =================================================================
 
 		JPanel okPanel = new InstanceSettings.OptionsPanel();
@@ -137,15 +114,11 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		constr.weightx = 1.0;
 		OKButton = new JButton(Lang.OPTIONS_OK);
 		OKButton.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				MojangAuth auth = new MojangAuth(email.getText(), password.getText());
 				if (auth.authenticate()) {
 					Launcher.accounts.setCurrent(auth.getCredentials());
 					Launcher.auth = auth;
-					//                    if (!rememberaccount.isSelected()) {
-					//                        Launcher.accounts.removeAccount(auth.getCredentials());
-					//                    }
 				}
 
 				Util.saveAccounts();
@@ -168,8 +141,10 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		if (auth.authenticate()) {
 			Util.saveAccounts();
 		} else {
-			SwingUtilities.invokeLater(() -> {
-				JOptionPane.showMessageDialog(Window.mainWindow, Lang.LOGIN_FAILED, Lang.LOGIN_MICROSOFT_ERROR, JOptionPane.ERROR_MESSAGE);
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					JOptionPane.showMessageDialog(Window.mainWindow, Lang.LOGIN_FAILED, Lang.LOGIN_MICROSOFT_ERROR, JOptionPane.ERROR_MESSAGE);
+				}
 			});
 		}
 		Window.mainWindow.requestFocus();
@@ -179,7 +154,6 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		this.setTitle(Lang.LOGIN_TITLE);
 		emailText.setText(Lang.LOGIN_EMAIL_NICKNAME);
 		passwordText.setText(Lang.LOGIN_PASSWORD);
-		//		rememberaccount.setText(Lang.LOGIN_REMEMBER_PASSWORD);
 		OKButton.setText(Lang.OPTIONS_OK);
 		this.pack();
 	}

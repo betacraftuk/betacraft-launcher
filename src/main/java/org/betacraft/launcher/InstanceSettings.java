@@ -66,7 +66,6 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 
 		@Override
 		protected void paintComponent(Graphics g) {
-			//super.paintComponent(g);
 			final int w = this.getWidth() / 2;
 			final int h = this.getHeight() / 2;
 			if (w <= 0 || h <= 0) return;
@@ -83,12 +82,11 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 	}
 
 	public InstanceSettings() {
-		Logger.a("Options window has been opened.");
+		Logger.a("Options window opened.");
 
 		this.setIconImage(Window.img);
 		setTitle(Lang.OPTIONS_TITLE);
 		setResizable(true);
-
 
 
 		JPanel panel = new OptionsPanel();
@@ -138,7 +136,6 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		constr.insets = new Insets(2, 10, 10, 10);
 		dirChooser = new JButton(Lang.INSTANCE_GAME_DIRECTORY);
 		dirChooser.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser dirChooser = new JFileChooser();
 				dirChooser.setCurrentDirectory(new java.io.File(BC.get()));
@@ -158,7 +155,7 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 							gameDir = dirChooser.getSelectedFile();
 						}
 					}
-					Launcher.currentInstance.gameDir = gameDir.toPath().toString();
+					Launcher.currentInstance.gameDir = gameDir.getAbsolutePath();
 				}
 			}
 		});
@@ -191,10 +188,8 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		JPanel instanceSettings = new OptionsPanel();
 		instanceSettings.setLayout(new GridBagLayout());
 		JButton remove = new JButton("x");
-		int height = (int) remove.getPreferredSize().getWidth();
 
 		remove.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				int result = JOptionPane.showConfirmDialog(InstanceSettings.this, Lang.INSTANCE_REMOVE_QUESTION, Lang.INSTANCE_REMOVE_TITLE, JOptionPane.YES_NO_OPTION);
 				if (result == JOptionPane.YES_OPTION) {
@@ -210,12 +205,14 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 				}
 			}
 		});
+
 		removelabel = new JLabel(Lang.INSTANCE_REMOVE_TITLE);
+
 		instanceNameText = new JLabel(Lang.INSTANCE_NAME);
 		instanceIcon = new JLabel(new ImageIcon(Launcher.currentInstance.getIcon()));
+
 		chooseIcon = new JButton(Lang.INSTANCE_CHANGE_ICON_NAME);
 		chooseIcon.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser dirChooser = new JFileChooser();
 				dirChooser.setCurrentDirectory(new java.io.File(System.getProperty("user.home")));
@@ -234,17 +231,17 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 				}
 			}
 		});
+
 		addons = new JButton(Lang.INSTANCE_SELECT_ADDONS);
 		addons.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (Window.addonsList == null) new SelectAddons();
 				else Window.addonsList.setVisible(true);
 			}
 		});
+
 		modrepo = new JButton(Lang.INSTANCE_MODS_REPOSITORY);
 		modrepo.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (Window.modsRepo == null) new ModsRepository();
 				else Window.modsRepo.setVisible(true);
@@ -254,48 +251,57 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		instanceName = new JTextField(Launcher.currentInstance.name, 15);
 		instanceNameText.setForeground(Color.LIGHT_GRAY);
 		instanceNameText.setOpaque(false);
+
 		removelabel.setForeground(Color.LIGHT_GRAY);
 		removelabel.setOpaque(false);
 		instanceName.setOpaque(true);
+
 		GridBagConstraints constr1 = new GridBagConstraints();
-		//constr1.fill = GridBagConstraints.NORTHEAST;
 		constr1.fill = GridBagConstraints.HORIZONTAL;
 		constr1.insets = new Insets(2, 2, 10, 10);
 		constr1.gridy = 0;
 		constr1.gridx = 0;
 		instanceSettings.add(remove, constr1);
+
 		constr1.gridx = 1;
 		instanceSettings.add(removelabel, constr1);
+
 		constr1.fill = GridBagConstraints.NORTHEAST;
 		constr1.gridx = 0;
 		constr1.gridy = 1;
 		instanceSettings.add(instanceNameText, constr1);
+
 		constr1.gridx = 1;
 		instanceSettings.add(instanceName, constr1);
+
 		constr1.insets = new Insets(10, 2, 2, 2);
 		constr1.gridx = 0;
 		constr1.gridy = 2;
 		instanceSettings.add(instanceIcon, constr1);
+
 		constr1.gridx = 1;
 		constr1.gridy = 2;
 		constr1.gridwidth = 3;
 		constr1.ipadx = 50;
 		instanceSettings.add(chooseIcon, constr1);
+
 		constr1.gridx = 0;
 		constr1.gridy = 3;
 		constr1.weightx = 1.0;
 		constr1.ipadx = 0;
 		constr1.insets = new Insets(25, 2, 2, 2);
 		constr1.fill = GridBagConstraints.HORIZONTAL;
+
 		forceUpdate = new JCheckBox(Lang.FORCE_UPDATE);
 		forceUpdate.setForeground(Color.LIGHT_GRAY);
 		forceUpdate.setOpaque(false);
 		forceUpdate.setSelected(Launcher.forceUpdate);
 		instanceSettings.add(forceUpdate, constr1);
+
 		constr1.gridy = 4;
 		constr1.insets = new Insets(2, 2, 2, 2);
-		//constr1.gridwidth = 2;
 		instanceSettings.add(addons, constr1);
+
 		constr1.ipady = 0;
 		constr1.gridy = 5;
 		instanceSettings.add(modrepo, constr1);
@@ -313,7 +319,6 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		constr1.weightx = 1.0;
 		OKButton = new JButton(Lang.OPTIONS_OK);
 		OKButton.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				saveOptions();
 				setVisible(false);
@@ -388,16 +393,6 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		this.pack();
 	}
 
-	/*public void updateInfo() {
-		proxyCheck.setSelected(Launcher.currentInstance.proxy);
-		keepOpenCheck.setSelected(Launcher.currentInstance.keepopen);
-		RPCCheck.setSelected(Launcher.currentInstance.RPC);
-		parameters.setText(Launcher.currentInstance.launchArgs);
-		dimensions1.setText(Integer.toString(Launcher.currentInstance.width));
-		dimensions2.setText(Integer.toString(Launcher.currentInstance.height));
-		Window.selectedInstanceDisplay.setText(Launcher.currentInstance.name);
-	}*/
-
 	public void saveOptions() {
 		Launcher.forceUpdate = forceUpdate.isSelected();
 		try {
@@ -410,10 +405,12 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		} catch (Exception ex) {
 			Launcher.currentInstance.height = 480;
 		}
+
 		Launcher.currentInstance.keepopen = keepOpenCheck.isSelected();
 		Launcher.currentInstance.proxy = proxyCheck.isSelected();
 		Launcher.currentInstance.RPC = RPCCheck.isSelected();
 		Launcher.currentInstance.launchArgs = parameters.getText();
+
 		if (!instanceName.getText().equals(Launcher.currentInstance.name) && !instanceName.getText().equals("")) {
 			Launcher.setInstance(Launcher.currentInstance.renameInstance(instanceName.getText()));
 		}

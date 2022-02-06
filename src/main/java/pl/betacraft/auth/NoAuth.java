@@ -8,7 +8,7 @@ import org.betacraft.launcher.Window;
 
 import pl.betacraft.auth.Credentials.AccountType;
 
-public class NoAuth implements Authenticator {
+public class NoAuth extends Authenticator {
 	private Credentials credentials = new Credentials();
 
 	public NoAuth(Credentials c) {

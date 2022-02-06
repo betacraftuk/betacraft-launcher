@@ -14,7 +14,7 @@ import pl.betacraft.auth.jsons.mojang.AuthResponse;
 import pl.betacraft.auth.jsons.mojang.InvalidateRequest;
 import pl.betacraft.auth.jsons.mojang.RefreshRequest;
 
-public class MojangAuth implements Authenticator {
+public class MojangAuth extends Authenticator {
 
 	private Credentials credentials;
 	private String username;

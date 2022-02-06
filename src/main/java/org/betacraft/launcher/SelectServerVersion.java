@@ -54,7 +54,6 @@ public class SelectServerVersion extends JFrame implements LanguageElement {
 		OKButton = new JButton(Lang.OPTIONS_OK);
 
 		OKButton.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				setVisible(false);
 				Release ver = (Release) list.getSelectedValue();
@@ -110,7 +109,7 @@ public class SelectServerVersion extends JFrame implements LanguageElement {
 		list = new JList(listModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setLayoutOrientation(JList.VERTICAL);
-		list.setVisibleRowCount(5);
+		list.setVisibleRowCount(8);
 		list.setSelectedIndex(index);
 
 		if (listScroller != null) panel.remove(listScroller);

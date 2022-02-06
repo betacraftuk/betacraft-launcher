@@ -14,16 +14,12 @@ import javax.swing.JPanel;
 
 import org.betacraft.launcher.Window.Tab;
 
-/*
- * TODO list for 1.10:
- * Client log || Launcher log || Mods repository
- */
+// dead code? what is this even?
 public class InfoPanel extends JPanel {
 	static Image aroundBackground = null;
 	static Image renderHelper;
 
 	public InfoPanel(final boolean isConnection) {
-		//setLayout(new GridBagLayout());
 		setLayout(new GridLayout(2,1));
 		setMinimumSize(new Dimension(800, 550));
 
@@ -35,7 +31,8 @@ public class InfoPanel extends JPanel {
 			Logger.printException(e2);
 			return;
 		}
-		final GridBagConstraints constr = new GridBagConstraints();
+
+		GridBagConstraints constr = new GridBagConstraints();
 		constr.gridx = 0;
 		constr.fill = GridBagConstraints.NORTH;
 		constr.insets = new Insets(0, 0, 0, 0);
@@ -43,10 +40,11 @@ public class InfoPanel extends JPanel {
 		constr.gridy = 0;
 		constr.weightx = 1.0;
 		constr.gridheight = 1;
+
 		JButton button = new JButton("bruh");
 		add(button, constr);
+
 		constr.gridy = 1;
-		//constr.weighty = 1.0;
 		constr.gridheight = GridBagConstraints.RELATIVE;
 
 		if (Window.tab == Tab.CHANGELOG)

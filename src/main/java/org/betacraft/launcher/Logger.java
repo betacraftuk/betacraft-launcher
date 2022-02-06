@@ -36,9 +36,9 @@ public class Logger {
 	}
 
 	public static void printException(Throwable ex) {
-		//String[] lines = new String[trace.length];
 		Logger.a(ex.getClass().getCanonicalName() + ": " + ex.getMessage());
 		StackTraceElement[] trace = ex.getStackTrace();
+
 		for (int i = 0; i < trace.length; i++) {
 			StackTraceElement line = trace[i];
 			Logger.a("    " + line.getClassName() + " | " + line.getMethodName() + " | " + line.getLineNumber());

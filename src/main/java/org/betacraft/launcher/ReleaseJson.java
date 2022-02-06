@@ -129,4 +129,13 @@ public class ReleaseJson implements VersionInfo {
 	public static boolean exists(String name) {
 		return new File(BC.get() + "versions/jsons/", name + ".info").exists();
 	}
+
+	public void downloadJson() {
+		Launcher.download("http://files.betacraft.uk/launcher/assets/jsons/" + this.getVersion() + ".info", new File(BC.get() + "versions" + File.separator + "jsons", this.getVersion() + ".info"));
+	}
+
+	public boolean hasJar() {
+		File jar = new File(BC.get() + "versions/", version + ".jar");
+		return jar.exists() && jar.isFile();
+	}
 }

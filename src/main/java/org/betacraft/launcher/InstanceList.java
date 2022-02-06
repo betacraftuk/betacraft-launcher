@@ -26,7 +26,7 @@ public class InstanceList extends JFrame implements LanguageElement {
 	static GridBagConstraints constr;
 
 	public InstanceList() {
-		Logger.a("Instances list window has been opened.");
+		Logger.a("Instances list window opened.");
 		this.setIconImage(Window.img);
 		this.setMinimumSize(new Dimension(282, 386));
 
@@ -45,7 +45,6 @@ public class InstanceList extends JFrame implements LanguageElement {
 
 		newButton = new JButton(Lang.SELECT_INSTANCE_NEW);
 		newButton.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				String newName = JOptionPane.showInputDialog(InstanceList.this, Lang.INSTANCE_NAME, Lang.SELECT_INSTANCE_NEW, JOptionPane.DEFAULT_OPTION);//.showInputDialog(null, Lang.INSTANCE_NAME, "");
 				if (newName != null && !newName.equals("")) Instance.newInstance(newName).saveInstance();
@@ -61,10 +60,9 @@ public class InstanceList extends JFrame implements LanguageElement {
 		constr.weighty = GridBagConstraints.RELATIVE;
 		constr.gridheight = 1;
 		constr.insets = new Insets(5, 5, 5, 5);
-		OKButton = new JButton(Lang.OPTIONS_OK);
 
+		OKButton = new JButton(Lang.OPTIONS_OK);
 		OKButton.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				Launcher.setInstance(Instance.loadInstance((String) list.getSelectedValue()));
 				setVisible(false);
@@ -72,6 +70,7 @@ public class InstanceList extends JFrame implements LanguageElement {
 			}
 		});
 		panel.add(OKButton, constr);
+
 		this.add(panel);
 		this.pack();
 		this.setLocationRelativeTo(Window.mainWindow);
@@ -104,7 +103,7 @@ public class InstanceList extends JFrame implements LanguageElement {
 		list = new JList(listModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setLayoutOrientation(JList.VERTICAL);
-		list.setVisibleRowCount(3);
+		list.setVisibleRowCount(10);
 		list.setSelectedIndex(index);
 
 		if (listScroller != null) panel.remove(listScroller);
