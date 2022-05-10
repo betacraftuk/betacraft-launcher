@@ -197,7 +197,10 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 				Window.quit(true);
 			}
 		});
-		this.pack();
+
+		if (mainWindow.isVisible())
+			this.pack();
+
 		playButton.requestFocus();
 	}
 
@@ -218,7 +221,8 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 		tabservers.setText(Lang.TAB_SERVERS);
 
 		positionButtons();
-		this.pack();
+		if (mainWindow.isVisible())
+			this.pack();
 	}
 
 	public static void setTab(Tab tab) {
@@ -231,7 +235,7 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 					Window.tab = Tab.CHANGELOG;
 					mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
 					mainWindow.setPreferredSize(mainWindow.getSize());
-					mainWindow.pack();
+					if (mainWindow.isVisible()) mainWindow.pack();
 				}
 			}.start();
 		} else if (tab == Tab.SERVER_LIST) {
@@ -242,7 +246,7 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 					Window.tab = Tab.SERVER_LIST;
 					mainWindow.add(Window.centerPanel, BorderLayout.CENTER);
 					mainWindow.setPreferredSize(mainWindow.getSize());
-					mainWindow.pack();
+					if (mainWindow.isVisible()) mainWindow.pack();
 				}
 			}.start();
 		}

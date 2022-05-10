@@ -37,7 +37,7 @@ public class Instance {
 
 	public static Instance newInstance(String name) {
 		// Use default settings
-		return new Instance(name, "-Xmx512M", "b1.7.3", 854, 480, true, false, true, new ArrayList<String>(), BC.get() + name + "/");
+		return new Instance(name, "-Xmx1G", "b1.7.3", 854, 480, true, false, true, new ArrayList<String>(), BC.get() + name + "/");
 	}
 
 	public static Instance loadInstance(String name) {
