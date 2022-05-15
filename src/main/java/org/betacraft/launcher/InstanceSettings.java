@@ -94,7 +94,7 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 
 		JPanel panel = new OptionsPanel();
 		panel.setLayout(new GridBagLayout());
-		panel.setPreferredSize(new Dimension(300, 100));
+		panel.setPreferredSize(new Dimension(500, 300));
 
 		GridBagConstraints constr = new GridBagConstraints();
 
