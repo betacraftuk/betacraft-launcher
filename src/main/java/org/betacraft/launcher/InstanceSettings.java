@@ -2,6 +2,7 @@ package org.betacraft.launcher;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -30,9 +31,10 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 	public JCheckBox proxyCheck;
 	public JCheckBox keepOpenCheck;
 	public JCheckBox RPCCheck;
+	public JCheckBox showConsole;
 	public JCheckBox forceUpdate = null;
 
-	public JLabel parametersText;
+	public JLabel parametersText, gameDirText, javaPathText;
 	public JTextField parameters;
 
 	public JLabel dimensions1Text;
@@ -42,7 +44,8 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 
 	public JButton OKButton;
 
-	public JButton dirChooser;
+	public JTextField dirPath, javaPath;
+	public JButton dirChooser, javaChooser;
 	public JTextField instanceName;
 	public JLabel instanceIcon;
 	public JButton chooseIcon;
@@ -91,6 +94,7 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 
 		JPanel panel = new OptionsPanel();
 		panel.setLayout(new GridBagLayout());
+		panel.setPreferredSize(new Dimension(300, 100));
 
 		GridBagConstraints constr = new GridBagConstraints();
 
@@ -131,10 +135,27 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		constr.insets = new Insets(2, 20, 0, 10);
 		parameters = new JTextField(Launcher.currentInstance.launchArgs, 30);
 		panel.add(parameters, constr);
+		
+		constr.gridy++;
+		constr.insets = new Insets(2, 10, 0, 10);
+		gameDirText = new JLabel(Lang.INSTANCE_DIRECTORY);
+		gameDirText.setForeground(Color.LIGHT_GRAY);
+		panel.add(gameDirText, constr);
 
 		constr.gridy++;
-		constr.insets = new Insets(2, 10, 10, 10);
-		dirChooser = new JButton(Lang.INSTANCE_GAME_DIRECTORY);
+		constr.fill = GridBagConstraints.HORIZONTAL;
+		constr.gridwidth = 3;
+		constr.insets = new Insets(2, 20, 0, 10);
+		
+		dirPath = new JTextField(Launcher.currentInstance.gameDir, 4);
+		panel.add(dirPath, constr);
+		
+		constr.gridx += 3;
+		constr.weightx = 0.0;
+		constr.gridwidth = 1;
+		constr.insets = new Insets(2, 10, 0, 10);
+		
+		dirChooser = new JButton(Lang.BROWSE);
 		dirChooser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				JFileChooser dirChooser = new JFileChooser();
@@ -155,16 +176,66 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 							gameDir = dirChooser.getSelectedFile();
 						}
 					}
-					Launcher.currentInstance.gameDir = gameDir.getAbsolutePath();
+					dirPath.setText(gameDir.getAbsolutePath());
 				}
 			}
 		});
 		panel.add(dirChooser, constr);
+		
+		
+		
+		constr.gridx = 0;
+		constr.gridy++;
+		javaPathText = new JLabel(Lang.JAVA_EXECUTABLE);
+		javaPathText.setForeground(Color.LIGHT_GRAY);
+		panel.add(javaPathText, constr);
+		
+		constr.gridy++;
+		constr.gridx = 0;
+		constr.gridwidth = 3;
+		constr.weightx = 1.0;
+		constr.insets = new Insets(2, 20, 0, 10);
+		
+		javaPath = new JTextField(Launcher.currentInstance.javaPath, 4);
+		panel.add(javaPath, constr);
+		
+		constr.gridx += 3;
+		constr.weightx = 0.0;
+		constr.gridwidth = 1;
+		constr.insets = new Insets(2, 10, 0, 10);
+		
+		javaChooser = new JButton(Lang.BROWSE);
+		javaChooser.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser dirChooser = new JFileChooser();
+				dirChooser.setCurrentDirectory(new java.io.File(BC.get()));
+				dirChooser.setDialogTitle(Lang.JAVA_EXECUTABLE);
+				dirChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				dirChooser.setAcceptAllFileFilterUsed(false);
+				if (dirChooser.showOpenDialog(Window.mainWindow) == JFileChooser.APPROVE_OPTION) { 
+					System.out.println("getCurrentDirectory(): " 
+							+  dirChooser.getCurrentDirectory());
+					System.out.println("getSelectedFile() : " 
+							+  dirChooser.getSelectedFile());
+					File gameDir = null;
+					if (!dirChooser.getSelectedFile().equals(dirChooser.getCurrentDirectory())) {
+						if (!dirChooser.getSelectedFile().isDirectory()) {
+							gameDir = dirChooser.getCurrentDirectory();
+						} else {
+							gameDir = dirChooser.getSelectedFile();
+						}
+					}
+					javaPath.setText(gameDir.getAbsolutePath());
+				}
+			}
+		});
+		panel.add(javaChooser, constr);
 
 		constr.fill = GridBagConstraints.HORIZONTAL;
 		constr.gridwidth = 1;
 		constr.gridx = 0;
 		constr.weightx = 0.0;
+		constr.insets = new Insets(2, 10, 10, 10);
 
 		constr.gridy++;
 		dimensions1Text = new JLabel(Lang.OPTIONS_WIDTH);
@@ -193,15 +264,8 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 			public void actionPerformed(ActionEvent e) {
 				int result = JOptionPane.showConfirmDialog(InstanceSettings.this, Lang.INSTANCE_REMOVE_QUESTION, Lang.INSTANCE_REMOVE_TITLE, JOptionPane.YES_NO_OPTION);
 				if (result == JOptionPane.YES_OPTION) {
-					Launcher.currentInstance.removeInstance();
+					Launcher.removeInstance(Launcher.currentInstance.name);
 					setVisible(false);
-					if (Instance.getInstances().size() > 0) {
-						Launcher.setInstance(Instance.loadInstance(Instance.getInstances().get(0)));
-					} else {
-						Instance in = Instance.newInstance("(default instance)");
-						in.saveInstance();
-						Launcher.setInstance(in);
-					}
 				}
 			}
 		});
@@ -291,19 +355,26 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		constr1.ipadx = 0;
 		constr1.insets = new Insets(25, 2, 2, 2);
 		constr1.fill = GridBagConstraints.HORIZONTAL;
-
+		
+		showConsole = new JCheckBox(Lang.CONSOLE_OUTPUT);
+		showConsole.setForeground(Color.LIGHT_GRAY);
+		showConsole.setOpaque(false);
+		showConsole.setSelected(Launcher.currentInstance.console);
+		instanceSettings.add(showConsole, constr1);
+		
+		constr1.gridy++;
+		constr1.insets = new Insets(2, 2, 2, 2);
 		forceUpdate = new JCheckBox(Lang.FORCE_UPDATE);
 		forceUpdate.setForeground(Color.LIGHT_GRAY);
 		forceUpdate.setOpaque(false);
 		forceUpdate.setSelected(Launcher.forceUpdate);
 		instanceSettings.add(forceUpdate, constr1);
 
-		constr1.gridy = 4;
-		constr1.insets = new Insets(2, 2, 2, 2);
+		constr1.gridy++;
 		instanceSettings.add(addons, constr1);
 
 		constr1.ipady = 0;
-		constr1.gridy = 5;
+		constr1.gridy++;
 		instanceSettings.add(modrepo, constr1);
 
 		JPanel okPanel = new OptionsPanel();
@@ -320,9 +391,10 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		OKButton = new JButton(Lang.OPTIONS_OK);
 		OKButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				saveOptions();
-				setVisible(false);
-				Window.instanceSettings = null;
+				if (saveOptions()) {
+					setVisible(false);
+					Window.instanceSettings = null;
+				}
 			}
 		});
 		okPanel.add(OKButton, constr1);
@@ -379,7 +451,7 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		keepOpenCheck.setText(Lang.OPTIONS_KEEP_OPEN);
 		RPCCheck.setText(Lang.OPTIONS_RPC);
 		parametersText.setText(Lang.OPTIONS_LAUNCH_ARGS);
-		dirChooser.setText(Lang.INSTANCE_GAME_DIRECTORY);
+		dirChooser.setText(Lang.BROWSE);
 		dimensions1Text.setText(Lang.OPTIONS_WIDTH);
 		dimensions2Text.setText(Lang.OPTIONS_HEIGHT);
 		removelabel.setText(Lang.INSTANCE_REMOVE_TITLE);
@@ -393,8 +465,21 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		this.pack();
 	}
 
-	public void saveOptions() {
+	public boolean saveOptions() {
+		String jpath = javaPath.getText();
+		int i = Util.getMajorJavaVersion(jpath);
+		if (i == -1) {
+			JOptionPane.showMessageDialog(this, Lang.JAVA_INVALID);
+			return false;
+		} else if (i > 8) {
+			int res = JOptionPane.showConfirmDialog(this, Lang.JAVA_TOO_RECENT);
+			if (res != JOptionPane.YES_OPTION) {
+				return false;
+			}
+		}
+		
 		Launcher.forceUpdate = forceUpdate.isSelected();
+		Launcher.currentInstance.javaPath = jpath;
 		try {
 			Launcher.currentInstance.width = Integer.parseInt(dimensions1.getText());
 		} catch (Exception ex) {
@@ -406,9 +491,11 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 			Launcher.currentInstance.height = 480;
 		}
 
+		Launcher.currentInstance.gameDir = dirPath.getText();
 		Launcher.currentInstance.keepopen = keepOpenCheck.isSelected();
 		Launcher.currentInstance.proxy = proxyCheck.isSelected();
 		Launcher.currentInstance.RPC = RPCCheck.isSelected();
+		Launcher.currentInstance.console = showConsole.isSelected();
 		Launcher.currentInstance.launchArgs = parameters.getText();
 
 		if (!instanceName.getText().equals(Launcher.currentInstance.name) && !instanceName.getText().equals("")) {
@@ -416,5 +503,6 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		}
 		Launcher.currentInstance.saveInstance();
 		Util.setProperty(BC.SETTINGS, "lastInstance", Launcher.currentInstance.name);
+		return true;
 	}
 }

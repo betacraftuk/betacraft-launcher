@@ -418,6 +418,7 @@ public class Util {
 			}
 		} catch (Throwable t) {
 			t.printStackTrace();
+			return null;
 		}
 		// java version "1.8.0_281" ---> 1.8.0_281"
 		String verstart = line.substring(line.indexOf("\"")+1);
@@ -429,6 +430,7 @@ public class Util {
 
 	public static String getJavaVersion(String javapath) {
 		String fullver = getFullJavaVersion(javapath);
+		if (fullver == null) return null;
 
 		// This basically filters out the actual core version, skipping all the fancy stuff
 		String whitelist = "0123456789.";
@@ -442,6 +444,8 @@ public class Util {
 
 	public static int getMajorJavaVersion(String javapath) {
 		String ver = getJavaVersion(javapath);
+		if (ver == null) return -1;
+
 		if (ver.startsWith("1.")) {
 			return Integer.parseInt(ver.split("\\.")[1]);
 		} else {

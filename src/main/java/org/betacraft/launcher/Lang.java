@@ -171,7 +171,8 @@ public class Lang extends JFrame implements LanguageElement {
 	public static void refresh(boolean download, boolean force) {
 		String lang = Util.getProperty(BC.SETTINGS, "language");
 		if (lang == null) {
-			lang = "English";
+			applyNamesSwing();
+			return;
 		}
 		File file = new File(BC.get() + "launcher" + File.separator + "lang" + File.separator +  lang + ".txt");
 		if ((download && !download(lang).isPositive()) || !file.exists()) {
@@ -213,6 +214,7 @@ public class Lang extends JFrame implements LanguageElement {
 		ADDON_NO_DESC = Util.getProperty(file, "addon_no_desc", charset);
 		ADDON_SHOW_INFO = Util.getProperty(file, "addon_show_info", charset);
 
+		LOGGING_IN = Util.getProperty(file, "logging_in", charset);
 		LOGIN_TITLE = Util.getProperty(file, "login_title", charset);
 		LOGIN_BUTTON = Util.getProperty(file, "log_in_button", charset);
 		LOGOUT_BUTTON = Util.getProperty(file, "log_out_button", charset);
@@ -231,7 +233,12 @@ public class Lang extends JFrame implements LanguageElement {
 		LOGIN_FAILED = Util.getProperty(file, "login_failed", charset);
 		LOGIN_FAILED_INVALID_CREDENTIALS = Util.getProperty(file, "login_failed_invalid_credentials", charset);
 
-		INSTANCE_GAME_DIRECTORY = Util.getProperty(file, "instance_game_directory", charset);
+		JAVA_EXECUTABLE = Util.getProperty(file, "java_executable", charset);
+		JAVA_INVALID = Util.getProperty(file, "java_invalid", charset);
+		JAVA_TOO_RECENT = Util.getProperty(file, "java_too_recent", charset);
+
+		INSTANCE_DIRECTORY = Util.getProperty(file, "instance_directory", charset);
+		INSTANCE_REMOVE_DIRECTORY = Util.getProperty(file, "instance_remove_directory", charset);
 		INSTANCE_GAME_DIRECTORY_TITLE = Util.getProperty(file, "instance_game_directory_title", charset);
 		INSTANCE_REMOVE_QUESTION = Util.getProperty(file, "instance_remove_question", charset);
 		INSTANCE_REMOVE_TITLE = Util.getProperty(file, "instance_remove_title", charset);
@@ -270,10 +277,20 @@ public class Lang extends JFrame implements LanguageElement {
 		TAB_CL_FAILED = Util.getProperty(file, "cl_failed", charset);
 
 		FORCE_UPDATE = Util.getProperty(file, "force_update", charset);
+		CONSOLE_OUTPUT_FOR = Util.getProperty(file, "console_output_for", charset);
+		CONSOLE_OUTPUT = Util.getProperty(file, "console_output", charset);
 
 		YES = Util.getProperty(file, "yes", charset);
 		NO = Util.getProperty(file, "no", charset);
 		CANCEL = Util.getProperty(file, "cancel", charset);
+		SELECT = Util.getProperty(file, "select", charset);
+		REMOVE = Util.getProperty(file, "remove", charset);
+		BROWSE = Util.getProperty(file, "browse", charset);
+		COPY = Util.getProperty(file, "copy", charset);
+		CLEAR = Util.getProperty(file, "clear", charset);
+		
+		PAUSE = Util.getProperty(file, "pause", charset);
+		UNPAUSE = Util.getProperty(file, "unpause", charset);
 
 		applyNamesSwing();
 
@@ -319,6 +336,7 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String ADDON_NO_DESC = "No description.";
 	public static String ADDON_SHOW_INFO = "Show info";
 
+	public static String LOGGING_IN = "Logging in...";
 	public static String LOGIN_TITLE = "Log in";
 	public static String LOGIN_BUTTON = "Log in";
 	public static String LOGOUT_BUTTON = "Log out";
@@ -337,7 +355,12 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String LOGIN_FAILED = "Failed to complete the login process";
 	public static String LOGIN_FAILED_INVALID_CREDENTIALS = "Invalid e-mail or password.";
 
-	public static String INSTANCE_GAME_DIRECTORY = "Game directory";
+	public static String JAVA_EXECUTABLE = "Java executable:";
+	public static String JAVA_INVALID = "Given Java path is not valid.";
+	public static String JAVA_TOO_RECENT = "Given Java is higher than 8. Are you sure you want to use it?";
+
+	public static String INSTANCE_REMOVE_DIRECTORY = "Would you want to permanently remove this instance's directory? This cannot be undone.";
+	public static String INSTANCE_DIRECTORY = "Instance directory:";
 	public static String INSTANCE_GAME_DIRECTORY_TITLE = "Choose a directory for the instance";
 	public static String INSTANCE_REMOVE_QUESTION = "Are you sure you want to remove this instance?";
 	public static String INSTANCE_REMOVE_TITLE = "Remove instance";
@@ -368,6 +391,8 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String TAB_CL_FAILED = "Failed to load update news!";
 
 	public static String FORCE_UPDATE = "Force update";
+	public static String CONSOLE_OUTPUT_FOR = "Console output for \"%s\"";
+	public static String CONSOLE_OUTPUT = "Console output";
 
 	public static String WRAP_USER = "User: %s";
 	public static String WRAP_VERSION = "Version: %s";
@@ -382,4 +407,12 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String YES = "Yes";
 	public static String NO = "No";
 	public static String CANCEL = "Cancel";
+	public static String SELECT = "Select";
+	public static String REMOVE = "Remove";
+	public static String BROWSE = "Browse";
+	public static String COPY = "Copy";
+	public static String CLEAR = "Clear";
+
+	public static String PAUSE = "Pause";
+	public static String UNPAUSE = "Unpause";
 }

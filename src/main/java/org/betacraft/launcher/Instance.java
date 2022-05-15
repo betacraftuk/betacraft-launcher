@@ -19,8 +19,10 @@ public class Instance {
 	public boolean proxy;
 	public boolean keepopen;
 	public boolean RPC;
+	public boolean console;
 	public List<String> addons;
 	public String gameDir;
+	public String javaPath;
 
 	private Instance(String name, String launchArgs, String version, int width, int height, boolean proxy, boolean keepopen, boolean RPC, List<String> addons, String gameDir) {
 		this.name = name;
@@ -33,6 +35,8 @@ public class Instance {
 		this.addons = addons;
 		this.version = version;
 		this.gameDir = gameDir;
+		this.console = false;
+		this.javaPath = Launcher.javaRuntime.getAbsolutePath();
 	}
 
 	public static Instance newInstance(String name) {
@@ -76,6 +80,14 @@ public class Instance {
 				instance.proxy = Boolean.parseBoolean(Util.getProperty(instanceFile, "proxy"));
 				instance.keepopen = Boolean.parseBoolean(Util.getProperty(instanceFile, "keepopen"));
 				instance.RPC = Boolean.parseBoolean(Util.getProperty(instanceFile, "RPC"));
+				instance.console = Boolean.parseBoolean(Util.getProperty(instanceFile, "console"));
+
+				String jpath = Util.getProperty(instanceFile, "javaPath");
+				if (jpath == null || "".equals(jpath)) {
+					instance.javaPath = Launcher.javaRuntime.getAbsolutePath();
+				} else {
+					instance.javaPath = jpath;
+				}
 			} catch (Throwable t) {
 				Logger.a("Instance '" + name + "' is corrupted!");
 				t.printStackTrace();
@@ -101,6 +113,8 @@ public class Instance {
 			Util.setProperty(instanceFile, "proxy", Boolean.toString(this.proxy));
 			Util.setProperty(instanceFile, "keepopen", Boolean.toString(this.keepopen));
 			Util.setProperty(instanceFile, "RPC", Boolean.toString(this.RPC));
+			Util.setProperty(instanceFile, "console", Boolean.toString(this.console));
+			Util.setProperty(instanceFile, "javaPath", javaPath);
 
 			StringBuilder builder = new StringBuilder();
 			String addons = "";
@@ -149,6 +163,8 @@ public class Instance {
 		cloned.addons = this.addons;
 		cloned.gameDir = this.gameDir;
 		cloned.version = this.version;
+		cloned.javaPath = this.javaPath;
+		cloned.console = this.console;
 		return cloned;
 	}
 

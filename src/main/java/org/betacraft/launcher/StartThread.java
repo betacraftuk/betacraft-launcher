@@ -16,21 +16,25 @@ public class StartThread extends Thread {
 		Window.mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		Lang.refresh(true, true);
+		
+		// thread authenticate + login
 		new Thread(new Runnable() {
 			public void run() {
 				boolean release = (BC.prerelease || BC.nightly) ? false : true;
 				if (Launcher.checkForUpdate(release)) {
 					if (!BC.nightly) Launcher.downloadUpdate(release);
 				}
+				
+				if (!Launcher.auth.authenticate()) {
+					Launcher.accounts.removeAccount(Launcher.auth.getCredentials());
+					// replacement for broken account
+					Launcher.auth = Util.getAuthenticator(Launcher.accounts.accounts.get(0));
+					Launcher.accounts.setCurrent(Launcher.accounts.accounts.get(0));
+					Launcher.auth.authenticate();
+				}
 			}
 		}).start();
-		if (!Launcher.auth.authenticate()) {
-			Launcher.accounts.removeAccount(Launcher.auth.getCredentials());
-			// replacement for broken account
-			Launcher.auth = Util.getAuthenticator(Launcher.accounts.accounts.get(0));
-			Launcher.accounts.setCurrent(Launcher.accounts.accounts.get(0));
-			Launcher.auth.authenticate();
-		}
+
 		try {
 			Release.loadVersions(VersionRepository.BETACRAFT);
 			org.betacraft.launcher.Addon.loadAddons();

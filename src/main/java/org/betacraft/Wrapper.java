@@ -32,7 +32,6 @@ import javax.swing.JPanel;
 import org.betacraft.Addon.WhatToDo;
 import org.betacraft.launcher.BC;
 import org.betacraft.launcher.Lang;
-import org.betacraft.launcher.Logger;
 
 import net.arikia.dev.drpc.DiscordEventHandlers;
 import net.arikia.dev.drpc.DiscordRPC;
@@ -166,7 +165,7 @@ public class Wrapper extends Applet implements AppletStub {
 
 			DiscordRichPresence presence = new DiscordRichPresence();
 			presence.startTimestamp = System.currentTimeMillis() / 1000;
-			presence.state = VER + ": " + version;
+			presence.state = String.format(VER, version);
 			presence.details = String.format(USR, user);
 			presence.largeImageKey = "logo_betacraft_1024";
 			presence.largeImageText = "Download at betacraft.uk";
@@ -303,7 +302,7 @@ public class Wrapper extends Applet implements AppletStub {
 
 				// <ip>
 				if (!server.equals("")) {
-					System.err.println("Accepted server parameters: " + IP + ":" + port + this.mppass != null ? " + mppass" : "");
+					System.out.println("Accepted server parameters: " + IP + ":" + port + this.mppass != null ? " + mppass" : "");
 					params.put("server", IP);
 					params.put("port", port);
 					params.put("mppass", this.mppass);
@@ -342,10 +341,13 @@ public class Wrapper extends Applet implements AppletStub {
 			}
 			classLoader = new URLClassLoader(neww);
 			try {
+				System.out.println();
+				System.out.println("Loading addons:");
 				for (Class<Addon> c : ogaddons) {
 					this.loadAddon((Addon) c.newInstance());
-					System.err.println("- " + c);
+					System.out.println("- " + c);
 				}
+				System.out.println();
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -382,7 +384,6 @@ public class Wrapper extends Applet implements AppletStub {
 			mainClassInstance = mainClass.newInstance();
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -450,11 +451,14 @@ public class Wrapper extends Applet implements AppletStub {
 			System.setProperty("org.lwjgl.librarypath", nativesPath);
 			System.setProperty("net.java.games.input.librarypath", nativesPath);
 
+			System.out.println();
+			System.out.println("Classpath:");
 			final URL[] url = new URL[files.length];
 			for (int i = 0; i < files.length; i++) {
-				System.err.println(files[i]);
+				System.out.println(files[i]);
 				url[i] = new File(files[i]).toURI().toURL();
 			}
+			System.out.println();
 
 			loadMainClass(url);
 		} catch (Exception ex) {
@@ -476,6 +480,7 @@ public class Wrapper extends Applet implements AppletStub {
 			gameFrame.setTitle(window_name);
 			gameFrame.setIconImage(this.icon);
 			gameFrame.setBackground(Color.BLACK);
+			this.addHooks();
 
 			// This is needed for the window size
 			panel = new JPanel();
@@ -532,7 +537,6 @@ public class Wrapper extends Applet implements AppletStub {
 			// Add game's applet to this window
 			this.setLayout(new BorderLayout());
 			this.add(a, "Center");
-			this.addHooks();
 
 			if (!this.resize_applet) {
 				a.resize(width, height);
@@ -664,7 +668,7 @@ public class Wrapper extends Applet implements AppletStub {
 								if (appletModeField.getType().getName().equalsIgnoreCase("boolean") && Modifier.isPublic(appletModeField.getModifiers())) {
 									appletModeField.setAccessible(true);
 									appletModeField.set(mc, false);
-									System.err.println("Linux mouse fix for early classic has been applied");
+									System.out.println("Linux mouse fix for early classic has been applied");
 									break;
 								}
 							}
@@ -723,7 +727,6 @@ public class Wrapper extends Applet implements AppletStub {
 					url = new URL("http", "www.minecraft.net", portCompat, "/game/", null);
 				}
 			}
-			System.err.println(url.toString());
 			return url;
 		}
 		catch (Exception e) {
@@ -745,7 +748,7 @@ public class Wrapper extends Applet implements AppletStub {
 
 	@Override
 	public String getParameter(final String paramName) {
-		System.err.println("Client asked for a parameter: " + paramName);
+		System.out.println("Client asked for parameter: " + paramName);
 		if (params.containsKey(paramName)) {
 			return params.get(paramName);
 		}

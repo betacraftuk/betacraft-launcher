@@ -22,7 +22,6 @@ import javax.swing.JPanel;
 
 import org.betacraft.launcher.BC;
 import org.betacraft.launcher.Lang;
-import org.betacraft.launcher.Logger;
 
 public class PreClassicWrapper2 extends Wrapper {
 
@@ -56,7 +55,6 @@ public class PreClassicWrapper2 extends Wrapper {
 				} catch (ClassNotFoundException ex1) {
 					System.out.println("Unknown launch class!");
 					ex1.printStackTrace();
-					Logger.printException(ex1);
 				}
 			}
 			try {
@@ -66,7 +64,6 @@ public class PreClassicWrapper2 extends Wrapper {
 				}
 			} catch (Exception ex) {
 				ex.printStackTrace();
-				Logger.printException(ex);
 			}
 			if (System.getProperty("preclassic.mapwidth") == null) {
 				System.setProperty("preclassic.mapwidth", "256");
@@ -80,7 +77,6 @@ public class PreClassicWrapper2 extends Wrapper {
 			mainClassInstance = classLoader.loadClass("org.betacraft.preclassic.RDApplet").getConstructor(Wrapper.class).newInstance(this);
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -94,6 +90,18 @@ public class PreClassicWrapper2 extends Wrapper {
 			gameFrame.setTitle(window_name);
 			gameFrame.setIconImage(this.icon);
 			gameFrame.setBackground(Color.BLACK);
+
+			gameFrame.addWindowListener(new WindowAdapter() {
+				@Override
+				public void windowClosing(final WindowEvent e) {
+					stop();
+					destroy();
+					PreClassicWrapper2.this.destroy();
+					gameFrame.setVisible(false);
+					gameFrame.dispose();
+					System.exit(0);
+				}
+			});
 
 			// This is needed for the window size
 			panel = new JPanel();
@@ -149,18 +157,6 @@ public class PreClassicWrapper2 extends Wrapper {
 			a.resize(width, height);
 			a.setMinimumSize(new Dimension(width, height));
 
-			gameFrame.addWindowListener(new WindowAdapter() {
-				@Override
-				public void windowClosing(final WindowEvent e) {
-					stop();
-					destroy();
-					PreClassicWrapper2.this.destroy();
-					gameFrame.setVisible(false);
-					gameFrame.dispose();
-					System.exit(0);
-				}
-			});
-
 			gameFrame.addComponentListener(listener);
 
 			// Add game's applet to this window
@@ -171,7 +167,6 @@ public class PreClassicWrapper2 extends Wrapper {
 			if (discord) discordThread.start();
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -181,7 +176,6 @@ public class PreClassicWrapper2 extends Wrapper {
 			((Applet)mainClassInstance).stop();
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 }

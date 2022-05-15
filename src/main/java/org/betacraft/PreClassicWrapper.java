@@ -6,8 +6,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 
-import org.betacraft.launcher.Logger;
-
 import net.arikia.dev.drpc.DiscordRPC;
 
 public class PreClassicWrapper extends Wrapper {
@@ -34,7 +32,6 @@ public class PreClassicWrapper extends Wrapper {
 			classLoader = new URLClassLoader(neww);
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 
 		try {
@@ -46,22 +43,23 @@ public class PreClassicWrapper extends Wrapper {
 				mainClass = classLoader.loadClass("com.mojang.minecraft.RubyDung");
 			} catch (ClassNotFoundException ex1) {
 				ex1.printStackTrace();
-				Logger.printException(ex1);
 			}
 		}
 		try {
+			System.out.println();
+			System.out.println("Loading addons:");
 			for (Class<Addon> c : ogaddons) {
 				this.loadAddon((Addon) c.newInstance());
-				System.err.println("- " + c);
+				System.out.println("- " + c);
 			}
+			System.out.println();
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 		try {
 			mainClassInstance = mainClass.newInstance();
 			if (!this.addonsPreAppletInit(this.addons)) return;
-			System.err.println(mainClassInstance.getClass().getName());
+
 			Thread t = new Thread() {
 				public void run() {
 					((Runnable)mainClassInstance).run();
@@ -78,7 +76,6 @@ public class PreClassicWrapper extends Wrapper {
 			return;
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -88,7 +85,6 @@ public class PreClassicWrapper extends Wrapper {
 			this.loadJars();
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 }

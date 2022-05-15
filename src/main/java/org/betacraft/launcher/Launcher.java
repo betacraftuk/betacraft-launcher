@@ -66,26 +66,17 @@ public class Launcher {
 		boolean systemlookandfeel = Boolean.parseBoolean(System.getProperty("betacraft.systemLookAndFeel", "true"));
 
 		if (systemlookandfeel) {
-			lookandfeel: {
-				if (OS.VER.contains("arch") || OS.VER.contains("manjaro")) {
-					if (javaver != null && javaver.startsWith("16") &&
-							javadistro != null && !javadistro.toLowerCase().contains("azul")) {
-						// afaik, only azul's java 16 isn't broken on arch
-						break lookandfeel;
-					}
-				}
+			try {
+				// Fix for Java having a cross-platform look and feel
+				if (OS.isWindows()) UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+				else if (OS.isLinux()) UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+			} catch (Exception ex) {
+				// why
 				try {
-					// Fix for Java having a cross-platform look and feel
-					if (OS.isWindows()) UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-					else if (OS.isLinux()) UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
-				} catch (Exception ex) {
-					// why
-					try {
-						UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-					} catch (Exception ex1) {
-						ex1.printStackTrace();
-						Logger.printException(ex1);
-					}
+					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+				} catch (Exception ex1) {
+					ex1.printStackTrace();
+					Logger.printException(ex1);
 				}
 			}
 		}
@@ -100,6 +91,8 @@ public class Launcher {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
+
+		Logger.clearLauncherLog();
 
 		if (args.length >= 2 && (args[0].equals("update") || (args[1].equals("update")))) {
 			try {
@@ -170,16 +163,15 @@ public class Launcher {
 			ArrayList<Class<Addon>> addons = new ArrayList<Class<Addon>>();
 			if (!currentInstance.addons.isEmpty()) {
 				try {
-					System.err.println("Loading addons...");
+					System.out.println("Loading addons...");
 					for (String s : currentInstance.addons) {
 						try {
 							String path = BC.get() + "launcher" + File.separator + "addons" + File.separator + s + ".jar";
-							System.err.println(path);
 							URLClassLoader loader = new URLClassLoader(new URL[] {
 									new File(path).toURI().toURL()
 							});
 
-							System.err.println("- " + s);
+							System.out.println("- " + s);
 							loadClasses(path, loader);
 							Class<Addon> c = (Class<Addon>) loader.loadClass(s);
 							addons.add(c);
@@ -190,7 +182,6 @@ public class Launcher {
 					}
 				} catch (Exception ex) {
 					ex.printStackTrace();
-					Logger.printException(ex);
 				}
 			}
 
@@ -204,7 +195,7 @@ public class Launcher {
 				}
 			}
 
-			Logger.a("Loaded in: " + (System.nanoTime() - nano) + " ns");
+			System.out.println("Loaded in: " + (System.nanoTime() - nano) + " ns");
 			if (meth.equalsIgnoreCase("rd") || meth.equalsIgnoreCase("mc")) {
 				new Launcher().extractFromJar("/PreClassic.jar", new File(BC.get() + "launcher/", "PreClassic.jar"));
 				new PreClassicWrapper2(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, meth, server, mppass, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
@@ -226,13 +217,12 @@ public class Launcher {
 					});
 
 					loadClasses(path, loader);
-					System.err.println("Launch method: " + meth);
+					System.out.println("Launch method: " + meth);
 					Class c = loader.loadClass(meth);
 					Constructor con = c.getConstructor(String.class, String.class, String.class, String.class, String.class, Integer.class, Integer.class, Boolean.class, String.class, String.class, String.class, String.class, String.class, String.class, Image.class, ArrayList.class);
 					con.newInstance(username, currentInstance.name, currentInstance.version, sessionid, currentInstance.gameDir, currentInstance.height, currentInstance.width, currentInstance.RPC, json.getLaunchMethod(), server, mppass, uuid, Lang.WRAP_USER, Lang.WRAP_VERSION, currentInstance.getIcon(), addons);
 				} catch (Exception ex) {
 					ex.printStackTrace();
-					Logger.printException(ex);
 				}
 			}
 			return;
@@ -343,6 +333,27 @@ public class Launcher {
 		Window.selectedInstanceDisplay.setText(Launcher.currentInstance.name + " [" + Launcher.currentInstance.version + "]");
 		Util.setProperty(BC.SETTINGS, "lastInstance", Launcher.currentInstance.name);
 	}
+	
+	public static void removeInstance(String instance) {
+		Instance i = Instance.loadInstance((String) instance);
+
+		if (i != null) {
+			int res = JOptionPane.showConfirmDialog(Window.mainWindow, Lang.INSTANCE_REMOVE_DIRECTORY + "\n" + i.gameDir);
+			if (res == JOptionPane.YES_OPTION) {
+				removeRecursively(new File(i.gameDir), true, false);
+			}
+
+			i.removeInstance();
+		}
+
+		if (Instance.getInstances().size() > 0) {
+			Launcher.setInstance(Instance.loadInstance(Instance.getInstances().get(0)));
+		} else {
+			Instance in = Instance.newInstance("default instance");
+			in.saveInstance();
+			Launcher.setInstance(in);
+		}
+	}
 
 	public static void initStartup() {
 		File wrapper = new File(BC.get() + "launcher", "betacraft_wrapper.jar");
@@ -428,17 +439,13 @@ public class Launcher {
 				}
 				ArrayList<String> params = new ArrayList<String>();
 
-				params.add(javaRuntime.getAbsolutePath());
+				params.add(instance.javaPath);
 
 				// The colon in the launch arguments is different for Windows
 				String colon = ":";
 				if (OS.isWindows()) {
 					colon = ";";
 					params.add("-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump");
-				}
-
-				if (OS.ARCH.contains("x86")) {
-					params.add("-Xss1M");
 				}
 
 				// Additional parameters:
@@ -526,6 +533,12 @@ public class Launcher {
 				if (!instance.keepopen) {
 					Window.quit(false);
 				}
+				
+				// Console frame
+				ConsoleLogFrame clf = new ConsoleLogFrame(instance.name, instance.console);
+
+				// Clear previous logs
+				Logger.clearClientLog();
 
 				// For debugging
 				Process process = builder.start();
@@ -535,13 +548,17 @@ public class Launcher {
 				String line1;
 				while ((line1 = br_log.readLine()) != null) {
 					if (!token.equals("-")) line1 = line1.replaceAll(token, "[censored sessionid]");
+
 					Logger.logClient(line1);
+					clf.log(line1 + "\n");
 				}
 				Logger.logClient("End of client input");
+
+				clf.log("\nClient closed.\n");
 				Logger.a("Client closed.");
 
 				if (!instance.keepopen) {
-					Window.quit(true);
+					Window.quit(!clf.isVisible());
 				}
 				return;
 			}
@@ -554,8 +571,9 @@ public class Launcher {
 
 	public static void writeDefault() {
 		Util.setProperty(BC.SETTINGS, "language", "English");
-		Util.setProperty(BC.SETTINGS, "lastInstance", "(default instance)");
+		Util.setProperty(BC.SETTINGS, "lastInstance", "default instance");
 		Util.setProperty(BC.SETTINGS, "tab", Tab.CHANGELOG.name());
+		Util.setProperty(BC.SETTINGS, "disableWarnings", "false");
 		Util.setProperty(BC.SETTINGS, "version", "1");
 	}
 

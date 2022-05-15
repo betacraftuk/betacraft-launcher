@@ -35,6 +35,7 @@ public class NoAuth extends Authenticator {
 		Window.nick_input.setText(Launcher.getNickname());
 		Window.nick_input.setEnabled(true);
 		Window.loginButton.setText(Lang.LOGIN_BUTTON);
+		Window.loginButton.setEnabled(true);
 	}
 
 	public boolean invalidate() {

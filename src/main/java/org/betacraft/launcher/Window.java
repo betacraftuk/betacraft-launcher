@@ -79,6 +79,8 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 		settingsButton = new JButton(Lang.WINDOW_OPTIONS);
 		langButton = new JButton(Lang.WINDOW_LANGUAGE);
 
+		nick_input.setEnabled(false);
+		nick_input.setText(Lang.LOGGING_IN);
 		nick_input.getDocument().addDocumentListener(new DocumentListener() {
 			public void changedUpdate(DocumentEvent e) {
 				change();
@@ -95,6 +97,7 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 			}
 		});
 
+		loginButton.setEnabled(false);
 		loginButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				new MinecraftAuthRequest("", "").perform();
@@ -292,7 +295,7 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 
 	public static void quit(boolean close) {
 		if (mainWindow != null) mainWindow.setVisible(false);
-		if (mainWindow != null && close) mainWindow.dispose();
+		if (mainWindow != null) mainWindow.dispose();
 		Util.saveAccounts();
 		Util.setProperty(BC.SETTINGS, "tab", tab.name());
 		if (close) {
