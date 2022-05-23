@@ -109,12 +109,13 @@ public class ConsoleLogFrame extends JFrame {
 		panel.setBackground(new java.awt.Color(22, 22, 22));
 
 		logArea = new JTextArea();
-		logArea.setFont(new Font("Consolas", Font.PLAIN, 18));
+		logArea.setFont(new Font("Consolas", Font.PLAIN, 12));
 		logArea.setForeground(java.awt.Color.LIGHT_GRAY);
 		logArea.setBackground(new java.awt.Color(22, 22, 22));
 		logArea.setLineWrap(true);
 		logArea.setWrapStyleWord(true);
 		logArea.setCaretColor(java.awt.Color.WHITE);
+		logArea.setEditable(false);
 
 		JScrollPane scroll = new JScrollPane(logArea);
 		scroll.setWheelScrollingEnabled(true);
