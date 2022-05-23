@@ -17,7 +17,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.betacraft.launcher.Lang;
-import org.betacraft.launcher.Logger;
 
 import net.arikia.dev.drpc.DiscordRPC;
 
@@ -45,6 +44,7 @@ public class Classic15aWrapper extends Wrapper {
 			gameFrame.setTitle(window_name);
 			gameFrame.setIconImage(this.icon);
 			gameFrame.setBackground(Color.BLACK);
+			this.addHooks();
 
 			// This is needed for the window size
 			panel = new JPanel();
@@ -91,7 +91,6 @@ public class Classic15aWrapper extends Wrapper {
 
 			// Add game's applet to this window
 			this.setLayout(new BorderLayout());
-			this.addHooks();
 
 			if (!this.resize_applet) {
 				gameFrame.removeAll();
@@ -108,7 +107,6 @@ public class Classic15aWrapper extends Wrapper {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -134,7 +132,6 @@ public class Classic15aWrapper extends Wrapper {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -170,7 +167,6 @@ public class Classic15aWrapper extends Wrapper {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -198,7 +194,6 @@ public class Classic15aWrapper extends Wrapper {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -230,7 +225,6 @@ public class Classic15aWrapper extends Wrapper {
 					field.set(run, Cc);
 				} catch (Exception ex) {
 					ex.printStackTrace();
-					Logger.printException(ex);
 				}
 				// previous method, but this has hardcoded port
 				//clazz.getDeclaredMethod("a", String.class, int.class).invoke(run, this.getParameter("server"), port);

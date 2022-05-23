@@ -30,7 +30,7 @@ public class SelectVersion extends JFrame implements ActionListener, LanguageEle
 	static GridBagConstraints constr;
 
 	public SelectVersion() {
-		Logger.a("Version list window has been opened.");
+		Logger.a("Version list window opened.");
 		this.setIconImage(Window.img);
 		this.setMinimumSize(new Dimension(282, 386));
 		this.setTitle(Lang.VERSION_LIST_TITLE);
@@ -40,7 +40,6 @@ public class SelectVersion extends JFrame implements ActionListener, LanguageEle
 		panel.setLayout(new GridBagLayout());
 
 		constr = new GridBagConstraints();
-
 		constr.fill = GridBagConstraints.BOTH;
 		constr.insets = new Insets(5, 5, 0, 5);
 		constr.gridwidth = GridBagConstraints.RELATIVE;
@@ -49,7 +48,6 @@ public class SelectVersion extends JFrame implements ActionListener, LanguageEle
 		String name = (SelectVersion.order == Order.FROM_OLDEST) ? Lang.SORT_FROM_OLDEST : Lang.SORT_FROM_NEWEST;
 		sort_button = new JButton(name);
 		sort_button.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				if (SelectVersion.order == Order.FROM_OLDEST) {
 					SelectVersion.order = Order.FROM_NEWEST;
@@ -68,6 +66,7 @@ public class SelectVersion extends JFrame implements ActionListener, LanguageEle
 		constr.weighty = GridBagConstraints.RELATIVE;
 		constr.gridheight = 1;
 		constr.insets = new Insets(0, 5, 5, 5);
+
 		OK = new JButton(Lang.OPTIONS_OK);
 		OK.addActionListener(this);
 		panel.add(OK, constr);
@@ -106,7 +105,7 @@ public class SelectVersion extends JFrame implements ActionListener, LanguageEle
 		list = new JList(listModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setLayoutOrientation(JList.VERTICAL);
-		list.setVisibleRowCount(3);
+		list.setVisibleRowCount(10);
 		list.setSelectedIndex(index);
 
 		if (listScroller != null) panel.remove(listScroller);
@@ -127,7 +126,6 @@ public class SelectVersion extends JFrame implements ActionListener, LanguageEle
 		setVisible(false);
 	}
 
-	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == OK) {
 			saveVersion();

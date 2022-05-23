@@ -32,8 +32,6 @@ import javax.swing.JPanel;
 import org.betacraft.Addon.WhatToDo;
 import org.betacraft.launcher.BC;
 import org.betacraft.launcher.Lang;
-import org.betacraft.launcher.Launcher;
-import org.betacraft.launcher.Logger;
 
 import net.arikia.dev.drpc.DiscordEventHandlers;
 import net.arikia.dev.drpc.DiscordRPC;
@@ -86,8 +84,8 @@ public class Wrapper extends Applet implements AppletStub {
 	public String defaultPort = "25565";
 
 	/** List of addons to be applied to this instance */
-	public ArrayList<Addon> addons = new ArrayList<>();
-	public ArrayList<Class<Addon>> ogaddons = new ArrayList<>();
+	public ArrayList<Addon> addons = new ArrayList<Addon>();
+	public ArrayList<Class<Addon>> ogaddons = new ArrayList<Class<Addon>>();
 
 	/** Tells whether lwjgl dependencies have been already loaded or not */
 	public boolean libraries_loaded = false;
@@ -161,16 +159,16 @@ public class Wrapper extends Applet implements AppletStub {
 		}  catch (Throwable t) {}
 
 		if (this.discord) {
-			String applicationId = "567450523603566617";
+			String applicationId = "939918927989973052";
 			DiscordEventHandlers handlers = new DiscordEventHandlers();
 			DiscordRPC.discordInitialize(applicationId, handlers, true);
 
 			DiscordRichPresence presence = new DiscordRichPresence();
 			presence.startTimestamp = System.currentTimeMillis() / 1000;
-			presence.state = VER + ": " + version;
+			presence.state = String.format(VER, version);
 			presence.details = String.format(USR, user);
-			presence.largeImageKey = "bc";
-			presence.largeImageText = "Download at betacraft.pl";
+			presence.largeImageKey = "logo_betacraft_1024";
+			presence.largeImageText = "Download at betacraft.uk";
 			DiscordRPC.discordUpdatePresence(presence);
 			discordThread = new DiscordThread();
 		}
@@ -244,7 +242,7 @@ public class Wrapper extends Applet implements AppletStub {
 			if (getmppass) {
 				System.out.println("Obtaining mppass...");
 				// 
-				this.mppass = new CustomRequest("http://api.betacraft.pl/getmppass.jsp?user=" + this.params.get("username") + "&server=" + server).perform().response;
+				this.mppass = new CustomRequest("http://api.betacraft.uk/getmppass.jsp?user=" + this.params.get("username") + "&server=" + server).perform().response;
 				if (this.mppass == null || this.mppass.equals("FAILED") || this.mppass.equals("SERVER NOT FOUND")) {
 					// failed to get mppass :(
 					System.out.println("Failed to get mppass for: " + server);
@@ -304,7 +302,7 @@ public class Wrapper extends Applet implements AppletStub {
 
 				// <ip>
 				if (!server.equals("")) {
-					System.err.println("Accepted server parameters: " + IP + ":" + port + this.mppass != null ? " + mppass" : "");
+					System.out.println("Accepted server parameters: " + IP + ":" + port + this.mppass != null ? " + mppass" : "");
 					params.put("server", IP);
 					params.put("port", port);
 					params.put("mppass", this.mppass);
@@ -343,10 +341,13 @@ public class Wrapper extends Applet implements AppletStub {
 			}
 			classLoader = new URLClassLoader(neww);
 			try {
+				System.out.println();
+				System.out.println("Loading addons:");
 				for (Class<Addon> c : ogaddons) {
 					this.loadAddon((Addon) c.newInstance());
-					System.err.println("- " + c);
+					System.out.println("- " + c);
 				}
+				System.out.println();
 			} catch (Exception ex) {
 				ex.printStackTrace();
 			}
@@ -383,7 +384,6 @@ public class Wrapper extends Applet implements AppletStub {
 			mainClassInstance = mainClass.newInstance();
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -431,7 +431,6 @@ public class Wrapper extends Applet implements AppletStub {
 	public void loadJars() {
 		try {
 			String[] libs = new File(BC.get(), "bin/").list(new FilenameFilter() {
-				@Override
 				public boolean accept(File dir, String fileName) {
 					return fileName.endsWith(".jar");
 				}
@@ -452,11 +451,14 @@ public class Wrapper extends Applet implements AppletStub {
 			System.setProperty("org.lwjgl.librarypath", nativesPath);
 			System.setProperty("net.java.games.input.librarypath", nativesPath);
 
+			System.out.println();
+			System.out.println("Classpath:");
 			final URL[] url = new URL[files.length];
 			for (int i = 0; i < files.length; i++) {
-				System.err.println(files[i]);
+				System.out.println(files[i]);
 				url[i] = new File(files[i]).toURI().toURL();
 			}
+			System.out.println();
 
 			loadMainClass(url);
 		} catch (Exception ex) {
@@ -478,6 +480,7 @@ public class Wrapper extends Applet implements AppletStub {
 			gameFrame.setTitle(window_name);
 			gameFrame.setIconImage(this.icon);
 			gameFrame.setBackground(Color.BLACK);
+			this.addHooks();
 
 			// This is needed for the window size
 			panel = new JPanel();
@@ -486,7 +489,7 @@ public class Wrapper extends Applet implements AppletStub {
 			panel.setBackground(Color.BLACK);
 			panel.setPreferredSize(new Dimension(width, height)); // 854, 480
 
-			Applet a = (Applet) mainClassInstance;
+			final Applet a = (Applet) mainClassInstance;
 
 			if (this.resize_applet) {
 
@@ -534,7 +537,6 @@ public class Wrapper extends Applet implements AppletStub {
 			// Add game's applet to this window
 			this.setLayout(new BorderLayout());
 			this.add(a, "Center");
-			this.addHooks();
 
 			if (!this.resize_applet) {
 				a.resize(width, height);
@@ -571,7 +573,6 @@ public class Wrapper extends Applet implements AppletStub {
 		});
 	}
 
-	@Override
 	public void appletResize(int width, int height) {}
 
 	@Override
@@ -667,7 +668,7 @@ public class Wrapper extends Applet implements AppletStub {
 								if (appletModeField.getType().getName().equalsIgnoreCase("boolean") && Modifier.isPublic(appletModeField.getModifiers())) {
 									appletModeField.setAccessible(true);
 									appletModeField.set(mc, false);
-									System.err.println("Linux mouse fix for early classic has been applied");
+									System.out.println("Linux mouse fix for early classic has been applied");
 									break;
 								}
 							}
@@ -726,7 +727,6 @@ public class Wrapper extends Applet implements AppletStub {
 					url = new URL("http", "www.minecraft.net", portCompat, "/game/", null);
 				}
 			}
-			System.err.println(url.toString());
 			return url;
 		}
 		catch (Exception e) {
@@ -748,17 +748,10 @@ public class Wrapper extends Applet implements AppletStub {
 
 	@Override
 	public String getParameter(final String paramName) {
-		System.err.println("Client asked for a parameter: " + paramName);
+		System.out.println("Client asked for parameter: " + paramName);
 		if (params.containsKey(paramName)) {
 			return params.get(paramName);
 		}
 		return null;
-	}
-
-	// Backwards compatibility, eh
-	public class BCClassLoader extends URLClassLoader {
-		public BCClassLoader(URL[] urls) {
-			super(urls);
-		}
 	}
 }

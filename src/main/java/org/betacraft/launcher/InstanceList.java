@@ -21,12 +21,12 @@ public class InstanceList extends JFrame implements LanguageElement {
 	static DefaultListModel listModel;
 	static JScrollPane listScroller;
 
-	static JButton newButton, OKButton;
+	static JButton newButton, selectButton, delButton;
 	static JPanel panel;
 	static GridBagConstraints constr;
 
 	public InstanceList() {
-		Logger.a("Instances list window has been opened.");
+		Logger.a("Instances list window opened.");
 		this.setIconImage(Window.img);
 		this.setMinimumSize(new Dimension(282, 386));
 
@@ -40,12 +40,11 @@ public class InstanceList extends JFrame implements LanguageElement {
 
 		constr.fill = GridBagConstraints.BOTH;
 		constr.insets = new Insets(5, 5, 0, 5);
-		constr.gridwidth = GridBagConstraints.RELATIVE;
+		constr.gridwidth = 2;
 		constr.weightx = 1.0;
 
 		newButton = new JButton(Lang.SELECT_INSTANCE_NEW);
 		newButton.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				String newName = JOptionPane.showInputDialog(InstanceList.this, Lang.INSTANCE_NAME, Lang.SELECT_INSTANCE_NEW, JOptionPane.DEFAULT_OPTION);//.showInputDialog(null, Lang.INSTANCE_NAME, "");
 				if (newName != null && !newName.equals("")) Instance.newInstance(newName).saveInstance();
@@ -59,19 +58,34 @@ public class InstanceList extends JFrame implements LanguageElement {
 
 		constr.gridy++;
 		constr.weighty = GridBagConstraints.RELATIVE;
+		constr.gridwidth = GridBagConstraints.RELATIVE;
 		constr.gridheight = 1;
 		constr.insets = new Insets(5, 5, 5, 5);
-		OKButton = new JButton(Lang.OPTIONS_OK);
 
-		OKButton.addActionListener(new ActionListener() {
-			@Override
+		selectButton = new JButton(Lang.SELECT);
+		selectButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Launcher.setInstance(Instance.loadInstance((String) list.getSelectedValue()));
 				setVisible(false);
 				Window.instanceList = null;
 			}
 		});
-		panel.add(OKButton, constr);
+		panel.add(selectButton, constr);
+		
+		constr.gridx = 1;
+		
+		delButton = new JButton(Lang.REMOVE);
+		delButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				int result = JOptionPane.showConfirmDialog(InstanceList.this, Lang.INSTANCE_REMOVE_QUESTION, Lang.INSTANCE_REMOVE_TITLE, JOptionPane.YES_NO_OPTION);
+				if (result == JOptionPane.YES_OPTION) {
+					Launcher.removeInstance((String) list.getSelectedValue());
+					setVisible(false);
+				}
+			}
+		});
+		panel.add(delButton, constr);
+
 		this.add(panel);
 		this.pack();
 		this.setLocationRelativeTo(Window.mainWindow);
@@ -80,7 +94,7 @@ public class InstanceList extends JFrame implements LanguageElement {
 
 	public void update() {
 		this.setTitle(Lang.SELECT_INSTANCE_TITLE);
-		OKButton.setText(Lang.OPTIONS_OK);
+		selectButton.setText(Lang.OPTIONS_OK);
 		this.pack();
 	}
 
@@ -104,7 +118,7 @@ public class InstanceList extends JFrame implements LanguageElement {
 		list = new JList(listModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		list.setLayoutOrientation(JList.VERTICAL);
-		list.setVisibleRowCount(3);
+		list.setVisibleRowCount(10);
 		list.setSelectedIndex(index);
 
 		if (listScroller != null) panel.remove(listScroller);

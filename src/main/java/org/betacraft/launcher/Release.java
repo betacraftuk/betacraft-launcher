@@ -13,14 +13,8 @@ public class Release {
 	// Version list for the user
 	public static ArrayList<Release> versions = new ArrayList<Release>();
 
-	// So, we have to remove already existing jsons that populate in 1.09-1.09_09,
-	// because that was a stupid idea. We can't now simply change versions' names.
-	// We can revert that mistake by adding a version parameter to info files.
-	// If the version parameter in the file doesn't exist or is lower than the
-	// hardcoded launcher one, the file gets deleted. Should do the thing, eh?
-
 	public enum VersionRepository {
-		BETACRAFT("http://files.betacraft.pl/launcher/assets/version_list.txt"),
+		BETACRAFT("http://files.betacraft.uk/launcher/assets/version_list.txt"),
 		CUSTOM(null);
 
 		private String link;
@@ -60,9 +54,10 @@ public class Release {
 	}
 
 	public static ArrayList<VersionInfo> offlineVersionList() {
-		ArrayList<VersionInfo> list = new ArrayList<>();
+		ArrayList<VersionInfo> list = new ArrayList<VersionInfo>();
 		File versionsFolder = new File(BC.get() + "versions/");
 		File fakejsonsFolder = new File(versionsFolder, "jsons/");
+
 		// Get all representations of locally saved versions
 		String[] offlinejars = versionsFolder.list(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
@@ -74,7 +69,8 @@ public class Release {
 				return name.endsWith(".info");
 			}
 		});
-		// Exclude duplicates
+
+		// Exclude when overlap occurs
 		for (int i = 0; i < offlinejars.length; i++) {
 			String jar = offlinejars[i].substring(0, offlinejars[i].length() - 4);
 			for (String jsondotinfo : offlinefakejsons) {
@@ -85,6 +81,7 @@ public class Release {
 				}
 			}
 		}
+
 		// Exclude online versions
 		for (int i = 0; i < offlinejars.length; i++) {
 			if (offlinejars[i] == null) continue;
@@ -105,8 +102,9 @@ public class Release {
 				}
 			}
 		}
+
 		// Remove extensions
-		ArrayList<String> stringlist = new ArrayList<>();
+		ArrayList<String> stringlist = new ArrayList<String>();
 		for (int i = 0; i < offlinejars.length; i++) {
 			String jar = offlinejars[i];
 			if (jar == null) continue;
@@ -117,12 +115,18 @@ public class Release {
 			if (json == null) continue;
 			stringlist.add(json.substring(0, json.length() - 5));
 		}
+
 		// Sort by name
 		Collections.sort(stringlist);
+
 		// Add to list
 		for (String version : stringlist) {
 			ReleaseJson json = new ReleaseJson(version);
-			json.custom = true;
+
+			// flag just jars as custom
+			if (json.hasJar() && !ReleaseJson.exists(version))
+				json.custom = true;
+
 			list.add(json);
 		}
 		return list;
@@ -207,208 +211,13 @@ public class Release {
 			File fakeJson = new File(BC.get() + "versions/jsons/", name + ".info");
 			return fakeJson.exists() && fakeJson.isFile();
 		}
-	}
 
-	/*public static void initVersions() throws IOException {
-		versions.clear();
-		//Launcher.download("https://betacraft.pl/launcher/assets/jsons.zip", new File(BC.get() + "versions" + File.separator + "jsons" + File.separator + "$jsons.zip"));
-		//Launcher.totalThreads.add(Util.Unrar(new File(BC.get() + "versions" + File.separator + "jsons" + File.separator + "$jsons.zip").toPath().toString(), new File(BC.get() + "versions" + File.separator + "jsons" + File.separator).toPath().toString(), false));
-		String[] offlineVersions = getOfflineVersions();
+		public void setEntry(String entry, String value) {}
 
-		try {
-			final URL url = new URL("https://betacraft.pl/launcher/assets/list.txt");
-
-			InputStream onlineListStream = null;
-			try {
-				// Try to get the online version list
-				onlineListStream = url.openStream();
-			} catch (UnknownHostException ex) {
-				Logger.a(null);
-			} catch (SocketTimeoutException ex) {
-				Logger.a(null);
-			} catch (SocketException ex) {
-				Logger.a(null);
-			} catch (Exception ex) {
-				Logger.a("A critical error has occurred while attempting to get the online versions list!");
-				ex.printStackTrace();
-				Logger.printException(ex);
-
-				// Every networking bug has been catched before, so this one must be serious
-				JOptionPane.showMessageDialog(null, "An error occurred while loading versions list! Report this to: @Moresteck#1688", "Critical error!", JOptionPane.ERROR_MESSAGE);
-			}
-
-			// If connection failed, load the offline list
-			if (onlineListStream == null) {
-				loadOfflineList();
-				return;
-			}
-
-			// Scan the offline list for online duplicates,
-			// and update the offline list at the same time (true)
-			Scanner onlineListScanner = new Scanner(onlineListStream, "UTF-8");
-			for (String ver : scan(onlineListScanner, true)) {
-				// The version storing format goes like this:
-				// Name [0], timestamp [1], description [3], wiki link [4]
-				//String[] split = ver.split("~");
-				for (int i = 0; i < offlineVersions.length; i++) {
-					// Check if the version info is valid
-					if (offlineVersions[i] != null && ver != null) {
-						// From x.jar to x
-						// If the version from offline list matches the version from online list 
-						if (offlineVersions[i].equals(ver)) {
-							// ... Then remove it from the offline versions list
-							// Otherwise it would appear doubled in the versions list
-							offlineVersions[i] = null;
-						}
-					}
-				}
-
-				// Add the online version to the versions list
-				versions.add(new Release(ver, true, false));
-			}
-
-			// Add offline versions to the version list
-			for (int i = 0; i < offlineVersions.length; i++) {
-				// Skip previously removed duplicates
-				if (offlineVersions[i] == null) continue;
-				versions.add(new Release(offlineVersions[i], false, true));
-			}
-
-			// Close the connection
-			onlineListScanner.close();
-			onlineListStream.close();
-		} catch (Throwable ex) {
-			Logger.a("A critical error occurred while initializing versions list!");
-			ex.printStackTrace();
-			Logger.printException(ex);
-
-			// This should likely never happen, so the user has found a new bug! Yay!
-			JOptionPane.showMessageDialog(null, "An error occurred while loading versions list! Update Java! Or, if it doesn't help, contact @Moresteck#1688", "Critical error!", JOptionPane.ERROR_MESSAGE);
+		public void downloadJson() {
+			Launcher.download("http://files.betacraft.uk/launcher/assets/jsons/" + this.getVersion() + ".info", new File(BC.get() + "versions" + File.separator + "jsons", this.getVersion() + ".info"));
 		}
 	}
-
-	protected static String[] getOfflineVersions() {
-		// Get the versions folder
-		File file = new File(BC.get() + "versions" + File.separator);
-		File file1 = new File(BC.get() + "versions" + File.separator + "jsons" + File.separator);
-
-		// Take only files that are of jar type
-		String[] offlineVersions = file.list(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String fileName) {
-				return fileName.endsWith(".jar");
-			}
-		});
-		String[] offlineJsons = file1.list(new FilenameFilter() {
-			@Override
-			public boolean accept(File dir, String fileName) {
-				return fileName.endsWith(".info");
-			}
-		});
-		String[] total = new String[offlineVersions.length + offlineJsons.length];
-		int index = 0;
-		for (String s1 : offlineVersions) {
-			s1 = s1.substring(0, s1.length() - 4);
-			total[index] = s1;
-			index++;
-		}
-		for (String s1 : offlineJsons) {
-			s1 = s1.substring(0, s1.length() - 5);
-			total[index] = s1;
-			index++;
-		}
-		ArrayList<String> tosort = new ArrayList<String>();
-		for (String s2 : total) {
-			tosort.add(s2);
-		}
-		Collections.sort(tosort);
-		for (int i = 0; i < tosort.size(); i++) {
-			if (i != 0 && tosort.get(i - 1).equals(tosort.get(i))) continue; // Prevent duplicates
-			total[i] = tosort.get(i);
-		}
-		return total;
-	}
-
-	private static void loadOfflineList() {
-		String[] offlineVersions = getOfflineVersions();
-		try {
-			// Scan the offline version list, but don't update the file (false)
-			Scanner fileScanner = new Scanner(new File(BC.get() + "launcher" + File.separator + "version_index"), "UTF-8");
-			ArrayList<String> offlineVersionsList = scan(fileScanner, false);
-
-			for (String r: offlineVersionsList) {
-				// The version storing format goes like this:
-				// Name [0], release date [1], release time [2], description [3], wiki link [4]
-				String[] split = r.split("~");
-				boolean addToList = false;
-				for (int i = 0; i < offlineVersions.length; i++) {
-					// Check if the version info is valid
-					if (offlineVersions[i] != null && split[0] != null) {
-						// From x.jar to x
-						// If the version from offline list matches the version from online list
-						if (offlineVersions[i].equals(split[0])) {
-							// ... Then remove it from the offline versions list
-							// Otherwise it would appear doubled in the versions list
-							offlineVersions[i] = null;
-							addToList = true;
-						}
-					}
-				}
-				if (!addToList) continue;
-				versions.add(new Release(split[0], false, false));
-			}
-
-			// Add offline versions to the versions list
-			for (int i = 0; i < offlineVersions.length; i++) {
-				// Skip previously removed duplicates
-				if (offlineVersions[i] == null) continue;
-				versions.add(new Release(offlineVersions[i], false, true));
-			}
-
-			// Close the file
-			fileScanner.close();
-		} catch (Exception ex) {
-			Logger.a("An error occurred while loading versions list from file!");
-			ex.printStackTrace();
-			Logger.printException(ex);
-		}
-	}
-
-	protected static ArrayList<String> scan(Scanner scanner, boolean save) {
-		ArrayList<String> results = new ArrayList<String>();
-		String folder = BC.get() + "launcher" + File.separator;
-		String[] filecontent = new String[400];
-		int i = 1;
-
-		String currentLine = null;
-		while (scanner.hasNextLine()) {
-			currentLine = scanner.nextLine();
-
-			// If the line is empty, ignore it
-			if (currentLine.equalsIgnoreCase("")) continue;
-
-			// If the line is the launcher version line, ignore it
-			if (currentLine.startsWith("launcher:")) continue;
-
-			// If we reached a limit of lines, break the cycle
-			if (i == 400) {
-				Logger.a("Scanner lines overflow! Skipping all next entries.");
-				break;
-			}
-
-			if (save) filecontent[i] = currentLine;
-
-			// Add the current line to result list
-			results.add(currentLine);
-			i++;
-		}
-
-		// Save the list to the file if we've chosen to
-		if (save) {
-			Util.write(new File(folder, "version_index"), filecontent, false);
-		}
-		return results;
-	}*/
 
 	private String name;
 	private VersionInfo info;
@@ -471,14 +280,10 @@ public class Release {
 		public String getDownloadURL();
 		public String getProtocol();
 		public String getEntry(String entry);
-		default void setEntry(String entry, String value) {};
+		public void setEntry(String entry, String value);
 		public int getFileVersion();
-		default boolean isCustom() {
-			return false;
-		}
+		public boolean isCustom();
 
-		default void downloadJson() {
-			Launcher.download("http://files.betacraft.pl/launcher/assets/jsons/" + this.getVersion() + ".info", new File(BC.get() + "versions" + File.separator + "jsons", this.getVersion() + ".info"));
-		}
+		public void downloadJson();
 	}
 }

@@ -30,7 +30,7 @@ public class SelectAddons extends JFrame implements ActionListener, LanguageElem
 	static GridBagConstraints constr;
 
 	public SelectAddons() {
-		Logger.a("Addons list window has been opened.");
+		Logger.a("Addons list window opened.");
 		this.setIconImage(Window.img);
 		this.setMinimumSize(new Dimension(282, 386));
 		this.setPreferredSize(new Dimension(282, 386));
@@ -40,6 +40,7 @@ public class SelectAddons extends JFrame implements ActionListener, LanguageElem
 
 		makeList(false);
 		updateList();
+
 		this.add(panel, BorderLayout.CENTER);
 		this.pack();
 		this.setLocationRelativeTo(Window.mainWindow);
@@ -60,7 +61,6 @@ public class SelectAddons extends JFrame implements ActionListener, LanguageElem
 		panel.setLayout(new GridBagLayout());
 
 		constr = new GridBagConstraints();
-
 		constr.fill = GridBagConstraints.BOTH;
 		constr.insets = new Insets(5, 5, 0, 5);
 		constr.gridwidth = GridBagConstraints.RELATIVE;
@@ -68,6 +68,7 @@ public class SelectAddons extends JFrame implements ActionListener, LanguageElem
 
 		panel = new JPanel();
 		panel.setLayout(new GridBagLayout());
+
 		constr.gridy = 2;
 		constr.weighty = GridBagConstraints.RELATIVE;
 		constr.gridheight = 1;
@@ -86,10 +87,8 @@ public class SelectAddons extends JFrame implements ActionListener, LanguageElem
 		checkboxes.clear();
 		JPanel listpanel = new JPanel();
 		listpanel.setLayout(new GridBagLayout());
-		//listpanel.setMaximumSize(new Dimension(282, 300));
 
 		GridBagConstraints constr1 = new GridBagConstraints();
-
 		constr1.gridx = 0;
 		constr1.gridy = 0;
 		constr1.fill = GridBagConstraints.HORIZONTAL;
@@ -155,7 +154,6 @@ public class SelectAddons extends JFrame implements ActionListener, LanguageElem
 		Launcher.currentInstance.saveInstance();
 	}
 
-	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == OK) {
 			saveAddons();

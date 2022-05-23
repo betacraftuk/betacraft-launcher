@@ -25,7 +25,6 @@ public class BrowserWindow extends JFrame implements LanguageElement {
 		this.setVisible(true);
 	}
 
-	@Override
 	public void update() {
 		this.setTitle(Lang.BROWSER_TITLE);
 	}

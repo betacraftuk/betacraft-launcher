@@ -8,7 +8,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URL;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -21,8 +20,10 @@ import javax.swing.SwingUtilities;
 
 import pl.betacraft.auth.MicrosoftAuth;
 import pl.betacraft.auth.MojangAuth;
+import pl.betacraft.auth.jsons.microsoft.DeviceCodeRequest;
+import pl.betacraft.auth.jsons.microsoft.DeviceCodeResponse;
 
-public class LoginPanel extends JFrame implements LanguageElement {
+public class AuthWindow extends JFrame implements LanguageElement {
 
 	static JLabel emailText;
 	static JTextField email;
@@ -32,8 +33,8 @@ public class LoginPanel extends JFrame implements LanguageElement {
 
 	static JButton OKButton;
 
-	public LoginPanel() {
-		Logger.a("Auth window has been opened.");
+	public AuthWindow() {
+		Logger.a("Auth window opened.");
 		this.setIconImage(Window.img);
 		setTitle(Lang.LOGIN_TITLE);
 		setResizable(true);
@@ -50,53 +51,22 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		constr.gridwidth = 1;
 		constr.weightx = 1.0;
 		constr.insets = new Insets(10, 10, 0, 10);
-		JLabel microsoftlabel = new JLabel(Lang.LOGIN_MICROSOFT_HEADER);
-		microsoftlabel.setForeground(Color.LIGHT_GRAY);
-		panel.add(microsoftlabel, constr);
-		constr.gridx = 1;
-		JButton microsoftbrowser = new JButton(Lang.LOGIN_MICROSOFT_BROWSER);
+
+		constr.gridwidth = 3;
+		JButton microsoftbrowser = new JButton(Lang.LOGIN_MICROSOFT_BUTTON);
 		microsoftbrowser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				try {
-					Util.openURL(new URL("https://login.live.com/oauth20_authorize.srf" + 
-							"?client_id=" + MicrosoftAuth.CLIENT_ID + 
-							"&response_type=code" + 
-							"&scope=XboxLive.signin%20offline_access" +
-							"&prompt=login" +
-							"&redirect_uri=" + MicrosoftAuth.REDIRECT_URI).toURI());
-
-					//Window.quit(true);
+					DeviceCodeResponse dcr = new DeviceCodeRequest().perform();
+					new AwaitingMSALogin(dcr.verification_uri, dcr.user_code, dcr.device_code, dcr.expires_in, dcr.interval);
 					setVisible(false);
 					Window.loginPanel = null;
-					Window.mainWindow.waitForInput();
 				} catch (Throwable t) {
 					t.printStackTrace();
 				}
 			}
 		});
 		panel.add(microsoftbrowser, constr);
-		constr.gridx = 2;
-		JButton microsoftjfx = new JButton(Lang.LOGIN_MICROSOFT_PROMPT);
-		microsoftjfx.setEnabled(Util.hasJFX());
-		microsoftjfx.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				MicrosoftAuth auth = new MicrosoftAuth(null);
-				setVisible(false);
-				Window.loginPanel = null;
-				auth.showPrompt();
-			}
-		});
-		panel.add(microsoftjfx, constr);
-//		JButton microsoftauth = new JButton(Lang.LOGIN_MICROSOFT_BUTTON);
-//		microsoftauth.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent e) {
-//				MicrosoftAuth auth = new MicrosoftAuth(null);
-//				setVisible(false);
-//				Window.loginPanel = null;
-//				auth.showPrompt();
-//			}
-//		});
-//		panel.add(microsoftauth, constr);
 
 		constr.gridy++;
 		constr.fill = GridBagConstraints.HORIZONTAL;
@@ -129,11 +99,6 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		password = new JPasswordField("", 6);
 		panel.add(password, constr);
 
-		//constr.gridy++;
-		//rememberaccount = new JCheckBox(Lang.LOGIN_REMEMBER_PASSWORD);
-		//rememberaccount.setForeground(Color.LIGHT_GRAY);
-		//rememberaccount.setOpaque(false);
-		//panel.add(rememberaccount, constr);
 		// =================================================================
 
 		JPanel okPanel = new InstanceSettings.OptionsPanel();
@@ -149,15 +114,11 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		constr.weightx = 1.0;
 		OKButton = new JButton(Lang.OPTIONS_OK);
 		OKButton.addActionListener(new ActionListener() {
-			@Override
 			public void actionPerformed(ActionEvent e) {
 				MojangAuth auth = new MojangAuth(email.getText(), password.getText());
 				if (auth.authenticate()) {
 					Launcher.accounts.setCurrent(auth.getCredentials());
 					Launcher.auth = auth;
-					//                    if (!rememberaccount.isSelected()) {
-					//                        Launcher.accounts.removeAccount(auth.getCredentials());
-					//                    }
 				}
 
 				Util.saveAccounts();
@@ -180,18 +141,19 @@ public class LoginPanel extends JFrame implements LanguageElement {
 		if (auth.authenticate()) {
 			Util.saveAccounts();
 		} else {
-			SwingUtilities.invokeLater(() -> {
-				JOptionPane.showMessageDialog(Window.mainWindow, Lang.LOGIN_FAILED, Lang.LOGIN_MICROSOFT_ERROR, JOptionPane.ERROR_MESSAGE);
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					JOptionPane.showMessageDialog(Window.mainWindow, Lang.LOGIN_FAILED, Lang.LOGIN_MICROSOFT_ERROR, JOptionPane.ERROR_MESSAGE);
+				}
 			});
 		}
-		Window.mainWindow.input();
+		Window.mainWindow.requestFocus();
 	}
 
 	public void update() {
 		this.setTitle(Lang.LOGIN_TITLE);
 		emailText.setText(Lang.LOGIN_EMAIL_NICKNAME);
 		passwordText.setText(Lang.LOGIN_PASSWORD);
-		//		rememberaccount.setText(Lang.LOGIN_REMEMBER_PASSWORD);
 		OKButton.setText(Lang.OPTIONS_OK);
 		this.pack();
 	}

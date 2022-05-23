@@ -35,7 +35,7 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 
 	public static void loadMods() {
 		try {
-			final URL url = new URL("http://files.betacraft.pl/launcher/assets/mods/1.09_10/list.txt");
+			final URL url = new URL("http://files.betacraft.uk/launcher/assets/mods/1.09_10/list.txt");
 
 			InputStream onlineListStream = null;
 			try {
@@ -133,24 +133,7 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 		panel = new JPanel();
 		panel.setLayout(new GridBagLayout());
 
-		/*panel = new JPanel();
-		panel.setLayout(new GridBagLayout());
-
-		constr = new GridBagConstraints();
-		constr.fill = GridBagConstraints.BOTH;
-		constr.insets = new Insets(5, 5, 0, 5);
-		constr.gridwidth = GridBagConstraints.RELATIVE;
-		constr.weightx = 1.0;*/
-
 		updateList();
-
-		/*constr.gridy = 2;
-		constr.weighty = GridBagConstraints.RELATIVE;
-		constr.gridheight = 1;
-		constr.insets = new Insets(0, 5, 5, 5);
-		OK = new JButton(Lang.OPTIONS_OK);
-		OK.addActionListener(this);
-		panel.add(OK, constr);*/
 
 		this.getContentPane().add(panel, BorderLayout.CENTER);
 		this.pack();
@@ -178,25 +161,18 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 		list = new JList(listModel);
 		list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 		list.setLayoutOrientation(JList.VERTICAL);
-		list.setVisibleRowCount(3);
+		list.setVisibleRowCount(10);
 
 		if (listScroller != null) panel.remove(listScroller);
 
 		listScroller = new JScrollPane(list);
 		listScroller.setWheelScrollingEnabled(true);
 		panel.add(listScroller, constr);
-		list.addListSelectionListener(new ListSelectionListener() {
-
-			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				String mod = (String) list.getSelectedValue();
-			}
-		});
 	}
 
 	public void saveVersions() {
-		if (list.getSelectedValuesList().size() != 0) {
-			for (Object o : list.getSelectedValuesList()) {
+		if (list.getSelectedValues().length != 0) {
+			for (Object o : list.getSelectedValues()) {
 				String s = (String) o;
 				new ReleaseJson(s).downloadJson();
 			}
@@ -206,11 +182,9 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 				ex.printStackTrace();
 				Logger.printException(ex);
 			}
-			if (list.getSelectedValuesList().size() == 1) {
-				Launcher.currentInstance.version = (String) list.getSelectedValuesList().get(0);
-				Launcher.setInstance(Launcher.currentInstance);
-				Launcher.currentInstance.saveInstance();
-			}
+			Launcher.currentInstance.version = (String) list.getSelectedValues()[0];
+			Launcher.setInstance(Launcher.currentInstance);
+			Launcher.currentInstance.saveInstance();
 		}
 		setVisible(false);
 	}
@@ -222,7 +196,7 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 		pane.setContentType("text/html;charset=UTF-8");
 		pane.addHyperlinkListener(WebsitePanel.EXTERNAL_HYPERLINK_LISTENER);
 		try {
-			pane.setPage(new URL("http://files.betacraft.pl/launcher/assets/mods/" + name + ".html"));
+			pane.setPage(new URL("http://files.betacraft.uk/launcher/assets/mods/" + name + ".html"));
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
@@ -234,13 +208,12 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 		return scrlPane;
 	}
 
-	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == OK) {
 			saveVersions();
 			Window.modsRepo = null;
 		} else if (e.getSource() == more_button) {
-			for (Object l : list.getSelectedValuesList()) {
+			for (Object l : list.getSelectedValues()) {
 				String mod = (String) l;
 				new BrowserWindow(getInfo(mod));
 			}

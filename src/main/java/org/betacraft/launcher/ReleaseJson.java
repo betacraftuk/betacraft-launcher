@@ -11,7 +11,7 @@ public class ReleaseJson implements VersionInfo {
 	private String download = "";
 	private String launchMethod = "";
 	private String launchMethodLink = "";
-	private String proxyArgs = "-Dhttp.proxyHost=betacraft.pl"; // keep this as default
+	private String proxyArgs = "-Dhttp.proxyHost=betacraft.uk"; // keep this as default
 	private String otherName = "";
 	private String protocol = "";
 	private int fileVersion = -1;
@@ -128,5 +128,14 @@ public class ReleaseJson implements VersionInfo {
 
 	public static boolean exists(String name) {
 		return new File(BC.get() + "versions/jsons/", name + ".info").exists();
+	}
+
+	public void downloadJson() {
+		Launcher.download("http://files.betacraft.uk/launcher/assets/jsons/" + this.getVersion() + ".info", new File(BC.get() + "versions" + File.separator + "jsons", this.getVersion() + ".info"));
+	}
+
+	public boolean hasJar() {
+		File jar = new File(BC.get() + "versions/", version + ".jar");
+		return jar.exists() && jar.isFile();
 	}
 }

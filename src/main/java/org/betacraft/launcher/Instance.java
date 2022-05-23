@@ -4,8 +4,6 @@ import java.awt.Image;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +19,10 @@ public class Instance {
 	public boolean proxy;
 	public boolean keepopen;
 	public boolean RPC;
+	public boolean console;
 	public List<String> addons;
 	public String gameDir;
+	public String javaPath;
 
 	private Instance(String name, String launchArgs, String version, int width, int height, boolean proxy, boolean keepopen, boolean RPC, List<String> addons, String gameDir) {
 		this.name = name;
@@ -35,18 +35,20 @@ public class Instance {
 		this.addons = addons;
 		this.version = version;
 		this.gameDir = gameDir;
+		this.console = false;
+		this.javaPath = Launcher.javaRuntime.getAbsolutePath();
 	}
 
 	public static Instance newInstance(String name) {
 		// Use default settings
-		return new Instance(name, "-Xmx512M", "b1.7.3", 854, 480, true, false, true, new ArrayList<String>(), BC.get() + name + "/");
+		return new Instance(name, "-Xmx1G", "b1.7.3", 854, 480, true, false, true, new ArrayList<String>(), BC.get() + name + "/");
 	}
 
 	public static Instance loadInstance(String name) {
 		try {
 			File instanceFile = new File(BC.get() + "launcher" + File.separator + "instances", name + ".txt");
 			if (!instanceFile.exists()) {
-				System.out.println(instanceFile.toPath().toString());
+				System.out.println(instanceFile.getAbsolutePath());
 				Logger.printException(new Exception("Instance file is null!"));
 				return null;
 			}
@@ -78,6 +80,14 @@ public class Instance {
 				instance.proxy = Boolean.parseBoolean(Util.getProperty(instanceFile, "proxy"));
 				instance.keepopen = Boolean.parseBoolean(Util.getProperty(instanceFile, "keepopen"));
 				instance.RPC = Boolean.parseBoolean(Util.getProperty(instanceFile, "RPC"));
+				instance.console = Boolean.parseBoolean(Util.getProperty(instanceFile, "console"));
+
+				String jpath = Util.getProperty(instanceFile, "javaPath");
+				if (jpath == null || "".equals(jpath)) {
+					instance.javaPath = Launcher.javaRuntime.getAbsolutePath();
+				} else {
+					instance.javaPath = jpath;
+				}
 			} catch (Throwable t) {
 				Logger.a("Instance '" + name + "' is corrupted!");
 				t.printStackTrace();
@@ -95,6 +105,7 @@ public class Instance {
 		try {
 			File instanceFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".txt");
 			if (!instanceFile.exists()) instanceFile.createNewFile();
+
 			Util.setProperty(instanceFile, "name", this.name);
 			Util.setProperty(instanceFile, "launchArgs", this.launchArgs);
 			Util.setProperty(instanceFile, "width", Integer.toString(this.width));
@@ -102,6 +113,9 @@ public class Instance {
 			Util.setProperty(instanceFile, "proxy", Boolean.toString(this.proxy));
 			Util.setProperty(instanceFile, "keepopen", Boolean.toString(this.keepopen));
 			Util.setProperty(instanceFile, "RPC", Boolean.toString(this.RPC));
+			Util.setProperty(instanceFile, "console", Boolean.toString(this.console));
+			Util.setProperty(instanceFile, "javaPath", javaPath);
+
 			StringBuilder builder = new StringBuilder();
 			String addons = "";
 			if (this.addons.size() > 0) {
@@ -110,6 +124,7 @@ public class Instance {
 				}
 				addons = builder.toString().substring(0, builder.toString().length() - 1);
 			}
+
 			Util.setProperty(instanceFile, "addons", addons);
 			Util.setProperty(instanceFile, "gameDir", this.gameDir);
 			Util.setProperty(instanceFile, "version", this.version);
@@ -130,6 +145,7 @@ public class Instance {
 
 		File instanceFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".txt");
 		if (instanceFile.exists()) instanceFile.delete();
+
 		File iconFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".png");
 		if (iconFile.exists()) iconFile.renameTo(new File(BC.get() + "launcher" + File.separator + "instances", newName + ".png"));
 
@@ -147,17 +163,21 @@ public class Instance {
 		cloned.addons = this.addons;
 		cloned.gameDir = this.gameDir;
 		cloned.version = this.version;
+		cloned.javaPath = this.javaPath;
+		cloned.console = this.console;
 		return cloned;
 	}
 
 	public String getIconLocation() throws IOException {
 		File imgFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".png");
 		File defaultImg = new File(BC.get() + "launcher" + File.separator + "default_icon.png");
+
 		if (!imgFile.exists()) {
-			Files.copy(this.getClass().getClassLoader().getResourceAsStream("icons/favicon.png"), defaultImg.toPath(), StandardCopyOption.REPLACE_EXISTING);
-			return defaultImg.toPath().toString();
+			Util.copy(this.getClass().getClassLoader().getResourceAsStream("icons/favicon.png"), defaultImg);
+
+			return defaultImg.getAbsolutePath();
 		}
-		return imgFile.toPath().toString();
+		return imgFile.getAbsolutePath();
 	}
 
 	public Image getIcon() {
@@ -170,6 +190,7 @@ public class Instance {
 		} catch (Exception e2) {
 			e2.printStackTrace();
 			Logger.printException(e2);
+
 			this.setIcon(null);
 			try {
 				return ImageIO.read(this.getClass().getClassLoader().getResourceAsStream("icons/favicon.png"));
@@ -184,8 +205,8 @@ public class Instance {
 				imgFile.delete();
 				return;
 			}
-			Files.copy(path.toPath(), imgFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-		} catch (IOException e2) {
+			Util.copy(path, imgFile);
+		} catch (Throwable e2) {
 			e2.printStackTrace();
 			Logger.printException(e2);
 		}
@@ -209,11 +230,13 @@ public class Instance {
 	public static ArrayList<String> getInstances() {
 		ArrayList<String> list = new ArrayList<String>();
 		File file = new File(BC.get() + "launcher" + File.separator + "instances");
+
 		String[] rawlist = file.list(new FilenameFilter() {
 			public boolean accept(File dir, String name) {
 				return name.endsWith(".txt");
 			}
 		});
+
 		for (int i = 0; i < rawlist.length; i++) {
 			list.add(rawlist[i].substring(0, rawlist[i].length() - 4));
 		}

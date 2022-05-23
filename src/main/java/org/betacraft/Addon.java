@@ -3,24 +3,24 @@ package org.betacraft;
 import java.util.ArrayList;
 import java.util.List;
 
-public interface Addon {
+public abstract class Addon {
 
-	default public WhatToDo preAppletInit(Wrapper wrapper, ArrayList<Addon> addonsLeft) {
+	public WhatToDo preAppletInit(Wrapper wrapper, ArrayList<Addon> addonsLeft) {
 		return WhatToDo.NORMAL;
 	}
 
-	default public WhatToDo postAppletInit(Wrapper wrapper, ArrayList<Addon> addonsLeft) {
+	public WhatToDo postAppletInit(Wrapper wrapper, ArrayList<Addon> addonsLeft) {
 		return WhatToDo.NORMAL;
 	}
 
 	/**
 	 * @return List of addons to load before this addon
 	 */
-	default public List<String> applyAfter() {
-		return new ArrayList<>();
+	public List<String> applyAfter() {
+		return new ArrayList<String>();
 	}
 
-	default public String getName() {
+	public String getName() {
 		String[] name = this.getClass().getName().split("\\.");
 		return name[name.length - 1];
 	}

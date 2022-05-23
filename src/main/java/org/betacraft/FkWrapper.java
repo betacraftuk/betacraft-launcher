@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import javax.swing.JPanel;
 
 import org.betacraft.launcher.BC;
-import org.betacraft.launcher.Logger;
 
 public class FkWrapper extends Wrapper {
 
@@ -47,19 +46,20 @@ public class FkWrapper extends Wrapper {
 			}
 			classLoader = new URLClassLoader(neww);
 			try {
+				System.out.println();
+				System.out.println("Loading addons:");
 				for (Class<Addon> c : ogaddons) {
 					this.loadAddon((Addon) c.newInstance());
-					System.err.println("- " + c);
+					System.out.println("- " + c);
 				}
+				System.out.println();
 			} catch (Exception ex) {
 				ex.printStackTrace();
-				Logger.printException(ex);
 			}
 			mainClass = classLoader.loadClass("M");
 			mainClassInstance = mainClass.newInstance();
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -74,6 +74,7 @@ public class FkWrapper extends Wrapper {
 			gameFrame.setTitle(window_name);
 			gameFrame.setIconImage(this.icon);
 			gameFrame.setBackground(Color.BLACK);
+			this.addHooks();
 
 			// This is needed for the window size
 			panel = new JPanel();
@@ -104,15 +105,12 @@ public class FkWrapper extends Wrapper {
 			active = true;
 			this.start();
 
-			this.addHooks();
-
 			gameFrame.validate();
 
 			// Start Discord RPC
 			if (discord) discordThread.start();
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 

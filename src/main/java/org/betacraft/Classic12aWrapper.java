@@ -18,7 +18,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import org.betacraft.launcher.Lang;
-import org.betacraft.launcher.Logger;
 import org.betacraft.launcher.OS;
 
 import net.arikia.dev.drpc.DiscordRPC;
@@ -29,9 +28,9 @@ public class Classic12aWrapper extends Wrapper {
 	public Thread thread;
 
 	public Classic12aWrapper(String user, String ver_prefix, String version, String sessionid, String mainFolder,
-			Integer height, Integer width, Boolean RPC, String launchMethod, String server, String mppass, String USR,
+			Integer height, Integer width, Boolean RPC, String launchMethod, String server, String mppass, String uuid, String USR,
 			String VER, Image img, ArrayList addons) {
-		super(user, ver_prefix, version, sessionid, mainFolder, height, width, RPC, launchMethod, server, mppass, null, USR, VER, img,
+		super(user, ver_prefix, version, sessionid, mainFolder, height, width, RPC, launchMethod, server, mppass, uuid, USR, VER, img,
 				addons);
 	}
 
@@ -45,6 +44,7 @@ public class Classic12aWrapper extends Wrapper {
 			gameFrame.setTitle(window_name);
 			gameFrame.setIconImage(this.icon);
 			gameFrame.setBackground(Color.BLACK);
+			this.addHooks();
 
 			// This is needed for the window size
 			panel = new JPanel();
@@ -91,7 +91,6 @@ public class Classic12aWrapper extends Wrapper {
 
 			// Add game's applet to this window
 			this.setLayout(new BorderLayout());
-			this.addHooks();
 
 			if (!this.resize_applet) {
 				gameFrame.removeAll();
@@ -108,7 +107,6 @@ public class Classic12aWrapper extends Wrapper {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -132,7 +130,6 @@ public class Classic12aWrapper extends Wrapper {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -173,7 +170,6 @@ public class Classic12aWrapper extends Wrapper {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -206,7 +202,6 @@ public class Classic12aWrapper extends Wrapper {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 

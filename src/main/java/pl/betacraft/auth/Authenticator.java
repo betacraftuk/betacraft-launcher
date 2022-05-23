@@ -6,21 +6,24 @@ import org.betacraft.launcher.Lang;
 import org.betacraft.launcher.Launcher;
 import org.betacraft.launcher.Window;
 
-public interface Authenticator {
+public abstract class Authenticator {
 
 	//public boolean refreshToken();
 
-	public boolean authenticate();
+	public abstract boolean authenticate();
 
-	public boolean invalidate();
+	public abstract boolean invalidate();
 
-	public Credentials getCredentials();
+	public abstract Credentials getCredentials();
 
-	default void authSuccess() {
-		SwingUtilities.invokeLater(() -> {
-			Window.nick_input.setText(Launcher.getNickname());
-			Window.nick_input.setEnabled(false);
-			Window.loginButton.setText(Lang.LOGOUT_BUTTON);
+	public void authSuccess() {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				Window.nick_input.setText(Launcher.getNickname());
+				Window.nick_input.setEnabled(false);
+				Window.loginButton.setText(Lang.LOGOUT_BUTTON);
+				Window.loginButton.setEnabled(true);
+			}
 		});
 	};
 }

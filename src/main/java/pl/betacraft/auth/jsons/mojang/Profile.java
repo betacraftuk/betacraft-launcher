@@ -1,7 +1,5 @@
 package pl.betacraft.auth.jsons.mojang;
 
-import java.util.UUID;
-
 import pl.betacraft.auth.Credentials;
 
 public class Profile {

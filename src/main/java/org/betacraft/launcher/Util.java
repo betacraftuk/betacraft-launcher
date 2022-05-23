@@ -1,18 +1,18 @@
 package org.betacraft.launcher;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
-import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -28,7 +28,6 @@ import pl.betacraft.auth.DownloadResponse;
 import pl.betacraft.auth.MicrosoftAuth;
 import pl.betacraft.auth.MojangAuth;
 import pl.betacraft.auth.NoAuth;
-import pl.betacraft.auth.RequestUtil;
 import pl.betacraft.json.lib.MouseFixMacOSJson;
 
 public class Util {
@@ -36,15 +35,13 @@ public class Util {
 	public static final Gson gsonPretty = new GsonBuilder().setPrettyPrinting().create();
 	public static final int jsonVersion = 1;
 	public static final File accountsFile = new File(BC.get() + "launcher/accounts.json");
-	public static final File cert_file = new File(BC.get() + "launcher/ssl_cert.crt");
-	public static final File old_lastlogin = new File(BC.get() + "lastlogin");
 
 	private static void setupAccountConfiguration() {
 		try {
 			Launcher.auth = new NoAuth("");
 			Accounts accs = new Accounts();
 			accs.current = Launcher.auth.getCredentials().local_uuid;
-			ArrayList<Credentials> list = new ArrayList<>();
+			ArrayList<Credentials> list = new ArrayList<Credentials>();
 			list.add(Launcher.auth.getCredentials());
 			accs.accounts = list;
 			Launcher.accounts = accs;
@@ -59,7 +56,7 @@ public class Util {
 			if (!accountsFile.exists()) {
 				accountsFile.createNewFile();
 			}
-			Files.write(accountsFile.toPath(), gsonPretty.toJson(Launcher.accounts).getBytes("UTF-8"));
+			writeBytes(accountsFile, gsonPretty.toJson(Launcher.accounts).getBytes("UTF-8"));
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
@@ -84,7 +81,7 @@ public class Util {
 			}
 			Accounts accs = null;
 			try {
-				accs = gson.fromJson(new String(Files.readAllBytes(accountsFile.toPath()), "UTF-8"), Accounts.class);
+				accs = gson.fromJson(new String(readBytes(accountsFile), "UTF-8"), Accounts.class);
 			} catch (Throwable t) {}
 
 			if (accs == null || accs.accounts == null) {
@@ -116,7 +113,7 @@ public class Util {
 			// Create new file, if it doesn't already exist
 			file.createNewFile();
 		} catch (IOException e) {
-			System.out.println(file.toPath().toString());
+			System.out.println(file.getAbsolutePath());
 			e.printStackTrace();
 			Logger.printException(e);
 		}
@@ -225,10 +222,10 @@ public class Util {
 	}
 
 	public static Thread unzip(File source, File dest_folder, boolean delete) {
-		return unzip(source.toPath().toString(), dest_folder.toPath().toString(), delete);
+		return unzip(source.getAbsolutePath(), dest_folder.getAbsolutePath(), delete);
 	}
 
-	public static Thread unzip(String source, String dest_folder, boolean delete) {
+	public static Thread unzip(final String source, final String dest_folder, final boolean delete) {
 		Thread unrarthread = new Thread() {
 			public void run() {
 				FileInputStream fis;
@@ -279,7 +276,7 @@ public class Util {
 				Logger.a("Created a new file: " + file);
 			}
 		} catch (IOException e) {
-			System.out.println(file.toPath().toString());
+			System.out.println(file.getAbsolutePath());
 			e.printStackTrace();
 			Logger.printException(e);
 		}
@@ -320,18 +317,27 @@ public class Util {
 		try {
 			InputStream fis =  new FileInputStream(file);
 
+			return getSHA1(fis);
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return null;
+		}
+	}
+
+	public static String getSHA1(InputStream is) {
+		try {
 			byte[] buffer = new byte[1024];
 			MessageDigest msgdig = MessageDigest.getInstance("SHA-1");
 			int numRead;
 
 			do {
-				numRead = fis.read(buffer);
+				numRead = is.read(buffer);
 				if (numRead > 0) {
 					msgdig.update(buffer, 0, numRead);
 				}
 			} while (numRead != -1);
 
-			fis.close();
+			is.close();
 			byte[] digest = msgdig.digest();
 			String str_result = "";
 			for (int i = 0; i < digest.length; i++) {
@@ -357,21 +363,21 @@ public class Util {
 
 		try {
 			if (local_javaagent_sha1 == null || !local_javaagent_sha1.equals(json.agent_sha1) || force) {
-				DownloadResponse agent_req = new DownloadRequest(json.agent_url, javaagent.toPath().toString(), json.agent_sha1, false).perform();
+				DownloadResponse agent_req = new DownloadRequest(json.agent_url, javaagent.getAbsolutePath(), json.agent_sha1, false).perform();
 				if (agent_req.result != DownloadResult.OK) {
 					Logger.a("Failed to download macos javaagent");
 					return false;
 				}
 			}
 			if (local_lwjgl_sha1 == null || !local_lwjgl_sha1.equals(json.lwjgl_sha1) || force) {
-				DownloadResponse lwjgl_req = new DownloadRequest(json.lwjgl_url, lwjgl.toPath().toString(), json.lwjgl_sha1, false).perform();
+				DownloadResponse lwjgl_req = new DownloadRequest(json.lwjgl_url, lwjgl.getAbsolutePath(), json.lwjgl_sha1, false).perform();
 				if (lwjgl_req.result != DownloadResult.OK) {
 					Logger.a("Failed to download macos-mousefix.zip");
 					return false;
 				}
 			}
 			if (local_javamod_sha1 == null || !local_javamod_sha1.equals(json.classes_sha1) || force) {
-				DownloadResponse classes_req = new DownloadRequest(json.classes_url, classes_temp_zip.toPath().toString(), json.classes_sha1, false).perform();
+				DownloadResponse classes_req = new DownloadRequest(json.classes_url, classes_temp_zip.getAbsolutePath(), json.classes_sha1, false).perform();
 				if (classes_req.result != DownloadResult.OK) {
 					Logger.a("Failed to download macos-mousefix.zip");
 					return false;
@@ -391,139 +397,164 @@ public class Util {
 		}
 	}
 
-	public static boolean hasJFX() {
-		try {
-			javafx.scene.Parent.class.getName();
-			return true;
-		} catch (Throwable t) {
-			return false;
-		}
-	}
+	public static String getFullJavaVersion(String javapath) {
+		if (javapath == null || (!new File(javapath).exists()))
+			return null;
 
-	public static void registerProtocol() {
+		String line = null;
 		try {
-			if (OS.isWindows()) {
-				if (!hasRegistryKey("HKCU\\Software\\Classes\\betacraft")) {
-					addRegistryKey("HKCU\\Software\\Classes\\betacraft", "/t", "REG_SZ", "/d", "URL:betacraft");
-					addRegistryKey("HKCU\\Software\\Classes\\betacraft", "/v", "URL Protocol", "/t", "REG_SZ");
-
-					addRegistryKey("HKCU\\Software\\Classes\\betacraft\\shell\\open\\command", "/ve", "/t", "REG_SZ", "/d", "\"\\\"" + BC.currentPath.toPath().toString() + "\\\" \\\"%1\\\"\"");
-				} else {
-					// always make sure the reference is up to date
-					if (!getRegistryKeyValue("HKCU\\Software\\Classes\\betacraft\\shell\\open\\command", null).contains(BC.currentPath.toPath().toString())) {
-						addRegistryKey("HKCU\\Software\\Classes\\betacraft\\shell\\open\\command", "/ve", "/f", "/t", "REG_SZ", "/d", "\"\\\"" + BC.currentPath.toPath().toString() + "\\\" \\\"%1\\\"\"");
-					}
+			ArrayList<String> arl = new ArrayList<String>();
+			arl.add(javapath);
+			arl.add("-version");
+			ProcessBuilder pb = new ProcessBuilder(arl);
+			Process p = pb.start();
+			InputStreamReader isr_log = new InputStreamReader(p.getErrorStream());
+			BufferedReader br_log = new BufferedReader(isr_log);
+			while ((line = br_log.readLine()) != null) {
+				if (line.contains("version")) {
+					p.destroy();
+					break;
 				}
-			} else if (OS.isLinux()) {
-				File local = new File(System.getProperty("user.home"), ".local/share/");
-				File icon = new File(local, "icons/betacraft.png");
-				String content = "[Desktop Entry]\n" + 
-						"Name=BetaCraft Launcher\n" + 
-						"Comment=BetaCraft - a Minecraft launcher\n" + 
-						"Exec=\"" + Launcher.javaRuntime.toPath().toString() + "\" -jar " + BC.currentPath.toPath().toString() + " %U\n" + 
-						"Icon=" + icon.toPath().toString() + "\n" + 
-						"Type=Application\n" + 
-						"Categories=Game;\n" + 
-						"MimeType=x-scheme-handler/betacraft;";
-				File desktopfile = new File(local, "applications/betacraft-launcher.desktop");
-				Files.write(desktopfile.toPath(), content.getBytes("UTF-8"));
-				byte[] png = RequestUtil.readInputStream(Launcher.class.getClassLoader().getResourceAsStream("icons/icon.png"));
-				Files.write(icon.toPath(), png);
-
-				Runtime.getRuntime().exec("xdg-mime default betacraft-launcher.desktop x-scheme-handler/betacraft");
 			}
-			// macos is handled automatically (?) TODO buy a mac and add proper support for it
 		} catch (Throwable t) {
 			t.printStackTrace();
+			return null;
+		}
+		// java version "1.8.0_281" ---> 1.8.0_281"
+		String verstart = line.substring(line.indexOf("\"")+1);
+		// 1.8.0_281" ---> 1.8.0_281
+		String fullver = verstart.substring(0, verstart.indexOf("\""));
+
+		return fullver;
+	}
+
+	public static String getJavaVersion(String javapath) {
+		String fullver = getFullJavaVersion(javapath);
+		if (fullver == null) return null;
+
+		// This basically filters out the actual core version, skipping all the fancy stuff
+		String whitelist = "0123456789.";
+		for (int i = 0; i < fullver.length(); i++) {
+			if (!whitelist.contains(Character.toString(fullver.charAt(i)))) {
+				fullver = fullver.substring(0, i);
+			}
+		}
+		return fullver;
+	}
+
+	public static int getMajorJavaVersion(String javapath) {
+		String ver = getJavaVersion(javapath);
+		if (ver == null) return -1;
+
+		if (ver.startsWith("1.")) {
+			return Integer.parseInt(ver.split("\\.")[1]);
+		} else {
+			int cut = ver.indexOf('.'); 
+			if (cut == -1) {
+				cut = ver.length();
+			}
+
+			return Integer.parseInt(ver.substring(0, cut));
 		}
 	}
 
-	public static boolean hasRegistryKey(String... key) {
-		try {
-			ArrayList<String> start = new ArrayList<>();
-			start.add("reg");
-			start.add("query");
-			start.addAll(Arrays.asList(key));
-			System.out.println("Regcommand: " + start);
-			Process p = Runtime.getRuntime().exec(start.toArray(new String[0]));
-			InputStreamReader isr_log = new InputStreamReader(p.getErrorStream());
-			BufferedReader br_log = new BufferedReader(isr_log);
-			StringBuilder strb = new StringBuilder();
-			String line = null;
-			while ((line = br_log.readLine()) != null) {
-				strb.append(line + "\n");
+	public static int getCurrentMajorJavaVersion() {
+		String ver = System.getProperty("java.runtime.version");
+		if (ver.startsWith("1.")) {
+			return Integer.parseInt(ver.split("\\.")[1]);
+		} else {
+			int cut = ver.indexOf('.'); 
+			if (cut == -1) {
+				cut = ver.length();
 			}
-			System.out.println(strb.toString());
-			if (strb.toString().contains("ERROR") || p.exitValue() != 0) {
-				return false;
-			}
-			return true;
-		} catch (Throwable t) {
-			t.printStackTrace();
+
+			return Integer.parseInt(ver.substring(0, cut));
+		}
+	}
+
+	public static boolean openURL(final URI uri) {
+		if (getCurrentMajorJavaVersion() <= 5) {
+			// Desktop api is only available in Java 6+
+			new SimpleWebAddressFrame(uri.toString());
 			return false;
+		} else {
+			try {
+				final Object invoke = Class.forName("java.awt.Desktop").getMethod("getDesktop", (Class<?>[])new Class[0]).invoke(null, new Object[0]);
+				invoke.getClass().getMethod("browse", URI.class).invoke(invoke, uri);
+				return true;
+			}
+			catch (Throwable t) {
+				System.out.println("Failed to open link in a web browser: " + uri.toString());
+				t.printStackTrace();
+
+				// open it the other way when this fails
+				new SimpleWebAddressFrame(uri.toString());
+			}
 		}
+		return false;
 	}
 
-	public static String getRegistryKeyValue(String location, String key) {
+	public static void copy(InputStream in, File file) {
 		try {
-			ArrayList<String> start = new ArrayList<>();
-			start.add("reg");
-			start.add("query");
-			start.add(location);
-			if (key != null) {
-				start.add("/v");
-				start.add(key);
-			}
-			System.out.println("Regcommand: " + start);
-			Process p = Runtime.getRuntime().exec(start.toArray(new String[0]));
-			InputStreamReader isr_log = new InputStreamReader(p.getInputStream());
-			BufferedReader br_log = new BufferedReader(isr_log);
-			StringBuilder strb = new StringBuilder();
-			String line = null;
-			while ((line = br_log.readLine()) != null) {
-				strb.append(line + "\n");
-			}
-			String all = strb.toString();
-			System.out.println(all);
-			if (all == null || !all.contains("\t") || p.exitValue() != 0) {
-				return "";
-			} else {
-				return all.split("\t")[2];
-			}
-		} catch (Throwable t) {
-			t.printStackTrace();
-			return "";
-		}
-	}
-
-	public static void addRegistryKey(String... key) {
-		try {
-			ArrayList<String> start = new ArrayList<>();
-			start.add("reg");
-			start.add("add");
-			start.addAll(Arrays.asList(key));
-			System.out.println("Regcommand: " + start);
-			Process p = Runtime.getRuntime().exec(start.toArray(new String[0]));
-			InputStreamReader isr_log = new InputStreamReader(p.getErrorStream());
-			BufferedReader br_log = new BufferedReader(isr_log);
-			StringBuilder strb = new StringBuilder();
-			String line = null;
-			while ((line = br_log.readLine()) != null) {
-				strb.append(line + "\n");
-			}
-			System.out.println(strb.toString());
+			copy(in, new FileOutputStream(file, false));
 		} catch (Throwable t) {
 			t.printStackTrace();
 		}
 	}
 
-	public static void openURL(final URI uri) {
+	public static void copy(File file1, File file2) {
 		try {
-			final Object invoke = Class.forName("java.awt.Desktop").getMethod("getDesktop", (Class<?>[])new Class[0]).invoke(null, new Object[0]);
-			invoke.getClass().getMethod("browse", URI.class).invoke(invoke, uri);
+			copy(new FileInputStream(file1), new FileOutputStream(file2, false));
+		} catch (Throwable t) {
+			t.printStackTrace();
 		}
-		catch (Throwable t) {
-			System.out.println("Failed to open link in a web browser: " + uri.toString());
+	}
+
+	public static void copy(InputStream in, OutputStream out) {
+		try {
+			int size;
+			byte[] buffer = new byte[1024];
+			while ((size = in.read(buffer)) > 0) {
+				out.write(buffer, 0, size);
+			}
+		} catch (Throwable t) {
+			t.printStackTrace();
+		} finally {
+			try {
+				in.close();
+				out.close();
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
 		}
+	}
+
+	public static void writeBytes(File file, byte[] bytes) {
+		try {
+			FileOutputStream fos = new FileOutputStream(file, false);
+			fos.write(bytes);
+			fos.close();
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+	}
+
+	public static byte[] readBytes(File file) {
+		try {
+			FileInputStream fis = new FileInputStream(file);
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			byte[] buffer = new byte[1024];
+			while (true) {
+				int readcount = fis.read(buffer);
+				if (readcount < 0) break;
+				baos.write(buffer, 0, readcount);
+			}
+			fis.close();
+			baos.close();
+			return baos.toByteArray();
+		} catch (Throwable t) {
+			t.printStackTrace();
+		}
+		return new byte[0];
 	}
 }

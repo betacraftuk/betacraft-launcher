@@ -8,7 +8,7 @@ import org.betacraft.launcher.Window;
 
 import pl.betacraft.auth.Credentials.AccountType;
 
-public class NoAuth implements Authenticator {
+public class NoAuth extends Authenticator {
 	private Credentials credentials = new Credentials();
 
 	public NoAuth(Credentials c) {
@@ -35,6 +35,7 @@ public class NoAuth implements Authenticator {
 		Window.nick_input.setText(Launcher.getNickname());
 		Window.nick_input.setEnabled(true);
 		Window.loginButton.setText(Lang.LOGIN_BUTTON);
+		Window.loginButton.setEnabled(true);
 	}
 
 	public boolean invalidate() {
