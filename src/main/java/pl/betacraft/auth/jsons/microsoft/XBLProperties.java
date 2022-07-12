@@ -1,6 +1,5 @@
 package pl.betacraft.auth.jsons.microsoft;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
 public class XBLProperties {
@@ -12,7 +11,7 @@ public class XBLProperties {
 	public XBLProperties(String ms_accessToken) {
 		try {
 			RpsTicket = "d=" + URLEncoder.encode(ms_accessToken, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
+		} catch (Throwable e) {
 			e.printStackTrace();
 		}
 	}

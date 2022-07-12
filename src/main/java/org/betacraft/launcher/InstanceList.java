@@ -112,8 +112,10 @@ public class InstanceList extends JFrame implements LanguageElement {
 		}
 
 		constr.weighty = 1.0;
+		constr.gridwidth = 2;
 		constr.gridheight = GridBagConstraints.RELATIVE;
 		constr.gridy = 1;
+		constr.gridx = 0;
 
 		list = new JList(listModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

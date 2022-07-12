@@ -467,14 +467,18 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 
 	public boolean saveOptions() {
 		String jpath = javaPath.getText();
-		int i = Util.getMajorJavaVersion(jpath);
-		if (i == -1) {
-			JOptionPane.showMessageDialog(this, Lang.JAVA_INVALID);
-			return false;
-		} else if (i > 8) {
-			int res = JOptionPane.showConfirmDialog(this, Lang.JAVA_TOO_RECENT);
-			if (res != JOptionPane.YES_OPTION) {
+
+		// warn on unrecommended java version
+		if (!Launcher.disableWarnings) {
+			int i = Util.getMajorJavaVersion(jpath);
+			if (i == -1) {
+				JOptionPane.showMessageDialog(this, Lang.JAVA_INVALID);
 				return false;
+			} else if (i > 8) {
+				int res = JOptionPane.showConfirmDialog(this, Lang.JAVA_TOO_RECENT);
+				if (res != JOptionPane.YES_OPTION) {
+					return false;
+				}
 			}
 		}
 		

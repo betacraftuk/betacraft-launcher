@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.zip.ZipEntry;
@@ -469,6 +470,15 @@ public class Util {
 			}
 
 			return Integer.parseInt(ver.substring(0, cut));
+		}
+	}
+
+	public static boolean openURL(String url) {
+		try {
+			return openURL(new URL(url).toURI());
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return false;
 		}
 	}
 

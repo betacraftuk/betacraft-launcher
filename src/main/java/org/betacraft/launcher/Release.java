@@ -202,20 +202,19 @@ public class Release {
 			return false; // it's a version from an online repository! not local one!
 		}
 
+		public File getInfoFile() {
+			return new File(BC.get() + "versions/jsons/", name + ".info");
+		}
+
 		public boolean hasJar() {
 			File jar = new File(BC.get() + "versions/", name + ".jar");
 			return jar.exists() && jar.isFile();
 		}
 
-		public boolean hasFakeJson() {
-			File fakeJson = new File(BC.get() + "versions/jsons/", name + ".info");
-			return fakeJson.exists() && fakeJson.isFile();
-		}
-
 		public void setEntry(String entry, String value) {}
 
 		public void downloadJson() {
-			Launcher.download("http://files.betacraft.uk/launcher/assets/jsons/" + this.getVersion() + ".info", new File(BC.get() + "versions" + File.separator + "jsons", this.getVersion() + ".info"));
+			Launcher.download("http://files.betacraft.uk/launcher/assets/jsons/" + this.getVersion() + ".info", getInfoFile());
 		}
 	}
 
@@ -231,7 +230,7 @@ public class Release {
 		if (info.getFileVersion() < Util.jsonVersion && info.getFileVersion() != -1 && info instanceof ReleaseJson && ReleaseJson.exists(name)) {
 			// Terminate all outdated info files
 			ReleaseJson info2 = (ReleaseJson) info;
-			info2.json.delete();
+			info2.getInfoFile().delete();
 			Logger.a("Terminated an outdated info file of: " + name);
 			info = new ReleaseJson(name);
 		}
@@ -283,6 +282,7 @@ public class Release {
 		public void setEntry(String entry, String value);
 		public int getFileVersion();
 		public boolean isCustom();
+		public File getInfoFile();
 
 		public void downloadJson();
 	}

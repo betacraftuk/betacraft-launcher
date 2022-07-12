@@ -40,6 +40,7 @@ import pl.betacraft.auth.DownloadRequest;
 import pl.betacraft.auth.DownloadResponse;
 import pl.betacraft.auth.NoAuth;
 import pl.betacraft.json.lib.LaunchMethods;
+import pl.betacraft.json.lib.ModObject;
 import pl.betacraft.json.lib.MouseFixMacOSJson;
 
 /** Main class */
@@ -48,6 +49,7 @@ public class Launcher {
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
+	public static boolean disableWarnings = false;
 	public static ArrayList<Thread> totalThreads = new ArrayList<Thread>();
 	public static Authenticator auth;
 	public static Accounts accounts = new Accounts();
@@ -267,6 +269,8 @@ public class Launcher {
 			}
 		}
 
+		disableWarnings = "true".equals(Util.getProperty(BC.SETTINGS, "disableWarnings"));
+
 		try {
 			// initialize GUI
 			StartThread t = new StartThread();
@@ -338,7 +342,7 @@ public class Launcher {
 		Instance i = Instance.loadInstance((String) instance);
 
 		if (i != null) {
-			int res = JOptionPane.showConfirmDialog(Window.mainWindow, Lang.INSTANCE_REMOVE_DIRECTORY + "\n" + i.gameDir);
+			int res = JOptionPane.showConfirmDialog(null, Lang.INSTANCE_REMOVE_DIRECTORY + "\n" + i.gameDir);
 			if (res == JOptionPane.YES_OPTION) {
 				removeRecursively(new File(i.gameDir), true, false);
 			}
@@ -388,16 +392,25 @@ public class Launcher {
 		Release rel = Release.getReleaseByName(Launcher.currentInstance.version);
 		if (!rel.getInfo().isCustom()) {
 			rel.getInfo().downloadJson();
+		} else {
+			// auto update mods !!
+			ModObject mo = ModsRepository.getMod(rel.getInfo().getVersion());
+			if (mo != null) {
+				if (mo.checkUpdate || !rel.getInfo().getInfoFile().exists()) {
+					DownloadResult res = download(mo.infoFileURL, rel.getInfo().getInfoFile());
+					if (!res.isPositive()) {
+						Logger.a("Failed to refresh mod: " + rel.getInfo().getVersion());
+					}
+				}
+			}
 		}
 
 		ReleaseJson info = new ReleaseJson(rel.getName());
-		info.custom = rel.getInfo().isCustom();
 		rel.setInfo(info);
 
 		// Download the game if not done already
-		if (!Launcher.isVersionReady(Launcher.currentInstance.version) || Launcher.forceUpdate) {
-			VersionInfo json = Release.getReleaseByName(Launcher.currentInstance.version).getInfo();
-			if (!json.getDownloadURL().equals("") && !Launcher.downloadWithButtonOutput(Release.getReleaseByName(Launcher.currentInstance.version).getInfo().getDownloadURL(), new File(Launcher.getVerFolder(), Launcher.currentInstance.version + ".jar")).isPositive()) {
+		if (!Launcher.isVersionReady(info) || Launcher.forceUpdate) {
+			if (!info.getDownloadURL().equals("") && !Launcher.downloadWithButtonOutput(info.getDownloadURL(), new File(Launcher.getVerFolder(), info.getVersion() + ".jar")).isPositive()) {
 				JOptionPane.showMessageDialog(Window.mainWindow, Lang.ERR_NO_CONNECTION, Lang.ERR_DL_FAIL, JOptionPane.ERROR_MESSAGE);
 			}
 		}
@@ -651,13 +664,19 @@ public class Launcher {
 		}
 	}
 
-	public static boolean isVersionReady(String version) {
-		File file = new File(getVerFolder(), version + ".jar");
-		boolean bol = false;
-		if (file.exists() && !file.isDirectory()) {
-			bol = true;
+	public static boolean isVersionReady(ReleaseJson version) {
+		if (version.sha1 == null) {
+			return version.hasJar();
+		} else if (version.hasJar()) {
+			String file_sha1 = Util.getSHA1(version.getJar());
+			if (file_sha1.equalsIgnoreCase(version.sha1)) {
+				return true;
+			} else {
+				return false;
+			}
+		} else {
+			return false;
 		}
-		return bol;
 	}
 
 	public static boolean checkDepends() {

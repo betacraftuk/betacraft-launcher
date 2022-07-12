@@ -7,91 +7,66 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.InputStream;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 
 import org.betacraft.launcher.Release.VersionRepository;
 
+import pl.betacraft.auth.CustomResponse;
+import pl.betacraft.auth.Request;
+import pl.betacraft.auth.RequestUtil;
+import pl.betacraft.json.lib.ModObject;
+
 public class ModsRepository extends JFrame implements ActionListener, LanguageElement {
 
-	public static ArrayList<String> mods = new ArrayList<String>();
+	public static ArrayList<ModObject> mods = new ArrayList<ModObject>();
 
 	public static void loadMods() {
 		try {
-			final URL url = new URL("http://files.betacraft.uk/launcher/assets/mods/1.09_10/list.txt");
+			String modlistjson = (new Request() {
 
-			InputStream onlineListStream = null;
-			try {
-				onlineListStream = url.openStream();
-			} catch (UnknownHostException ex) {
-				Logger.a(null);
-			} catch (SocketTimeoutException ex) {
-				Logger.a(null);
-			} catch (SocketException ex) {
-				Logger.a(null);
-			} catch (Exception ex) {
-				Logger.a("A critical error has occurred while attempting to get the online addons list!");
-				ex.printStackTrace();
-				Logger.printException(ex);
+				@Override
+				public CustomResponse perform() {
+					this.REQUEST_URL = "http://files.betacraft.uk/launcher/assets/mods/1.09_16/list.json";
+					return new CustomResponse(RequestUtil.performGETRequest(this));
+				}
+
+			}).perform().response;
+
+			ModObject[] ml = Util.gson.fromJson(modlistjson, ModObject[].class);
+			
+			for (ModObject obj : ml) {
+				mods.add(obj);
 			}
-
-			// If connection failed, return
-			if (onlineListStream == null) {
-				return;
-			}
-
-			Scanner onlineListScanner = new Scanner(onlineListStream, "UTF-8");
-			for (String ver : scan(onlineListScanner)) {
-				mods.add(ver);
-			}
-
-			// Close the connection
-			onlineListScanner.close();
-			onlineListStream.close();
 		} catch (Exception ex) {
-			Logger.a("A critical error occurred while initializing addons list!");
+			Logger.a("A critical error occurred while loading mod list!");
 			ex.printStackTrace();
 			Logger.printException(ex);
 		}
 	}
 
-	protected static List<String> scan(Scanner scanner) {
-		List<String> results = new ArrayList<String>();
-
-		String currentLine = null;
-		while (scanner.hasNextLine()) {
-			currentLine = scanner.nextLine();
-
-			// If the line is empty, ignore it
-			if (currentLine.equalsIgnoreCase("")) continue;
-
-			results.add(currentLine);
+	public static ModObject getMod(String name) {
+		for (ModObject obj : mods) {
+			if (obj.toString().equalsIgnoreCase(name)) {
+				return obj;
+			}
 		}
-		return results;
+		return null;
 	}
 
 	static JList list;
 	static DefaultListModel listModel;
 	static JScrollPane listScroller;
 	static JButton more_button;
-	static JButton OK;
+	static JButton LoadButton;
 	static JPanel panel;
 	static GridBagConstraints constr;
 
@@ -124,9 +99,9 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 		constr.weighty = GridBagConstraints.RELATIVE;
 		constr.gridheight = 1;
 		constr.insets = new Insets(0, 5, 5, 5);
-		OK = new JButton(Lang.OPTIONS_OK);
-		OK.addActionListener(this);
-		panel.add(OK, constr);
+		LoadButton = new JButton(Lang.LOAD);
+		LoadButton.addActionListener(this);
+		panel.add(LoadButton, constr);
 
 		this.add(panel, BorderLayout.SOUTH);
 
@@ -143,15 +118,15 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 
 	public void update() {
 		this.setTitle(Lang.INSTANCE_MODS_REPOSITORY);
-		OK.setText(Lang.OPTIONS_OK);
+		LoadButton.setText(Lang.OPTIONS_OK);
 		this.pack();
 	}
 
 	protected void updateList() {
 		listModel = null;
 		listModel = new DefaultListModel();
-		for (String s : mods) {
-			listModel.addElement(s);
+		for (ModObject obj : mods) {
+			listModel.addElement(obj);
 		}
 
 		constr.weighty = 1.0;
@@ -173,8 +148,8 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 	public void saveVersions() {
 		if (list.getSelectedValues().length != 0) {
 			for (Object o : list.getSelectedValues()) {
-				String s = (String) o;
-				new ReleaseJson(s).downloadJson();
+				ModObject obj = (ModObject) o;
+				new ReleaseJson(obj.name, obj.infoFileURL).downloadJson();
 			}
 			try {
 				Release.loadVersions(VersionRepository.BETACRAFT);
@@ -182,40 +157,22 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 				ex.printStackTrace();
 				Logger.printException(ex);
 			}
-			Launcher.currentInstance.version = (String) list.getSelectedValues()[0];
+			Launcher.currentInstance.version = ((ModObject) list.getSelectedValues()[0]).name;
 			Launcher.setInstance(Launcher.currentInstance);
 			Launcher.currentInstance.saveInstance();
 		}
 		setVisible(false);
 	}
 
-	public JScrollPane getInfo(String name) {
-		JEditorPane pane = new JEditorPane();
-		pane.setEditable(false);
-		pane.setOpaque(false);
-		pane.setContentType("text/html;charset=UTF-8");
-		pane.addHyperlinkListener(WebsitePanel.EXTERNAL_HYPERLINK_LISTENER);
-		try {
-			pane.setPage(new URL("http://files.betacraft.uk/launcher/assets/mods/" + name + ".html"));
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			Logger.printException(ex);
-			pane.setText(Lang.ADDON_NO_DESC);
-		}
-		JScrollPane scrlPane = new JScrollPane(pane);
-		scrlPane.setBorder(null);
-		scrlPane.setWheelScrollingEnabled(true);
-		return scrlPane;
-	}
-
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == OK) {
+		if (e.getSource() == LoadButton) {
 			saveVersions();
 			Window.modsRepo = null;
 		} else if (e.getSource() == more_button) {
 			for (Object l : list.getSelectedValues()) {
-				String mod = (String) l;
-				new BrowserWindow(getInfo(mod));
+				ModObject mod = (ModObject) l;
+
+				Util.openURL(mod.website);
 			}
 		}
 	}

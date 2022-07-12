@@ -1,7 +1,6 @@
 package pl.betacraft.auth.jsons.microsoft;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
 
 import pl.betacraft.auth.Request;
 import pl.betacraft.auth.RequestUtil;
@@ -25,7 +24,7 @@ public class MinecraftAuthRequest extends Request {
 		MinecraftAuthResponse ret;
 		try {
 			ret = gson.fromJson(response, MinecraftAuthResponse.class);
-		} catch (JsonParseException ex) {
+		} catch (Throwable ex) {
 			return null;
 		}
 		return ret;

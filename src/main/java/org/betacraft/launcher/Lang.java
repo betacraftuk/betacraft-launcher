@@ -288,6 +288,7 @@ public class Lang extends JFrame implements LanguageElement {
 		BROWSE = Util.getProperty(file, "browse", charset);
 		COPY = Util.getProperty(file, "copy", charset);
 		CLEAR = Util.getProperty(file, "clear", charset);
+		LOAD = Util.getProperty(file, "load", charset);
 		
 		PAUSE = Util.getProperty(file, "pause", charset);
 		UNPAUSE = Util.getProperty(file, "unpause", charset);
@@ -412,6 +413,7 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String BROWSE = "Browse";
 	public static String COPY = "Copy";
 	public static String CLEAR = "Clear";
+	public static String LOAD = "Load";
 
 	public static String PAUSE = "Pause";
 	public static String UNPAUSE = "Unpause";

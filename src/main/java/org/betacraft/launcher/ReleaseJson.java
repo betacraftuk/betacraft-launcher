@@ -15,14 +15,30 @@ public class ReleaseJson implements VersionInfo {
 	private String otherName = "";
 	private String protocol = "";
 	private int fileVersion = -1;
-	private final String version;
-	public final File json;
+	protected boolean custom = false;
 
-	public boolean custom = false;
+	private final String version;
+	private final File json;
+
+	private String jsonUrl = null;
+	public String sha1 = null;
 
 	public ReleaseJson(String version) {
+		this(version, null);
+	}
+
+	public ReleaseJson(String version, String url) {
 		this.version = version;
 		this.json = new File(BC.get() + "versions" + File.separator + "jsons", version + ".info");
+		
+		if (url == null) {
+			this.jsonUrl = "http://files.betacraft.uk/launcher/assets/jsons/" + this.getVersion() + ".info";
+		} else {
+			this.jsonUrl = url;
+		}
+
+		this.jsonUrl = this.jsonUrl.replace(" ", "%20");
+
 		readJson();
 	}
 
@@ -46,6 +62,7 @@ public class ReleaseJson implements VersionInfo {
 			proxyArgs = proxy;
 			otherName = Util.getProperty(json, "other-name");
 			protocol = Util.getProperty(json, "protocolVersion");
+			sha1 = Util.getProperty(json, "sha1");
 
 			String custom_flag_str = Util.getProperty(json, "custom");
 			if (custom_flag_str != null) {
@@ -66,7 +83,7 @@ public class ReleaseJson implements VersionInfo {
 						this.fileVersion = 0;
 					}
 				}
-			} // if 'file-ver' is not set, leave it at -1
+			} // if 'file-ver' is invalid, leave it at -1
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			Logger.printException(ex);
@@ -126,16 +143,24 @@ public class ReleaseJson implements VersionInfo {
 		return this.custom;
 	}
 
+	public File getInfoFile() {
+		return json;
+	}
+
 	public static boolean exists(String name) {
 		return new File(BC.get() + "versions/jsons/", name + ".info").exists();
 	}
 
 	public void downloadJson() {
-		Launcher.download("http://files.betacraft.uk/launcher/assets/jsons/" + this.getVersion() + ".info", new File(BC.get() + "versions" + File.separator + "jsons", this.getVersion() + ".info"));
+		Launcher.download(this.jsonUrl, getInfoFile());
+	}
+
+	public File getJar() {
+		return new File(BC.get() + "versions/", version + ".jar");
 	}
 
 	public boolean hasJar() {
-		File jar = new File(BC.get() + "versions/", version + ".jar");
-		return jar.exists() && jar.isFile();
+		File jar = getJar();
+		return jar.exists() && jar.isFile() && !jar.isDirectory();
 	}
 }
