@@ -23,8 +23,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import pl.betacraft.auth.NoAuth;
-import pl.betacraft.auth.jsons.microsoft.MinecraftAuthRequest;
+import uk.betacraft.auth.NoAuth;
+import uk.betacraft.auth.jsons.microsoft.MinecraftAuthRequest;
 
 public class Window extends JFrame implements ActionListener, LanguageElement {
 
@@ -100,7 +100,6 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 		loginButton.setEnabled(false);
 		loginButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				new MinecraftAuthRequest("", "").perform();
 				if (!nick_input.isEnabled()) {
 					Launcher.auth.invalidate();
 					Launcher.auth = Util.getAuthenticator(Launcher.accounts.accounts.get(0));

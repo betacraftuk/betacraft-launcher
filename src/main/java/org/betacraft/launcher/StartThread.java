@@ -7,7 +7,7 @@ import javax.swing.JFrame;
 
 import org.betacraft.launcher.Release.VersionRepository;
 
-import pl.betacraft.json.lib.LaunchMethods;
+import uk.betacraft.json.lib.LaunchMethods;
 
 public class StartThread extends Thread {
 

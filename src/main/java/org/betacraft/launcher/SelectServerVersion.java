@@ -27,7 +27,7 @@ public class SelectServerVersion extends JFrame implements LanguageElement {
 
 	public String preferredVersion;
 
-	public SelectServerVersion(ArrayList<Release> thelist, final String mppass, final String address, final String preferredVersion) {
+	public SelectServerVersion(ArrayList<String> thelist, final String mppass, final String address, final String preferredVersion) {
 		this.preferredVersion = preferredVersion;
 		this.setIconImage(Window.img);
 		this.setMinimumSize(new Dimension(282, 169));
@@ -56,8 +56,7 @@ public class SelectServerVersion extends JFrame implements LanguageElement {
 		OKButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				setVisible(false);
-				Release ver = (Release) list.getSelectedValue();
-				Launcher.currentInstance.version = ver.getName();
+				Launcher.currentInstance.version = (String) list.getSelectedValue();
 				Launcher.setInstance(Launcher.currentInstance);
 				Launcher.currentInstance.saveInstance();
 				Util.saveAccounts();
@@ -88,13 +87,13 @@ public class SelectServerVersion extends JFrame implements LanguageElement {
 		this.pack();
 	}
 
-	public void makeList(ArrayList<Release> thelist) {
+	public void makeList(ArrayList<String> thelist) {
 		int index = -1;
 		listModel = new DefaultListModel();
 		for (int i = 0; i < thelist.size(); i++) {
-			Release item = thelist.get(i);
+			String item = thelist.get(i);
 			listModel.addElement(item);
-			if (item.getName().equals(preferredVersion)) {
+			if (item.equals(preferredVersion)) {
 				index = i;
 			}
 		}

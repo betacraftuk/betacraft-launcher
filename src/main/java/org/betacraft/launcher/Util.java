@@ -20,16 +20,16 @@ import java.util.zip.ZipInputStream;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import pl.betacraft.auth.Accounts;
-import pl.betacraft.auth.Authenticator;
-import pl.betacraft.auth.Credentials;
-import pl.betacraft.auth.Credentials.AccountType;
-import pl.betacraft.auth.DownloadRequest;
-import pl.betacraft.auth.DownloadResponse;
-import pl.betacraft.auth.MicrosoftAuth;
-import pl.betacraft.auth.MojangAuth;
-import pl.betacraft.auth.NoAuth;
-import pl.betacraft.json.lib.MouseFixMacOSJson;
+import uk.betacraft.auth.Accounts;
+import uk.betacraft.auth.Authenticator;
+import uk.betacraft.auth.Credentials;
+import uk.betacraft.auth.DownloadRequest;
+import uk.betacraft.auth.DownloadResponse;
+import uk.betacraft.auth.MicrosoftAuth;
+import uk.betacraft.auth.MojangAuth;
+import uk.betacraft.auth.NoAuth;
+import uk.betacraft.auth.Credentials.AccountType;
+import uk.betacraft.json.lib.MouseFixMacOSJson;
 
 public class Util {
 	public static final Gson gson = new Gson();

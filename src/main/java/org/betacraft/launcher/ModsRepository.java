@@ -20,10 +20,10 @@ import javax.swing.ListSelectionModel;
 
 import org.betacraft.launcher.Release.VersionRepository;
 
-import pl.betacraft.auth.CustomResponse;
-import pl.betacraft.auth.Request;
-import pl.betacraft.auth.RequestUtil;
-import pl.betacraft.json.lib.ModObject;
+import uk.betacraft.auth.CustomResponse;
+import uk.betacraft.auth.Request;
+import uk.betacraft.auth.RequestUtil;
+import uk.betacraft.json.lib.ModObject;
 
 public class ModsRepository extends JFrame implements ActionListener, LanguageElement {
 

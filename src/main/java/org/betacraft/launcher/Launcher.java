@@ -31,17 +31,17 @@ import org.betacraft.WrapperDetector;
 import org.betacraft.launcher.Release.VersionInfo;
 import org.betacraft.launcher.Window.Tab;
 
-import pl.betacraft.auth.Accounts;
-import pl.betacraft.auth.Authenticator;
-import pl.betacraft.auth.Credentials;
-import pl.betacraft.auth.CustomRequest;
-import pl.betacraft.auth.CustomResponse;
-import pl.betacraft.auth.DownloadRequest;
-import pl.betacraft.auth.DownloadResponse;
-import pl.betacraft.auth.NoAuth;
-import pl.betacraft.json.lib.LaunchMethods;
-import pl.betacraft.json.lib.ModObject;
-import pl.betacraft.json.lib.MouseFixMacOSJson;
+import uk.betacraft.auth.Accounts;
+import uk.betacraft.auth.Authenticator;
+import uk.betacraft.auth.Credentials;
+import uk.betacraft.auth.CustomRequest;
+import uk.betacraft.auth.CustomResponse;
+import uk.betacraft.auth.DownloadRequest;
+import uk.betacraft.auth.DownloadResponse;
+import uk.betacraft.auth.NoAuth;
+import uk.betacraft.json.lib.LaunchMethods;
+import uk.betacraft.json.lib.ModObject;
+import uk.betacraft.json.lib.MouseFixMacOSJson;
 
 /** Main class */
 public class Launcher {
@@ -501,7 +501,7 @@ public class Launcher {
 					params.add("-Xdock:icon=" + instance.getIconLocation());
 				}
 
-				params.add("-Dhttp.nonProxyHosts=api.betacraft.uk|files.betacraft.uk");
+				params.add("-Dhttp.nonProxyHosts=api.betacraft.uk|files.betacraft.uk|checkip.amazonaws.com");
 
 				// Add custom parameters from options
 				if (instance.launchArgs != null && !instance.launchArgs.equals("")) {

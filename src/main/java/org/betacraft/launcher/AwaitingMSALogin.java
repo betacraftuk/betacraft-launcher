@@ -22,10 +22,10 @@ import javax.swing.text.JTextComponent;
 
 import org.betacraft.launcher.InstanceSettings.OptionsPanel;
 
-import pl.betacraft.auth.Credentials;
-import pl.betacraft.auth.MicrosoftAuth;
-import pl.betacraft.auth.jsons.microsoft.CheckTokenRequest;
-import pl.betacraft.auth.jsons.microsoft.CheckTokenResponse;
+import uk.betacraft.auth.Credentials;
+import uk.betacraft.auth.MicrosoftAuth;
+import uk.betacraft.auth.jsons.microsoft.CheckTokenRequest;
+import uk.betacraft.auth.jsons.microsoft.CheckTokenResponse;
 
 public class AwaitingMSALogin extends JFrame {
 	private String usercode;

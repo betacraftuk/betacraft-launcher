@@ -18,10 +18,10 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import pl.betacraft.auth.MicrosoftAuth;
-import pl.betacraft.auth.MojangAuth;
-import pl.betacraft.auth.jsons.microsoft.DeviceCodeRequest;
-import pl.betacraft.auth.jsons.microsoft.DeviceCodeResponse;
+import uk.betacraft.auth.MicrosoftAuth;
+import uk.betacraft.auth.MojangAuth;
+import uk.betacraft.auth.jsons.microsoft.DeviceCodeRequest;
+import uk.betacraft.auth.jsons.microsoft.DeviceCodeResponse;
 
 public class AuthWindow extends JFrame implements LanguageElement {
 

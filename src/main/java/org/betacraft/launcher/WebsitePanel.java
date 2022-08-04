@@ -18,6 +18,8 @@ import javax.swing.event.HyperlinkListener;
 
 import org.betacraft.launcher.Window.Tab;
 
+import uk.betacraft.json.lib.ModObject;
+
 public class WebsitePanel extends JPanel {
 
 	JScrollPane scrollPane = null;
@@ -50,10 +52,16 @@ public class WebsitePanel extends JPanel {
 					String protocolVersion = split[2];
 					String preferredVersion = split[3];
 
-					ArrayList<Release> matches = new ArrayList<Release>();
+					ArrayList<String> matches = new ArrayList<String>();
 					for (Release r : Release.versions) {
 						if (protocolVersion.equals(r.getInfo().getProtocol())) {
-							matches.add(r);
+							matches.add(r.getName());
+						}
+					}
+					// Do mods because otherwise it takes extra steps & that's annoying
+					for (ModObject versionmod : ModsRepository.mods) {
+						if (versionmod.name.equals(preferredVersion) && !matches.contains(versionmod.name)) {
+							matches.add(versionmod.name);
 						}
 					}
 					new SelectServerVersion(matches, mppass, address, preferredVersion);
