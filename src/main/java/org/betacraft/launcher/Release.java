@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Scanner;
 
+import uk.betacraft.json.lib.ModObject;
+
 public class Release {
 	// Version list for the user
 	public static ArrayList<Release> versions = new ArrayList<Release>();
@@ -213,8 +215,8 @@ public class Release {
 
 		public void setEntry(String entry, String value) {}
 
-		public void downloadJson() {
-			Launcher.download("http://files.betacraft.uk/launcher/assets/jsons/" + this.getVersion() + ".info", getInfoFile());
+		public DownloadResult downloadJson() {
+			return Launcher.download("http://files.betacraft.uk/launcher/assets/jsons/" + this.getVersion() + ".info", getInfoFile());
 		}
 	}
 
@@ -250,7 +252,7 @@ public class Release {
 	}
 
 	public String customSuffix() {
-		return this.info.isCustom() ? Lang.VERSION_CUSTOM : "";
+		return (this.info.isCustom() || ModsRepository.getMod(this.name) != null) ? Lang.VERSION_CUSTOM : "";
 	}
 
 	public String toString() {
@@ -264,6 +266,13 @@ public class Release {
 			if (r.getName().equals(name)) {
 				return r;
 			}
+		}
+		// Match not found, check for not downloaded mods
+		ModObject modmatch = ModsRepository.getMod(name);
+		if (modmatch != null) {
+			new ReleaseJson(name, modmatch.info_file_url).downloadJson();
+			Release.loadVersions(VersionRepository.BETACRAFT);
+			return getReleaseByName(name);
 		}
 		return null;
 	}
@@ -284,6 +293,6 @@ public class Release {
 		public boolean isCustom();
 		public File getInfoFile();
 
-		public void downloadJson();
+		public DownloadResult downloadJson();
 	}
 }

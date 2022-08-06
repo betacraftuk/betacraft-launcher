@@ -59,7 +59,7 @@ public class AuthWindow extends JFrame implements LanguageElement {
 				try {
 					DeviceCodeResponse dcr = new DeviceCodeRequest().perform();
 					new AwaitingMSALogin(dcr.verification_uri, dcr.user_code, dcr.device_code, dcr.expires_in, dcr.interval);
-					setVisible(false);
+					dispose();
 					Window.loginPanel = null;
 				} catch (Throwable t) {
 					t.printStackTrace();
@@ -122,7 +122,7 @@ public class AuthWindow extends JFrame implements LanguageElement {
 				}
 
 				Util.saveAccounts();
-				setVisible(false);
+				dispose();
 				Window.loginPanel = null;
 			}
 		});

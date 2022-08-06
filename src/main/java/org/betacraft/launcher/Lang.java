@@ -95,11 +95,11 @@ public class Lang extends JFrame implements LanguageElement {
 		String lang = (String) list.getSelectedValue();
 
 		// Only return if we failed to download without a backup
-		if (download(lang) == DownloadResult.FAILED_WITHOUT_BACKUP) {
+		if (!download(lang).isPositive()) {
 			return;
 		}
 		Util.setProperty(BC.SETTINGS, "language", lang);
-		setVisible(false);
+		dispose();
 		Launcher.restart(Launcher.javaRuntime.getAbsolutePath());
 	}
 
@@ -175,123 +175,301 @@ public class Lang extends JFrame implements LanguageElement {
 			return;
 		}
 		File file = new File(BC.get() + "launcher" + File.separator + "lang" + File.separator +  lang + ".txt");
-		if ((download && !download(lang).isPositive()) || !file.exists()) {
+		if ((download && !download(lang).isOK()) || !file.exists()) {
 			applyNamesSwing();
 			return;
 		}
 		String charset = "UTF-8";
 		if (lang.equalsIgnoreCase("Russian")) charset = "Cp1251";
 
-		WINDOW_SELECT_VERSION = Util.getProperty(file, "version_button", charset);
-		WINDOW_PLAY = Util.getProperty(file, "play_button", charset);
-		WINDOW_OPTIONS = Util.getProperty(file, "options_button", charset);
-		WINDOW_TITLE = Util.getProperty(file, "launcher_title", charset) + Launcher.VERSION;
-		WINDOW_LANGUAGE = Util.getProperty(file, "language", charset);
-		WINDOW_DOWNLOADING = Util.getProperty(file, "downloading", charset);
-		WINDOW_USERNAME_FIELD_EMPTY = Util.getProperty(file, "username_field_empty", charset);
+		if (Util.hasProperty(file, "version_button", charset))
+			WINDOW_SELECT_VERSION = Util.getProperty(file, "version_button", charset);
 
-		LANG = Util.getProperty(file, "lang_title", charset);
+		if (Util.hasProperty(file, "play_button", charset))
+			WINDOW_PLAY = Util.getProperty(file, "play_button", charset);
 
-		UNEXPECTED_ERROR = Util.getProperty(file, "unexpected_error", charset);
-		ERR_NO_CONNECTION = Util.getProperty(file, "no_connection", charset);
-		ERR_DL_FAIL = Util.getProperty(file, "download_fail", charset);
+		if (Util.hasProperty(file, "options_button", charset))
+			WINDOW_OPTIONS = Util.getProperty(file, "options_button", charset);
 
-		OPTIONS_UPDATE_HEADER = Util.getProperty(file, "update_check", charset);
-		OPTIONS_PROXY = Util.getProperty(file, "use_betacraft", charset);
-		OPTIONS_RPC = Util.getProperty(file, "discord_rpc", charset);
-		OPTIONS_LAUNCH_ARGS = Util.getProperty(file, "launch_arguments", charset) + ":";
-		OPTIONS_KEEP_OPEN = Util.getProperty(file, "keep_launcher_open", charset);
-		OPTIONS_WIDTH = Util.getProperty(file, "width", charset);
-		OPTIONS_OK = Util.getProperty(file, "ok", charset);
-		OPTIONS_HEIGHT = Util.getProperty(file, "height", charset);
-		OPTIONS_TITLE = Util.getProperty(file, "options_title", charset);
+		if (Util.hasProperty(file, "launcher_title", charset))
+			WINDOW_TITLE = Util.getProperty(file, "launcher_title", charset) + Launcher.VERSION;
 
-		SORT_FROM_OLDEST = Util.getProperty(file, "sort_oldest", charset);
-		SORT_FROM_NEWEST = Util.getProperty(file, "sort_newest", charset);
-		VERSION_LIST_TITLE = Util.getProperty(file, "version_title", charset);
+		if (Util.hasProperty(file, "language", charset))
+			WINDOW_LANGUAGE = Util.getProperty(file, "language", charset);
 
-		ADDON_LIST_TITLE = Util.getProperty(file, "addon_list_title", charset);
-		ADDON_NO_DESC = Util.getProperty(file, "addon_no_desc", charset);
-		ADDON_SHOW_INFO = Util.getProperty(file, "addon_show_info", charset);
+		if (Util.hasProperty(file, "downloading", charset))
+			WINDOW_DOWNLOADING = Util.getProperty(file, "downloading", charset);
 
-		LOGGING_IN = Util.getProperty(file, "logging_in", charset);
-		LOGIN_TITLE = Util.getProperty(file, "login_title", charset);
-		LOGIN_BUTTON = Util.getProperty(file, "log_in_button", charset);
-		LOGOUT_BUTTON = Util.getProperty(file, "log_out_button", charset);
-		LOGIN_EMAIL_NICKNAME = Util.getProperty(file, "login_email_nickname", charset);
-		LOGIN_PASSWORD = Util.getProperty(file, "login_password", charset);
-		LOGIN_MOJANG_HEADER = Util.getProperty(file, "login_mojang_header", charset);
-		LOGIN_MICROSOFT_BUTTON = Util.getProperty(file, "login_microsoft_button", charset);
-		LOGIN_MICROSOFT_TITLE = Util.getProperty(file, "login_microsoft_title", charset);
-		LOGIN_MICROSOFT_ERROR = Util.getProperty(file, "login_microsoft_error", charset);
-		LOGIN_MICROSOFT_PARENT = Util.getProperty(file, "login_microsoft_parent", charset);
-		LOGIN_MICROSOFT_NO_XBOX = Util.getProperty(file, "login_microsoft_no_xbox", charset);
-		LOGIN_MICROSOFT_NO_MINECRAFT = Util.getProperty(file, "login_microsoft_no_minecraft", charset);
-		LOGIN_MICROSOFT_NO_JFX_TITLE = Util.getProperty(file, "login_microsoft_no_jfx_title", charset);
-		LOGIN_MICROSOFT_NO_JFX_CONTENT = Util.getProperty(file, "login_microsoft_no_jfx_content", charset);
+		if (Util.hasProperty(file, "username_field_empty", charset))
+			WINDOW_USERNAME_FIELD_EMPTY = Util.getProperty(file, "username_field_empty", charset);
 
-		LOGIN_FAILED = Util.getProperty(file, "login_failed", charset);
-		LOGIN_FAILED_INVALID_CREDENTIALS = Util.getProperty(file, "login_failed_invalid_credentials", charset);
 
-		JAVA_EXECUTABLE = Util.getProperty(file, "java_executable", charset);
-		JAVA_INVALID = Util.getProperty(file, "java_invalid", charset);
-		JAVA_TOO_RECENT = Util.getProperty(file, "java_too_recent", charset);
+		if (Util.hasProperty(file, "lang_title", charset))
+			LANG = Util.getProperty(file, "lang_title", charset);
 
-		INSTANCE_DIRECTORY = Util.getProperty(file, "instance_directory", charset);
-		INSTANCE_REMOVE_DIRECTORY = Util.getProperty(file, "instance_remove_directory", charset);
-		INSTANCE_GAME_DIRECTORY_TITLE = Util.getProperty(file, "instance_game_directory_title", charset);
-		INSTANCE_REMOVE_QUESTION = Util.getProperty(file, "instance_remove_question", charset);
-		INSTANCE_REMOVE_TITLE = Util.getProperty(file, "instance_remove_title", charset);
-		INSTANCE_CHANGE_ICON_NAME = Util.getProperty(file, "instance_change_icon_name", charset);
-		INSTANCE_CHANGE_ICON_TITLE = Util.getProperty(file, "instance_change_icon_title", charset);
-		INSTANCE_CHANGE_ICON_UNSUPPORTED = Util.getProperty(file, "instance_change_icon_unsupported", charset);
-		INSTANCE_CHANGE_ICON_UNSUPPORTED_TITLE = Util.getProperty(file, "instance_change_icon_unsupported_title", charset);
-		INSTANCE_CHANGE_ICON_FAILED = Util.getProperty(file, "instance_change_icon_failed", charset);
-		INSTANCE_CHANGE_ICON_FAILED_TITLE = Util.getProperty(file, "instance_change_icon_failed_title", charset);
-		INSTANCE_NAME = Util.getProperty(file, "instance_name", charset);
-		INSTANCE_SELECT_ADDONS = Util.getProperty(file, "instance_select_addons", charset);
-		INSTANCE_MODS_REPOSITORY = Util.getProperty(file, "instance_mods_repository", charset);
 
-		SELECT_INSTANCE_TITLE = Util.getProperty(file, "select_instance_title", charset);
-		SELECT_INSTANCE_NEW = Util.getProperty(file, "select_instance_new", charset);
+		if (Util.hasProperty(file, "unexpected_error", charset))
+			UNEXPECTED_ERROR = Util.getProperty(file, "unexpected_error", charset);
 
-		UPDATE_FOUND = Util.getProperty(file, "new_version_found", charset);
+		if (Util.hasProperty(file, "no_connection", charset))
+			ERR_NO_CONNECTION = Util.getProperty(file, "no_connection", charset);
 
-		WRAP_USER = Util.getProperty(file, "nick", charset);
-		WRAP_VERSION = Util.getProperty(file, "version", charset);
-		WRAP_SERVER = Util.getProperty(file, "server", charset);
-		WRAP_SERVER_TITLE = Util.getProperty(file, "server_title", charset);
-		WRAP_CLASSIC_RESIZE = Util.getProperty(file, "classic_resize", charset);
+		if (Util.hasProperty(file, "download_fail", charset))
+			ERR_DL_FAIL = Util.getProperty(file, "download_fail", charset);
 
-		TAB_CHANGELOG =  Util.getProperty(file, "tab_changelog", charset);
-		TAB_INSTANCES =  Util.getProperty(file, "tab_instances", charset);
-		TAB_SERVERS =  Util.getProperty(file, "tab_servers", charset);
 
-		VERSION_CUSTOM = Util.getProperty(file, "version_custom", charset);
+		if (Util.hasProperty(file, "update_check", charset))
+			OPTIONS_UPDATE_HEADER = Util.getProperty(file, "update_check", charset);
 
-		BROWSER_TITLE = Util.getProperty(file, "browser_title", charset);
+		if (Util.hasProperty(file, "use_betacraft", charset))
+			OPTIONS_PROXY = Util.getProperty(file, "use_betacraft", charset);
 
-		TAB_SRV_LOADING = Util.getProperty(file, "srv_loading", charset);
-		TAB_SRV_FAILED = Util.getProperty(file, "srv_failed", charset);
-		TAB_CL_LOADING = Util.getProperty(file, "cl_loading", charset);
-		TAB_CL_FAILED = Util.getProperty(file, "cl_failed", charset);
+		if (Util.hasProperty(file, "discord_rpc", charset))
+			OPTIONS_RPC = Util.getProperty(file, "discord_rpc", charset);
 
-		FORCE_UPDATE = Util.getProperty(file, "force_update", charset);
-		CONSOLE_OUTPUT_FOR = Util.getProperty(file, "console_output_for", charset);
-		CONSOLE_OUTPUT = Util.getProperty(file, "console_output", charset);
+		if (Util.hasProperty(file, "launch_arguments", charset))
+			OPTIONS_LAUNCH_ARGS = Util.getProperty(file, "launch_arguments", charset) + ":";
 
-		YES = Util.getProperty(file, "yes", charset);
-		NO = Util.getProperty(file, "no", charset);
-		CANCEL = Util.getProperty(file, "cancel", charset);
-		SELECT = Util.getProperty(file, "select", charset);
-		REMOVE = Util.getProperty(file, "remove", charset);
-		BROWSE = Util.getProperty(file, "browse", charset);
-		COPY = Util.getProperty(file, "copy", charset);
-		CLEAR = Util.getProperty(file, "clear", charset);
-		LOAD = Util.getProperty(file, "load", charset);
-		
-		PAUSE = Util.getProperty(file, "pause", charset);
-		UNPAUSE = Util.getProperty(file, "unpause", charset);
+		if (Util.hasProperty(file, "keep_launcher_open", charset))
+			OPTIONS_KEEP_OPEN = Util.getProperty(file, "keep_launcher_open", charset);
+
+		if (Util.hasProperty(file, "width", charset))
+			OPTIONS_WIDTH = Util.getProperty(file, "width", charset);
+
+		if (Util.hasProperty(file, "height", charset))
+			OPTIONS_HEIGHT = Util.getProperty(file, "height", charset);
+
+		if (Util.hasProperty(file, "options_title", charset))
+			OPTIONS_TITLE = Util.getProperty(file, "options_title", charset);
+
+		if (Util.hasProperty(file, "ok", charset))
+			OPTIONS_OK = Util.getProperty(file, "ok", charset);
+
+
+		if (Util.hasProperty(file, "sort_oldest", charset))
+			SORT_FROM_OLDEST = Util.getProperty(file, "sort_oldest", charset);
+
+		if (Util.hasProperty(file, "sort_newest", charset))
+			SORT_FROM_NEWEST = Util.getProperty(file, "sort_newest", charset);
+
+		if (Util.hasProperty(file, "version_title", charset))
+			VERSION_LIST_TITLE = Util.getProperty(file, "version_title", charset);
+
+
+		if (Util.hasProperty(file, "addon_list_title", charset))
+			ADDON_LIST_TITLE = Util.getProperty(file, "addon_list_title", charset);
+
+		if (Util.hasProperty(file, "addon_no_desc", charset))
+			ADDON_NO_DESC = Util.getProperty(file, "addon_no_desc", charset);
+
+		if (Util.hasProperty(file, "addon_show_info", charset))
+			ADDON_SHOW_INFO = Util.getProperty(file, "addon_show_info", charset);
+
+
+		if (Util.hasProperty(file, "logging_in", charset))
+			LOGGING_IN = Util.getProperty(file, "logging_in", charset);
+
+		if (Util.hasProperty(file, "login_title", charset))
+			LOGIN_TITLE = Util.getProperty(file, "login_title", charset);
+
+		if (Util.hasProperty(file, "log_in_button", charset))
+			LOGIN_BUTTON = Util.getProperty(file, "log_in_button", charset);
+
+		if (Util.hasProperty(file, "log_out_button", charset))
+			LOGOUT_BUTTON = Util.getProperty(file, "log_out_button", charset);
+
+		if (Util.hasProperty(file, "login_email_nickname", charset))
+			LOGIN_EMAIL_NICKNAME = Util.getProperty(file, "login_email_nickname", charset);
+
+		if (Util.hasProperty(file, "login_password", charset))
+			LOGIN_PASSWORD = Util.getProperty(file, "login_password", charset);
+
+		if (Util.hasProperty(file, "login_mojang_header", charset))
+			LOGIN_MOJANG_HEADER = Util.getProperty(file, "login_mojang_header", charset);
+
+		if (Util.hasProperty(file, "login_microsoft_button", charset))
+			LOGIN_MICROSOFT_BUTTON = Util.getProperty(file, "login_microsoft_button", charset);
+
+		if (Util.hasProperty(file, "login_microsoft_title", charset))
+			LOGIN_MICROSOFT_TITLE = Util.getProperty(file, "login_microsoft_title", charset);
+
+		if (Util.hasProperty(file, "login_microsoft_error", charset))
+			LOGIN_MICROSOFT_ERROR = Util.getProperty(file, "login_microsoft_error", charset);
+
+		if (Util.hasProperty(file, "login_microsoft_parent", charset))
+			LOGIN_MICROSOFT_PARENT = Util.getProperty(file, "login_microsoft_parent", charset);
+
+		if (Util.hasProperty(file, "login_microsoft_no_xbox", charset))
+			LOGIN_MICROSOFT_NO_XBOX = Util.getProperty(file, "login_microsoft_no_xbox", charset);
+
+		if (Util.hasProperty(file, "login_microsoft_no_minecraft", charset))
+			LOGIN_MICROSOFT_NO_MINECRAFT = Util.getProperty(file, "login_microsoft_no_minecraft", charset);
+
+
+		if (Util.hasProperty(file, "login_failed", charset))
+			LOGIN_FAILED = Util.getProperty(file, "login_failed", charset);
+
+		if (Util.hasProperty(file, "login_failed_invalid_credentials", charset))
+			LOGIN_FAILED_INVALID_CREDENTIALS = Util.getProperty(file, "login_failed_invalid_credentials", charset);
+
+
+		if (Util.hasProperty(file, "java_executable", charset))
+			JAVA_EXECUTABLE = Util.getProperty(file, "java_executable", charset);
+
+		if (Util.hasProperty(file, "java_invalid", charset))
+			JAVA_INVALID = Util.getProperty(file, "java_invalid", charset);
+
+		if (Util.hasProperty(file, "java_too_recent", charset))
+			JAVA_TOO_RECENT = Util.getProperty(file, "java_too_recent", charset);
+
+
+		if (Util.hasProperty(file, "instance_directory", charset))
+			INSTANCE_DIRECTORY = Util.getProperty(file, "instance_directory", charset);
+
+		if (Util.hasProperty(file, "instance_remove_directory", charset))
+			INSTANCE_REMOVE_DIRECTORY = Util.getProperty(file, "instance_remove_directory", charset);
+
+		if (Util.hasProperty(file, "instance_game_directory_title", charset))
+			INSTANCE_GAME_DIRECTORY_TITLE = Util.getProperty(file, "instance_game_directory_title", charset);
+
+		if (Util.hasProperty(file, "instance_remove_question", charset))
+			INSTANCE_REMOVE_QUESTION = Util.getProperty(file, "instance_remove_question", charset);
+
+		if (Util.hasProperty(file, "instance_remove_title", charset))
+			INSTANCE_REMOVE_TITLE = Util.getProperty(file, "instance_remove_title", charset);
+
+		if (Util.hasProperty(file, "instance_change_icon_name", charset))
+			INSTANCE_CHANGE_ICON_NAME = Util.getProperty(file, "instance_change_icon_name", charset);
+
+		if (Util.hasProperty(file, "instance_change_icon_title", charset))
+			INSTANCE_CHANGE_ICON_TITLE = Util.getProperty(file, "instance_change_icon_title", charset);
+
+		if (Util.hasProperty(file, "instance_change_icon_unsupported", charset))
+			INSTANCE_CHANGE_ICON_UNSUPPORTED = Util.getProperty(file, "instance_change_icon_unsupported", charset);
+
+		if (Util.hasProperty(file, "instance_change_icon_unsupported_title", charset))
+			INSTANCE_CHANGE_ICON_UNSUPPORTED_TITLE = Util.getProperty(file, "instance_change_icon_unsupported_title", charset);
+
+		if (Util.hasProperty(file, "instance_change_icon_failed", charset))
+			INSTANCE_CHANGE_ICON_FAILED = Util.getProperty(file, "instance_change_icon_failed", charset);
+
+		if (Util.hasProperty(file, "instance_change_icon_failed_title", charset))
+			INSTANCE_CHANGE_ICON_FAILED_TITLE = Util.getProperty(file, "instance_change_icon_failed_title", charset);
+
+		if (Util.hasProperty(file, "instance_name", charset))
+			INSTANCE_NAME = Util.getProperty(file, "instance_name", charset);
+
+		if (Util.hasProperty(file, "instance_select_addons", charset))
+			INSTANCE_SELECT_ADDONS = Util.getProperty(file, "instance_select_addons", charset);
+
+		if (Util.hasProperty(file, "instance_mods_repository", charset))
+			INSTANCE_MODS_REPOSITORY = Util.getProperty(file, "instance_mods_repository", charset);
+
+
+		if (Util.hasProperty(file, "select_instance_title", charset))
+			SELECT_INSTANCE_TITLE = Util.getProperty(file, "select_instance_title", charset);
+
+		if (Util.hasProperty(file, "select_instance_new", charset))
+			SELECT_INSTANCE_NEW = Util.getProperty(file, "select_instance_new", charset);
+
+
+		if (Util.hasProperty(file, "new_version_found", charset))
+			UPDATE_FOUND = Util.getProperty(file, "new_version_found", charset);
+
+
+		if (Util.hasProperty(file, "nick", charset))
+			WRAP_USER = Util.getProperty(file, "nick", charset);
+
+		if (Util.hasProperty(file, "version", charset))
+			WRAP_VERSION = Util.getProperty(file, "version", charset);
+
+		if (Util.hasProperty(file, "server", charset))
+			WRAP_SERVER = Util.getProperty(file, "server", charset);
+
+		if (Util.hasProperty(file, "server_title", charset))
+			WRAP_SERVER_TITLE = Util.getProperty(file, "server_title", charset);
+
+		if (Util.hasProperty(file, "classic_resize", charset))
+			WRAP_CLASSIC_RESIZE = Util.getProperty(file, "classic_resize", charset);
+
+
+		if (Util.hasProperty(file, "tab_changelog", charset))
+			TAB_CHANGELOG =  Util.getProperty(file, "tab_changelog", charset);
+
+		if (Util.hasProperty(file, "tab_instances", charset))
+			TAB_INSTANCES =  Util.getProperty(file, "tab_instances", charset);
+
+		if (Util.hasProperty(file, "tab_servers", charset))
+			TAB_SERVERS =  Util.getProperty(file, "tab_servers", charset);
+
+
+		if (Util.hasProperty(file, "version_custom", charset))
+			VERSION_CUSTOM = Util.getProperty(file, "version_custom", charset);
+
+
+		if (Util.hasProperty(file, "browser_title", charset))
+			BROWSER_TITLE = Util.getProperty(file, "browser_title", charset);
+
+
+		if (Util.hasProperty(file, "srv_loading", charset))
+			TAB_SRV_LOADING = Util.getProperty(file, "srv_loading", charset);
+
+		if (Util.hasProperty(file, "srv_failed", charset))
+			TAB_SRV_FAILED = Util.getProperty(file, "srv_failed", charset);
+
+		if (Util.hasProperty(file, "cl_loading", charset))
+			TAB_CL_LOADING = Util.getProperty(file, "cl_loading", charset);
+
+		if (Util.hasProperty(file, "cl_failed", charset))
+			TAB_CL_FAILED = Util.getProperty(file, "cl_failed", charset);
+
+
+		if (Util.hasProperty(file, "force_update", charset))
+			FORCE_UPDATE = Util.getProperty(file, "force_update", charset);
+
+		if (Util.hasProperty(file, "console_output_for", charset))
+			CONSOLE_OUTPUT_FOR = Util.getProperty(file, "console_output_for", charset);
+
+		if (Util.hasProperty(file, "console_output", charset))
+			CONSOLE_OUTPUT = Util.getProperty(file, "console_output", charset);
+
+
+		if (Util.hasProperty(file, "yes", charset))
+			YES = Util.getProperty(file, "yes", charset);
+
+		if (Util.hasProperty(file, "no", charset))
+			NO = Util.getProperty(file, "no", charset);
+
+		if (Util.hasProperty(file, "cancel", charset))
+			CANCEL = Util.getProperty(file, "cancel", charset);
+
+		if (Util.hasProperty(file, "select", charset))
+			SELECT = Util.getProperty(file, "select", charset);
+
+		if (Util.hasProperty(file, "remove", charset))
+			REMOVE = Util.getProperty(file, "remove", charset);
+
+		if (Util.hasProperty(file, "browse", charset))
+			BROWSE = Util.getProperty(file, "browse", charset);
+
+		if (Util.hasProperty(file, "copy", charset))
+			COPY = Util.getProperty(file, "copy", charset);
+
+		if (Util.hasProperty(file, "clear", charset))
+			CLEAR = Util.getProperty(file, "clear", charset);
+
+		if (Util.hasProperty(file, "load", charset))
+			LOAD = Util.getProperty(file, "load", charset);
+
+		if (Util.hasProperty(file, "close", charset))
+			CLOSE = Util.getProperty(file, "close", charset);
+
+
+		if (Util.hasProperty(file, "pause", charset))
+			PAUSE = Util.getProperty(file, "pause", charset);
+
+		if (Util.hasProperty(file, "unpause", charset))
+			UNPAUSE = Util.getProperty(file, "unpause", charset);
 
 		applyNamesSwing();
 
@@ -414,6 +592,7 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String COPY = "Copy";
 	public static String CLEAR = "Clear";
 	public static String LOAD = "Load";
+	public static String CLOSE = "Close";
 
 	public static String PAUSE = "Pause";
 	public static String UNPAUSE = "Unpause";

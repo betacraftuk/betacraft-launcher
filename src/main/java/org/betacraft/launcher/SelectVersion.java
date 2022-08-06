@@ -123,7 +123,7 @@ public class SelectVersion extends JFrame implements ActionListener, LanguageEle
 			Launcher.setInstance(Launcher.currentInstance);
 			Launcher.currentInstance.saveInstance();
 		}
-		setVisible(false);
+		dispose();
 	}
 
 	public void actionPerformed(ActionEvent e) {

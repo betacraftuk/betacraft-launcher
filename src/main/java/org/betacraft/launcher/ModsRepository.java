@@ -7,27 +7,29 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.net.URL;
 import java.util.ArrayList;
 
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import org.betacraft.launcher.Release.VersionRepository;
 
 import uk.betacraft.auth.CustomResponse;
 import uk.betacraft.auth.Request;
 import uk.betacraft.auth.RequestUtil;
+import uk.betacraft.json.lib.ModCategory;
 import uk.betacraft.json.lib.ModObject;
 
 public class ModsRepository extends JFrame implements ActionListener, LanguageElement {
 
-	public static ArrayList<ModObject> mods = new ArrayList<ModObject>();
+	public static ArrayList<ModCategory> mods = new ArrayList<ModCategory>();
 
 	public static void loadMods() {
 		try {
@@ -35,16 +37,16 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 
 				@Override
 				public CustomResponse perform() {
-					this.REQUEST_URL = "http://files.betacraft.uk/launcher/assets/mods/1.09_16/list.json";
+					this.REQUEST_URL = "http://api.betacraft.uk/getmods.jsp";
 					return new CustomResponse(RequestUtil.performGETRequest(this));
 				}
 
 			}).perform().response;
 
-			ModObject[] ml = Util.gson.fromJson(modlistjson, ModObject[].class);
+			ModCategory[] mc = Util.gson.fromJson(modlistjson, ModCategory[].class);
 			
-			for (ModObject obj : ml) {
-				mods.add(obj);
+			for (ModCategory cat : mc) {
+				mods.add(cat);
 			}
 		} catch (Exception ex) {
 			Logger.a("A critical error occurred while loading mod list!");
@@ -54,19 +56,23 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 	}
 
 	public static ModObject getMod(String name) {
-		for (ModObject obj : mods) {
-			if (obj.toString().equalsIgnoreCase(name)) {
-				return obj;
+		for (ModCategory cat : mods) {
+			for (ModObject obj : cat.mods) {
+				if (obj.full_name.equalsIgnoreCase(name)) {
+					return obj;
+				}
 			}
 		}
 		return null;
 	}
 
-	static JList list;
-	static DefaultListModel listModel;
+	static ArrayList<DefaultMutableTreeNode> treenodes;
+	static JTree tree;
+	//static JList list;
+	//static DefaultListModel listModel;
 	static JScrollPane listScroller;
 	static JButton more_button;
-	static JButton LoadButton;
+	static JButton LoadButton, CloseButton;
 	static JPanel panel;
 	static GridBagConstraints constr;
 
@@ -103,6 +109,11 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 		LoadButton.addActionListener(this);
 		panel.add(LoadButton, constr);
 
+		constr.gridx = 1;
+		CloseButton = new JButton(Lang.CLOSE);
+		CloseButton.addActionListener(this);
+		panel.add(CloseButton, constr);
+
 		this.add(panel, BorderLayout.SOUTH);
 
 		panel = new JPanel();
@@ -123,54 +134,75 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 	}
 
 	protected void updateList() {
-		listModel = null;
-		listModel = new DefaultListModel();
-		for (ModObject obj : mods) {
-			listModel.addElement(obj);
+		DefaultMutableTreeNode maintreenode = new DefaultMutableTreeNode("root");
+		
+		for (ModCategory cat : mods) {
+			DefaultMutableTreeNode catnode = new DefaultMutableTreeNode(cat.mod_category);
+			for (ModObject obj : cat.mods) {
+				DefaultMutableTreeNode modnode = new DefaultMutableTreeNode(obj);
+				catnode.add(modnode);
+			}
+			maintreenode.add(catnode);
 		}
+		tree = new JTree();
+		tree.setRootVisible(false);
+		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+
+		DefaultTreeModel treemodel = new DefaultTreeModel(maintreenode);
+		tree.setModel(treemodel);
 
 		constr.weighty = 1.0;
 		constr.gridheight = GridBagConstraints.RELATIVE;
 		constr.gridy = 1;
 
-		list = new JList(listModel);
-		list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		list.setLayoutOrientation(JList.VERTICAL);
-		list.setVisibleRowCount(10);
-
 		if (listScroller != null) panel.remove(listScroller);
 
-		listScroller = new JScrollPane(list);
+		listScroller = new JScrollPane(tree);
 		listScroller.setWheelScrollingEnabled(true);
 		panel.add(listScroller, constr);
 	}
 
 	public void saveVersions() {
-		if (list.getSelectedValues().length != 0) {
-			for (Object o : list.getSelectedValues()) {
+		TreePath treepath = tree.getSelectionPath();
+		if (treepath == null) return;
+		DefaultMutableTreeNode node = (DefaultMutableTreeNode) treepath.getLastPathComponent();
+
+		Object o = node.getUserObject();
+		if (o != null) {
+			if (o instanceof ModObject) {
 				ModObject obj = (ModObject) o;
-				new ReleaseJson(obj.name, obj.infoFileURL).downloadJson();
+				DownloadResult download = new ReleaseJson(obj.full_name, obj.info_file_url).downloadJson();
+
+				if (download.isOK()) {
+					try {
+						Release.loadVersions(VersionRepository.BETACRAFT);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+						Logger.printException(ex);
+					}
+					Launcher.currentInstance.version = obj.full_name;
+					Launcher.setInstance(Launcher.currentInstance);
+					Launcher.currentInstance.saveInstance();
+				}
 			}
-			try {
-				Release.loadVersions(VersionRepository.BETACRAFT);
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				Logger.printException(ex);
-			}
-			Launcher.currentInstance.version = ((ModObject) list.getSelectedValues()[0]).name;
-			Launcher.setInstance(Launcher.currentInstance);
-			Launcher.currentInstance.saveInstance();
 		}
-		setVisible(false);
 	}
 
 	public void actionPerformed(ActionEvent e) {
 		if (e.getSource() == LoadButton) {
 			saveVersions();
+		} else if (e.getSource() == CloseButton) {
+			this.dispose();
 			Window.modsRepo = null;
 		} else if (e.getSource() == more_button) {
-			for (Object l : list.getSelectedValues()) {
-				ModObject mod = (ModObject) l;
+			TreePath treepath = tree.getSelectionPath();
+			if (treepath == null) return;
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) treepath.getLastPathComponent();
+
+			Object o = node.getUserObject();
+
+			if (o instanceof ModObject) {
+				ModObject mod = (ModObject) o;
 
 				Util.openURL(mod.website);
 			}

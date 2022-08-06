@@ -2,15 +2,16 @@ package uk.betacraft.json.lib;
 
 public class ModObject {
 
-	public String infoFileURL;
+	public String info_file_url;
 	public String website;
-	public String name;
+	public String full_name;
+	public String version;
 	// if true, the launcher will always re-download the info file on launch.
 	// this is to make updating easy
-	public boolean checkUpdate = false;
+	public boolean autoupdate = false;
 
 	@Override
 	public String toString() {
-		return this.name;
+		return this.version;
 	}
 }

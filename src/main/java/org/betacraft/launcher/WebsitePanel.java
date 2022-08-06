@@ -59,11 +59,13 @@ public class WebsitePanel extends JPanel {
 						}
 					}
 					// Do mods because otherwise it takes extra steps & that's annoying
-					for (ModObject versionmod : ModsRepository.mods) {
-						if (versionmod.name.equals(preferredVersion) && !matches.contains(versionmod.name)) {
-							matches.add(versionmod.name);
+					if (!matches.contains(preferredVersion)) {
+						ModObject versionmod = ModsRepository.getMod(preferredVersion);
+						if (versionmod != null) {
+							matches.add(versionmod.full_name);
 						}
 					}
+
 					new SelectServerVersion(matches, mppass, address, preferredVersion);
 					return;
 				} else {

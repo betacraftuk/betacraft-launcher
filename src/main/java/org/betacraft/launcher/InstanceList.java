@@ -66,7 +66,7 @@ public class InstanceList extends JFrame implements LanguageElement {
 		selectButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Launcher.setInstance(Instance.loadInstance((String) list.getSelectedValue()));
-				setVisible(false);
+				dispose();
 				Window.instanceList = null;
 			}
 		});
@@ -80,7 +80,6 @@ public class InstanceList extends JFrame implements LanguageElement {
 				int result = JOptionPane.showConfirmDialog(InstanceList.this, Lang.INSTANCE_REMOVE_QUESTION, Lang.INSTANCE_REMOVE_TITLE, JOptionPane.YES_NO_OPTION);
 				if (result == JOptionPane.YES_OPTION) {
 					Launcher.removeInstance((String) list.getSelectedValue());
-					setVisible(false);
 				}
 			}
 		});

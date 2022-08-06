@@ -103,7 +103,7 @@ public class AwaitingMSALogin extends JFrame {
 		cancelButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (checkThread != null) checkThread.interrupt();
-				AwaitingMSALogin.this.setVisible(false);
+				dispose();
 			}
 		});
 
@@ -123,7 +123,7 @@ public class AwaitingMSALogin extends JFrame {
 			@Override
 			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
 				if (checkThread != null) checkThread.interrupt();
-				AwaitingMSALogin.this.setVisible(false);
+				dispose();
 			}
 		});
 	}
@@ -152,7 +152,7 @@ public class AwaitingMSALogin extends JFrame {
 					}
 				}
 
-				setVisible(false);
+				dispose();
 			} catch (Throwable t) {
 				t.printStackTrace();
 			}

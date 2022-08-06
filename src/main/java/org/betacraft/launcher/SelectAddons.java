@@ -150,7 +150,7 @@ public class SelectAddons extends JFrame implements ActionListener, LanguageElem
 			}
 		}
 		Launcher.currentInstance.setAddons(elist);
-		setVisible(false);
+		dispose();
 		Launcher.currentInstance.saveInstance();
 	}
 

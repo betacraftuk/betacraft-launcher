@@ -8,6 +8,7 @@ import org.betacraft.launcher.DownloadResult;
 import org.betacraft.launcher.Util;
 
 import uk.betacraft.auth.CustomRequest.RequestType;
+import uk.betacraft.util.WebData;
 
 public class DownloadRequest extends Request {
 	public String destination;
@@ -47,9 +48,9 @@ public class DownloadRequest extends Request {
 				Util.copy(file, backupfile);
 			}
 
-			byte[] data = RequestUtil.performRawGETRequest(this);
-			if (data != null) {
-				Util.writeBytes(file, data);
+			WebData data = RequestUtil.performRawGETRequest(this);
+			if (data.successful()) {
+				Util.writeBytes(file, data.getData());
 			} else {
 				dl_failed = true;
 			}

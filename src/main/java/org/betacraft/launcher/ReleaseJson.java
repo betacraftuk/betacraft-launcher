@@ -151,8 +151,8 @@ public class ReleaseJson implements VersionInfo {
 		return new File(BC.get() + "versions/jsons/", name + ".info").exists();
 	}
 
-	public void downloadJson() {
-		Launcher.download(this.jsonUrl, getInfoFile());
+	public DownloadResult downloadJson() {
+		return Launcher.download(this.jsonUrl, getInfoFile());
 	}
 
 	public File getJar() {

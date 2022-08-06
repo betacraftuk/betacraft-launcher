@@ -55,7 +55,7 @@ public class SelectServerVersion extends JFrame implements LanguageElement {
 
 		OKButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				setVisible(false);
+				dispose();
 				Launcher.currentInstance.version = (String) list.getSelectedValue();
 				Launcher.setInstance(Launcher.currentInstance);
 				Launcher.currentInstance.saveInstance();

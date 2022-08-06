@@ -392,7 +392,7 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		OKButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				if (saveOptions()) {
-					setVisible(false);
+					dispose();
 					Window.instanceSettings = null;
 				}
 			}

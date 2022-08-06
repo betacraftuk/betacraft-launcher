@@ -8,14 +8,16 @@ import java.net.URL;
 
 import com.google.gson.Gson;
 
+import uk.betacraft.util.WebData;
+
 public class RequestUtil {
 	private static boolean debug = false;
 
 	public static String performPOSTRequest(Request req) {
-		byte[] data = performRawPOSTRequest(req);
-		if (data != null) {
+		WebData data = performRawPOSTRequest(req);
+		if (data.getData() != null) {
 			try {
-				String response = new String(data, "UTF-8");
+				String response = new String(data.getData(), "UTF-8");
 				if (debug) System.out.println("INCOMING: " + response);
 				return response;
 			} catch (Throwable t) {
@@ -25,7 +27,7 @@ public class RequestUtil {
 		return null;
 	}
 
-	public static byte[] performRawPOSTRequest(Request req) {
+	public static WebData performRawPOSTRequest(Request req) {
 		HttpURLConnection con = null;
 		try {
 			URL url = new URL(req.REQUEST_URL);
@@ -56,23 +58,28 @@ public class RequestUtil {
 			out.close();
 
 			// Read response
-			return readInputStream(con.getInputStream());
+			int http = con.getResponseCode();
+			byte[] data = null;
+			if (debug) System.out.println(http);
+
+			if (http >= 400 && http < 600) {
+				data = readInputStream(con.getErrorStream());
+			} else {
+				data = readInputStream(con.getInputStream());
+			}
+
+			return new WebData(data, http);
 		} catch (Throwable t) {
 			t.printStackTrace();
-			try {
-				return readInputStream(con.getErrorStream());
-			} catch (Throwable t1) {
-				t1.printStackTrace();
-				return null;
-			}
+			return new WebData(null, -1);
 		}
 	}
 
 	public static String performGETRequest(Request req) {
-		byte[] data = performRawGETRequest(req);
-		if (data != null) {
+		WebData data = performRawGETRequest(req);
+		if (data.getData() != null) {
 			try {
-				String response = new String(data, "UTF-8");
+				String response = new String(data.getData(), "UTF-8");
 				if (debug) System.out.println("INCOMING: " + response);
 				return response;
 			} catch (Throwable t) {
@@ -82,7 +89,7 @@ public class RequestUtil {
 		return null;
 	}
 
-	public static byte[] performRawGETRequest(Request req) {
+	public static WebData performRawGETRequest(Request req) {
 		HttpURLConnection con = null;
 		try {
 			if (debug) System.out.println("OUTCOME TO: " + req.REQUEST_URL);
@@ -95,20 +102,27 @@ public class RequestUtil {
 			con.setDoInput(true);
 			con.setDoOutput(true);
 			con.setUseCaches(false);
+			// i'm a browser C:
+			con.addRequestProperty("User-agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36");
 			for (String key : req.PROPERTIES.keySet()) {
 				con.addRequestProperty(key, req.PROPERTIES.get(key));
 			}
 
 			// Read response
-			return readInputStream(con.getInputStream());
-		} catch (Throwable t) {
-			try {
-				return readInputStream(con.getErrorStream());
-			} catch (Throwable t1) {
-				t.printStackTrace();
-				t1.printStackTrace();
-				return null;
+			int http = con.getResponseCode();
+			byte[] data = null;
+			if (debug) System.out.println(http);
+
+			if (http >= 400 && http < 600) {
+				data = readInputStream(con.getErrorStream());
+			} else {
+				data = readInputStream(con.getInputStream());
 			}
+
+			return new WebData(data, http);
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return new WebData(null, -1);
 		}
 	}
 

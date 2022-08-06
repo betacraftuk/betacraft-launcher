@@ -16,9 +16,6 @@ import org.betacraft.launcher.Util;
 
 import com.google.gson.JsonObject;
 
-import uk.betacraft.auth.CustomRequest;
-import uk.betacraft.auth.RequestUtil;
-
 /*
  * A utility class (wrapper maybe?) for communicating with Beta Evolutions nodes
  *

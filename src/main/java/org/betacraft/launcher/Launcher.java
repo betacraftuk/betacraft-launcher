@@ -390,15 +390,15 @@ public class Launcher {
 		}
 
 		Release rel = Release.getReleaseByName(Launcher.currentInstance.version);
-		if (!rel.getInfo().isCustom()) {
+		ModObject mo = ModsRepository.getMod(rel.getInfo().getVersion());
+		if (mo == null) {
 			rel.getInfo().downloadJson();
 		} else {
 			// auto update mods !!
-			ModObject mo = ModsRepository.getMod(rel.getInfo().getVersion());
 			if (mo != null) {
-				if (mo.checkUpdate || !rel.getInfo().getInfoFile().exists()) {
-					DownloadResult res = download(mo.infoFileURL, rel.getInfo().getInfoFile());
-					if (!res.isPositive()) {
+				if (mo.autoupdate || !rel.getInfo().getInfoFile().exists()) {
+					DownloadResult res = download(mo.info_file_url, rel.getInfo().getInfoFile());
+					if (!res.isOK()) {
 						Logger.a("Failed to refresh mod: " + rel.getInfo().getVersion());
 					}
 				}
@@ -458,7 +458,6 @@ public class Launcher {
 				String colon = ":";
 				if (OS.isWindows()) {
 					colon = ";";
-					params.add("-XX:HeapDumpPath=MojangTricksIntelDriversForPerformance_javaw.exe_minecraft.exe.heapdump");
 				}
 
 				// Additional parameters:
