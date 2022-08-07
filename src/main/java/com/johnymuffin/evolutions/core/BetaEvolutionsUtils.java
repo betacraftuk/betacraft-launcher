@@ -9,7 +9,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 import org.betacraft.launcher.Util;
@@ -387,7 +386,7 @@ public class BetaEvolutionsUtils {
 
     private String encodeString(String string) {
         try {
-            return URLEncoder.encode(string, StandardCharsets.UTF_8.toString());
+            return URLEncoder.encode(string, "UTF-8");
         } catch (Exception e) {
             log("An error occurred encoding a string, this really shouldn't happen on modern JVMs.");
             e.printStackTrace();

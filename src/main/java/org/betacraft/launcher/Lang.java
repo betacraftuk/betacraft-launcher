@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -35,7 +36,7 @@ public class Lang extends JFrame implements LanguageElement {
 	static JPanel panel;
 	static GridBagConstraints constr;
 
-	public static String locale_id = "1.09_15";
+	public static String locale_id = "1.09_16";
 
 	public Lang() {
 		System.out.println("Language selection window opened.");
@@ -162,8 +163,17 @@ public class Lang extends JFrame implements LanguageElement {
 		return false;
 	}
 
+	public static String encodeForURL(String string) {
+		try {
+			return URLEncoder.encode(string, "UTF-8").replace("+", "%20"); // java moment
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return null;
+		} // impossible unless null
+	}
+
 	public static DownloadResult download(String lang) {
-		DownloadResult download = Launcher.download("http://files.betacraft.uk/launcher/assets/lang/" + locale_id + "/" + lang + ".txt", new File(BC.get() + "launcher" + File.separator + "lang", lang + ".txt"));
+		DownloadResult download = Launcher.download("http://files.betacraft.uk/launcher/assets/lang/" + locale_id + "/" + encodeForURL(lang) + ".txt", new File(BC.get() + "launcher" + File.separator + "lang", lang + ".txt"));
 		if (!download.isPositive()) {
 			JOptionPane.showMessageDialog(Window.mainWindow, "No Internet connection", "Language file download failed!", JOptionPane.ERROR_MESSAGE);
 		}
@@ -182,7 +192,6 @@ public class Lang extends JFrame implements LanguageElement {
 			return;
 		}
 		String charset = "UTF-8";
-		if (lang.equalsIgnoreCase("Russian")) charset = "Cp1251";
 
 		PropertyFile langentries = new PropertyFile(file, charset);
 
@@ -311,6 +320,9 @@ public class Lang extends JFrame implements LanguageElement {
 
 		if (langentries.hasProperty("login_microsoft_code_line1"))
 			LOGIN_MICROSOFT_CODE_LINE1 = langentries.getProperty("login_microsoft_code_line1");
+
+		if (langentries.hasProperty("login_microsoft_code_line2"))
+			LOGIN_MICROSOFT_CODE_LINE2 = langentries.getProperty("login_microsoft_code_line2");
 
 
 		if (langentries.hasProperty("login_failed"))
@@ -472,7 +484,7 @@ public class Lang extends JFrame implements LanguageElement {
 			CLOSE = langentries.getProperty("close");
 
 		if (langentries.hasProperty("link"))
-			CLOSE = langentries.getProperty("link");
+			LINK = langentries.getProperty("link");
 
 
 		if (langentries.hasProperty("pause"))
