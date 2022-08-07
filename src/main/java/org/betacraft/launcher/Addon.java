@@ -42,7 +42,6 @@ public class Addon {
 			pane.setPage(new URL("http://files.betacraft.uk/launcher/assets/addons/" + addonVer + "/" + this.name + ".html"));
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 			pane.setText(Lang.ADDON_NO_DESC);
 		}
 		JScrollPane scrlPane = new JScrollPane(pane);
@@ -67,15 +66,13 @@ public class Addon {
 			try {
 				onlineListStream = url.openStream();
 			} catch (UnknownHostException ex) {
-				Logger.a(null);
+				System.out.println("No connection, or the server is down");
 			} catch (SocketTimeoutException ex) {
-				Logger.a(null);
+				System.out.println("No connection, or the server is down");
 			} catch (SocketException ex) {
-				Logger.a(null);
+				System.out.println("No connection, or the server is down");
 			} catch (Exception ex) {
-				Logger.a("A critical error has occurred while attempting to get the online addons list!");
 				ex.printStackTrace();
-				Logger.printException(ex);
 
 				// Every networking bug has been catched before, so this one must be serious
 			}
@@ -125,9 +122,7 @@ public class Addon {
 			onlineListScanner.close();
 			onlineListStream.close();
 		} catch (Exception ex) {
-			Logger.a("A critical error occurred while initializing addons list!");
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 

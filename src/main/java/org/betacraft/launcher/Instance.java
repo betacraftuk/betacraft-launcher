@@ -9,6 +9,8 @@ import java.util.List;
 
 import javax.imageio.ImageIO;
 
+import org.betacraft.launcher.Util.PropertyFile;
+
 public class Instance {
 
 	public final String name;
@@ -49,13 +51,14 @@ public class Instance {
 			File instanceFile = new File(BC.get() + "launcher" + File.separator + "instances", name + ".txt");
 			if (!instanceFile.exists()) {
 				System.out.println(instanceFile.getAbsolutePath());
-				Logger.printException(new Exception("Instance file is null!"));
+				System.err.println("Instance file is null!");
 				return null;
 			}
+			PropertyFile instancesettings = new PropertyFile(instanceFile);
 			Instance instance = newInstance(name);
 			try {
-				instance.launchArgs = Util.getProperty(instanceFile, "launchArgs");
-				String addonz1 = Util.getProperty(instanceFile, "addons");
+				instance.launchArgs = instancesettings.getProperty("launchArgs");
+				String addonz1 = instancesettings.getProperty("addons");
 				String[] addonz = addonz1.split(",");
 				if (!addonz1.equals("")) {
 					for (String addon : addonz) {
@@ -63,40 +66,39 @@ public class Instance {
 						instance.addons.add(addon);
 					}
 				}
-				instance.gameDir = Util.getProperty(instanceFile, "gameDir");
-				instance.version = Util.getProperty(instanceFile, "version");
+				instance.gameDir = instancesettings.getProperty("gameDir");
+				instance.version = instancesettings.getProperty("version");
 
-				String width = Util.getProperty(instanceFile, "width");
-				String height = Util.getProperty(instanceFile, "height");
+				String width = instancesettings.getProperty("width");
+				String height = instancesettings.getProperty("height");
 
 				try {
 					instance.width = Integer.parseInt(width);
 					instance.height = Integer.parseInt(height);
 				} catch (NumberFormatException exx) {
-					Logger.a("Failed to parse width and height parameters in instance: " + name);
+					System.err.println("Failed to parse width and height parameters in instance: " + name);
 					return null;
 				}
 
-				instance.proxy = Boolean.parseBoolean(Util.getProperty(instanceFile, "proxy"));
-				instance.keepopen = Boolean.parseBoolean(Util.getProperty(instanceFile, "keepopen"));
-				instance.RPC = Boolean.parseBoolean(Util.getProperty(instanceFile, "RPC"));
-				instance.console = Boolean.parseBoolean(Util.getProperty(instanceFile, "console"));
+				instance.proxy = Boolean.parseBoolean(instancesettings.getProperty("proxy"));
+				instance.keepopen = Boolean.parseBoolean(instancesettings.getProperty("keepopen"));
+				instance.RPC = Boolean.parseBoolean(instancesettings.getProperty("RPC"));
+				instance.console = Boolean.parseBoolean(instancesettings.getProperty("console"));
 
-				String jpath = Util.getProperty(instanceFile, "javaPath");
+				String jpath = instancesettings.getProperty("javaPath");
 				if (jpath == null || "".equals(jpath)) {
 					instance.javaPath = Launcher.javaRuntime.getAbsolutePath();
 				} else {
 					instance.javaPath = jpath;
 				}
 			} catch (Throwable t) {
-				Logger.a("Instance '" + name + "' is corrupted!");
+				System.err.println("Instance '" + name + "' is corrupted!");
 				t.printStackTrace();
 			}
 			return instance;
 		} catch (Exception ex) {
-			Logger.a("Failed to load instance: " + name);
+			System.err.println("Failed to load instance: " + name);
 			ex.printStackTrace();
-			Logger.printException(ex);
 			return null;
 		}
 	}
@@ -106,15 +108,17 @@ public class Instance {
 			File instanceFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".txt");
 			if (!instanceFile.exists()) instanceFile.createNewFile();
 
-			Util.setProperty(instanceFile, "name", this.name);
-			Util.setProperty(instanceFile, "launchArgs", this.launchArgs);
-			Util.setProperty(instanceFile, "width", Integer.toString(this.width));
-			Util.setProperty(instanceFile, "height", Integer.toString(this.height));
-			Util.setProperty(instanceFile, "proxy", Boolean.toString(this.proxy));
-			Util.setProperty(instanceFile, "keepopen", Boolean.toString(this.keepopen));
-			Util.setProperty(instanceFile, "RPC", Boolean.toString(this.RPC));
-			Util.setProperty(instanceFile, "console", Boolean.toString(this.console));
-			Util.setProperty(instanceFile, "javaPath", javaPath);
+			PropertyFile instancesettings = new PropertyFile(instanceFile);
+
+			instancesettings.setProperty("name", this.name);
+			instancesettings.setProperty("launchArgs", this.launchArgs);
+			instancesettings.setProperty("width", Integer.toString(this.width));
+			instancesettings.setProperty("height", Integer.toString(this.height));
+			instancesettings.setProperty("proxy", Boolean.toString(this.proxy));
+			instancesettings.setProperty("keepopen", Boolean.toString(this.keepopen));
+			instancesettings.setProperty("RPC", Boolean.toString(this.RPC));
+			instancesettings.setProperty("console", Boolean.toString(this.console));
+			instancesettings.setProperty("javaPath", javaPath);
 
 			StringBuilder builder = new StringBuilder();
 			String addons = "";
@@ -125,13 +129,13 @@ public class Instance {
 				addons = builder.toString().substring(0, builder.toString().length() - 1);
 			}
 
-			Util.setProperty(instanceFile, "addons", addons);
-			Util.setProperty(instanceFile, "gameDir", this.gameDir);
-			Util.setProperty(instanceFile, "version", this.version);
-			Logger.a("Saved instance: " + this.name);
+			instancesettings.setProperty("addons", addons);
+			instancesettings.setProperty("gameDir", this.gameDir);
+			instancesettings.setProperty("version", this.version);
+			instancesettings.flushToDisk();
+			System.out.println("Saved instance: " + this.name);
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -189,7 +193,6 @@ public class Instance {
 			return ImageIO.read(imgFile).getScaledInstance(32, 32, 16);
 		} catch (Exception e2) {
 			e2.printStackTrace();
-			Logger.printException(e2);
 
 			this.setIcon(null);
 			try {
@@ -208,7 +211,6 @@ public class Instance {
 			Util.copy(path, imgFile);
 		} catch (Throwable e2) {
 			e2.printStackTrace();
-			Logger.printException(e2);
 		}
 	}
 

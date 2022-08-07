@@ -60,12 +60,12 @@ public class AwaitingMSALogin extends JFrame {
 		JPanel panel = new OptionsPanel();
 		panel.setLayout(new GridBagLayout());
 
-		JLabel label1 = new JLabel("To proceed, open up:"); // TODO translation
+		JLabel label1 = new JLabel(Lang.LOGIN_MICROSOFT_CODE_LINE1);
 		label1.setForeground(Color.LIGHT_GRAY);
 		JTextField tf = new JTextField(this.url);
 		tf.setEditable(false);
 		tf.addMouseListener(autofocus);
-		JLabel label2 = new JLabel("in a browser and type the code:"); // TODO translation
+		JLabel label2 = new JLabel(Lang.LOGIN_MICROSOFT_CODE_LINE2);
 		label2.setForeground(Color.LIGHT_GRAY);
 
 		JTextPane tp = new JTextPane();
@@ -135,9 +135,9 @@ public class AwaitingMSALogin extends JFrame {
 					CheckTokenResponse ctr = new CheckTokenRequest(devcode, null).perform();
 					if (ctr != null) {
 						if (ctr.error != null) {
-							Logger.a("MSA Error: " + ctr.error);
-							Logger.a("Err msg: " + ctr.error_description);
-							Logger.a("Err codes: " + ctr.error_codes);
+							System.out.println("MSA Error: " + ctr.error);
+							System.out.println("Err msg: " + ctr.error_description);
+							System.out.println("Err codes: " + ctr.error_codes);
 						} else {
 							Credentials cred = new Credentials();
 							cred.refresh_token = ctr.refresh_token;

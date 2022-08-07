@@ -233,7 +233,7 @@ public class Release {
 			// Terminate all outdated info files
 			ReleaseJson info2 = (ReleaseJson) info;
 			info2.getInfoFile().delete();
-			Logger.a("Terminated an outdated info file of: " + name);
+			System.out.println("Terminated an outdated info file of: " + name);
 			info = new ReleaseJson(name);
 		}
 		this.info = info;

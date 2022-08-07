@@ -26,7 +26,7 @@ public class InstanceList extends JFrame implements LanguageElement {
 	static GridBagConstraints constr;
 
 	public InstanceList() {
-		Logger.a("Instances list window opened.");
+		System.out.println("Instances list window opened.");
 		this.setIconImage(Window.img);
 		this.setMinimumSize(new Dimension(282, 386));
 

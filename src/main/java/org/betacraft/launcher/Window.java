@@ -24,7 +24,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import uk.betacraft.auth.NoAuth;
-import uk.betacraft.auth.jsons.microsoft.MinecraftAuthRequest;
 
 public class Window extends JFrame implements ActionListener, LanguageElement {
 
@@ -34,7 +33,6 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 	public static JLabel nicktext;
 	public static JTextField nick_input;
 	public static JButton loginButton = null;
-	public static InfoPanel infoPanel = null;
 	public static BottomPanel bottomPanel = null;
 	public static Component centerPanel = null;
 	public static Window mainWindow = null;
@@ -58,9 +56,8 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 			img = ImageIO.read(imstream);
 			this.setIconImage(img);
 		} catch (Exception ex) {
-			Logger.a("An error occurred while loading the window icon!");
+			System.err.println("An error occurred while loading the window icon!");
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 
 		mainWindow = this;
@@ -120,7 +117,7 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 		});
 
 		bottomPanel = new BottomPanel();
-		String tabname = Util.getProperty(BC.SETTINGS, "tab");
+		String tabname = BC.SETTINGS.getProperty("tab");
 		Tab tab = tabname.equals("") ? Tab.CHANGELOG : Tab.valueOf(tabname.toUpperCase());
 		setTab(tab);
 		this.add(Window.bottomPanel, BorderLayout.SOUTH);
@@ -195,7 +192,7 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 		this.addWindowListener(new java.awt.event.WindowAdapter() {
 			@Override
 			public void windowClosing(java.awt.event.WindowEvent windowEvent) {
-				Logger.a("Deactivation...");
+				System.out.println("Disabling...");
 				Window.quit(true);
 			}
 		});
@@ -296,7 +293,8 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 		if (mainWindow != null) mainWindow.setVisible(false);
 		if (mainWindow != null) mainWindow.dispose();
 		Util.saveAccounts();
-		Util.setProperty(BC.SETTINGS, "tab", tab.name());
+		BC.SETTINGS.setProperty("tab", tab.name());
+		BC.SETTINGS.flushToDisk();
 		if (close) {
 			for (Thread t : Launcher.totalThreads) {
 				while (t.isAlive());
@@ -350,7 +348,7 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 					}
 				}.start();
 			} catch (Exception ex) {
-				Logger.printException(ex);
+				ex.printStackTrace();
 			}
 		}
 	}

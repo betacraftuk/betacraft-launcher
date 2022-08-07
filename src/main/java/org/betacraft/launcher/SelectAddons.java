@@ -30,7 +30,7 @@ public class SelectAddons extends JFrame implements ActionListener, LanguageElem
 	static GridBagConstraints constr;
 
 	public SelectAddons() {
-		Logger.a("Addons list window opened.");
+		System.out.println("Addons list window opened.");
 		this.setIconImage(Window.img);
 		this.setMinimumSize(new Dimension(282, 386));
 		this.setPreferredSize(new Dimension(282, 386));

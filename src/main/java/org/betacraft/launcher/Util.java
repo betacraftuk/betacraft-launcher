@@ -116,7 +116,6 @@ public class Util {
 		} catch (IOException e) {
 			System.out.println(file.getAbsolutePath());
 			e.printStackTrace();
-			Logger.printException(e);
 		}
 		OutputStreamWriter writer = null;
 		try {
@@ -130,96 +129,128 @@ public class Util {
 				}
 			}
 		} catch (Exception ex) {
-			Logger.a("A critical error occurred while attempting to write to file: " + file);
+			System.err.println("A critical error occurred while attempting to write to file: " + file);
 			ex.printStackTrace();
-			Logger.printException(ex);
 		} finally {
 			// Close the file
 			try {writer.close();} catch (Exception ex) {}
 		}
 	}
 
-	public static void setProperty(File file, String property, String value) {
-		setProperty(file, property, value, "UTF-8");
-	}
-
-	public static void setProperty(File file, String property, String value, String charset) {
-		// Read the lines
-		String[] lines = read(file, charset);
-		String[] newlines = new String[lines.length + 1];
-
-		// Try to find the property wanted to be set
-		boolean found = false;
-		for (int i = 0; i < lines.length; i++) {
-			if (lines[i] == null) continue;
-			if (lines[i].startsWith(property + ":")) {
-				// The wanted property has been found, so we're going to replace its value
-				newlines[i] = property + ":" + value;
-				found = true;
-				continue;
+	public static String[] read(File file, String charset) {
+		try {
+			if (!file.exists()) return new String[] {};
+			// Create new, if doesn't exist
+			if (file.createNewFile()) {
+				System.out.println("Created a new file: " + file);
 			}
-			// The property didn't match, just take this line further
-			newlines[i] = lines[i];
+		} catch (IOException e) {
+			System.err.println(file.getAbsolutePath());
+			e.printStackTrace();
 		}
-
-		if (!found) {
-			// There was no wanted property in the file, so we're going to append it to the file 
-			write(file, new String[] {property + ":" + value}, true, charset);
-			return;
-		}
-
-		// Write to file, without appending
-		write(file, newlines, false, charset);
-	}
-
-	public static String getProperty(File file, String property) {
-		return getProperty(file, property, "UTF-8");
-	}
-
-	public static String getProperty(File file, String property, String charset) {
-		String[] lines = read(file, charset);
-		String value = null;
-		for (int i = 0; i < lines.length; i++) {
-			// If the array is empty, ignore it
-			if (lines[i] == null) continue;
-
-			// Check if the property matches
-			if (lines[i].startsWith(property + ":")) {
-				value = lines[i].substring(property.length()+1, lines[i].length());
-				break;
+		InputStreamReader reader = null;
+		try {
+			// Read in UTF-8
+			reader = new InputStreamReader(
+					new FileInputStream(file), charset);
+			StringBuilder inputB = new StringBuilder();
+			char[] buffer = new char[1024];
+			while (true) {
+				int readcount = reader.read(buffer);
+				if (readcount < 0) break;
+				inputB.append(buffer, 0, readcount);
 			}
+			return inputB.toString().split("\n");
+		} catch (Exception ex) {
+			System.err.println("A critical error occurred while reading from file: " + file);
+			ex.printStackTrace();
+		} finally {
+			// Close the file
+			try {reader.close();} catch (Exception ex) {}
 		}
-		return value;
+		return null;
 	}
 
-	public static boolean hasProperty(File file, String property, String charset) {
-		String[] lines = read(file, charset);
-		for (int i = 0; i < lines.length; i++) {
-			// If the line is empty, ignore it
-			if (lines[i] == null) continue;
+	public static class PropertyFile {
+		private File file;
+		private String[] lines;
+		private String charset;
 
-			// Check if the property matches
-			if (lines[i].startsWith(property + ":")) {
-				return true;
-			}
+		public PropertyFile(File file) {
+			this(file, "UTF-8");
 		}
-		return false;
-	}
 
-	public static String[] excludeExistant(File file, String[] properties, String charset) {
-		String[] lines = read(file, charset);
-		for (int i = 0; i < lines.length; i++) {
-			// If the line is empty, ignore it
-			if (lines[i] == null) continue;
+		public PropertyFile(File file, String charset) {
+			this.file = file;
+			this.charset = charset;
 
-			for (int i1 = 0; i1 < properties.length; i1++) {
-				// If the property matches, remove it from array
-				if (lines[i].startsWith(properties[i1] + ":")) {
-					properties[i1] = null;
+			if (file.exists() && file.isFile())
+				this.lines = read(charset);
+			else
+				this.lines = new String[0];
+		}
+
+		private String[] read(String charset) {
+			return Util.read(this.file, charset);
+		}
+
+		public boolean hasProperty(String property) {
+			for (int i = 0; i < this.lines.length; i++) {
+				// If the line is empty, ignore it
+				if (this.lines[i] == null) continue;
+
+				// Check if the property matches
+				if (this.lines[i].startsWith(property + ":")) {
+					return true;
 				}
 			}
+			return false;
 		}
-		return properties;
+
+		public String getProperty(String property) {
+			String value = null;
+			for (int i = 0; i < this.lines.length; i++) {
+				// If the array is empty, ignore it
+				if (this.lines[i] == null) continue;
+
+				// Check if the property matches
+				if (this.lines[i].startsWith(property + ":")) {
+					value = this.lines[i].substring(property.length()+1, this.lines[i].length());
+					break;
+				}
+			}
+			return value;
+		}
+
+		public void setProperty(String property, String value) {
+			// Read the lines
+			String[] newlines = new String[this.lines.length + 1];
+
+			// Try to find the property wanted to be set
+			boolean found = false;
+			for (int i = 0; i < this.lines.length; i++) {
+				if (this.lines[i] == null) continue;
+				if (this.lines[i].startsWith(property + ":")) {
+					// The wanted property has been found, so we're going to replace its value
+					newlines[i] = property + ":" + value;
+					found = true;
+					continue;
+				}
+				// The property didn't match, just take this line further
+				newlines[i] = this.lines[i];
+			}
+
+			if (!found) {
+				newlines[newlines.length-1] = property + ":" + value;
+			}
+
+			this.lines = newlines;
+		}
+
+		public void flushToDisk() {
+			// Write to file, without appending
+			write(this.file, this.lines, false, this.charset);
+		}
 	}
 
 	public static Thread unzip(File source, File dest_folder, boolean delete) {
@@ -259,7 +290,6 @@ public class Util {
 					fis.close();
 				} catch (Exception ex) {
 					ex.printStackTrace();
-					Logger.printException(ex);
 				}
 				if (delete) new File(source).delete();
 				if (!Util.isStandalone()) Launcher.totalThreads.remove(this);
@@ -267,42 +297,6 @@ public class Util {
 		};
 		unrarthread.start();
 		return unrarthread;
-	}
-
-	public static String[] read(File file, String charset) {
-		try {
-			if (!file.exists()) return new String[] {};
-			// Create new, if doesn't exist
-			if (file.createNewFile()) {
-				Logger.a("Created a new file: " + file);
-			}
-		} catch (IOException e) {
-			System.out.println(file.getAbsolutePath());
-			e.printStackTrace();
-			Logger.printException(e);
-		}
-		InputStreamReader reader = null;
-		try {
-			// Read in UTF-8
-			reader = new InputStreamReader(
-					new FileInputStream(file), charset);
-			StringBuilder inputB = new StringBuilder();
-			char[] buffer = new char[1024];
-			while (true) {
-				int readcount = reader.read(buffer);
-				if (readcount < 0) break;
-				inputB.append(buffer, 0, readcount);
-			}
-			return inputB.toString().split("\n");
-		} catch (Exception ex) {
-			Logger.a("A critical error occurred while reading from file: " + file);
-			ex.printStackTrace();
-			Logger.printException(ex);
-		} finally {
-			// Close the file
-			try {reader.close();} catch (Exception ex) {}
-		}
-		return null;
 	}
 
 	public static boolean isStandalone() {
@@ -360,34 +354,34 @@ public class Util {
 
 		String local_javaagent_sha1 = javaagent.exists() ? getSHA1(javaagent) : null;
 		String local_lwjgl_sha1 = lwjgl.exists() ? getSHA1(lwjgl): null;
-		String local_javamod_sha1 = Util.getProperty(BC.SETTINGS, "macosMouseFixClassesVersion");
+		String local_javamod_sha1 = BC.SETTINGS.getProperty("macosMouseFixClassesVersion");
 
 		try {
 			if (local_javaagent_sha1 == null || !local_javaagent_sha1.equals(json.agent_sha1) || force) {
 				DownloadResponse agent_req = new DownloadRequest(json.agent_url, javaagent.getAbsolutePath(), json.agent_sha1, false).perform();
 				if (agent_req.result != DownloadResult.OK) {
-					Logger.a("Failed to download macos javaagent");
+					System.err.println("Failed to download macos javaagent");
 					return false;
 				}
 			}
 			if (local_lwjgl_sha1 == null || !local_lwjgl_sha1.equals(json.lwjgl_sha1) || force) {
 				DownloadResponse lwjgl_req = new DownloadRequest(json.lwjgl_url, lwjgl.getAbsolutePath(), json.lwjgl_sha1, false).perform();
 				if (lwjgl_req.result != DownloadResult.OK) {
-					Logger.a("Failed to download macos-mousefix.zip");
+					System.err.println("Failed to download macos-mousefix.zip");
 					return false;
 				}
 			}
 			if (local_javamod_sha1 == null || !local_javamod_sha1.equals(json.classes_sha1) || force) {
 				DownloadResponse classes_req = new DownloadRequest(json.classes_url, classes_temp_zip.getAbsolutePath(), json.classes_sha1, false).perform();
 				if (classes_req.result != DownloadResult.OK) {
-					Logger.a("Failed to download macos-mousefix.zip");
+					System.err.println("Failed to download macos-mousefix.zip");
 					return false;
 				} else {
 					if (classes_folder.exists() && classes_folder.list().length != 0) {
 						Launcher.removeRecursively(classes_folder, false, false);
 					}
 					classes_folder.mkdirs();
-					Util.setProperty(BC.SETTINGS, "macosMouseFixClassesVersion", json.classes_sha1);
+					BC.SETTINGS.setProperty("macosMouseFixClassesVersion", json.classes_sha1);
 					Launcher.totalThreads.add(unzip(classes_temp_zip, classes_folder, true));
 				}
 			}

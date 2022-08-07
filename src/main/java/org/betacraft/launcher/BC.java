@@ -4,9 +4,12 @@ import java.io.File;
 
 import javax.swing.JOptionPane;
 
+import org.betacraft.launcher.Util.PropertyFile;
+
 public class BC {
 	public static File currentPath;
-	public static File SETTINGS;
+	public static File SETTINGS_FILE;
+	public static PropertyFile SETTINGS;
 
 	// TODO better check this before release
 	public static boolean prerelease = true;
@@ -37,7 +40,7 @@ public class BC {
 			folder = System.getProperty("user.home") + "/Library/Application Support/betacraft/";
 			if (portable) folder = prefBC() + "/betacraft/";
 		} else {
-			Logger.a("Your operating system is not supported.");
+			System.out.println("Your operating system is not supported.");
 			JOptionPane.showMessageDialog(Window.mainWindow, "Your operating system is not supported ;(", "I'm sorry, but", JOptionPane.WARNING_MESSAGE);
 			System.exit(0);
 			return null;

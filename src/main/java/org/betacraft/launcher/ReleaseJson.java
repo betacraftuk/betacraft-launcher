@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.Date;
 
 import org.betacraft.launcher.Release.VersionInfo;
+import org.betacraft.launcher.Util.PropertyFile;
 
 public class ReleaseJson implements VersionInfo {
 	private long releaseTimestamp = 0;
@@ -19,6 +20,7 @@ public class ReleaseJson implements VersionInfo {
 
 	private final String version;
 	private final File json;
+	private final PropertyFile properties;
 
 	private String jsonUrl = null;
 	public String sha1 = null;
@@ -30,6 +32,7 @@ public class ReleaseJson implements VersionInfo {
 	public ReleaseJson(String version, String url) {
 		this.version = version;
 		this.json = new File(BC.get() + "versions" + File.separator + "jsons", version + ".info");
+		this.properties = new PropertyFile(json);
 		
 		if (url == null) {
 			this.jsonUrl = "http://files.betacraft.uk/launcher/assets/jsons/" + this.getVersion() + ".info";
@@ -44,8 +47,8 @@ public class ReleaseJson implements VersionInfo {
 
 	public void readJson() {
 		try {
-			String releaseDate = Util.getProperty(json, "release-date");
-			String compileDate = Util.getProperty(json, "compile-date");
+			String releaseDate = properties.getProperty("release-date");
+			String compileDate = properties.getProperty("compile-date");
 			try {
 				releaseTimestamp = Long.parseLong(releaseDate);
 			} catch (Throwable ex) {}
@@ -54,39 +57,38 @@ public class ReleaseJson implements VersionInfo {
 				timestamp = Long.parseLong(compileDate);
 			} catch (Throwable ex) {}
 
-			download = Util.getProperty(json, "url");
-			launchMethod = Util.getProperty(json, "launch-method");
-			launchMethodLink = Util.getProperty(json, "launch-method-link");
+			download = properties.getProperty("url");
+			launchMethod = properties.getProperty("launch-method");
+			launchMethodLink = properties.getProperty("launch-method-link");
 
-			String proxy = Util.hasProperty(json, "proxy-args", "UTF-8") ? Util.getProperty(json, "proxy-args") : proxyArgs;
+			String proxy = properties.hasProperty("proxy-args") ? properties.getProperty("proxy-args") : proxyArgs;
 			proxyArgs = proxy;
-			otherName = Util.getProperty(json, "other-name");
-			protocol = Util.getProperty(json, "protocolVersion");
-			sha1 = Util.getProperty(json, "sha1");
+			otherName = properties.getProperty("other-name");
+			protocol = properties.getProperty("protocolVersion");
+			sha1 = properties.getProperty("sha1");
 
-			String custom_flag_str = Util.getProperty(json, "custom");
+			String custom_flag_str = properties.getProperty("custom");
 			if (custom_flag_str != null) {
 				try {
 					custom = Boolean.parseBoolean(custom_flag_str);
 				} catch (Throwable t) {
-					Logger.a("Version " + this.version + " has an invalid `custom` parameter.");
+					System.err.println("Version " + this.version + " has an invalid `custom` parameter.");
 				}
 			} // if there is no 'custom' property, the version must be clean
 
-			String file_ver = Util.getProperty(json, "file-ver");
+			String file_ver = properties.getProperty("file-ver");
 			if (file_ver != null) {
 				try {
 					fileVersion = Integer.parseInt(file_ver);
 				} catch (Throwable t) {
-					Logger.a("Version " + this.version + " has an invalid `file-ver` parameter.");
-					if (!Util.hasProperty(json, "file-ver", "UTF-8")) {
+					System.err.println("Version " + this.version + " has an invalid `file-ver` parameter.");
+					if (!properties.hasProperty("file-ver")) {
 						this.fileVersion = 0;
 					}
 				}
 			} // if 'file-ver' is invalid, leave it at -1
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -119,11 +121,12 @@ public class ReleaseJson implements VersionInfo {
 	}
 
 	public String getEntry(String entryname) {
-		return Util.getProperty(json, entryname);
+		return properties.getProperty(entryname);
 	}
 
 	public void setEntry(String entry, String value) {
-		Util.setProperty(json, entry, value);
+		properties.setProperty(entry, value);
+		properties.flushToDisk();
 		this.readJson();
 	}
 

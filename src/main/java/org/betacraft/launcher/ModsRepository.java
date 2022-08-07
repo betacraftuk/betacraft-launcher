@@ -49,9 +49,8 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 				mods.add(cat);
 			}
 		} catch (Exception ex) {
-			Logger.a("A critical error occurred while loading mod list!");
+			System.err.println("A critical error occurred while loading mod list!");
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -77,7 +76,7 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 	static GridBagConstraints constr;
 
 	public ModsRepository() {
-		Logger.a("Mods repository window has been opened.");
+		System.out.println("Mods repository window opened.");
 		this.setIconImage(Window.img);
 		setMinimumSize(new Dimension(282, 386));
 		setTitle(Lang.INSTANCE_MODS_REPOSITORY);
@@ -174,12 +173,8 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 				DownloadResult download = new ReleaseJson(obj.full_name, obj.info_file_url).downloadJson();
 
 				if (download.isOK()) {
-					try {
-						Release.loadVersions(VersionRepository.BETACRAFT);
-					} catch (Exception ex) {
-						ex.printStackTrace();
-						Logger.printException(ex);
-					}
+					Release.loadVersions(VersionRepository.BETACRAFT);
+
 					Launcher.currentInstance.version = obj.full_name;
 					Launcher.setInstance(Launcher.currentInstance);
 					Launcher.currentInstance.saveInstance();

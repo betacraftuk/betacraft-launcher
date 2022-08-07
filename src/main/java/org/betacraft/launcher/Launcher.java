@@ -29,6 +29,7 @@ import org.betacraft.PreClassicWrapper2;
 import org.betacraft.Wrapper;
 import org.betacraft.WrapperDetector;
 import org.betacraft.launcher.Release.VersionInfo;
+import org.betacraft.launcher.Util.PropertyFile;
 import org.betacraft.launcher.Window.Tab;
 
 import uk.betacraft.auth.Accounts;
@@ -39,7 +40,7 @@ import uk.betacraft.auth.CustomResponse;
 import uk.betacraft.auth.DownloadRequest;
 import uk.betacraft.auth.DownloadResponse;
 import uk.betacraft.auth.NoAuth;
-import uk.betacraft.json.lib.LaunchMethods;
+import uk.betacraft.json.lib.LaunchMethod;
 import uk.betacraft.json.lib.ModObject;
 import uk.betacraft.json.lib.MouseFixMacOSJson;
 
@@ -53,7 +54,6 @@ public class Launcher {
 	public static ArrayList<Thread> totalThreads = new ArrayList<Thread>();
 	public static Authenticator auth;
 	public static Accounts accounts = new Accounts();
-	public static LaunchMethods launchMethods = new LaunchMethods();
 
 	public static String JAVA_HOME = System.getProperty("java.home");
 	public static File javaRuntime = new File(JAVA_HOME, "bin/java" + (OS.isWindows() ? ".exe" : ""));
@@ -62,8 +62,8 @@ public class Launcher {
 
 		String javaver = System.getProperty("java.runtime.version");
 		String javadistro = System.getProperty("java.vendor");
-		System.err.println("Java version: " + javadistro + ", " + System.getProperty("java.runtime.name") + ", " + javaver);
-		System.err.println("System: " + OS.OS + ", " + OS.VER + ", " + OS.ARCH);
+		System.out.println("Java version: " + javadistro + ", " + System.getProperty("java.runtime.name") + ", " + javaver);
+		System.out.println("System: " + OS.OS + ", " + OS.VER + ", " + OS.ARCH);
 		long nano = System.nanoTime();
 		boolean systemlookandfeel = Boolean.parseBoolean(System.getProperty("betacraft.systemLookAndFeel", "true"));
 
@@ -78,7 +78,6 @@ public class Launcher {
 					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 				} catch (Exception ex1) {
 					ex1.printStackTrace();
-					Logger.printException(ex1);
 				}
 			}
 		}
@@ -93,8 +92,6 @@ public class Launcher {
 		} catch (Exception ex) {
 			ex.printStackTrace();
 		}
-
-		Logger.clearLauncherLog();
 
 		if (args.length >= 2 && (args[0].equals("update") || (args[1].equals("update")))) {
 			try {
@@ -132,16 +129,17 @@ public class Launcher {
 				System.exit(0);
 			} catch (Exception ex) {
 				ex.printStackTrace();
-				Logger.printException(ex);
 				System.exit(0);
 			}
 			return;
 		}
 
-		// Launch the game if wanted
+		// Launch the game on 'wrap'
 		if (args.length > 0 && args[0].equals("wrap")) {
 			BC.wrapped = true;
-			BC.SETTINGS = new File(BC.get() + "launcher", "launcher.settings");
+			Logger.init();
+			BC.SETTINGS_FILE = new File(BC.get() + "launcher", "launcher.settings");
+			BC.SETTINGS = new PropertyFile(BC.SETTINGS_FILE);
 			Lang.refresh(false, false);
 			String username = args[1];
 			String sessionid = args[2];
@@ -228,11 +226,15 @@ public class Launcher {
 				}
 			}
 			return;
+		} else {
+			Logger.clearLauncherLog();
+			Logger.init();
 		}
 
-		BC.SETTINGS = new File(BC.get() + "launcher", "launcher.settings");
+		BC.SETTINGS_FILE = new File(BC.get() + "launcher", "launcher.settings");
+		BC.SETTINGS = new PropertyFile(BC.SETTINGS_FILE);
 
-		if (BC.SETTINGS.exists() && !"1".equals(Util.getProperty(BC.SETTINGS, "version"))) {
+		if (BC.SETTINGS_FILE.exists() && !"1".equals(BC.SETTINGS.getProperty("version"))) {
 			removeRecursively(new File(BC.get() + "launcher"), true, false);
 			writeDefault();
 		}
@@ -245,31 +247,31 @@ public class Launcher {
 		new File(BC.get() + "launcher" + File.separator + "launch-methods").mkdirs();
 		new File(BC.get() + "bin" + File.separator + "natives").mkdirs();
 
-		Logger.a("BetaCraft Launcher JE v" + VERSION + " loading...");
-		Logger.a("Java version: " + System.getProperty("java.vendor") + ", " + System.getProperty("java.runtime.name") + ", " + System.getProperty("java.runtime.version"));
-		Logger.a("Portable: " + BC.portable);
-		Logger.a("EXE: " + BC.currentPath.getAbsolutePath().endsWith(".exe"));
-		Logger.a("Prerelease: " + BC.prerelease);
-		Logger.a("Nightly: " + BC.nightly);
+		System.out.println("BetaCraft Launcher JE v" + VERSION + " loading...");
+		System.out.println("Java version: " + System.getProperty("java.vendor") + ", " + System.getProperty("java.runtime.name") + ", " + System.getProperty("java.runtime.version"));
+		System.out.println("Portable: " + BC.portable);
+		System.out.println("EXE: " + BC.currentPath.getAbsolutePath().endsWith(".exe"));
+		System.out.println("Prerelease: " + BC.prerelease);
+		System.out.println("Nightly: " + BC.nightly);
 
 		// Load language pack
 		Lang.refresh(false, false);
 		Util.readAccounts();
 
 		// If the properties file doesn't exist, create it
-		if (!BC.SETTINGS.exists() || Util.getProperty(BC.SETTINGS, "lastInstance").equals("")) {
+		if (!BC.SETTINGS_FILE.exists() || BC.SETTINGS.getProperty("lastInstance").equals("")) {
 			writeDefault();
-			currentInstance = Instance.newInstance(Util.getProperty(BC.SETTINGS, "lastInstance"));
+			currentInstance = Instance.newInstance(BC.SETTINGS.getProperty("lastInstance"));
 			currentInstance.saveInstance();
 		} else {
-			currentInstance = Instance.loadInstance(Util.getProperty(BC.SETTINGS, "lastInstance"));
+			currentInstance = Instance.loadInstance(BC.SETTINGS.getProperty("lastInstance"));
 			if (currentInstance == null) {
-				currentInstance = Instance.newInstance(Util.getProperty(BC.SETTINGS, "lastInstance"));
+				currentInstance = Instance.newInstance(BC.SETTINGS.getProperty("lastInstance"));
 				currentInstance.saveInstance();
 			}
 		}
 
-		disableWarnings = "true".equals(Util.getProperty(BC.SETTINGS, "disableWarnings"));
+		disableWarnings = "true".equals(BC.SETTINGS.getProperty("disableWarnings"));
 
 		try {
 			// initialize GUI
@@ -277,16 +279,15 @@ public class Launcher {
 			totalThreads.add(t);
 			t.start();
 		} catch (Exception ex) {
-			Logger.a("A critical error has occurred while trying to initialize the launcher!");
+			System.err.println("A critical error has occurred while trying to initialize the launcher!");
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 
-		Logger.a("Loaded in: " + (System.nanoTime() - nano) + " ns");
+		System.out.println("Loaded in: " + (System.nanoTime() - nano) + " ns");
 	}
 
 	public void extractFromJar(String filepath, File to) {
-		Logger.a("Extracting \"" + filepath + "\" to \"" + to.getAbsolutePath() + "\"");
+		System.out.println("Extracting \"" + filepath + "\" to \"" + to.getAbsolutePath() + "\"");
 		Util.copy(getClass().getResourceAsStream(filepath), to);
 	}
 
@@ -306,9 +307,8 @@ public class Launcher {
 				try {
 					loader.loadClass(className);
 				} catch (NoClassDefFoundError ex) {
-					Logger.a("Couldn't find class " + className + ". Skipping!");
+					System.err.println("Couldn't find class " + className + ". Skipping!");
 					ex.printStackTrace();
-					Logger.printException(ex);
 				}
 			}
 			jarFile.close();
@@ -327,7 +327,6 @@ public class Launcher {
 			builder.start();
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 		Window.quit(true);
 	}
@@ -335,7 +334,8 @@ public class Launcher {
 	public static void setInstance(Instance instance) {
 		Launcher.currentInstance = instance;
 		Window.selectedInstanceDisplay.setText(Launcher.currentInstance.name + " [" + Launcher.currentInstance.version + "]");
-		Util.setProperty(BC.SETTINGS, "lastInstance", Launcher.currentInstance.name);
+		BC.SETTINGS.setProperty("lastInstance", Launcher.currentInstance.name);
+		BC.SETTINGS.flushToDisk();
 	}
 	
 	public static void removeInstance(String instance) {
@@ -366,7 +366,6 @@ public class Launcher {
 				Util.copy(BC.currentPath, wrapper);
 			} catch (Exception ex) {
 				ex.printStackTrace();
-				Logger.printException(ex);
 				JOptionPane.showMessageDialog(Window.mainWindow, "The file could not be copied! Try running with Administrator rights. If that won't help, contact: @Moresteck#1688", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
@@ -399,7 +398,7 @@ public class Launcher {
 				if (mo.autoupdate || !rel.getInfo().getInfoFile().exists()) {
 					DownloadResult res = download(mo.info_file_url, rel.getInfo().getInfoFile());
 					if (!res.isOK()) {
-						Logger.a("Failed to refresh mod: " + rel.getInfo().getVersion());
+						System.err.println("Failed to refresh mod: " + rel.getInfo().getVersion());
 					}
 				}
 			}
@@ -414,10 +413,8 @@ public class Launcher {
 				JOptionPane.showMessageDialog(Window.mainWindow, Lang.ERR_NO_CONNECTION, Lang.ERR_DL_FAIL, JOptionPane.ERROR_MESSAGE);
 			}
 		}
-		if (!Launcher.isLaunchMethodReady(Launcher.currentInstance.version) || Launcher.forceUpdate) {
-			Launcher.downloadLaunchMethod(Launcher.currentInstance.version);
-		}
 
+		Launcher.updateLaunchMethod(Launcher.currentInstance.version);
 		Launcher.readyAddons(Launcher.currentInstance, Launcher.forceUpdate);
 
 		if (OS.isMac()) {
@@ -532,8 +529,7 @@ public class Launcher {
 					params.add("-");
 				}
 				params.add(currentInstance.name);
-				System.out.println(params.toString());
-				Logger.a(!token.equals("-") ? params.toString().replaceAll(token, "[censored sessionid]") : params.toString());
+				System.out.println(!token.equals("-") ? params.toString().replaceAll(token, "[censored sessionid]") : params.toString());
 
 				ProcessBuilder builder = new ProcessBuilder(params);
 				builder.redirectErrorStream(true);
@@ -561,13 +557,11 @@ public class Launcher {
 				while ((line1 = br_log.readLine()) != null) {
 					if (!token.equals("-")) line1 = line1.replaceAll(token, "[censored sessionid]");
 
-					Logger.logClient(line1);
 					clf.log(line1 + "\n");
 				}
-				Logger.logClient("End of client input");
 
 				clf.log("\nClient closed.\n");
-				Logger.a("Client closed.");
+				System.out.println("Client closed.");
 
 				if (!instance.keepopen) {
 					Window.quit(!clf.isVisible());
@@ -575,18 +569,18 @@ public class Launcher {
 				return;
 			}
 		} catch (Exception ex) {
-			Logger.a("A critical error has occurred while attempting to launch the game!");
+			System.err.println("A critical error has occurred while attempting to launch the game!");
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
 	public static void writeDefault() {
-		Util.setProperty(BC.SETTINGS, "language", "English");
-		Util.setProperty(BC.SETTINGS, "lastInstance", "default instance");
-		Util.setProperty(BC.SETTINGS, "tab", Tab.CHANGELOG.name());
-		Util.setProperty(BC.SETTINGS, "disableWarnings", "false");
-		Util.setProperty(BC.SETTINGS, "version", "1");
+		BC.SETTINGS.setProperty("language", "English");
+		BC.SETTINGS.setProperty("lastInstance", "default instance");
+		BC.SETTINGS.setProperty("tab", Tab.CHANGELOG.name());
+		BC.SETTINGS.setProperty("disableWarnings", "false");
+		BC.SETTINGS.setProperty("version", "1");
+		BC.SETTINGS.flushToDisk();
 	}
 
 	public static void removeRecursively(File folder, boolean deleteFolderItself, boolean deleteOnlyFiles) {
@@ -612,33 +606,38 @@ public class Launcher {
 		return new File(BC.get() + "versions" + File.separator);
 	}
 
-	public static void downloadLaunchMethod(String version) {
+	public static void updateLaunchMethod(String version) {
 		VersionInfo json = Release.getReleaseByName(version).getInfo();
-		if (!json.getLaunchMethodURL().equals("")) {
-			if (!downloadWithButtonOutput(json.getLaunchMethodURL(), new File(BC.get() + "launcher" + File.separator + "launch-methods", json.getLaunchMethod() + ".jar")).isPositive()) {
-				JOptionPane.showMessageDialog(Window.mainWindow, "Couldn't download the launch method for this version.", "Error", JOptionPane.ERROR_MESSAGE);
-			}
-		}
-	}
+		String lmjsonurl = json.getLaunchMethodURL();
 
-	public static boolean isLaunchMethodReady(String version) {
-		VersionInfo json = Release.getReleaseByName(version).getInfo();
-		if (json.getLaunchMethodURL() != null) {
+		if (lmjsonurl != null && !lmjsonurl.equals("")) {
 			String name = json.getLaunchMethod();
+			LaunchMethod lm = null;
 
 			File file = new File(BC.get() + "launcher" + File.separator + "launch-methods", name + ".jar");
-			if (!file.exists()) {
-				return false;
-			}
+			if (file.exists() && file.isFile()) {
+				try {
+					URL launchmethods = new URL(lmjsonurl);
+					lm = Util.gson.fromJson(
+							new InputStreamReader(
+									launchmethods.openStream(), "UTF-8"), LaunchMethod.class);
 
-			if (Launcher.launchMethods.nameToHash.containsKey(name)) {
-				String hash = Launcher.launchMethods.nameToHash.get(name);
-				if (!Util.getSHA1(file).equalsIgnoreCase(hash)) {
-					return false;
+					if (Util.getSHA1(file).equalsIgnoreCase(lm.hash)) {
+						return;
+					}
+				} catch (Throwable t) {
+					System.out.println("Failed to read launchmethod from: " + lmjsonurl + " of version " + version);
+					t.printStackTrace();
 				}
 			}
+
+			if (lm != null) {
+				if (!downloadWithButtonOutput(lm.url, file).isPositive()) {
+					JOptionPane.showMessageDialog(Window.mainWindow, Lang.ERR_DL_FAIL, Lang.ERR_DL_FAIL, JOptionPane.ERROR_MESSAGE);
+				}
+			}
+			
 		}
-		return true;
 	}
 
 	public static void readyAddons(Instance instance, boolean force) {
@@ -692,8 +691,8 @@ public class Launcher {
 			String libs = s.nextLine().split(":")[1];
 			String natives = s.nextLine().split(":")[1];
 			s.close();
-			boolean lastLibsMatch = libs.equals(Util.getProperty(BC.SETTINGS, "libs-version"));
-			boolean lastNativesMatch = natives.equals(Util.getProperty(BC.SETTINGS, "natives-version"));
+			boolean lastLibsMatch = libs.equals(BC.SETTINGS.getProperty("libs-version"));
+			boolean lastNativesMatch = natives.equals(BC.SETTINGS.getProperty("natives-version"));
 
 			if (!lastLibsMatch || !lastNativesMatch) {
 				return false;
@@ -701,7 +700,6 @@ public class Launcher {
 			return true;
 		} catch (Throwable t) {
 			t.printStackTrace();
-			Logger.printException(t);
 
 			// Let's assume it's all good...
 			return true;
@@ -739,8 +737,9 @@ public class Launcher {
 		String libs = s.nextLine().split(":")[1];
 		String natives = s.nextLine().split(":")[1];
 		s.close();
-		Util.setProperty(BC.SETTINGS, "libs-version", libs);
-		Util.setProperty(BC.SETTINGS, "natives-version", natives);
+		BC.SETTINGS.setProperty("libs-version", libs);
+		BC.SETTINGS.setProperty("natives-version", natives);
+		BC.SETTINGS.flushToDisk();
 
 		// If everything went ok, delete the 'bin' folder contents
 		removeRecursively(destNatives, true, false);
@@ -783,7 +782,7 @@ public class Launcher {
 	}
 
 	public static DownloadResult download(String link, File folder) {
-		Logger.a("Download started from: " + link);
+		System.out.println("Download started from: " + link);
 
 		DownloadResponse response = new DownloadRequest(link, folder.getAbsolutePath(), null, true).perform();
 		return response.result;
@@ -803,13 +802,13 @@ public class Launcher {
 				// Ask if the user wants this update or not
 				int result = JOptionPane.showConfirmDialog(Window.mainWindow, rr, Lang.OPTIONS_UPDATE_HEADER, JOptionPane.YES_NO_OPTION);
 				if (result == JOptionPane.YES_OPTION) {
-					Logger.a("The user wants to update to: " + update_name);
+					System.out.println("The user wants to update to: " + update_name);
 					yes = true;
 				} else {
-					Logger.a("The user doesn't want to update. The launcher stays at version: " + VERSION);
+					System.out.println("The user doesn't want to update. The launcher stays at version: " + VERSION);
 				}
 			} else {
-				Logger.a("Forced update to: " + update_name);
+				System.out.println("Forced update to: " + update_name);
 				yes = true;
 			}
 			// If the user accepted the update, or it is a mandatory update, download it
@@ -836,9 +835,8 @@ public class Launcher {
 				Window.quit(true);
 			}
 		} catch (Exception ex) {
-			Logger.a("An error has occurred while updating the launcher!");
+			System.err.println("An error has occurred while updating the launcher!");
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
@@ -852,7 +850,7 @@ public class Launcher {
 		String update_name = update.startsWith("!") ? update.replace("!", "") : update; 
 		if (!VERSION.equalsIgnoreCase(update_name)) {
 			// The latest version doesn't match the local version
-			Logger.a("Found a new version of the launcher (" + update + ").");
+			System.out.println("Found a new version of the launcher (" + update + ").");
 			return true;
 		} else {
 			return false;
@@ -869,14 +867,13 @@ public class Launcher {
 			s.close();
 			return update;
 		} catch (UnknownHostException ex) {
-			Logger.a(null);
+			System.out.println("No connection, or the server is down");
 		} catch (SocketTimeoutException ex) {
-			Logger.a(null);
+			System.out.println("No connection, or the server is down");
 		} catch (SocketException ex) {
-			Logger.a(null);
+			System.out.println("No connection, or the server is down");
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 		return null;
 	}

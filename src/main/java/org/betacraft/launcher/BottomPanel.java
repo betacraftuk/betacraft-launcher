@@ -24,7 +24,6 @@ public class BottomPanel extends JPanel {
 			image = ImageIO.read(Launcher.class.getResource("/icons/dirt.png")).getScaledInstance(32, 32, 16);
 		} catch (IOException e2) {
 			e2.printStackTrace();
-			Logger.printException(e2);
 			return;
 		}
 

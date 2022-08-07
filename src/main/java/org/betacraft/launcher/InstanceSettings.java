@@ -14,6 +14,8 @@ import java.io.File;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -62,7 +64,6 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 				image = ImageIO.read(Launcher.class.getResource("/icons/stone.png")).getScaledInstance(32, 32, 16);
 			} catch (IOException e2) {
 				e2.printStackTrace();
-				Logger.printException(e2);
 				return;
 			}
 		}
@@ -85,16 +86,16 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 	}
 
 	public InstanceSettings() {
-		Logger.a("Options window opened.");
+		System.out.println("Options window opened.");
 
 		this.setIconImage(Window.img);
 		setTitle(Lang.OPTIONS_TITLE);
 		setResizable(true);
+		setLayout(new BorderLayout());
 
 
 		JPanel panel = new OptionsPanel();
 		panel.setLayout(new GridBagLayout());
-		panel.setPreferredSize(new Dimension(500, 300));
 
 		GridBagConstraints constr = new GridBagConstraints();
 
@@ -235,26 +236,30 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		constr.gridwidth = 1;
 		constr.gridx = 0;
 		constr.weightx = 0.0;
-		constr.insets = new Insets(2, 10, 10, 10);
-
+		constr.insets = new Insets(10, 10, 10, 10);
 		constr.gridy++;
+
+		// separate panel for resolution fields
+		JPanel resPanel = new OptionsPanel();
+		resPanel.setLayout(new javax.swing.BoxLayout(resPanel, BoxLayout.X_AXIS));
+
 		dimensions1Text = new JLabel(Lang.OPTIONS_WIDTH);
 		dimensions1Text.setForeground(Color.LIGHT_GRAY);
-		panel.add(dimensions1Text, constr);
+		resPanel.add(dimensions1Text);
+		resPanel.add(Box.createRigidArea(new Dimension(5, 0)));
 
-		constr.gridx = 1;
 		dimensions1 = new JTextField(Integer.toString(Launcher.currentInstance.width), 4);
-		panel.add(dimensions1, constr);
+		resPanel.add(dimensions1);
+		resPanel.add(Box.createRigidArea(new Dimension(20, 0)));
 
-		constr.gridx = 0;
-		constr.gridy++;
 		dimensions2Text = new JLabel(Lang.OPTIONS_HEIGHT);
 		dimensions2Text.setForeground(Color.LIGHT_GRAY);
-		panel.add(dimensions2Text, constr);
+		resPanel.add(dimensions2Text);
+		resPanel.add(Box.createRigidArea(new Dimension(5, 0)));
 
-		constr.gridx = 1;
 		dimensions2 = new JTextField(Integer.toString(Launcher.currentInstance.height), 4);
-		panel.add(dimensions2, constr);
+		resPanel.add(dimensions2);
+		panel.add(resPanel, constr);
 
 		JPanel instanceSettings = new OptionsPanel();
 		instanceSettings.setLayout(new GridBagLayout());
@@ -506,7 +511,8 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 			Launcher.setInstance(Launcher.currentInstance.renameInstance(instanceName.getText()));
 		}
 		Launcher.currentInstance.saveInstance();
-		Util.setProperty(BC.SETTINGS, "lastInstance", Launcher.currentInstance.name);
+		BC.SETTINGS.setProperty("lastInstance", Launcher.currentInstance.name);
+		BC.SETTINGS.flushToDisk();
 		return true;
 	}
 }

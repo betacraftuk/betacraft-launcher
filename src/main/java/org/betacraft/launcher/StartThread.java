@@ -7,7 +7,7 @@ import javax.swing.JFrame;
 
 import org.betacraft.launcher.Release.VersionRepository;
 
-import uk.betacraft.json.lib.LaunchMethods;
+import uk.betacraft.json.lib.LaunchMethod;
 
 public class StartThread extends Thread {
 
@@ -39,14 +39,8 @@ public class StartThread extends Thread {
 			Release.loadVersions(VersionRepository.BETACRAFT);
 			org.betacraft.launcher.Addon.loadAddons();
 			ModsRepository.loadMods();
-
-			URL launchmethods = new URL("http://files.betacraft.uk/launcher/assets/launch-methods/list.json");
-			Launcher.launchMethods = Util.gson.fromJson(
-					new InputStreamReader(
-							launchmethods.openStream(), "UTF-8"), LaunchMethods.class);
 		} catch (Throwable ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 		Window.mainWindow.setVisible(true);
 		Launcher.totalThreads.remove(this);

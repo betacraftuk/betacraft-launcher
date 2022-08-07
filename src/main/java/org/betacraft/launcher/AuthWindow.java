@@ -34,7 +34,7 @@ public class AuthWindow extends JFrame implements LanguageElement {
 	static JButton OKButton;
 
 	public AuthWindow() {
-		Logger.a("Auth window opened.");
+		System.out.println("Auth window opened.");
 		this.setIconImage(Window.img);
 		setTitle(Lang.LOGIN_TITLE);
 		setResizable(true);
