@@ -472,7 +472,12 @@ public class Launcher {
 
 				// Required to fix the following on MacOS: Classic, Indev after 0129-2, Infdev and Alpha to 1.0.1
 				if (OS.isMac() && "true".equalsIgnoreCase(info.getEntry("macos-mousefix"))) {
-					params.add("-javaagent:" + BC.get() + "launcher/macos-javaagent.jar=" + BC.get());
+					boolean useMacPatch = !instance.addons.contains("OfflineDATSave") && !instance.addons.contains("Fullscreen");
+
+					// Only enable when there aren't other factors fixing mouse in place
+					if (useMacPatch) {
+						params.add("-javaagent:" + BC.get() + "launcher/macos-javaagent.jar=" + BC.get());
+					}
 				}
 
 				if (OS.isLinux() && "true".equalsIgnoreCase(info.getEntry("linux-mousefix-earlyclassic"))) {
