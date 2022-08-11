@@ -24,6 +24,7 @@ public class ReleaseJson implements VersionInfo {
 
 	private String jsonUrl = null;
 	public String sha1 = null;
+	public String baseVersion = null;
 
 	public ReleaseJson(String version) {
 		this(version, null);
@@ -66,6 +67,7 @@ public class ReleaseJson implements VersionInfo {
 			otherName = properties.getProperty("other-name");
 			protocol = properties.getProperty("protocolVersion");
 			sha1 = properties.getProperty("sha1");
+			baseVersion = properties.getProperty("base-version");
 
 			String custom_flag_str = properties.getProperty("custom");
 			if (custom_flag_str != null) {

@@ -374,17 +374,17 @@ public class Launcher {
 		// Download Discord RPC if the checkbox is selected
 		if (Launcher.currentInstance.RPC) {
 			File rpc = new File(BC.get() + "launcher/", "discord_rpc.jar");
+			String expected_hash = new CustomRequest("http://files.betacraft.uk/launcher/assets/discord_rpc.sha1").perform().response.replace("\n", "");
 			if (rpc.exists()) {
 				try {
 					String sha1 = Util.getSHA1(rpc);
-					String expected_hash = new CustomRequest("http://files.betacraft.uk/launcher/assets/discord_rpc.sha1").perform().response.replace("\n", "");
 					if (!sha1.equals(expected_hash)) {
-						Launcher.downloadWithButtonOutput("http://files.betacraft.uk/launcher/assets/discord_rpc.jar", rpc);
+						Launcher.downloadWithButtonOutput("http://files.betacraft.uk/launcher/assets/discord_rpc.jar", rpc, expected_hash);
 					}
 				} catch (Throwable t) {}
 			}
 			if (!rpc.exists() || Launcher.forceUpdate) {
-				Launcher.downloadWithButtonOutput("http://files.betacraft.uk/launcher/assets/discord_rpc.jar", rpc);
+				Launcher.downloadWithButtonOutput("http://files.betacraft.uk/launcher/assets/discord_rpc.jar", rpc, expected_hash);
 			}
 		}
 
@@ -408,11 +408,7 @@ public class Launcher {
 		rel.setInfo(info);
 
 		// Download the game if not done already
-		if (!Launcher.isVersionReady(info) || Launcher.forceUpdate) {
-			if (!info.getDownloadURL().equals("") && !Launcher.downloadWithButtonOutput(info.getDownloadURL(), new File(Launcher.getVerFolder(), info.getVersion() + ".jar")).isPositive()) {
-				JOptionPane.showMessageDialog(Window.mainWindow, Lang.ERR_NO_CONNECTION, Lang.ERR_DL_FAIL, JOptionPane.ERROR_MESSAGE);
-			}
-		}
+		Launcher.readyVersion(info, Launcher.forceUpdate);
 
 		Launcher.updateLaunchMethod(Launcher.currentInstance.version);
 		Launcher.readyAddons(Launcher.currentInstance, Launcher.forceUpdate);
@@ -560,7 +556,7 @@ public class Launcher {
 				BufferedReader br_log = new BufferedReader(isr_log);
 				String line1;
 				while ((line1 = br_log.readLine()) != null) {
-					if (!token.equals("-")) line1 = line1.replaceAll(token, "[censored sessionid]");
+					if (!token.equals("-")) line1 = line1.replace(token, "[censored sessionid]");
 
 					clf.log(line1 + "\n");
 				}
@@ -637,7 +633,7 @@ public class Launcher {
 			}
 
 			if (lm != null) {
-				if (!downloadWithButtonOutput(lm.url, file).isPositive()) {
+				if (!downloadWithButtonOutput(lm.url, file, lm.hash).isPositive()) {
 					JOptionPane.showMessageDialog(Window.mainWindow, Lang.ERR_DL_FAIL, Lang.ERR_DL_FAIL, JOptionPane.ERROR_MESSAGE);
 				}
 			}
@@ -661,25 +657,79 @@ public class Launcher {
 				}
 			}
 
-			if (download && !downloadWithButtonOutput("http://files.betacraft.uk/launcher/assets/addons/" + Addon.addonVer + "/" + s + ".jar", destination).isPositive()) {
+			if (download && !downloadWithButtonOutput("http://files.betacraft.uk/launcher/assets/addons/" + Addon.addonVer + "/" + s + ".jar", destination, a.onlinehash).isPositive()) {
 				JOptionPane.showMessageDialog(Window.mainWindow, "Couldn't download addon: " + s, "Error", JOptionPane.ERROR_MESSAGE);
 			}
 		}
 	}
 
-	public static boolean isVersionReady(ReleaseJson version) {
-		if (version.sha1 == null) {
-			return version.hasJar();
-		} else if (version.hasJar()) {
-			String file_sha1 = Util.getSHA1(version.getJar());
-			if (file_sha1.equalsIgnoreCase(version.sha1)) {
-				return true;
+	public static void readyVersion(ReleaseJson version, boolean force) {
+
+		File dest = new File(Launcher.getVerFolder(), version.getVersion() + ".jar");
+		if (version.baseVersion != null) {
+			File fil = new File(Launcher.getVerFolder(), "mods");
+			fil.mkdir();
+			dest = new File(fil, version.getVersion() + ".jar");
+		}
+
+		if (version.sha1 != null) {
+			if (dest.exists()) {
+				String file_sha1 = Util.getSHA1(dest);
+				if (file_sha1.equalsIgnoreCase(version.sha1)) {
+					if (version.baseVersion != null) {
+						assembleWithBaseVersion(version);
+					}
+					return;
+				}
+			}
+		} else if (!force) {
+			if (dest.exists()) {
+				if (version.baseVersion != null) {
+					assembleWithBaseVersion(version);
+				}
+				return;
+			}
+		}
+
+		if (!version.getDownloadURL().equals("")) {
+			DownloadResult res = Launcher.downloadWithButtonOutput(version.getDownloadURL(), dest, version.sha1);
+			if (!res.isPositive()) {
+				JOptionPane.showMessageDialog(Window.mainWindow, Lang.ERR_NO_CONNECTION, Lang.ERR_DL_FAIL, JOptionPane.ERROR_MESSAGE);
 			} else {
-				return false;
+				if (version.baseVersion != null) {
+					assembleWithBaseVersion(version);
+				}
 			}
 		} else {
-			return false;
+			String err = "Error code 8 (ERRJAR): No jar for the version could be found or downloaded.";
+			System.err.println(err);
+			JOptionPane.showMessageDialog(Window.mainWindow, err, "Error", JOptionPane.INFORMATION_MESSAGE);
 		}
+	}
+
+	public static void assembleWithBaseVersion(ReleaseJson version) {
+		File dest = version.getJar();
+		if (dest.exists()) dest.delete();
+
+		Release basever = Release.getReleaseByName(version.baseVersion);
+		VersionInfo info = basever.getInfo();
+		if (info instanceof ReleaseJson == false) {
+			info.downloadJson();
+			info = new ReleaseJson(basever.getName());
+			basever.setInfo(info);
+		}
+		ReleaseJson rinfo = (ReleaseJson) info;
+
+		readyVersion(rinfo, Launcher.forceUpdate);
+
+		ArrayList<File> sources = new ArrayList<File>();
+		sources.add(rinfo.getJar());
+		sources.add(new File(new File(getVerFolder(), "mods"), version.getVersion() + ".jar"));
+
+		Window.setStatus(Window.playButton, Lang.PACKING_MOD);
+
+		Thread t = Util.rezip(sources.toArray(new File[0]), dest);
+		while (t.isAlive());
 	}
 
 	public static boolean checkDepends() {
@@ -727,12 +777,12 @@ public class Launcher {
 		}
 
 		File dest1 = new File(BC.get() + "launcher/", "natives.zip");
-		if (!downloadWithButtonOutput(link1, dest1).isPositive()) {
+		if (!downloadWithButtonOutput(link1, dest1, null).isPositive()) {
 			return false;
 		}
 
 		File dest2 = new File(BC.get() + "launcher/", "libs.zip");
-		if (!downloadWithButtonOutput(link2, dest2).isPositive()) {
+		if (!downloadWithButtonOutput(link2, dest2, null).isPositive()) {
 			return false;
 		}
 
@@ -777,19 +827,23 @@ public class Launcher {
 		return parameters;
 	}
 
-	public static DownloadResult downloadWithButtonOutput(String link, final File folder) {
+	public static DownloadResult downloadWithButtonOutput(String link, final File folder, String sha1) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				Window.setStatus(Window.playButton, "Downloading: " + BC.trimBetaCraftDir(folder.getAbsolutePath()));
 			}
 		});
-		return download(link, folder);
+		return download(link, folder, sha1);
 	}
 
 	public static DownloadResult download(String link, File folder) {
+		return download(link, folder, null);
+	}
+
+	public static DownloadResult download(String link, File folder, String sha1) {
 		System.out.println("Download started from: " + link);
 
-		DownloadResponse response = new DownloadRequest(link, folder.getAbsolutePath(), null, true).perform();
+		DownloadResponse response = new DownloadRequest(link, folder.getAbsolutePath(), sha1, true).perform();
 		return response.result;
 	}
 

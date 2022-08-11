@@ -3,6 +3,7 @@ package org.betacraft.launcher;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -14,8 +15,10 @@ import java.net.URI;
 import java.net.URL;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -23,12 +26,12 @@ import com.google.gson.GsonBuilder;
 import uk.betacraft.auth.Accounts;
 import uk.betacraft.auth.Authenticator;
 import uk.betacraft.auth.Credentials;
+import uk.betacraft.auth.Credentials.AccountType;
 import uk.betacraft.auth.DownloadRequest;
 import uk.betacraft.auth.DownloadResponse;
 import uk.betacraft.auth.MicrosoftAuth;
 import uk.betacraft.auth.MojangAuth;
 import uk.betacraft.auth.NoAuth;
-import uk.betacraft.auth.Credentials.AccountType;
 import uk.betacraft.json.lib.MouseFixMacOSJson;
 
 public class Util {
@@ -297,6 +300,107 @@ public class Util {
 		};
 		unrarthread.start();
 		return unrarthread;
+	}
+
+	public static Thread rezip(final File[] sources, final File dest) {
+		Thread rezipthread = new Thread() {
+			public void run() {
+				File tempFolder = new File(Launcher.getVerFolder(), "temp");
+				if (tempFolder.exists()) {
+					Launcher.removeRecursively(tempFolder, false, false);
+				} else {
+					tempFolder.mkdir();
+				}
+
+				FileInputStream fis;
+				byte[] buffer = new byte[1024];
+				try {
+					for (File source : sources) {
+						fis = new FileInputStream(source);
+						ZipInputStream zis = new ZipInputStream(fis);
+
+						ZipEntry entry = zis.getNextEntry();
+						while (entry != null) {
+							if (entry.isDirectory()) {
+								entry = zis.getNextEntry();
+								continue;
+							}
+
+							String fileName = entry.getName();
+							File newFile = new File(tempFolder, fileName);
+
+							File parent = new File(newFile.getParent());
+							if (parent.getName().equals("META-INF")) { // none of that
+								entry = zis.getNextEntry();
+								continue;
+							}
+							parent.mkdirs();
+
+							FileOutputStream fos = new FileOutputStream(newFile);
+							int length;
+							while ((length = zis.read(buffer)) > 0) {
+								fos.write(buffer, 0, length);
+							}
+
+							fos.close();
+							zis.closeEntry();
+							entry = zis.getNextEntry();
+						}
+						zis.closeEntry();
+						zis.close();
+						fis.close();
+					}
+
+					ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(dest));
+					ArrayList<File> entries = listRecursively(tempFolder);
+					for (File currentFile: entries) {
+						String s = tempFolder.toURI().relativize(currentFile.toURI()).getPath();
+						if (currentFile.isDirectory() && !s.endsWith("/")) {
+							s += "/";
+						}
+
+						zos.putNextEntry(new ZipEntry(s));
+
+						if (!currentFile.isDirectory()) {
+							fis = new FileInputStream(currentFile);
+							int length;
+							while ((length = fis.read(buffer)) > 0) {
+								zos.write(buffer, 0, length);
+							}
+							fis.close();
+						}
+
+						zos.closeEntry();
+					}
+					zos.close();
+
+					if (tempFolder.exists()) {
+						Launcher.removeRecursively(tempFolder, true, false);
+					}
+
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				if (!Util.isStandalone()) Launcher.totalThreads.remove(this);
+			}
+		};
+		rezipthread.start();
+		return rezipthread;
+	}
+
+	public static ArrayList<File> listRecursively(File dir) {
+		ArrayList<File> full = new ArrayList<File>();
+		File[] entries = dir.listFiles();
+
+		for (File potentialDir : entries) {
+			if (potentialDir.isDirectory()) {
+				full.addAll(listRecursively(potentialDir));
+			} else {
+				full.add(potentialDir);
+			}
+		}
+
+		return full;
 	}
 
 	public static boolean isStandalone() {

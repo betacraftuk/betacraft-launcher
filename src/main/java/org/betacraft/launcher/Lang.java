@@ -213,6 +213,9 @@ public class Lang extends JFrame implements LanguageElement {
 		if (langentries.hasProperty("downloading"))
 			WINDOW_DOWNLOADING = langentries.getProperty("downloading");
 
+		if (langentries.hasProperty("packing_mod"))
+			PACKING_MOD = langentries.getProperty("packing_mod");
+
 		if (langentries.hasProperty("username_field_empty"))
 			WINDOW_USERNAME_FIELD_EMPTY = langentries.getProperty("username_field_empty");
 
@@ -515,6 +518,7 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String WINDOW_OPTIONS = "Edit instance";
 	public static String WINDOW_TITLE = "BetaCraft Launcher JE v" + Launcher.VERSION;
 	public static String WINDOW_DOWNLOADING = "Downloading ...";
+	public static String PACKING_MOD = "Packing mod ...";
 	public static String WINDOW_USERNAME_FIELD_EMPTY = "The username field is empty!";
 
 	public static String LANG = "Select language";
@@ -531,7 +535,7 @@ public class Lang extends JFrame implements LanguageElement {
 
 	public static String SORT_FROM_OLDEST = "Sort: from oldest";
 	public static String SORT_FROM_NEWEST = "Sort: from newest";
-	public static String VERSION_LIST_TITLE = "Versions list";
+	public static String VERSION_LIST_TITLE = "Version list";
 
 	public static String ADDON_LIST_TITLE = "Addons list";
 	public static String ADDON_NO_DESC = "No description.";
@@ -558,7 +562,7 @@ public class Lang extends JFrame implements LanguageElement {
 
 	public static String JAVA_EXECUTABLE = "Java executable:";
 	public static String JAVA_INVALID = "Given Java path is not valid.";
-	public static String JAVA_TOO_RECENT = "Given Java is higher than 8. Are you sure you want to use it?";
+	public static String JAVA_TOO_RECENT = "Given Java's version is greater than 8. Are you sure you want to use it?";
 
 	public static String INSTANCE_REMOVE_DIRECTORY = "Would you want to permanently remove this instance's directory? This cannot be undone.";
 	public static String INSTANCE_DIRECTORY = "Instance directory:";
