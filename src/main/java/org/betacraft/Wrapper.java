@@ -119,6 +119,10 @@ public class Wrapper extends Applet implements AppletStub {
 		params.put("sessionid", sessionid);
 		params.put("haspaid", "true");
 
+		if (uuid != null) {
+			params.put("uuid", uuid);
+		}
+
 		if (server != null && server.contains(":")) {
 			params.put("server", server.split(":")[0]);
 			params.put("port", server.split(":")[1]);
