@@ -46,7 +46,7 @@ import uk.betacraft.json.lib.MouseFixMacOSJson;
 
 /** Main class */
 public class Launcher {
-	public static String VERSION = "1.09_16-pre1"; // TODO Always update this
+	public static String VERSION = "1.09_16"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
@@ -860,12 +860,12 @@ public class Launcher {
 			if (!update.startsWith("!")) {
 				// Present update options
 				Object[] options = new Object[] {Lang.YES, Lang.NO, Lang.MANUAL_DOWNLOAD};
-				Object result = JOptionPane.showOptionDialog(Window.mainWindow, rr, Lang.OPTIONS_UPDATE_HEADER, JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+				int result = JOptionPane.showOptionDialog(Window.mainWindow, rr, Lang.OPTIONS_UPDATE_HEADER, JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
 
-				if (result == options[0]) {
+				if (result == 0) {
 					System.out.println("The user wants to update to: " + update_name);
 					yes = true;
-				} else if (result == options[1]) {
+				} else if (result == 1) {
 					System.out.println("The user doesn't want to update. The launcher stays at version: " + VERSION);
 				} else {
 					// openURL may not work on macOS or some linux distros...
