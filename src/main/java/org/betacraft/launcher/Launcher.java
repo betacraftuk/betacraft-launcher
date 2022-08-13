@@ -858,13 +858,20 @@ public class Launcher {
 			String rr = Lang.UPDATE_FOUND.replaceAll("%s", update_name);
 
 			if (!update.startsWith("!")) {
-				// Ask if the user wants this update or not
-				int result = JOptionPane.showConfirmDialog(Window.mainWindow, rr, Lang.OPTIONS_UPDATE_HEADER, JOptionPane.YES_NO_OPTION);
-				if (result == JOptionPane.YES_OPTION) {
+				// Present update options
+				Object[] options = new Object[] {Lang.YES, Lang.NO, Lang.MANUAL_DOWNLOAD};
+				Object result = JOptionPane.showOptionDialog(Window.mainWindow, rr, Lang.OPTIONS_UPDATE_HEADER, JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+
+				if (result == options[0]) {
 					System.out.println("The user wants to update to: " + update_name);
 					yes = true;
-				} else {
+				} else if (result == options[1]) {
 					System.out.println("The user doesn't want to update. The launcher stays at version: " + VERSION);
+				} else {
+					// openURL may not work on macOS or some linux distros...
+					new SimpleWebAddressFrame("https://github.com/Moresteck/BetaCraft-Launcher-Java/releases/tag/" + update_name);
+					//Util.openURL("https://github.com/Moresteck/BetaCraft-Launcher-Java/releases/tag/" + update_name);
+					return;
 				}
 			} else {
 				System.out.println("Forced update to: " + update_name);

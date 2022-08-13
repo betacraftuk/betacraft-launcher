@@ -216,6 +216,9 @@ public class Lang extends JFrame implements LanguageElement {
 		if (langentries.hasProperty("packing_mod"))
 			PACKING_MOD = langentries.getProperty("packing_mod");
 
+		if (langentries.hasProperty("manual_download"))
+			MANUAL_DOWNLOAD = langentries.getProperty("manual_download");
+
 		if (langentries.hasProperty("username_field_empty"))
 			WINDOW_USERNAME_FIELD_EMPTY = langentries.getProperty("username_field_empty");
 
@@ -519,6 +522,7 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String WINDOW_TITLE = "BetaCraft Launcher JE v" + Launcher.VERSION;
 	public static String WINDOW_DOWNLOADING = "Downloading ...";
 	public static String PACKING_MOD = "Packing mod ...";
+	public static String MANUAL_DOWNLOAD = "Manual download";
 	public static String WINDOW_USERNAME_FIELD_EMPTY = "The username field is empty!";
 
 	public static String LANG = "Select language";

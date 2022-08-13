@@ -590,8 +590,7 @@ public class Util {
 				final Object invoke = Class.forName("java.awt.Desktop").getMethod("getDesktop", (Class<?>[])new Class[0]).invoke(null, new Object[0]);
 				invoke.getClass().getMethod("browse", URI.class).invoke(invoke, uri);
 				return true;
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				System.out.println("Failed to open link in a web browser: " + uri.toString());
 				t.printStackTrace();
 

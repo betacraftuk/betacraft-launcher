@@ -211,21 +211,10 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 				JFileChooser dirChooser = new JFileChooser();
 				dirChooser.setCurrentDirectory(new java.io.File(BC.get()));
 				dirChooser.setDialogTitle(Lang.JAVA_EXECUTABLE);
-				dirChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-				dirChooser.setAcceptAllFileFilterUsed(false);
-				if (dirChooser.showOpenDialog(Window.mainWindow) == JFileChooser.APPROVE_OPTION) { 
-					System.out.println("getCurrentDirectory(): " 
-							+  dirChooser.getCurrentDirectory());
-					System.out.println("getSelectedFile() : " 
-							+  dirChooser.getSelectedFile());
-					File gameDir = null;
-					if (!dirChooser.getSelectedFile().equals(dirChooser.getCurrentDirectory())) {
-						if (!dirChooser.getSelectedFile().isDirectory()) {
-							gameDir = dirChooser.getCurrentDirectory();
-						} else {
-							gameDir = dirChooser.getSelectedFile();
-						}
-					}
+				dirChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+
+				if (dirChooser.showOpenDialog(Window.mainWindow) == JFileChooser.APPROVE_OPTION) {
+					File gameDir = dirChooser.getSelectedFile();
 					javaPath.setText(gameDir.getAbsolutePath());
 				}
 			}
@@ -480,7 +469,7 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 				JOptionPane.showMessageDialog(this, Lang.JAVA_INVALID);
 				return false;
 			} else if (i > 8) {
-				int res = JOptionPane.showConfirmDialog(this, Lang.JAVA_TOO_RECENT);
+				int res = JOptionPane.showConfirmDialog(this, Lang.JAVA_TOO_RECENT, "", JOptionPane.YES_NO_OPTION);
 				if (res != JOptionPane.YES_OPTION) {
 					return false;
 				}
