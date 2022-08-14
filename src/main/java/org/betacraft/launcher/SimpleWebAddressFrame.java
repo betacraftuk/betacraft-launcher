@@ -14,7 +14,7 @@ public class SimpleWebAddressFrame extends JFrame {
 	public SimpleWebAddressFrame(String url) {
 		this.setIconImage(Window.img);
 		this.setResizable(false);
-		this.setTitle("Link"); // TODO translation
+		this.setTitle(Lang.LINK);
 		this.setMinimumSize(new Dimension(300, 100));
 
 		GridBagConstraints constr = new GridBagConstraints();

@@ -26,7 +26,7 @@ public class InstanceList extends JFrame implements LanguageElement {
 	static GridBagConstraints constr;
 
 	public InstanceList() {
-		Logger.a("Instances list window opened.");
+		System.out.println("Instances list window opened.");
 		this.setIconImage(Window.img);
 		this.setMinimumSize(new Dimension(282, 386));
 
@@ -66,7 +66,7 @@ public class InstanceList extends JFrame implements LanguageElement {
 		selectButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				Launcher.setInstance(Instance.loadInstance((String) list.getSelectedValue()));
-				setVisible(false);
+				dispose();
 				Window.instanceList = null;
 			}
 		});
@@ -80,7 +80,6 @@ public class InstanceList extends JFrame implements LanguageElement {
 				int result = JOptionPane.showConfirmDialog(InstanceList.this, Lang.INSTANCE_REMOVE_QUESTION, Lang.INSTANCE_REMOVE_TITLE, JOptionPane.YES_NO_OPTION);
 				if (result == JOptionPane.YES_OPTION) {
 					Launcher.removeInstance((String) list.getSelectedValue());
-					setVisible(false);
 				}
 			}
 		});
@@ -112,8 +111,10 @@ public class InstanceList extends JFrame implements LanguageElement {
 		}
 
 		constr.weighty = 1.0;
+		constr.gridwidth = 2;
 		constr.gridheight = GridBagConstraints.RELATIVE;
 		constr.gridy = 1;
+		constr.gridx = 0;
 
 		list = new JList(listModel);
 		list.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);

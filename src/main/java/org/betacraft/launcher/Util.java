@@ -3,6 +3,7 @@ package org.betacraft.launcher;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,24 +12,27 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
+import java.net.URL;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import pl.betacraft.auth.Accounts;
-import pl.betacraft.auth.Authenticator;
-import pl.betacraft.auth.Credentials;
-import pl.betacraft.auth.Credentials.AccountType;
-import pl.betacraft.auth.DownloadRequest;
-import pl.betacraft.auth.DownloadResponse;
-import pl.betacraft.auth.MicrosoftAuth;
-import pl.betacraft.auth.MojangAuth;
-import pl.betacraft.auth.NoAuth;
-import pl.betacraft.json.lib.MouseFixMacOSJson;
+import uk.betacraft.auth.Accounts;
+import uk.betacraft.auth.Authenticator;
+import uk.betacraft.auth.Credentials;
+import uk.betacraft.auth.Credentials.AccountType;
+import uk.betacraft.auth.DownloadRequest;
+import uk.betacraft.auth.DownloadResponse;
+import uk.betacraft.auth.MicrosoftAuth;
+import uk.betacraft.auth.MojangAuth;
+import uk.betacraft.auth.NoAuth;
+import uk.betacraft.json.lib.MouseFixMacOSJson;
 
 public class Util {
 	public static final Gson gson = new Gson();
@@ -115,7 +119,6 @@ public class Util {
 		} catch (IOException e) {
 			System.out.println(file.getAbsolutePath());
 			e.printStackTrace();
-			Logger.printException(e);
 		}
 		OutputStreamWriter writer = null;
 		try {
@@ -129,96 +132,128 @@ public class Util {
 				}
 			}
 		} catch (Exception ex) {
-			Logger.a("A critical error occurred while attempting to write to file: " + file);
+			System.err.println("A critical error occurred while attempting to write to file: " + file);
 			ex.printStackTrace();
-			Logger.printException(ex);
 		} finally {
 			// Close the file
 			try {writer.close();} catch (Exception ex) {}
 		}
 	}
 
-	public static void setProperty(File file, String property, String value) {
-		setProperty(file, property, value, "UTF-8");
-	}
-
-	public static void setProperty(File file, String property, String value, String charset) {
-		// Read the lines
-		String[] lines = read(file, charset);
-		String[] newlines = new String[lines.length + 1];
-
-		// Try to find the property wanted to be set
-		boolean found = false;
-		for (int i = 0; i < lines.length; i++) {
-			if (lines[i] == null) continue;
-			if (lines[i].startsWith(property + ":")) {
-				// The wanted property has been found, so we're going to replace its value
-				newlines[i] = property + ":" + value;
-				found = true;
-				continue;
+	public static String[] read(File file, String charset) {
+		try {
+			if (!file.exists()) return new String[] {};
+			// Create new, if doesn't exist
+			if (file.createNewFile()) {
+				System.out.println("Created a new file: " + file);
 			}
-			// The property didn't match, just take this line further
-			newlines[i] = lines[i];
+		} catch (IOException e) {
+			System.err.println(file.getAbsolutePath());
+			e.printStackTrace();
 		}
-
-		if (!found) {
-			// There was no wanted property in the file, so we're going to append it to the file 
-			write(file, new String[] {property + ":" + value}, true, charset);
-			return;
-		}
-
-		// Write to file, without appending
-		write(file, newlines, false, charset);
-	}
-
-	public static String getProperty(File file, String property) {
-		return getProperty(file, property, "UTF-8");
-	}
-
-	public static String getProperty(File file, String property, String charset) {
-		String[] lines = read(file, charset);
-		String value = null;
-		for (int i = 0; i < lines.length; i++) {
-			// If the array is empty, ignore it
-			if (lines[i] == null) continue;
-
-			// Check if the property matches
-			if (lines[i].startsWith(property + ":")) {
-				value = lines[i].substring(property.length()+1, lines[i].length());
-				break;
+		InputStreamReader reader = null;
+		try {
+			// Read in UTF-8
+			reader = new InputStreamReader(
+					new FileInputStream(file), charset);
+			StringBuilder inputB = new StringBuilder();
+			char[] buffer = new char[1024];
+			while (true) {
+				int readcount = reader.read(buffer);
+				if (readcount < 0) break;
+				inputB.append(buffer, 0, readcount);
 			}
+			return inputB.toString().split("\n");
+		} catch (Exception ex) {
+			System.err.println("A critical error occurred while reading from file: " + file);
+			ex.printStackTrace();
+		} finally {
+			// Close the file
+			try {reader.close();} catch (Exception ex) {}
 		}
-		return value;
+		return null;
 	}
 
-	public static boolean hasProperty(File file, String property, String charset) {
-		String[] lines = read(file, charset);
-		for (int i = 0; i < lines.length; i++) {
-			// If the line is empty, ignore it
-			if (lines[i] == null) continue;
+	public static class PropertyFile {
+		private File file;
+		private String[] lines;
+		private String charset;
 
-			// Check if the property matches
-			if (lines[i].startsWith(property + ":")) {
-				return true;
-			}
+		public PropertyFile(File file) {
+			this(file, "UTF-8");
 		}
-		return false;
-	}
 
-	public static String[] excludeExistant(File file, String[] properties, String charset) {
-		String[] lines = read(file, charset);
-		for (int i = 0; i < lines.length; i++) {
-			// If the line is empty, ignore it
-			if (lines[i] == null) continue;
+		public PropertyFile(File file, String charset) {
+			this.file = file;
+			this.charset = charset;
 
-			for (int i1 = 0; i1 < properties.length; i1++) {
-				// If the property matches, remove it from array
-				if (lines[i].startsWith(properties[i1] + ":")) {
-					properties[i1] = null;
+			if (file.exists() && file.isFile())
+				this.lines = read(charset);
+			else
+				this.lines = new String[0];
+		}
+
+		private String[] read(String charset) {
+			return Util.read(this.file, charset);
+		}
+
+		public boolean hasProperty(String property) {
+			for (int i = 0; i < this.lines.length; i++) {
+				// If the line is empty, ignore it
+				if (this.lines[i] == null) continue;
+
+				// Check if the property matches
+				if (this.lines[i].startsWith(property + ":")) {
+					return true;
 				}
 			}
+			return false;
 		}
-		return properties;
+
+		public String getProperty(String property) {
+			String value = null;
+			for (int i = 0; i < this.lines.length; i++) {
+				// If the array is empty, ignore it
+				if (this.lines[i] == null) continue;
+
+				// Check if the property matches
+				if (this.lines[i].startsWith(property + ":")) {
+					value = this.lines[i].substring(property.length()+1, this.lines[i].length());
+					break;
+				}
+			}
+			return value;
+		}
+
+		public void setProperty(String property, String value) {
+			// Read the lines
+			String[] newlines = new String[this.lines.length + 1];
+
+			// Try to find the property wanted to be set
+			boolean found = false;
+			for (int i = 0; i < this.lines.length; i++) {
+				if (this.lines[i] == null) continue;
+				if (this.lines[i].startsWith(property + ":")) {
+					// The wanted property has been found, so we're going to replace its value
+					newlines[i] = property + ":" + value;
+					found = true;
+					continue;
+				}
+				// The property didn't match, just take this line further
+				newlines[i] = this.lines[i];
+			}
+
+			if (!found) {
+				newlines[newlines.length-1] = property + ":" + value;
+			}
+
+			this.lines = newlines;
+		}
+
+		public void flushToDisk() {
+			// Write to file, without appending
+			write(this.file, this.lines, false, this.charset);
+		}
 	}
 
 	public static Thread unzip(File source, File dest_folder, boolean delete) {
@@ -258,7 +293,6 @@ public class Util {
 					fis.close();
 				} catch (Exception ex) {
 					ex.printStackTrace();
-					Logger.printException(ex);
 				}
 				if (delete) new File(source).delete();
 				if (!Util.isStandalone()) Launcher.totalThreads.remove(this);
@@ -268,40 +302,105 @@ public class Util {
 		return unrarthread;
 	}
 
-	public static String[] read(File file, String charset) {
-		try {
-			if (!file.exists()) return new String[] {};
-			// Create new, if doesn't exist
-			if (file.createNewFile()) {
-				Logger.a("Created a new file: " + file);
+	public static Thread rezip(final File[] sources, final File dest) {
+		Thread rezipthread = new Thread() {
+			public void run() {
+				File tempFolder = new File(Launcher.getVerFolder(), "temp");
+				if (tempFolder.exists()) {
+					Launcher.removeRecursively(tempFolder, false, false);
+				} else {
+					tempFolder.mkdir();
+				}
+
+				FileInputStream fis;
+				byte[] buffer = new byte[1024];
+				try {
+					for (File source : sources) {
+						fis = new FileInputStream(source);
+						ZipInputStream zis = new ZipInputStream(fis);
+
+						ZipEntry entry = zis.getNextEntry();
+						while (entry != null) {
+							if (entry.isDirectory()) {
+								entry = zis.getNextEntry();
+								continue;
+							}
+
+							String fileName = entry.getName();
+							File newFile = new File(tempFolder, fileName);
+
+							File parent = new File(newFile.getParent());
+							if (parent.getName().equals("META-INF")) { // none of that
+								entry = zis.getNextEntry();
+								continue;
+							}
+							parent.mkdirs();
+
+							FileOutputStream fos = new FileOutputStream(newFile);
+							int length;
+							while ((length = zis.read(buffer)) > 0) {
+								fos.write(buffer, 0, length);
+							}
+
+							fos.close();
+							zis.closeEntry();
+							entry = zis.getNextEntry();
+						}
+						zis.closeEntry();
+						zis.close();
+						fis.close();
+					}
+
+					ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(dest));
+					ArrayList<File> entries = listRecursively(tempFolder);
+					for (File currentFile: entries) {
+						String s = tempFolder.toURI().relativize(currentFile.toURI()).getPath();
+						if (currentFile.isDirectory() && !s.endsWith("/")) {
+							s += "/";
+						}
+
+						zos.putNextEntry(new ZipEntry(s));
+
+						if (!currentFile.isDirectory()) {
+							fis = new FileInputStream(currentFile);
+							int length;
+							while ((length = fis.read(buffer)) > 0) {
+								zos.write(buffer, 0, length);
+							}
+							fis.close();
+						}
+
+						zos.closeEntry();
+					}
+					zos.close();
+
+					if (tempFolder.exists()) {
+						Launcher.removeRecursively(tempFolder, true, false);
+					}
+
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+				if (!Util.isStandalone()) Launcher.totalThreads.remove(this);
 			}
-		} catch (IOException e) {
-			System.out.println(file.getAbsolutePath());
-			e.printStackTrace();
-			Logger.printException(e);
-		}
-		InputStreamReader reader = null;
-		try {
-			// Read in UTF-8
-			reader = new InputStreamReader(
-					new FileInputStream(file), charset);
-			StringBuilder inputB = new StringBuilder();
-			char[] buffer = new char[1024];
-			while (true) {
-				int readcount = reader.read(buffer);
-				if (readcount < 0) break;
-				inputB.append(buffer, 0, readcount);
+		};
+		rezipthread.start();
+		return rezipthread;
+	}
+
+	public static ArrayList<File> listRecursively(File dir) {
+		ArrayList<File> full = new ArrayList<File>();
+		File[] entries = dir.listFiles();
+
+		for (File potentialDir : entries) {
+			if (potentialDir.isDirectory()) {
+				full.addAll(listRecursively(potentialDir));
+			} else {
+				full.add(potentialDir);
 			}
-			return inputB.toString().split("\n");
-		} catch (Exception ex) {
-			Logger.a("A critical error occurred while reading from file: " + file);
-			ex.printStackTrace();
-			Logger.printException(ex);
-		} finally {
-			// Close the file
-			try {reader.close();} catch (Exception ex) {}
 		}
-		return null;
+
+		return full;
 	}
 
 	public static boolean isStandalone() {
@@ -359,34 +458,34 @@ public class Util {
 
 		String local_javaagent_sha1 = javaagent.exists() ? getSHA1(javaagent) : null;
 		String local_lwjgl_sha1 = lwjgl.exists() ? getSHA1(lwjgl): null;
-		String local_javamod_sha1 = Util.getProperty(BC.SETTINGS, "macosMouseFixClassesVersion");
+		String local_javamod_sha1 = BC.SETTINGS.getProperty("macosMouseFixClassesVersion");
 
 		try {
 			if (local_javaagent_sha1 == null || !local_javaagent_sha1.equals(json.agent_sha1) || force) {
 				DownloadResponse agent_req = new DownloadRequest(json.agent_url, javaagent.getAbsolutePath(), json.agent_sha1, false).perform();
 				if (agent_req.result != DownloadResult.OK) {
-					Logger.a("Failed to download macos javaagent");
+					System.err.println("Failed to download macos javaagent");
 					return false;
 				}
 			}
 			if (local_lwjgl_sha1 == null || !local_lwjgl_sha1.equals(json.lwjgl_sha1) || force) {
 				DownloadResponse lwjgl_req = new DownloadRequest(json.lwjgl_url, lwjgl.getAbsolutePath(), json.lwjgl_sha1, false).perform();
 				if (lwjgl_req.result != DownloadResult.OK) {
-					Logger.a("Failed to download macos-mousefix.zip");
+					System.err.println("Failed to download macos-mousefix.zip");
 					return false;
 				}
 			}
 			if (local_javamod_sha1 == null || !local_javamod_sha1.equals(json.classes_sha1) || force) {
 				DownloadResponse classes_req = new DownloadRequest(json.classes_url, classes_temp_zip.getAbsolutePath(), json.classes_sha1, false).perform();
 				if (classes_req.result != DownloadResult.OK) {
-					Logger.a("Failed to download macos-mousefix.zip");
+					System.err.println("Failed to download macos-mousefix.zip");
 					return false;
 				} else {
 					if (classes_folder.exists() && classes_folder.list().length != 0) {
 						Launcher.removeRecursively(classes_folder, false, false);
 					}
 					classes_folder.mkdirs();
-					Util.setProperty(BC.SETTINGS, "macosMouseFixClassesVersion", json.classes_sha1);
+					BC.SETTINGS.setProperty("macosMouseFixClassesVersion", json.classes_sha1);
 					Launcher.totalThreads.add(unzip(classes_temp_zip, classes_folder, true));
 				}
 			}
@@ -472,6 +571,15 @@ public class Util {
 		}
 	}
 
+	public static boolean openURL(String url) {
+		try {
+			return openURL(new URL(url).toURI());
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return false;
+		}
+	}
+
 	public static boolean openURL(final URI uri) {
 		if (getCurrentMajorJavaVersion() <= 5) {
 			// Desktop api is only available in Java 6+
@@ -482,8 +590,7 @@ public class Util {
 				final Object invoke = Class.forName("java.awt.Desktop").getMethod("getDesktop", (Class<?>[])new Class[0]).invoke(null, new Object[0]);
 				invoke.getClass().getMethod("browse", URI.class).invoke(invoke, uri);
 				return true;
-			}
-			catch (Throwable t) {
+			} catch (Throwable t) {
 				System.out.println("Failed to open link in a web browser: " + uri.toString());
 				t.printStackTrace();
 

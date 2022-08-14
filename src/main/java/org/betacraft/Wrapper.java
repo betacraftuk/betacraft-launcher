@@ -33,11 +33,14 @@ import org.betacraft.Addon.WhatToDo;
 import org.betacraft.launcher.BC;
 import org.betacraft.launcher.Lang;
 
+import com.johnymuffin.evolutions.core.BetaEvolutionsUtils;
+import com.johnymuffin.evolutions.core.BetaEvolutionsUtils.VerificationResults;
+
 import net.arikia.dev.drpc.DiscordEventHandlers;
 import net.arikia.dev.drpc.DiscordRPC;
 import net.arikia.dev.drpc.DiscordRichPresence;
-import pl.betacraft.auth.CustomRequest;
-import pl.betacraft.auth.jsons.mojang.session.JoinServerRequest;
+import uk.betacraft.auth.CustomRequest;
+import uk.betacraft.auth.jsons.mojang.session.JoinServerRequest;
 
 
 public class Wrapper extends Applet implements AppletStub {
@@ -115,6 +118,10 @@ public class Wrapper extends Applet implements AppletStub {
 		params.put("username", user);
 		params.put("sessionid", sessionid);
 		params.put("haspaid", "true");
+
+		if (uuid != null) {
+			params.put("uuid", uuid);
+		}
 
 		if (server != null && server.contains(":")) {
 			params.put("server", server.split(":")[0]);
@@ -311,6 +318,15 @@ public class Wrapper extends Applet implements AppletStub {
 		}
 	}
 
+	/**
+	 * Authenticates with Beta Evolutions
+	 */
+	public void authenticateBetaEvo() {
+		BetaEvolutionsUtils be = new BetaEvolutionsUtils(false);
+		VerificationResults res = be.authenticateUser(params.get("username"), this.session);
+		System.out.println("[Beta Evolutions] Authenticated with " + res.getSuccessful() + " nodes");
+	}
+
 	public String launchType = null;
 
 	/**
@@ -467,6 +483,7 @@ public class Wrapper extends Applet implements AppletStub {
 	}
 
 	public void play() {
+		this.authenticateBetaEvo();
 		if (this.ask_for_server) this.askForServer();
 		try {
 			this.loadJars();

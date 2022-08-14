@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -23,6 +24,8 @@ import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 
+import org.betacraft.launcher.Util.PropertyFile;
+
 public class Lang extends JFrame implements LanguageElement {
 	public static List<String> locales = new ArrayList<String>();
 
@@ -33,10 +36,10 @@ public class Lang extends JFrame implements LanguageElement {
 	static JPanel panel;
 	static GridBagConstraints constr;
 
-	public static String locale_id = "1.09_15";
+	public static String locale_id = "1.09_16";
 
 	public Lang() {
-		Logger.a("Language option window opened.");
+		System.out.println("Language selection window opened.");
 		this.setIconImage(Window.img);
 		this.setMinimumSize(new Dimension(282, 386));
 
@@ -63,7 +66,6 @@ public class Lang extends JFrame implements LanguageElement {
 			if (locales.isEmpty()) initLang();
 		} catch (IOException e1) {
 			e1.printStackTrace();
-			Logger.printException(e1);
 		}
 
 		constr.gridy++;
@@ -95,11 +97,12 @@ public class Lang extends JFrame implements LanguageElement {
 		String lang = (String) list.getSelectedValue();
 
 		// Only return if we failed to download without a backup
-		if (download(lang) == DownloadResult.FAILED_WITHOUT_BACKUP) {
+		if (!download(lang).isPositive()) {
 			return;
 		}
-		Util.setProperty(BC.SETTINGS, "language", lang);
-		setVisible(false);
+		BC.SETTINGS.setProperty("language", lang);
+		BC.SETTINGS.flushToDisk();
+		dispose();
 		Launcher.restart(Launcher.javaRuntime.getAbsolutePath());
 	}
 
@@ -118,7 +121,7 @@ public class Lang extends JFrame implements LanguageElement {
 		int i = 0;
 		int index = 0;
 		listModel = new DefaultListModel();
-		String lang = Util.getProperty(BC.SETTINGS, "language");
+		String lang = BC.SETTINGS.getProperty("language");
 		for (String item : locales) {
 			listModel.addElement(item);
 			if (lang.equals(item)) {
@@ -160,8 +163,17 @@ public class Lang extends JFrame implements LanguageElement {
 		return false;
 	}
 
+	public static String encodeForURL(String string) {
+		try {
+			return URLEncoder.encode(string, "UTF-8").replace("+", "%20"); // java moment
+		} catch (Throwable t) {
+			t.printStackTrace();
+			return null;
+		} // impossible unless null
+	}
+
 	public static DownloadResult download(String lang) {
-		DownloadResult download = Launcher.download("http://files.betacraft.uk/launcher/assets/lang/" + locale_id + "/" + lang + ".txt", new File(BC.get() + "launcher" + File.separator + "lang", lang + ".txt"));
+		DownloadResult download = Launcher.download("http://files.betacraft.uk/launcher/assets/lang/" + locale_id + "/" + encodeForURL(lang) + ".txt", new File(BC.get() + "launcher" + File.separator + "lang", lang + ".txt"));
 		if (!download.isPositive()) {
 			JOptionPane.showMessageDialog(Window.mainWindow, "No Internet connection", "Language file download failed!", JOptionPane.ERROR_MESSAGE);
 		}
@@ -169,128 +181,323 @@ public class Lang extends JFrame implements LanguageElement {
 	}
 
 	public static void refresh(boolean download, boolean force) {
-		String lang = Util.getProperty(BC.SETTINGS, "language");
+		String lang = BC.SETTINGS.getProperty("language");
 		if (lang == null) {
 			applyNamesSwing();
 			return;
 		}
 		File file = new File(BC.get() + "launcher" + File.separator + "lang" + File.separator +  lang + ".txt");
-		if ((download && !download(lang).isPositive()) || !file.exists()) {
+		if ((download && !download(lang).isOK()) || !file.exists()) {
 			applyNamesSwing();
 			return;
 		}
 		String charset = "UTF-8";
-		if (lang.equalsIgnoreCase("Russian")) charset = "Cp1251";
 
-		WINDOW_SELECT_VERSION = Util.getProperty(file, "version_button", charset);
-		WINDOW_PLAY = Util.getProperty(file, "play_button", charset);
-		WINDOW_OPTIONS = Util.getProperty(file, "options_button", charset);
-		WINDOW_TITLE = Util.getProperty(file, "launcher_title", charset) + Launcher.VERSION;
-		WINDOW_LANGUAGE = Util.getProperty(file, "language", charset);
-		WINDOW_DOWNLOADING = Util.getProperty(file, "downloading", charset);
-		WINDOW_USERNAME_FIELD_EMPTY = Util.getProperty(file, "username_field_empty", charset);
+		PropertyFile langentries = new PropertyFile(file, charset);
 
-		LANG = Util.getProperty(file, "lang_title", charset);
+		if (langentries.hasProperty("version_button"))
+			WINDOW_SELECT_VERSION = langentries.getProperty("version_button");
 
-		UNEXPECTED_ERROR = Util.getProperty(file, "unexpected_error", charset);
-		ERR_NO_CONNECTION = Util.getProperty(file, "no_connection", charset);
-		ERR_DL_FAIL = Util.getProperty(file, "download_fail", charset);
+		if (langentries.hasProperty("play_button"))
+			WINDOW_PLAY = langentries.getProperty("play_button");
 
-		OPTIONS_UPDATE_HEADER = Util.getProperty(file, "update_check", charset);
-		OPTIONS_PROXY = Util.getProperty(file, "use_betacraft", charset);
-		OPTIONS_RPC = Util.getProperty(file, "discord_rpc", charset);
-		OPTIONS_LAUNCH_ARGS = Util.getProperty(file, "launch_arguments", charset) + ":";
-		OPTIONS_KEEP_OPEN = Util.getProperty(file, "keep_launcher_open", charset);
-		OPTIONS_WIDTH = Util.getProperty(file, "width", charset);
-		OPTIONS_OK = Util.getProperty(file, "ok", charset);
-		OPTIONS_HEIGHT = Util.getProperty(file, "height", charset);
-		OPTIONS_TITLE = Util.getProperty(file, "options_title", charset);
+		if (langentries.hasProperty("options_button"))
+			WINDOW_OPTIONS = langentries.getProperty("options_button");
 
-		SORT_FROM_OLDEST = Util.getProperty(file, "sort_oldest", charset);
-		SORT_FROM_NEWEST = Util.getProperty(file, "sort_newest", charset);
-		VERSION_LIST_TITLE = Util.getProperty(file, "version_title", charset);
+		if (langentries.hasProperty("launcher_title"))
+			WINDOW_TITLE = langentries.getProperty("launcher_title") + Launcher.VERSION;
 
-		ADDON_LIST_TITLE = Util.getProperty(file, "addon_list_title", charset);
-		ADDON_NO_DESC = Util.getProperty(file, "addon_no_desc", charset);
-		ADDON_SHOW_INFO = Util.getProperty(file, "addon_show_info", charset);
+		if (langentries.hasProperty("language"))
+			WINDOW_LANGUAGE = langentries.getProperty("language");
 
-		LOGGING_IN = Util.getProperty(file, "logging_in", charset);
-		LOGIN_TITLE = Util.getProperty(file, "login_title", charset);
-		LOGIN_BUTTON = Util.getProperty(file, "log_in_button", charset);
-		LOGOUT_BUTTON = Util.getProperty(file, "log_out_button", charset);
-		LOGIN_EMAIL_NICKNAME = Util.getProperty(file, "login_email_nickname", charset);
-		LOGIN_PASSWORD = Util.getProperty(file, "login_password", charset);
-		LOGIN_MOJANG_HEADER = Util.getProperty(file, "login_mojang_header", charset);
-		LOGIN_MICROSOFT_BUTTON = Util.getProperty(file, "login_microsoft_button", charset);
-		LOGIN_MICROSOFT_TITLE = Util.getProperty(file, "login_microsoft_title", charset);
-		LOGIN_MICROSOFT_ERROR = Util.getProperty(file, "login_microsoft_error", charset);
-		LOGIN_MICROSOFT_PARENT = Util.getProperty(file, "login_microsoft_parent", charset);
-		LOGIN_MICROSOFT_NO_XBOX = Util.getProperty(file, "login_microsoft_no_xbox", charset);
-		LOGIN_MICROSOFT_NO_MINECRAFT = Util.getProperty(file, "login_microsoft_no_minecraft", charset);
-		LOGIN_MICROSOFT_NO_JFX_TITLE = Util.getProperty(file, "login_microsoft_no_jfx_title", charset);
-		LOGIN_MICROSOFT_NO_JFX_CONTENT = Util.getProperty(file, "login_microsoft_no_jfx_content", charset);
+		if (langentries.hasProperty("downloading"))
+			WINDOW_DOWNLOADING = langentries.getProperty("downloading");
 
-		LOGIN_FAILED = Util.getProperty(file, "login_failed", charset);
-		LOGIN_FAILED_INVALID_CREDENTIALS = Util.getProperty(file, "login_failed_invalid_credentials", charset);
+		if (langentries.hasProperty("packing_mod"))
+			PACKING_MOD = langentries.getProperty("packing_mod");
 
-		JAVA_EXECUTABLE = Util.getProperty(file, "java_executable", charset);
-		JAVA_INVALID = Util.getProperty(file, "java_invalid", charset);
-		JAVA_TOO_RECENT = Util.getProperty(file, "java_too_recent", charset);
+		if (langentries.hasProperty("manual_download"))
+			MANUAL_DOWNLOAD = langentries.getProperty("manual_download");
 
-		INSTANCE_DIRECTORY = Util.getProperty(file, "instance_directory", charset);
-		INSTANCE_REMOVE_DIRECTORY = Util.getProperty(file, "instance_remove_directory", charset);
-		INSTANCE_GAME_DIRECTORY_TITLE = Util.getProperty(file, "instance_game_directory_title", charset);
-		INSTANCE_REMOVE_QUESTION = Util.getProperty(file, "instance_remove_question", charset);
-		INSTANCE_REMOVE_TITLE = Util.getProperty(file, "instance_remove_title", charset);
-		INSTANCE_CHANGE_ICON_NAME = Util.getProperty(file, "instance_change_icon_name", charset);
-		INSTANCE_CHANGE_ICON_TITLE = Util.getProperty(file, "instance_change_icon_title", charset);
-		INSTANCE_CHANGE_ICON_UNSUPPORTED = Util.getProperty(file, "instance_change_icon_unsupported", charset);
-		INSTANCE_CHANGE_ICON_UNSUPPORTED_TITLE = Util.getProperty(file, "instance_change_icon_unsupported_title", charset);
-		INSTANCE_CHANGE_ICON_FAILED = Util.getProperty(file, "instance_change_icon_failed", charset);
-		INSTANCE_CHANGE_ICON_FAILED_TITLE = Util.getProperty(file, "instance_change_icon_failed_title", charset);
-		INSTANCE_NAME = Util.getProperty(file, "instance_name", charset);
-		INSTANCE_SELECT_ADDONS = Util.getProperty(file, "instance_select_addons", charset);
-		INSTANCE_MODS_REPOSITORY = Util.getProperty(file, "instance_mods_repository", charset);
+		if (langentries.hasProperty("username_field_empty"))
+			WINDOW_USERNAME_FIELD_EMPTY = langentries.getProperty("username_field_empty");
 
-		SELECT_INSTANCE_TITLE = Util.getProperty(file, "select_instance_title", charset);
-		SELECT_INSTANCE_NEW = Util.getProperty(file, "select_instance_new", charset);
 
-		UPDATE_FOUND = Util.getProperty(file, "new_version_found", charset);
+		if (langentries.hasProperty("lang_title"))
+			LANG = langentries.getProperty("lang_title");
 
-		WRAP_USER = Util.getProperty(file, "nick", charset);
-		WRAP_VERSION = Util.getProperty(file, "version", charset);
-		WRAP_SERVER = Util.getProperty(file, "server", charset);
-		WRAP_SERVER_TITLE = Util.getProperty(file, "server_title", charset);
-		WRAP_CLASSIC_RESIZE = Util.getProperty(file, "classic_resize", charset);
 
-		TAB_CHANGELOG =  Util.getProperty(file, "tab_changelog", charset);
-		TAB_INSTANCES =  Util.getProperty(file, "tab_instances", charset);
-		TAB_SERVERS =  Util.getProperty(file, "tab_servers", charset);
+		if (langentries.hasProperty("unexpected_error"))
+			UNEXPECTED_ERROR = langentries.getProperty("unexpected_error");
 
-		VERSION_CUSTOM = Util.getProperty(file, "version_custom", charset);
+		if (langentries.hasProperty("no_connection"))
+			ERR_NO_CONNECTION = langentries.getProperty("no_connection");
 
-		BROWSER_TITLE = Util.getProperty(file, "browser_title", charset);
+		if (langentries.hasProperty("download_fail"))
+			ERR_DL_FAIL = langentries.getProperty("download_fail");
 
-		TAB_SRV_LOADING = Util.getProperty(file, "srv_loading", charset);
-		TAB_SRV_FAILED = Util.getProperty(file, "srv_failed", charset);
-		TAB_CL_LOADING = Util.getProperty(file, "cl_loading", charset);
-		TAB_CL_FAILED = Util.getProperty(file, "cl_failed", charset);
 
-		FORCE_UPDATE = Util.getProperty(file, "force_update", charset);
-		CONSOLE_OUTPUT_FOR = Util.getProperty(file, "console_output_for", charset);
-		CONSOLE_OUTPUT = Util.getProperty(file, "console_output", charset);
+		if (langentries.hasProperty("update_check"))
+			OPTIONS_UPDATE_HEADER = langentries.getProperty("update_check");
 
-		YES = Util.getProperty(file, "yes", charset);
-		NO = Util.getProperty(file, "no", charset);
-		CANCEL = Util.getProperty(file, "cancel", charset);
-		SELECT = Util.getProperty(file, "select", charset);
-		REMOVE = Util.getProperty(file, "remove", charset);
-		BROWSE = Util.getProperty(file, "browse", charset);
-		COPY = Util.getProperty(file, "copy", charset);
-		CLEAR = Util.getProperty(file, "clear", charset);
-		
-		PAUSE = Util.getProperty(file, "pause", charset);
-		UNPAUSE = Util.getProperty(file, "unpause", charset);
+		if (langentries.hasProperty("use_betacraft"))
+			OPTIONS_PROXY = langentries.getProperty("use_betacraft");
+
+		if (langentries.hasProperty("discord_rpc"))
+			OPTIONS_RPC = langentries.getProperty("discord_rpc");
+
+		if (langentries.hasProperty("launch_arguments"))
+			OPTIONS_LAUNCH_ARGS = langentries.getProperty("launch_arguments") + ":";
+
+		if (langentries.hasProperty("keep_launcher_open"))
+			OPTIONS_KEEP_OPEN = langentries.getProperty("keep_launcher_open");
+
+		if (langentries.hasProperty("width"))
+			OPTIONS_WIDTH = langentries.getProperty("width");
+
+		if (langentries.hasProperty("height"))
+			OPTIONS_HEIGHT = langentries.getProperty("height");
+
+		if (langentries.hasProperty("options_title"))
+			OPTIONS_TITLE = langentries.getProperty("options_title");
+
+		if (langentries.hasProperty("ok"))
+			OPTIONS_OK = langentries.getProperty("ok");
+
+
+		if (langentries.hasProperty("sort_oldest"))
+			SORT_FROM_OLDEST = langentries.getProperty("sort_oldest");
+
+		if (langentries.hasProperty("sort_newest"))
+			SORT_FROM_NEWEST = langentries.getProperty("sort_newest");
+
+		if (langentries.hasProperty("version_title"))
+			VERSION_LIST_TITLE = langentries.getProperty("version_title");
+
+
+		if (langentries.hasProperty("addon_list_title"))
+			ADDON_LIST_TITLE = langentries.getProperty("addon_list_title");
+
+		if (langentries.hasProperty("addon_no_desc"))
+			ADDON_NO_DESC = langentries.getProperty("addon_no_desc");
+
+		if (langentries.hasProperty("addon_show_info"))
+			ADDON_SHOW_INFO = langentries.getProperty("addon_show_info");
+
+
+		if (langentries.hasProperty("logging_in"))
+			LOGGING_IN = langentries.getProperty("logging_in");
+
+		if (langentries.hasProperty("login_title"))
+			LOGIN_TITLE = langentries.getProperty("login_title");
+
+		if (langentries.hasProperty("log_in_button"))
+			LOGIN_BUTTON = langentries.getProperty("log_in_button");
+
+		if (langentries.hasProperty("log_out_button"))
+			LOGOUT_BUTTON = langentries.getProperty("log_out_button");
+
+		if (langentries.hasProperty("login_email_nickname"))
+			LOGIN_EMAIL_NICKNAME = langentries.getProperty("login_email_nickname");
+
+		if (langentries.hasProperty("login_password"))
+			LOGIN_PASSWORD = langentries.getProperty("login_password");
+
+		if (langentries.hasProperty("login_mojang_header"))
+			LOGIN_MOJANG_HEADER = langentries.getProperty("login_mojang_header");
+
+		if (langentries.hasProperty("login_microsoft_button"))
+			LOGIN_MICROSOFT_BUTTON = langentries.getProperty("login_microsoft_button");
+
+		if (langentries.hasProperty("login_microsoft_title"))
+			LOGIN_MICROSOFT_TITLE = langentries.getProperty("login_microsoft_title");
+
+		if (langentries.hasProperty("login_microsoft_error"))
+			LOGIN_MICROSOFT_ERROR = langentries.getProperty("login_microsoft_error");
+
+		if (langentries.hasProperty("login_microsoft_parent"))
+			LOGIN_MICROSOFT_PARENT = langentries.getProperty("login_microsoft_parent");
+
+		if (langentries.hasProperty("login_microsoft_no_xbox"))
+			LOGIN_MICROSOFT_NO_XBOX = langentries.getProperty("login_microsoft_no_xbox");
+
+		if (langentries.hasProperty("login_microsoft_no_minecraft"))
+			LOGIN_MICROSOFT_NO_MINECRAFT = langentries.getProperty("login_microsoft_no_minecraft");
+
+		if (langentries.hasProperty("login_microsoft_code_line1"))
+			LOGIN_MICROSOFT_CODE_LINE1 = langentries.getProperty("login_microsoft_code_line1");
+
+		if (langentries.hasProperty("login_microsoft_code_line2"))
+			LOGIN_MICROSOFT_CODE_LINE2 = langentries.getProperty("login_microsoft_code_line2");
+
+
+		if (langentries.hasProperty("login_failed"))
+			LOGIN_FAILED = langentries.getProperty("login_failed");
+
+		if (langentries.hasProperty("login_failed_invalid_credentials"))
+			LOGIN_FAILED_INVALID_CREDENTIALS = langentries.getProperty("login_failed_invalid_credentials");
+
+
+		if (langentries.hasProperty("java_executable"))
+			JAVA_EXECUTABLE = langentries.getProperty("java_executable");
+
+		if (langentries.hasProperty("java_invalid"))
+			JAVA_INVALID = langentries.getProperty("java_invalid");
+
+		if (langentries.hasProperty("java_too_recent"))
+			JAVA_TOO_RECENT = langentries.getProperty("java_too_recent");
+
+
+		if (langentries.hasProperty("instance_directory"))
+			INSTANCE_DIRECTORY = langentries.getProperty("instance_directory");
+
+		if (langentries.hasProperty("instance_remove_directory"))
+			INSTANCE_REMOVE_DIRECTORY = langentries.getProperty("instance_remove_directory");
+
+		if (langentries.hasProperty("instance_game_directory_title"))
+			INSTANCE_GAME_DIRECTORY_TITLE = langentries.getProperty("instance_game_directory_title");
+
+		if (langentries.hasProperty("instance_remove_question"))
+			INSTANCE_REMOVE_QUESTION = langentries.getProperty("instance_remove_question");
+
+		if (langentries.hasProperty("instance_remove_title"))
+			INSTANCE_REMOVE_TITLE = langentries.getProperty("instance_remove_title");
+
+		if (langentries.hasProperty("instance_change_icon_name"))
+			INSTANCE_CHANGE_ICON_NAME = langentries.getProperty("instance_change_icon_name");
+
+		if (langentries.hasProperty("instance_change_icon_title"))
+			INSTANCE_CHANGE_ICON_TITLE = langentries.getProperty("instance_change_icon_title");
+
+		if (langentries.hasProperty("instance_change_icon_unsupported"))
+			INSTANCE_CHANGE_ICON_UNSUPPORTED = langentries.getProperty("instance_change_icon_unsupported");
+
+		if (langentries.hasProperty("instance_change_icon_unsupported_title"))
+			INSTANCE_CHANGE_ICON_UNSUPPORTED_TITLE = langentries.getProperty("instance_change_icon_unsupported_title");
+
+		if (langentries.hasProperty("instance_change_icon_failed"))
+			INSTANCE_CHANGE_ICON_FAILED = langentries.getProperty("instance_change_icon_failed");
+
+		if (langentries.hasProperty("instance_change_icon_failed_title"))
+			INSTANCE_CHANGE_ICON_FAILED_TITLE = langentries.getProperty("instance_change_icon_failed_title");
+
+		if (langentries.hasProperty("instance_name"))
+			INSTANCE_NAME = langentries.getProperty("instance_name");
+
+		if (langentries.hasProperty("instance_select_addons"))
+			INSTANCE_SELECT_ADDONS = langentries.getProperty("instance_select_addons");
+
+		if (langentries.hasProperty("instance_mods_repository"))
+			INSTANCE_MODS_REPOSITORY = langentries.getProperty("instance_mods_repository");
+
+
+		if (langentries.hasProperty("select_instance_title"))
+			SELECT_INSTANCE_TITLE = langentries.getProperty("select_instance_title");
+
+		if (langentries.hasProperty("select_instance_new"))
+			SELECT_INSTANCE_NEW = langentries.getProperty("select_instance_new");
+
+
+		if (langentries.hasProperty("new_version_found"))
+			UPDATE_FOUND = langentries.getProperty("new_version_found");
+
+
+		if (langentries.hasProperty("nick"))
+			WRAP_USER = langentries.getProperty("nick");
+
+		if (langentries.hasProperty("version"))
+			WRAP_VERSION = langentries.getProperty("version");
+
+		if (langentries.hasProperty("server"))
+			WRAP_SERVER = langentries.getProperty("server");
+
+		if (langentries.hasProperty("server_title"))
+			WRAP_SERVER_TITLE = langentries.getProperty("server_title");
+
+		if (langentries.hasProperty("classic_resize"))
+			WRAP_CLASSIC_RESIZE = langentries.getProperty("classic_resize");
+
+
+		if (langentries.hasProperty("tab_changelog"))
+			TAB_CHANGELOG =  langentries.getProperty("tab_changelog");
+
+		if (langentries.hasProperty("tab_instances"))
+			TAB_INSTANCES =  langentries.getProperty("tab_instances");
+
+		if (langentries.hasProperty("tab_servers"))
+			TAB_SERVERS =  langentries.getProperty("tab_servers");
+
+
+		if (langentries.hasProperty("version_custom"))
+			VERSION_CUSTOM = langentries.getProperty("version_custom");
+
+
+		if (langentries.hasProperty("browser_title"))
+			BROWSER_TITLE = langentries.getProperty("browser_title");
+
+
+		if (langentries.hasProperty("srv_loading"))
+			TAB_SRV_LOADING = langentries.getProperty("srv_loading");
+
+		if (langentries.hasProperty("srv_failed"))
+			TAB_SRV_FAILED = langentries.getProperty("srv_failed");
+
+		if (langentries.hasProperty("cl_loading"))
+			TAB_CL_LOADING = langentries.getProperty("cl_loading");
+
+		if (langentries.hasProperty("cl_failed"))
+			TAB_CL_FAILED = langentries.getProperty("cl_failed");
+
+
+		if (langentries.hasProperty("force_update"))
+			FORCE_UPDATE = langentries.getProperty("force_update");
+
+		if (langentries.hasProperty("console_output_for"))
+			CONSOLE_OUTPUT_FOR = langentries.getProperty("console_output_for");
+
+		if (langentries.hasProperty("console_output"))
+			CONSOLE_OUTPUT = langentries.getProperty("console_output");
+
+
+		if (langentries.hasProperty("yes"))
+			YES = langentries.getProperty("yes");
+
+		if (langentries.hasProperty("no"))
+			NO = langentries.getProperty("no");
+
+		if (langentries.hasProperty("cancel"))
+			CANCEL = langentries.getProperty("cancel");
+
+		if (langentries.hasProperty("select"))
+			SELECT = langentries.getProperty("select");
+
+		if (langentries.hasProperty("remove"))
+			REMOVE = langentries.getProperty("remove");
+
+		if (langentries.hasProperty("browse"))
+			BROWSE = langentries.getProperty("browse");
+
+		if (langentries.hasProperty("copy"))
+			COPY = langentries.getProperty("copy");
+
+		if (langentries.hasProperty("clear"))
+			CLEAR = langentries.getProperty("clear");
+
+		if (langentries.hasProperty("load"))
+			LOAD = langentries.getProperty("load");
+
+		if (langentries.hasProperty("close"))
+			CLOSE = langentries.getProperty("close");
+
+		if (langentries.hasProperty("link"))
+			LINK = langentries.getProperty("link");
+
+
+		if (langentries.hasProperty("pause"))
+			PAUSE = langentries.getProperty("pause");
+
+		if (langentries.hasProperty("unpause"))
+			UNPAUSE = langentries.getProperty("unpause");
 
 		applyNamesSwing();
 
@@ -314,6 +521,8 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String WINDOW_OPTIONS = "Edit instance";
 	public static String WINDOW_TITLE = "BetaCraft Launcher JE v" + Launcher.VERSION;
 	public static String WINDOW_DOWNLOADING = "Downloading ...";
+	public static String PACKING_MOD = "Packing mod ...";
+	public static String MANUAL_DOWNLOAD = "Manual download";
 	public static String WINDOW_USERNAME_FIELD_EMPTY = "The username field is empty!";
 
 	public static String LANG = "Select language";
@@ -330,7 +539,7 @@ public class Lang extends JFrame implements LanguageElement {
 
 	public static String SORT_FROM_OLDEST = "Sort: from oldest";
 	public static String SORT_FROM_NEWEST = "Sort: from newest";
-	public static String VERSION_LIST_TITLE = "Versions list";
+	public static String VERSION_LIST_TITLE = "Version list";
 
 	public static String ADDON_LIST_TITLE = "Addons list";
 	public static String ADDON_NO_DESC = "No description.";
@@ -349,15 +558,15 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String LOGIN_MICROSOFT_PARENT = "Parental approval required. Add this account to Family to login.";
 	public static String LOGIN_MICROSOFT_NO_XBOX = "No Xbox account registered";
 	public static String LOGIN_MICROSOFT_NO_MINECRAFT = "You don't own Minecraft on this account.";
-	public static String LOGIN_MICROSOFT_NO_JFX_TITLE = "No JFX detected.";
-	public static String LOGIN_MICROSOFT_NO_JFX_CONTENT = "You need to additionally install JavaFX in order to login with Microsoft.\nIt's recommended to install JRE 8 from: https://java.com";
+	public static String LOGIN_MICROSOFT_CODE_LINE1 = "To proceed, open up:";
+	public static String LOGIN_MICROSOFT_CODE_LINE2 = "in a browser and type the code:";
 
 	public static String LOGIN_FAILED = "Failed to complete the login process";
 	public static String LOGIN_FAILED_INVALID_CREDENTIALS = "Invalid e-mail or password.";
 
 	public static String JAVA_EXECUTABLE = "Java executable:";
 	public static String JAVA_INVALID = "Given Java path is not valid.";
-	public static String JAVA_TOO_RECENT = "Given Java is higher than 8. Are you sure you want to use it?";
+	public static String JAVA_TOO_RECENT = "Given Java's version is greater than 8. Are you sure you want to use it?";
 
 	public static String INSTANCE_REMOVE_DIRECTORY = "Would you want to permanently remove this instance's directory? This cannot be undone.";
 	public static String INSTANCE_DIRECTORY = "Instance directory:";
@@ -386,7 +595,7 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String BROWSER_TITLE = "Webpage viewer";
 
 	public static String TAB_SRV_LOADING = "Loading servers list...";
-	public static String TAB_SRV_FAILED = "Failed to list classic servers!";
+	public static String TAB_SRV_FAILED = "Failed to list Minecraft servers!";
 	public static String TAB_CL_LOADING = "Loading update news...";
 	public static String TAB_CL_FAILED = "Failed to load update news!";
 
@@ -412,6 +621,9 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String BROWSE = "Browse";
 	public static String COPY = "Copy";
 	public static String CLEAR = "Clear";
+	public static String LOAD = "Load";
+	public static String CLOSE = "Close";
+	public static String LINK = "Link";
 
 	public static String PAUSE = "Pause";
 	public static String UNPAUSE = "Unpause";

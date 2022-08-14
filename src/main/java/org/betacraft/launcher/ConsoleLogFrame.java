@@ -41,7 +41,6 @@ public class ConsoleLogFrame extends JFrame {
 			iconImg = ImageIO.read(Launcher.class.getResource("/icons/console.png"));
 		} catch (IOException e2) {
 			e2.printStackTrace();
-			Logger.printException(e2);
 			return;
 		}
 		

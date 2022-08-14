@@ -7,96 +7,76 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.InputStream;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
 
-import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JEditorPane;
 import javax.swing.JFrame;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
 
 import org.betacraft.launcher.Release.VersionRepository;
 
+import uk.betacraft.auth.CustomResponse;
+import uk.betacraft.auth.Request;
+import uk.betacraft.auth.RequestUtil;
+import uk.betacraft.json.lib.ModCategory;
+import uk.betacraft.json.lib.ModObject;
+
 public class ModsRepository extends JFrame implements ActionListener, LanguageElement {
 
-	public static ArrayList<String> mods = new ArrayList<String>();
+	public static ArrayList<ModCategory> mods = new ArrayList<ModCategory>();
 
 	public static void loadMods() {
 		try {
-			final URL url = new URL("http://files.betacraft.uk/launcher/assets/mods/1.09_10/list.txt");
+			String modlistjson = (new Request() {
 
-			InputStream onlineListStream = null;
-			try {
-				onlineListStream = url.openStream();
-			} catch (UnknownHostException ex) {
-				Logger.a(null);
-			} catch (SocketTimeoutException ex) {
-				Logger.a(null);
-			} catch (SocketException ex) {
-				Logger.a(null);
-			} catch (Exception ex) {
-				Logger.a("A critical error has occurred while attempting to get the online addons list!");
-				ex.printStackTrace();
-				Logger.printException(ex);
+				@Override
+				public CustomResponse perform() {
+					this.REQUEST_URL = "http://api.betacraft.uk/getmods.jsp";
+					return new CustomResponse(RequestUtil.performGETRequest(this));
+				}
+
+			}).perform().response;
+
+			ModCategory[] mc = Util.gson.fromJson(modlistjson, ModCategory[].class);
+			
+			for (ModCategory cat : mc) {
+				mods.add(cat);
 			}
-
-			// If connection failed, return
-			if (onlineListStream == null) {
-				return;
-			}
-
-			Scanner onlineListScanner = new Scanner(onlineListStream, "UTF-8");
-			for (String ver : scan(onlineListScanner)) {
-				mods.add(ver);
-			}
-
-			// Close the connection
-			onlineListScanner.close();
-			onlineListStream.close();
 		} catch (Exception ex) {
-			Logger.a("A critical error occurred while initializing addons list!");
+			System.err.println("A critical error occurred while loading mod list!");
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 	}
 
-	protected static List<String> scan(Scanner scanner) {
-		List<String> results = new ArrayList<String>();
-
-		String currentLine = null;
-		while (scanner.hasNextLine()) {
-			currentLine = scanner.nextLine();
-
-			// If the line is empty, ignore it
-			if (currentLine.equalsIgnoreCase("")) continue;
-
-			results.add(currentLine);
+	public static ModObject getMod(String name) {
+		for (ModCategory cat : mods) {
+			for (ModObject obj : cat.mods) {
+				if (obj.full_name.equalsIgnoreCase(name)) {
+					return obj;
+				}
+			}
 		}
-		return results;
+		return null;
 	}
 
-	static JList list;
-	static DefaultListModel listModel;
+	static ArrayList<DefaultMutableTreeNode> treenodes;
+	static JTree tree;
+	//static JList list;
+	//static DefaultListModel listModel;
 	static JScrollPane listScroller;
 	static JButton more_button;
-	static JButton OK;
+	static JButton LoadButton, CloseButton;
 	static JPanel panel;
 	static GridBagConstraints constr;
 
 	public ModsRepository() {
-		Logger.a("Mods repository window has been opened.");
+		System.out.println("Mods repository window opened.");
 		this.setIconImage(Window.img);
 		setMinimumSize(new Dimension(282, 386));
 		setTitle(Lang.INSTANCE_MODS_REPOSITORY);
@@ -124,9 +104,14 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 		constr.weighty = GridBagConstraints.RELATIVE;
 		constr.gridheight = 1;
 		constr.insets = new Insets(0, 5, 5, 5);
-		OK = new JButton(Lang.OPTIONS_OK);
-		OK.addActionListener(this);
-		panel.add(OK, constr);
+		LoadButton = new JButton(Lang.LOAD);
+		LoadButton.addActionListener(this);
+		panel.add(LoadButton, constr);
+
+		constr.gridx = 1;
+		CloseButton = new JButton(Lang.CLOSE);
+		CloseButton.addActionListener(this);
+		panel.add(CloseButton, constr);
 
 		this.add(panel, BorderLayout.SOUTH);
 
@@ -143,79 +128,78 @@ public class ModsRepository extends JFrame implements ActionListener, LanguageEl
 
 	public void update() {
 		this.setTitle(Lang.INSTANCE_MODS_REPOSITORY);
-		OK.setText(Lang.OPTIONS_OK);
+		LoadButton.setText(Lang.OPTIONS_OK);
 		this.pack();
 	}
 
 	protected void updateList() {
-		listModel = null;
-		listModel = new DefaultListModel();
-		for (String s : mods) {
-			listModel.addElement(s);
+		DefaultMutableTreeNode maintreenode = new DefaultMutableTreeNode("root");
+		
+		for (ModCategory cat : mods) {
+			DefaultMutableTreeNode catnode = new DefaultMutableTreeNode(cat.mod_category);
+			for (ModObject obj : cat.mods) {
+				DefaultMutableTreeNode modnode = new DefaultMutableTreeNode(obj);
+				catnode.add(modnode);
+			}
+			maintreenode.add(catnode);
 		}
+		tree = new JTree();
+		tree.setRootVisible(false);
+		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+
+		DefaultTreeModel treemodel = new DefaultTreeModel(maintreenode);
+		tree.setModel(treemodel);
 
 		constr.weighty = 1.0;
 		constr.gridheight = GridBagConstraints.RELATIVE;
 		constr.gridy = 1;
 
-		list = new JList(listModel);
-		list.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-		list.setLayoutOrientation(JList.VERTICAL);
-		list.setVisibleRowCount(10);
-
 		if (listScroller != null) panel.remove(listScroller);
 
-		listScroller = new JScrollPane(list);
+		listScroller = new JScrollPane(tree);
 		listScroller.setWheelScrollingEnabled(true);
 		panel.add(listScroller, constr);
 	}
 
 	public void saveVersions() {
-		if (list.getSelectedValues().length != 0) {
-			for (Object o : list.getSelectedValues()) {
-				String s = (String) o;
-				new ReleaseJson(s).downloadJson();
-			}
-			try {
-				Release.loadVersions(VersionRepository.BETACRAFT);
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				Logger.printException(ex);
-			}
-			Launcher.currentInstance.version = (String) list.getSelectedValues()[0];
-			Launcher.setInstance(Launcher.currentInstance);
-			Launcher.currentInstance.saveInstance();
-		}
-		setVisible(false);
-	}
+		TreePath treepath = tree.getSelectionPath();
+		if (treepath == null) return;
+		DefaultMutableTreeNode node = (DefaultMutableTreeNode) treepath.getLastPathComponent();
 
-	public JScrollPane getInfo(String name) {
-		JEditorPane pane = new JEditorPane();
-		pane.setEditable(false);
-		pane.setOpaque(false);
-		pane.setContentType("text/html;charset=UTF-8");
-		pane.addHyperlinkListener(WebsitePanel.EXTERNAL_HYPERLINK_LISTENER);
-		try {
-			pane.setPage(new URL("http://files.betacraft.uk/launcher/assets/mods/" + name + ".html"));
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			Logger.printException(ex);
-			pane.setText(Lang.ADDON_NO_DESC);
+		Object o = node.getUserObject();
+		if (o != null) {
+			if (o instanceof ModObject) {
+				ModObject obj = (ModObject) o;
+				DownloadResult download = new ReleaseJson(obj.full_name, obj.info_file_url).downloadJson();
+
+				if (download.isOK()) {
+					Release.loadVersions(VersionRepository.BETACRAFT);
+
+					Launcher.currentInstance.version = obj.full_name;
+					Launcher.setInstance(Launcher.currentInstance);
+					Launcher.currentInstance.saveInstance();
+				}
+			}
 		}
-		JScrollPane scrlPane = new JScrollPane(pane);
-		scrlPane.setBorder(null);
-		scrlPane.setWheelScrollingEnabled(true);
-		return scrlPane;
 	}
 
 	public void actionPerformed(ActionEvent e) {
-		if (e.getSource() == OK) {
+		if (e.getSource() == LoadButton) {
 			saveVersions();
+		} else if (e.getSource() == CloseButton) {
+			this.dispose();
 			Window.modsRepo = null;
 		} else if (e.getSource() == more_button) {
-			for (Object l : list.getSelectedValues()) {
-				String mod = (String) l;
-				new BrowserWindow(getInfo(mod));
+			TreePath treepath = tree.getSelectionPath();
+			if (treepath == null) return;
+			DefaultMutableTreeNode node = (DefaultMutableTreeNode) treepath.getLastPathComponent();
+
+			Object o = node.getUserObject();
+
+			if (o instanceof ModObject) {
+				ModObject mod = (ModObject) o;
+
+				Util.openURL(mod.website);
 			}
 		}
 	}

@@ -30,7 +30,7 @@ public class SelectVersion extends JFrame implements ActionListener, LanguageEle
 	static GridBagConstraints constr;
 
 	public SelectVersion() {
-		Logger.a("Version list window opened.");
+		System.out.println("Version list window opened.");
 		this.setIconImage(Window.img);
 		this.setMinimumSize(new Dimension(282, 386));
 		this.setTitle(Lang.VERSION_LIST_TITLE);
@@ -123,7 +123,7 @@ public class SelectVersion extends JFrame implements ActionListener, LanguageEle
 			Launcher.setInstance(Launcher.currentInstance);
 			Launcher.currentInstance.saveInstance();
 		}
-		setVisible(false);
+		dispose();
 	}
 
 	public void actionPerformed(ActionEvent e) {

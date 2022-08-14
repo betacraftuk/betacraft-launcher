@@ -18,6 +18,8 @@ import javax.swing.event.HyperlinkListener;
 
 import org.betacraft.launcher.Window.Tab;
 
+import uk.betacraft.json.lib.ModObject;
+
 public class WebsitePanel extends JPanel {
 
 	JScrollPane scrollPane = null;
@@ -30,7 +32,6 @@ public class WebsitePanel extends JPanel {
 				}
 				catch (Exception ex) {
 					ex.printStackTrace();
-					Logger.printException(ex);
 				}
 			}
 		}
@@ -50,12 +51,20 @@ public class WebsitePanel extends JPanel {
 					String protocolVersion = split[2];
 					String preferredVersion = split[3];
 
-					ArrayList<Release> matches = new ArrayList<Release>();
+					ArrayList<String> matches = new ArrayList<String>();
 					for (Release r : Release.versions) {
 						if (protocolVersion.equals(r.getInfo().getProtocol())) {
-							matches.add(r);
+							matches.add(r.getName());
 						}
 					}
+					// Do mods because otherwise it takes extra steps & that's annoying
+					if (!matches.contains(preferredVersion)) {
+						ModObject versionmod = ModsRepository.getMod(preferredVersion);
+						if (versionmod != null) {
+							matches.add(versionmod.full_name);
+						}
+					}
+
 					new SelectServerVersion(matches, mppass, address, preferredVersion);
 					return;
 				} else {
@@ -64,7 +73,6 @@ public class WebsitePanel extends JPanel {
 					}
 					catch (Exception ex) {
 						ex.printStackTrace();
-						Logger.printException(ex);
 					}
 				}
 			}
@@ -84,7 +92,6 @@ public class WebsitePanel extends JPanel {
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 		this.scrollPane = new JScrollPane(textPane);
 		this.scrollPane.setBorder(new MatteBorder(1, 1, 1, 1, Color.BLACK));
@@ -135,7 +142,6 @@ public class WebsitePanel extends JPanel {
 							textPane.setText("<html><body bgcolor=\"black\"><font color=\"red\"><br><br><br><br><br><center><h1>" + Lang.TAB_SRV_FAILED + "</h1><br>" + Lang.ERR_NO_CONNECTION + "</center></font></body></html>");
 						} catch (Exception ex) {
 							ex.printStackTrace();
-							Logger.printException(ex);
 							textPane.setContentType("text/html");
 							textPane.setText("<html><body bgcolor=\"black\"><font color=\"red\"><br><br><br><br><br><center><h1>" + Lang.TAB_SRV_FAILED + "</h1><br>" + ex.toString() + "</center></font></body></html>");
 						}
@@ -144,7 +150,6 @@ public class WebsitePanel extends JPanel {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 		this.scrollPane = new JScrollPane(textPane);
 		this.scrollPane.setWheelScrollingEnabled(true);
@@ -169,7 +174,7 @@ public class WebsitePanel extends JPanel {
 				new Thread() {
 					public void run() {
 						try {
-							HttpURLConnection con = (HttpURLConnection) new URL("http://files.betacraft.uk/launcher/changelog/" + Util.getProperty(BC.SETTINGS, "language") + ".html").openConnection();
+							HttpURLConnection con = (HttpURLConnection) new URL("http://files.betacraft.uk/launcher/changelog/" + Lang.encodeForURL(BC.SETTINGS.getProperty("language")) + ".html").openConnection();
 							con.setDoInput(true);
 							con.setDoOutput(false);
 							con.setConnectTimeout(5000);
@@ -190,7 +195,6 @@ public class WebsitePanel extends JPanel {
 							textPane.setText("<html><body bgcolor=\"black\"><font color=\"red\"><br><br><br><br><br><center><h1>" + Lang.TAB_CL_FAILED + "</h1><br>" + Lang.ERR_NO_CONNECTION + "</center></font></body></html>");
 						} catch (Throwable ex) {
 							ex.printStackTrace();
-							Logger.printException(ex);
 							textPane.setContentType("text/html");
 							textPane.setText("<html><body bgcolor=\"black\"><font color=\"red\"><br><br><br><br><br><center><h1>" + Lang.TAB_CL_FAILED + "</h1><br>" + ex.toString() + "</center></font></body></html>");
 						}
@@ -199,7 +203,6 @@ public class WebsitePanel extends JPanel {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 		this.scrollPane = new JScrollPane(textPane);
 		this.scrollPane.setBorder(null);
@@ -220,7 +223,6 @@ public class WebsitePanel extends JPanel {
 		}
 		catch (Exception ex) {
 			ex.printStackTrace();
-			Logger.printException(ex);
 		}
 		this.scrollPane = new JScrollPane(textPane);
 		this.scrollPane.setBorder(null);

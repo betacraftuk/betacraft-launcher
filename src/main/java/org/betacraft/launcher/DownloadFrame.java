@@ -52,7 +52,7 @@ public class DownloadFrame extends JFrame {
 		new Thread() {
 			int downloadSize = 0;
 			public void run() {
-				Logger.a("Update started from: " + link);
+				System.out.println("Update started from: " + link);
 
 				try {
 					// Start download
@@ -78,12 +78,10 @@ public class DownloadFrame extends JFrame {
 					outputst.close();
 					inputst.close();
 					downloadSize = 0;
-					Logger.a("Update done.");
+					System.out.println("Update done.");
 					return;
 				} catch (Exception ex) {
-					Logger.a("A critical error has occurred while attempting to download a file from: " + link);
 					ex.printStackTrace();
-					Logger.printException(ex);
 
 					// Delete the failed download
 					folder.delete();

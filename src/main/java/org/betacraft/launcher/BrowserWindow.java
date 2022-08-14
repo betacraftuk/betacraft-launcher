@@ -10,7 +10,7 @@ import javax.swing.JScrollPane;
 public class BrowserWindow extends JFrame implements LanguageElement {
 
 	public BrowserWindow(JScrollPane scrlp) {
-		Logger.a("Opened info viewer.");
+		System.out.println("Opened info viewer.");
 		this.setIconImage(Window.img);
 		this.setBackground(Color.BLACK);
 		this.setMinimumSize(new Dimension(360, 360));

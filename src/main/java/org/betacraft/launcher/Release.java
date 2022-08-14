@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Scanner;
 
+import uk.betacraft.json.lib.ModObject;
+
 public class Release {
 	// Version list for the user
 	public static ArrayList<Release> versions = new ArrayList<Release>();
@@ -202,20 +204,19 @@ public class Release {
 			return false; // it's a version from an online repository! not local one!
 		}
 
+		public File getInfoFile() {
+			return new File(BC.get() + "versions/jsons/", name + ".info");
+		}
+
 		public boolean hasJar() {
 			File jar = new File(BC.get() + "versions/", name + ".jar");
 			return jar.exists() && jar.isFile();
 		}
 
-		public boolean hasFakeJson() {
-			File fakeJson = new File(BC.get() + "versions/jsons/", name + ".info");
-			return fakeJson.exists() && fakeJson.isFile();
-		}
-
 		public void setEntry(String entry, String value) {}
 
-		public void downloadJson() {
-			Launcher.download("http://files.betacraft.uk/launcher/assets/jsons/" + this.getVersion() + ".info", new File(BC.get() + "versions" + File.separator + "jsons", this.getVersion() + ".info"));
+		public DownloadResult downloadJson() {
+			return Launcher.download("http://files.betacraft.uk/launcher/assets/jsons/" + this.getVersion() + ".info", getInfoFile());
 		}
 	}
 
@@ -231,8 +232,8 @@ public class Release {
 		if (info.getFileVersion() < Util.jsonVersion && info.getFileVersion() != -1 && info instanceof ReleaseJson && ReleaseJson.exists(name)) {
 			// Terminate all outdated info files
 			ReleaseJson info2 = (ReleaseJson) info;
-			info2.json.delete();
-			Logger.a("Terminated an outdated info file of: " + name);
+			info2.getInfoFile().delete();
+			System.out.println("Terminated an outdated info file of: " + name);
 			info = new ReleaseJson(name);
 		}
 		this.info = info;
@@ -251,7 +252,7 @@ public class Release {
 	}
 
 	public String customSuffix() {
-		return this.info.isCustom() ? Lang.VERSION_CUSTOM : "";
+		return (this.info.isCustom() || ModsRepository.getMod(this.name) != null) ? Lang.VERSION_CUSTOM : "";
 	}
 
 	public String toString() {
@@ -265,6 +266,13 @@ public class Release {
 			if (r.getName().equals(name)) {
 				return r;
 			}
+		}
+		// Match not found, check for not downloaded mods
+		ModObject modmatch = ModsRepository.getMod(name);
+		if (modmatch != null) {
+			new ReleaseJson(name, modmatch.info_file_url).downloadJson();
+			Release.loadVersions(VersionRepository.BETACRAFT);
+			return getReleaseByName(name);
 		}
 		return null;
 	}
@@ -283,7 +291,8 @@ public class Release {
 		public void setEntry(String entry, String value);
 		public int getFileVersion();
 		public boolean isCustom();
+		public File getInfoFile();
 
-		public void downloadJson();
+		public DownloadResult downloadJson();
 	}
 }
