@@ -589,13 +589,7 @@ public class Launcher {
 		for (String s: entries) {
 			File currentFile = new File(folder.getPath(), s);
 			if (currentFile.isDirectory() && !deleteOnlyFiles) {
-				for (String s1 : currentFile.list()) {
-					// Delete files inside this folder
-					new File(currentFile.getPath(), s1).delete();
-				}
-				try {
-					currentFile.delete();
-				} catch (Exception ex) {}
+				removeRecursively(currentFile, true, false);
 			} else {
 				currentFile.delete();
 			}

@@ -36,6 +36,7 @@ public class Release {
 	}
 
 	public static void loadVersions(VersionRepository repo) {
+		versions.clear();
 		try {
 			URL versionlisturl = new URL(repo.getLink());
 			Scanner scanner = new Scanner(versionlisturl.openStream(), "UTF-8");
