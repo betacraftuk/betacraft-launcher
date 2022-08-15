@@ -621,13 +621,14 @@ public class Launcher {
 			}
 
 			File file = new File(BC.get() + "launcher" + File.separator + "launch-methods", name + ".jar");
-			if (file.exists() && file.isFile()) {
-				if (Util.getSHA1(file).equalsIgnoreCase(lm.hash)) {
-					return;
-				}
-			}
 
 			if (lm != null) {
+				if (file.exists() && file.isFile()) {
+					if (Util.getSHA1(file).equalsIgnoreCase(lm.hash)) {
+						return;
+					}
+				}
+
 				if (!downloadWithButtonOutput(lm.url, file, lm.hash).isPositive()) {
 					JOptionPane.showMessageDialog(Window.mainWindow, Lang.ERR_DL_FAIL, Lang.ERR_DL_FAIL, JOptionPane.ERROR_MESSAGE);
 				}
