@@ -610,21 +610,20 @@ public class Launcher {
 		if (lmjsonurl != null && !lmjsonurl.equals("")) {
 			String name = json.getLaunchMethod();
 			LaunchMethod lm = null;
+			try {
+				URL launchmethods = new URL(lmjsonurl);
+				lm = Util.gson.fromJson(
+						new InputStreamReader(
+								launchmethods.openStream(), "UTF-8"), LaunchMethod.class);
+			} catch (Throwable t) {
+				System.out.println("Failed to read launchmethod from: " + lmjsonurl + " of version " + version);
+				t.printStackTrace();
+			}
 
 			File file = new File(BC.get() + "launcher" + File.separator + "launch-methods", name + ".jar");
 			if (file.exists() && file.isFile()) {
-				try {
-					URL launchmethods = new URL(lmjsonurl);
-					lm = Util.gson.fromJson(
-							new InputStreamReader(
-									launchmethods.openStream(), "UTF-8"), LaunchMethod.class);
-
-					if (Util.getSHA1(file).equalsIgnoreCase(lm.hash)) {
-						return;
-					}
-				} catch (Throwable t) {
-					System.out.println("Failed to read launchmethod from: " + lmjsonurl + " of version " + version);
-					t.printStackTrace();
+				if (Util.getSHA1(file).equalsIgnoreCase(lm.hash)) {
+					return;
 				}
 			}
 
