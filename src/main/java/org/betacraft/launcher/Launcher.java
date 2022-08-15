@@ -451,6 +451,8 @@ public class Launcher {
 				String colon = ":";
 				if (OS.isWindows()) {
 					colon = ";";
+					// Intel graphics -- DO NOT DELETE
+					params.add("-XX:HeapDumpPath=java.exe_minecraft.exe.heapdump");
 				}
 
 				// Additional parameters:
@@ -824,7 +826,7 @@ public class Launcher {
 	public static DownloadResult downloadWithButtonOutput(String link, final File folder, String sha1) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				Window.setStatus(Window.playButton, "Downloading: " + BC.trimBetaCraftDir(folder.getAbsolutePath()));
+				Window.setStatus(Window.playButton, String.format(Lang.WINDOW_DOWNLOADING_RESOURCE, BC.trimBetaCraftDir(folder.getAbsolutePath())));
 			}
 		});
 		return download(link, folder, sha1);
