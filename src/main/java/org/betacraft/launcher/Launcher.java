@@ -451,6 +451,8 @@ public class Launcher {
 				String colon = ":";
 				if (OS.isWindows()) {
 					colon = ";";
+					// Intel graphics -- DO NOT DELETE
+					params.add("-XX:HeapDumpPath=java.exe_minecraft.exe.heapdump");
 				}
 
 				// Additional parameters:
@@ -589,13 +591,7 @@ public class Launcher {
 		for (String s: entries) {
 			File currentFile = new File(folder.getPath(), s);
 			if (currentFile.isDirectory() && !deleteOnlyFiles) {
-				for (String s1 : currentFile.list()) {
-					// Delete files inside this folder
-					new File(currentFile.getPath(), s1).delete();
-				}
-				try {
-					currentFile.delete();
-				} catch (Exception ex) {}
+				removeRecursively(currentFile, true, false);
 			} else {
 				currentFile.delete();
 			}
@@ -614,25 +610,25 @@ public class Launcher {
 		if (lmjsonurl != null && !lmjsonurl.equals("")) {
 			String name = json.getLaunchMethod();
 			LaunchMethod lm = null;
+			try {
+				URL launchmethods = new URL(lmjsonurl);
+				lm = Util.gson.fromJson(
+						new InputStreamReader(
+								launchmethods.openStream(), "UTF-8"), LaunchMethod.class);
+			} catch (Throwable t) {
+				System.out.println("Failed to read launchmethod from: " + lmjsonurl + " of version " + version);
+				t.printStackTrace();
+			}
 
 			File file = new File(BC.get() + "launcher" + File.separator + "launch-methods", name + ".jar");
-			if (file.exists() && file.isFile()) {
-				try {
-					URL launchmethods = new URL(lmjsonurl);
-					lm = Util.gson.fromJson(
-							new InputStreamReader(
-									launchmethods.openStream(), "UTF-8"), LaunchMethod.class);
 
+			if (lm != null) {
+				if (file.exists() && file.isFile()) {
 					if (Util.getSHA1(file).equalsIgnoreCase(lm.hash)) {
 						return;
 					}
-				} catch (Throwable t) {
-					System.out.println("Failed to read launchmethod from: " + lmjsonurl + " of version " + version);
-					t.printStackTrace();
 				}
-			}
 
-			if (lm != null) {
 				if (!downloadWithButtonOutput(lm.url, file, lm.hash).isPositive()) {
 					JOptionPane.showMessageDialog(Window.mainWindow, Lang.ERR_DL_FAIL, Lang.ERR_DL_FAIL, JOptionPane.ERROR_MESSAGE);
 				}
@@ -830,7 +826,7 @@ public class Launcher {
 	public static DownloadResult downloadWithButtonOutput(String link, final File folder, String sha1) {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-				Window.setStatus(Window.playButton, "Downloading: " + BC.trimBetaCraftDir(folder.getAbsolutePath()));
+				Window.setStatus(Window.playButton, String.format(Lang.WINDOW_DOWNLOADING_RESOURCE, BC.trimBetaCraftDir(folder.getAbsolutePath())));
 			}
 		});
 		return download(link, folder, sha1);
