@@ -16,4 +16,10 @@ public class OS {
 	public static boolean isLinux() {
 		return (OS.indexOf("nix") >= 0 || OS.indexOf("nux") >= 0 || OS.indexOf("aix") > 0);
 	}
+	
+	//be aware that windows arm will release soon.
+	public static boolean isARMLinux(){
+		//aarch64 = 64bit arm, arm = 32bit
+		return (ARCH.indexOf("aarch64") >= 0 || (ARCH.indexOf("arm"))
+	}
 }
