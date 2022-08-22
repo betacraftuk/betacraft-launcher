@@ -43,7 +43,7 @@ public class Instance {
 
 	public static Instance newInstance(String name) {
 		// Use default settings
-		return new Instance(name, "-Xmx1G", "b1.7.3", 854, 480, true, false, true, new ArrayList<String>(), BC.get() + name + "/");
+		return new Instance(name, "-Xmx1G", "b1.7.3", 854, 480, true, false, false, new ArrayList<String>(), BC.get() + name + "/");
 	}
 
 	public static Instance loadInstance(String name) {
@@ -107,7 +107,7 @@ public class Instance {
 		try {
 			File instanceFile = new File(BC.get() + "launcher" + File.separator + "instances", this.name + ".txt");
 			if (!instanceFile.exists()) instanceFile.createNewFile();
-
+			
 			PropertyFile instancesettings = new PropertyFile(instanceFile);
 
 			instancesettings.setProperty("name", this.name);
@@ -116,7 +116,12 @@ public class Instance {
 			instancesettings.setProperty("height", Integer.toString(this.height));
 			instancesettings.setProperty("proxy", Boolean.toString(this.proxy));
 			instancesettings.setProperty("keepopen", Boolean.toString(this.keepopen));
+			if(!OS.isARMLinux){
 			instancesettings.setProperty("RPC", Boolean.toString(this.RPC));
+			}else{
+			instancesettings.setProperty("RPC", Boolean.toString(false));
+				System.out.println("Sorry, but the discord RPC dosen't like ARM")
+			}
 			instancesettings.setProperty("console", Boolean.toString(this.console));
 			instancesettings.setProperty("javaPath", javaPath);
 
