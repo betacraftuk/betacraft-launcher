@@ -40,10 +40,9 @@ public class BC {
 			folder = System.getProperty("user.home") + "/Library/Application Support/betacraft/";
 			if (portable) folder = prefBC() + "/betacraft/";
 		} else {
-			System.out.println("Your operating system is not supported.");
-			JOptionPane.showMessageDialog(Window.mainWindow, "Your operating system is not supported ;(", "I'm sorry, but", JOptionPane.WARNING_MESSAGE);
-			System.exit(0);
-			return null;
+			System.out.println("Your operating system is not currently supported.");
+			JOptionPane.showMessageDialog(Window.mainWindow, "Your operating system is not supported, andd may crash ;(", "Warning!", JOptionPane.WARNING_MESSAGE);
+		
 		}
 
 		File betacraft = new File(folder);
