@@ -65,19 +65,27 @@ public class Launcher {
 		System.out.println("Java version: " + javadistro + ", " + System.getProperty("java.runtime.name") + ", " + javaver);
 		System.out.println("System: " + OS.OS + ", " + OS.VER + ", " + OS.ARCH);
 		long nano = System.nanoTime();
-		boolean systemlookandfeel = Boolean.parseBoolean(System.getProperty("betacraft.systemLookAndFeel", "true"));
+		boolean systemlookandfeel = Boolean.parseBoolean(System.getProperty("betacraft.systemLookAndFeel", OS.isLinux() ? "false" : "true"));
 
 		if (systemlookandfeel) {
+			boolean fallback = false;
+
 			try {
 				// Fix for Java having a cross-platform look and feel
 				if (OS.isWindows()) UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 				else if (OS.isLinux()) UIManager.setLookAndFeel("com.sun.java.swing.plaf.gtk.GTKLookAndFeel");
+				else if (OS.isMac()) UIManager.setLookAndFeel("com.apple.laf.AquaLookAndFeel");
+				else fallback = true;
 			} catch (Exception ex) {
 				// why
+				fallback = true;
+			}
+
+			if (fallback) {
 				try {
 					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-				} catch (Exception ex1) {
-					ex1.printStackTrace();
+				} catch (Exception ex) {
+					ex.printStackTrace();
 				}
 			}
 		}
@@ -337,9 +345,9 @@ public class Launcher {
 		BC.SETTINGS.setProperty("lastInstance", Launcher.currentInstance.name);
 		BC.SETTINGS.flushToDisk();
 	}
-	
+
 	public static void removeInstance(String instance) {
-		Instance i = Instance.loadInstance((String) instance);
+		Instance i = Instance.loadInstance(instance);
 
 		if (i != null) {
 			int res = JOptionPane.showConfirmDialog(null, Lang.INSTANCE_REMOVE_DIRECTORY + "\n" + i.gameDir);
@@ -544,7 +552,7 @@ public class Launcher {
 				if (!instance.keepopen) {
 					Window.quit(false);
 				}
-				
+
 				// Console frame
 				ConsoleLogFrame clf = new ConsoleLogFrame(instance.name, instance.console);
 
@@ -633,7 +641,7 @@ public class Launcher {
 					JOptionPane.showMessageDialog(Window.mainWindow, Lang.ERR_DL_FAIL, Lang.ERR_DL_FAIL, JOptionPane.ERROR_MESSAGE);
 				}
 			}
-			
+
 		}
 	}
 
@@ -850,7 +858,7 @@ public class Launcher {
 			boolean yes = false;
 
 			// Format the message
-			String update_name = update.startsWith("!") ? update.substring(1) : update; 
+			String update_name = update.startsWith("!") ? update.substring(1) : update;
 			String rr = Lang.UPDATE_FOUND.replaceAll("%s", update_name);
 
 			if (!update.startsWith("!")) {
@@ -909,7 +917,7 @@ public class Launcher {
 			// No internet connection scenario
 			return false;
 		}
-		String update_name = update.startsWith("!") ? update.replace("!", "") : update; 
+		String update_name = update.startsWith("!") ? update.replace("!", "") : update;
 		if (!VERSION.equalsIgnoreCase(update_name)) {
 			// The latest version doesn't match the local version
 			System.out.println("Found a new version of the launcher (" + update + ").");
