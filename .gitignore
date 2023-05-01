@@ -1,0 +1,11 @@
+.vs
+out
+build
+.cache/
+
+.DS_Store
+CMakeSettings.json
+CMakeLists.txt.user
+compile_commands.json
+
+src/core/Constants.h

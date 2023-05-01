@@ -1,0 +1,20 @@
+<RCC>
+    <qresource prefix="/assets">
+        <file alias="logo.png">../../assets/logo.png</file>
+        <file alias="dirt.png">../../assets/dirt.png</file>
+        <file alias="stone.png">../../assets/stone.png</file>
+        <file alias="unknown_pack.png">../../assets/unknown_pack.png</file>
+        <file alias="favicon.ico">../../assets/favicon.ico</file>
+    </qresource>
+    <qresource prefix="/lang">
+        <file alias="English">../../lang/English.json</file>
+        <file alias="German">../../lang/German.json</file>
+        <file alias="Polish">../../lang/Polish.json</file>
+        <file alias="Polish (alternative)">../../lang/Polish (alternative).json</file>
+        <file alias="Polish (cyrillic)">../../lang/Polish (cyrillic).json</file>
+    </qresource>
+    <qresource prefix="/">
+        <file alias="COPYING.md">../../COPYING.md</file>
+        <file alias="java_repo.json">../../java_repo.json</file>
+    </qresource>
+</RCC>
