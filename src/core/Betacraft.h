@@ -3,7 +3,7 @@
 
 #include "Network.h"
 
-#define BETACRAFT_VERSION "2.0.0-alpha.20230429"
+#define BETACRAFT_VERSION "2.0.0-alpha.20230501"
 
 extern int betacraft_online;
 
