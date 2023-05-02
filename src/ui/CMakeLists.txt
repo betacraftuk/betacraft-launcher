@@ -79,6 +79,7 @@ elseif(UNIX AND NOT APPLE)
 
     install(FILES ${CMAKE_SOURCE_DIR}/assets/betacraft.desktop DESTINATION /usr/share/applications)
     install(FILES ${CMAKE_SOURCE_DIR}/assets/betacraft.png DESTINATION /usr/share/icons)
+    install(FILES ${CMAKE_SOURCE_DIR}/assets/betacraft.policy DESTINATION /usr/share/polkit-1/actions)
 
     set(CPACK_PACKAGE_NAME Betacraft)
     set(CPACK_PACKAGE_VERSION "2.0.0-alpha.20230501")

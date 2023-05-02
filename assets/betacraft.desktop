@@ -2,6 +2,6 @@
 Version=1.0
 Type=Application
 Terminal=false
-Exec=pkexec env DISPLAY=$DISPLAY XAUTHORITY=$XAUTHORITY /opt/betacraft/bin/Betacraft %U
+Exec=pkexec /opt/betacraft/bin/Betacraft %U
 Name=Betacraft
 Icon=betacraft
