@@ -29,11 +29,18 @@ elseif (WIN32)
 elseif (UNIX AND NOT APPLE) # Linux
     file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.so
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
+
+	if (CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CMAKE_INSTALL_PREFIX "/home/betacraft-build")
+    endif()
 endif()
 
 project(Betacraft)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/java_repo.json
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
+
+file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lang
     DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
 
 enable_testing()

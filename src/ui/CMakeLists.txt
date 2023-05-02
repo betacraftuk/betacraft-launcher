@@ -10,8 +10,9 @@ if (CMAKE_BUILD_TYPE STREQUAL "Release")
 endif()
 
 find_package(Qt6 REQUIRED COMPONENTS Widgets Concurrent)
+qt_standard_project_setup()
 
-add_executable(Betacraft
+qt_add_executable(Betacraft
     MainWindow.cpp MainWindow.h
     main.cpp
     assets.qrc
@@ -57,4 +58,37 @@ if(WIN32)
                 $<TARGET_FILE:Betacraft>
         COMMENT "Running windeployqt..."
     )
+elseif(UNIX AND NOT APPLE)
+    # cmake --install .
+    # cpack -G DEB
+    # sudo dpkg -i <package-name>
+
+    install(TARGETS Betacraft
+        BUNDLE  DESTINATION .
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+
+    qt_generate_deploy_app_script(
+        TARGET Betacraft
+        FILENAME_VARIABLE deploy_script
+        NO_TRANSLATIONS
+        NO_UNSUPPORTED_PLATFORM_ERROR
+    )
+
+    install(SCRIPT ${deploy_script})
+
+    install(FILES ${CMAKE_SOURCE_DIR}/assets/betacraft.desktop DESTINATION /usr/share/applications)
+    install(FILES ${CMAKE_SOURCE_DIR}/assets/betacraft.png DESTINATION /usr/share/icons)
+
+    set(CPACK_PACKAGE_NAME Betacraft)
+    set(CPACK_PACKAGE_VERSION "2.0.0-alpha.20230501")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Betacraft aims to provide easy access to old Minecraft versions and improve the overall game experience.")
+    set(CPACK_PACKAGE_VENDOR "Betacraft")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
+    set(CPACK_VERBATIM_VARIABLES ON)
+    set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/betacraft")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Kazu <kazuofficial.contact@gmail.com>")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libstdc++6, libgcc-s1, build-essential, libxcb-cursor-dev, libtar")
+
+    include(CPack)
 endif()
