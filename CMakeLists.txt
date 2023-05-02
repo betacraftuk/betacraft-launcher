@@ -30,8 +30,8 @@ elseif (UNIX AND NOT APPLE) # Linux
     file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.so
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
 
-	if (CMAKE_BUILD_TYPE STREQUAL "Release")
-        set(CMAKE_INSTALL_PREFIX "/home/betacraft-build")
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/build/release)
     endif()
 endif()
 
