@@ -1,1 +1,7 @@
-[Desktop Entry]Encoding=UTF-8Version=1.0Type=ApplicationTerminal=falseExec=pkexec /opt/betacraft/bin/Betacraft %UName=BetacraftIcon=betacraft
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Exec=pkexec /opt/betacraft/bin/Betacraft %U
+Name=Betacraft
+Icon=betacraft
