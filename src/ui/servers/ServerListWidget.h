@@ -32,7 +32,7 @@ private:
 	QListWidget* _serverList;
 	QPushButton* _searchButton;
 	void serverListAdd(int index);
-	bc_server_array* _serverArray;
+	//bc_server_array* _serverArray;
 };
 
 #endif

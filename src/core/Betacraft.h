@@ -8,17 +8,17 @@
 extern int betacraft_online;
 
 typedef struct bc_server {
-    char* name;
-    char* server_ip;
-    char* description;
-    char* icon;
-    char* version;
+    char name[64];
+    char server_ip[64];
+    char description[1024];
+    char icon[256];
+    char version[32];
     int online_players;
     int max_players;
 } bc_server;
 
 typedef struct bc_server_array {
-    bc_server* arr;
+    bc_server arr[256];
     int len;
 } bc_server_array;
 

@@ -4,10 +4,10 @@
 #include <QIcon>
 #include <QTranslator>
 
-#if defined(__APPLE__)
+#ifdef __APPLE__
 #include <mach-o/dyld.h>
 #include <CoreServices/CoreServices.h>
-#elif defined(WIN32) || defined(_WIN32)
+#elif _WIN32
 #include <direct.h>
 #include <process.h>
 #endif
@@ -22,7 +22,6 @@ extern "C" {
 	#include "../core/Betacraft.h"
 	#include "../core/Update.h"
 	#include "../core/JavaInstallations.h"
-
 #ifdef __APPLE__
     #include "../core/AppleExclusive.h"
 #endif
@@ -30,15 +29,19 @@ extern "C" {
 
 void updateCheck() {
 	if (QCoreApplication::arguments().contains("-update")) {
-		bc_file_directory_copy(".", "../"); // temp -> working directory
-		chdir("../");
+		const char workingDir[16] = "../../../";
+
+		bc_file_directory_copy(".", workingDir); // betacraft/temp/Betacraft -> working directory
+		chdir(workingDir);
 		execl("Betacraft.exe", "Betacraft.exe", "-updatefinish", NULL);
 	}
 	else if (QCoreApplication::arguments().contains("-updatefinish")) {
-		bc_file_directory_remove("temp");
+		bc_file_directory_remove("temp-update");
 	}
 
-	//if (betacraft_online == 1) bc_update_perform();
+	if (betacraft_online == 1) {
+		//bc_update_perform();
+	}
 }
 
 void copyLanguageFiles() {
