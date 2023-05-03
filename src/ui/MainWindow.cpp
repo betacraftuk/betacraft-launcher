@@ -21,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	_gameProgressTimer = new QTimer(this);
 	_discordLoopTimer = new QTimer(this);
 	_gameProcess = new QProcess(this);
+	_messageBox = new QMessageBox(this);
 	_logo = new QLabel(_bottomBackground);
 	_playButton = new QPushButton(_bottomBackground);
 	_instanceLabel = new QLabel(_bottomBackground);
@@ -121,6 +122,26 @@ MainWindow::MainWindow(QWidget *parent) :
 	onAccountUpdate();
 
 	updateInstanceLabel();
+
+	if (betacraft_online == 0)
+		return;
+
+	char* updateVersion = bc_update_check();
+
+	if (updateVersion != NULL) {
+		QString url = "https://github.com/betacraftuk/betacraft-launcher/releases";
+		QString message("A new update is available!<br/>Get Betacraft %0 at<br/>");
+		message += "<a href='%1'>%1</a>";
+
+		_messageBox->setWindowTitle("Betacraft");
+		_messageBox->setText(message.arg(QString(updateVersion)).arg(url));
+		_messageBox->setModal(true);
+		_messageBox->setTextFormat(Qt::RichText);
+
+		_messageBox->show();
+	}
+
+	free(updateVersion);
 }
 
 void MainWindow::onMenuIndexChanged(int index) {
@@ -234,6 +255,7 @@ bool MainWindow::recommendedJavaCheck() {
             ? QString("Would you like to install recommended Java %0?").arg(recommendedJavaVersion)
             : QString("Would you like to switch to Java %0?").arg(parsedRecommended);
 
+		messageBox.setWindowTitle("Betacraft");
         messageBox.setText(message);
         messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 

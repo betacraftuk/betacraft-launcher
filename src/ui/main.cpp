@@ -20,28 +20,10 @@
 extern "C" {
 	#include "../core/FileSystem.h"
 	#include "../core/Betacraft.h"
-	#include "../core/Update.h"
 	#include "../core/JavaInstallations.h"
 #ifdef __APPLE__
     #include "../core/AppleExclusive.h"
 #endif
-}
-
-void updateCheck() {
-	if (QCoreApplication::arguments().contains("-update")) {
-		const char workingDir[16] = "../../../";
-
-		bc_file_directory_copy(".", workingDir); // betacraft/temp/Betacraft -> working directory
-		chdir(workingDir);
-		execl("Betacraft.exe", "Betacraft.exe", "-updatefinish", NULL);
-	}
-	else if (QCoreApplication::arguments().contains("-updatefinish")) {
-		bc_file_directory_remove("temp-update");
-	}
-
-	if (betacraft_online == 1) {
-		//bc_update_perform();
-	}
 }
 
 void copyLanguageFiles() {
@@ -110,7 +92,6 @@ int main(int argc, char *argv[]) {
     copyJavaRepo();
 	bc_file_init();
 	betacraft_online = bc_network_status();
-	updateCheck();
 	bc_jinst_system_check();
 
 	MainWindow win;

@@ -3,6 +3,7 @@
 
 #include <QWidget>
 #include <QtConcurrent>
+#include <QMessageBox>
 
 #include "ConsoleLogWidget.h"
 #include "AboutWidget.h"
@@ -67,6 +68,7 @@ private:
 	QTimer* _gameProgressTimer;
 	QTimer* _discordLoopTimer;
 	QProcess* _gameProcess;
+	QMessageBox* _messageBox;
     QString _username;
 	QString _instanceSelectedVersion;
 	QString _instanceSelectedName;

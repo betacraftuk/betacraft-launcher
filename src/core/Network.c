@@ -188,7 +188,7 @@ int bc_network_status() {
     curl = curl_easy_init();
 
     if (curl) {
-        curl_easy_setopt(curl, CURLOPT_URL, "https://www.google.com/");
+        curl_easy_setopt(curl, CURLOPT_URL, "http://checkip.amazonaws.com/");
 
         res = curl_easy_perform(curl);
 

@@ -58,3 +58,28 @@ void bc_translate(const char* key, char* out) {
     json_object_put(json);
     free(settings);
 }
+
+char* bc_update_check() {
+    char* response = bc_network_get("https://api.github.com/repos/betacraftuk/betacraft-launcher/releases?per_page=1", "User-Agent: Betacraft");
+    json_object* json = json_tokener_parse(response);
+    free(response);
+
+    json_object* latestRelease = json_object_array_get_idx(json, 0);
+    char* out = NULL;
+
+    if (strcmp(jext_get_string_dummy(latestRelease, "target_commitish"), "v2") != 0) {
+        json_object_put(json);
+        return out;
+    }
+
+    const char* tagName = jext_get_string_dummy(latestRelease, "tag_name");
+
+    if (strcmp(tagName, BETACRAFT_VERSION) != 0) {
+        out = malloc(strlen(tagName) + 1);
+        strcpy(out, tagName);
+    }
+
+    json_object_put(json);
+
+    return out;
+}

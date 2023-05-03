@@ -25,5 +25,6 @@ typedef struct bc_server_array {
 bc_server_array* bc_server_list();
 bc_memory bc_avatar_get(const char* uuid);
 void bc_translate(const char* key, char* out);
+char* bc_update_check();
 
 #endif

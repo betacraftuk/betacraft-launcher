@@ -31,8 +31,6 @@ add_library(Core
     Account.h
     JavaInstallations.c
     JavaInstallations.h
-    Update.c
-    Update.h
     Logger.c
     Logger.h
     Discord.c
