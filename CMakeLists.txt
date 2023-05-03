@@ -38,10 +38,10 @@ endif()
 project(Betacraft)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/java_repo.json
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/betacraft/)
 
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lang
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
+    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/betacraft/)
 
 enable_testing()
 

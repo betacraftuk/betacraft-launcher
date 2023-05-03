@@ -1,4 +1,5 @@
 #include "Network.h"
+#include "Logger.h"
 
 #include <curl/curl.h>
 
@@ -56,7 +57,7 @@ bc_memory bc_network_get_chunk(const char* url) {
         res = curl_easy_perform(curl);
 
         if (res != CURLE_OK) {
-            fprintf(stderr, "GET failed: %s\n", curl_easy_strerror(res));
+            bc_log("GET failed: %s\n", curl_easy_strerror(res));
         }
 
         curl_easy_cleanup(curl);
@@ -87,7 +88,7 @@ char* bc_network_get(const char* url, const char* header) {
         res = curl_easy_perform(curl);
 
         if (res != CURLE_OK) {
-            fprintf(stderr, "GET failed: %s\n", curl_easy_strerror(res));
+            bc_log("GET failed: %s\n", curl_easy_strerror(res));
         }
 
         curl_easy_cleanup(curl);
@@ -117,7 +118,7 @@ char* bc_network_post(const char* url, const char* data, const char* header) {
         res = curl_easy_perform(curl);
 
         if (res != CURLE_OK) {
-            fprintf(stderr, "POST failed: %s\n", curl_easy_strerror(res));
+            bc_log("POST failed: %s\n", curl_easy_strerror(res));
         }
 
         curl_easy_cleanup(curl);
@@ -137,7 +138,7 @@ int bc_network_download(const char* url, const char* dest, int isFile) {
     if (curl) {
         char* split = strrchr(url, '/');
 
-        char filename[256];
+        char filename[PATH_MAX];
         snprintf(filename, sizeof(filename), "%s", split);
 
         char* dropboxParams = filename + (strlen(filename) - 5);
@@ -167,7 +168,7 @@ int bc_network_download(const char* url, const char* dest, int isFile) {
         res = curl_easy_perform(curl);
 
         if (res != CURLE_OK) {
-            fprintf(stderr, "Download failed: %s\n", curl_easy_strerror(res));
+            bc_log("Download failed: %s\n", curl_easy_strerror(res));
             return 0;
         }
 
@@ -187,12 +188,12 @@ int bc_network_status() {
     curl = curl_easy_init();
 
     if (curl) {
-        curl_easy_setopt(curl, CURLOPT_URL, "http://checkip.amazonaws.com/");
+        curl_easy_setopt(curl, CURLOPT_URL, "https://www.google.com/");
 
         res = curl_easy_perform(curl);
 
         if (res != CURLE_OK) {
-            fprintf(stderr, "Failed: %s\n", curl_easy_strerror(res));
+            bc_log("Failed: %s\n", curl_easy_strerror(res));
             return 0;
         }
 

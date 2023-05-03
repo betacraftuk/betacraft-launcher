@@ -44,16 +44,19 @@ void updateCheck() {
 void copyLanguageFiles() {
 	char* workDir = bc_file_directory_get_working();
 
-	QString langrelative("lang/");
-	QDir dir = QDir(QString(workDir));
-	dir.mkdir(langrelative);
-	QString langpath = dir.absoluteFilePath(langrelative);
+	QString langRelative("lang/");
 
-	QString langres(":/lang/");
-	QDir langresourcedir(langres);
-	foreach(QString f, langresourcedir.entryList(QDir::Files)) {
-		QString source = QString(langres + QDir::separator() + f);
-		QString dest = QString(langpath + f + QString(".json"));
+	QDir dir = QDir(QString(workDir));
+	dir.mkdir(langRelative);
+
+	QString langPath = dir.absoluteFilePath(langRelative);
+	QString langRes(":/lang/");
+
+	QDir langreSourceDir(langRes);
+
+	foreach(QString f, langreSourceDir.entryList(QDir::Files)) {
+		QString source = QString(langRes + QDir::separator() + f);
+		QString dest = QString(langPath + f + QString(".json"));
 
 		if (QFile::exists(dest)) {
 			QFile::remove(dest);
@@ -86,7 +89,6 @@ void setAppleWorkDir() {
 	make_path(apploc.c_str(), 0);
 	chdir(apploc.c_str());
 
-	std::cout << std::endl << std::endl << apploc << std::endl;
 	free(path);
 }
 #endif
@@ -94,6 +96,9 @@ void setAppleWorkDir() {
 int main(int argc, char *argv[]) {
 #ifdef __APPLE__
 	setAppleWorkDir();
+#else
+	make_path("betacraft/", 0);
+	chdir("betacraft/");
 #endif
 	QApplication app(argc, argv);
 	app.setWindowIcon(QIcon(":/assets/favicon.ico"));

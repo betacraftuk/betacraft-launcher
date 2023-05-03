@@ -311,6 +311,8 @@ char* bc_game_classpath(bc_game_data* data) {
         free(libPath);
     }
 
+    free(workDir);
+
     return classPath;
 }
 

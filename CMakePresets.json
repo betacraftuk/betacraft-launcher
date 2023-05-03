@@ -16,7 +16,7 @@
         "CMAKE_BUILD_TYPE": "Debug"
         //"CMAKE_C_COMPILER": "C:/Qt/Tools/mingw1120_64/bin/gcc.exe",
         //"CMAKE_CXX_COMPILER": "C:/Qt/Tools/mingw1120_64/bin/g++.exe",
-        //"CMAKE_PREFIX_PATH": "C:/Qt/6.3.1/mingw_64",
+        //"CMAKE_PREFIX_PATH": "C:/Qt/6.5.0/mingw_64",
       },
       "environment": {
         "VCPKG_ROOT": "./lib/vcpkg"

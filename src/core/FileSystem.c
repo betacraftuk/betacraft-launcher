@@ -460,7 +460,7 @@ void bc_file_zip_directory(const char* p, int n, zip_t* zip) {
         snprintf(dirPath, sizeof(dirPath), "%s", p);
 
         if (p[strlen(p) - 1] != '/')
-            snprintf(dirPath, sizeof(dirPath), "%s/", dirPath);
+            strcat(dirPath, "/");
 
         strcat(dirPath, files->arr[i].name);
         char* path = dirPath + n;

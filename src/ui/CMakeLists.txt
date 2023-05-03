@@ -55,6 +55,7 @@ if(WIN32)
 
     add_custom_command(TARGET Betacraft POST_BUILD
         COMMAND ${TOOL_WINDEPLOYQT}
+                --no-translations
                 $<TARGET_FILE:Betacraft>
         COMMENT "Running windeployqt..."
     )
@@ -89,7 +90,7 @@ elseif(UNIX AND NOT APPLE)
     set(CPACK_VERBATIM_VARIABLES ON)
     set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/betacraft")
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Kazu <kazuofficial.contact@gmail.com>")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libstdc++6, libgcc-s1, build-essential, libxcb-cursor-dev, libtar")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libstdc++6, libgcc-s1, libxcb-cursor0, libtar")
 
     include(CPack)
 endif()
