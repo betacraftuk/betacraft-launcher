@@ -15,6 +15,7 @@
 #if defined(__linux__) || defined(__APPLE__)
 #include <iostream>
 #include <unistd.h>
+#include <pwd.h>
 #endif
 
 extern "C" {
@@ -64,8 +65,8 @@ void copyJavaRepo() {
 	free(workDir);
 }
 
+void setWorkDir() {
 #ifdef __APPLE__
-void setAppleWorkDir() {
 	char* path = bc_file_get_application_support();
 
 	std::string apploc(path);
@@ -75,16 +76,23 @@ void setAppleWorkDir() {
 	chdir(apploc.c_str());
 
 	free(path);
-}
-#endif
+#elif __linux__
+	char workDir[PATH_MAX];
+	struct passwd* pw = getpwuid(getuid());
+	strcpy(workDir, pw->pw_dir);
+	strcat(workDir, "/.local/share/betacraft/");
 
-int main(int argc, char *argv[]) {
-#ifdef __APPLE__
-	setAppleWorkDir();
-#else
+	make_path(workDir, 0);
+	chdir(workDir);
+#elif _WIN32
 	make_path("betacraft/", 0);
 	chdir("betacraft/");
 #endif
+}
+
+int main(int argc, char *argv[]) {
+	setWorkDir();
+
 	QApplication app(argc, argv);
 	app.setWindowIcon(QIcon(":/assets/favicon.ico"));
 
