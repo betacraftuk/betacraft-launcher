@@ -26,6 +26,13 @@ if(APPLE)
 elseif (WIN32)
     file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.dll
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
+	
+	if (CMAKE_BUILD_TYPE STREQUAL "Release")
+	    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/java_repo.json
+	        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/betacraft/)
+	    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lang
+	        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/betacraft/)
+	endif()
 elseif (UNIX AND NOT APPLE) # Linux
     file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.so
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
@@ -36,12 +43,6 @@ elseif (UNIX AND NOT APPLE) # Linux
 endif()
 
 project(Betacraft)
-
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/java_repo.json
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/betacraft/)
-
-file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lang
-    DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/betacraft/)
 
 enable_testing()
 
