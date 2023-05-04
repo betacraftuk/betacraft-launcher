@@ -456,7 +456,13 @@ void bc_file_archive_directory(const char* p, int n, struct archive* a, struct a
         archive_entry_set_filetype(entry, files->arr[i].is_directory ? AE_IFDIR : AE_IFREG);
         archive_write_header(a, entry);
 
-        fd = open(dirPath, O_BINARY);
+#ifdef _WIN32
+        int mode = O_BINARY;
+#elif __linux__
+        int mode = O_RDONLY;
+#endif
+
+        fd = open(dirPath, mode);
         len = read(fd, buff, sizeof(buff));
 
         while (len > 0) {
