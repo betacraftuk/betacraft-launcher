@@ -71,4 +71,6 @@ void SettingsGeneralWidget::onDiscordCheckboxClicked(bool checked) {
 	bc_settings_update(settings);
 
 	free(settings);
+
+	emit signal_toggleDiscordRPC();
 }

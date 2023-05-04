@@ -24,6 +24,7 @@ private slots:
 
 signals:
 	void signal_toggleTabs();
+	void signal_toggleDiscordRPC();
 
 private:
 	QGridLayout* _layout;

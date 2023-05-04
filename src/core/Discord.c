@@ -2,6 +2,7 @@
 
 #include "Logger.h"
 #include "Constants.h"
+#include "Settings.h"
 
 #include <stdio.h>
 #include "../../lib/discord_game_sdk/discord_game_sdk.h"
@@ -34,7 +35,7 @@ void bc_discord_activity_update(const char* details, const char* state) {
 
 int bc_discord_init() {
     if (DISCORD_CLIENT_ID == 0)
-        return -1;
+        return 0;
 
     memset(&app, 0, sizeof(app));
 
@@ -53,15 +54,22 @@ int bc_discord_init() {
 
     enum EDiscordResult create = DiscordCreate(DISCORD_VERSION, &params, &app.core);
 
+    bc_settings* settings = bc_settings_get();
+    int toggled = settings->discord && create == DiscordResult_Ok;
+    free(settings);
+
     // If discord instance is running
-    if (create == DiscordResult_Ok) {
+    if (toggled) {
         app.activity = app.core->get_activity_manager(app.core);
-        return 0;
     }
 
-    return -1;
+    return toggled;
 }
 
 void bc_discord_loop() {
     app.core->run_callbacks(app.core);
+}
+
+void bc_discord_stop() {
+    app.core->destroy(app.core);
 }

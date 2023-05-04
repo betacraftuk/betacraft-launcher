@@ -44,6 +44,7 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 
 	connect(_sidebar, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onSidebarItemClicked(QListWidgetItem*)));
 	connect(_settingsJavaWidget, SIGNAL(signal_toggleTabs()), this, SIGNAL(signal_toggleTabs()));
+	connect(_settingsGeneralWidget, SIGNAL(signal_toggleDiscordRPC()), this, SIGNAL(signal_toggleDiscordRPC()));
 }
 
 void SettingsWidget::onSidebarItemClicked(QListWidgetItem* item) {

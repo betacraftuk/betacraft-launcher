@@ -47,6 +47,7 @@ private slots:
 	void onMenuIndexChanged(int index);
 	void updateGameProgress();
 	void onToggleTabs();
+	void onToggleDiscordRPC();
 
 private:
 	QGridLayout* _mainLayout;
@@ -76,6 +77,7 @@ private:
 	void launchGame();
 	void updateInstanceLabel();
 	bool recommendedJavaCheck();
+	void startDiscordRPC();
 };
 
 #endif

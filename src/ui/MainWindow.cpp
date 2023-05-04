@@ -112,15 +112,12 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(&_watcher, &QFutureWatcher<void>::finished, this, &MainWindow::launchingGameFinished);
 	connect(_discordLoopTimer, &QTimer::timeout, this, [this]() { bc_discord_loop(); });
 	connect(_settingsWidget, SIGNAL(signal_toggleTabs()), this, SLOT(onToggleTabs()));
+	connect(_settingsWidget, SIGNAL(signal_toggleDiscordRPC()), this, SLOT(onToggleDiscordRPC()));
 
-	int discord = bc_discord_init();
-	if (discord == 0) {
-		_discordLoopTimer->start(2000);
-	}
+	startDiscordRPC();
 
 	onInstanceUpdate();
 	onAccountUpdate();
-
 	updateInstanceLabel();
 
 	if (betacraft_online == 0)
@@ -142,6 +139,23 @@ MainWindow::MainWindow(QWidget *parent) :
 	}
 
 	free(updateVersion);
+}
+
+void MainWindow::startDiscordRPC() {
+	int discord = bc_discord_init();
+
+	if (discord) {
+		_discordLoopTimer->start(2000);
+	}
+}
+
+void MainWindow::onToggleDiscordRPC() {
+	if (_discordLoopTimer->isActive()) {
+		_discordLoopTimer->stop();
+		bc_discord_stop();
+	} else {
+		startDiscordRPC();
+	}
 }
 
 void MainWindow::onMenuIndexChanged(int index) {

@@ -23,6 +23,9 @@ private slots:
 	void onLanguageChange(const QString& lang);
 	void onDiscordCheckboxClicked(bool checked);
 
+signals:
+	void signal_toggleDiscordRPC();
+
 private:
 	QGridLayout* _layout;
 	QVBoxLayout* _languageLayout;
