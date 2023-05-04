@@ -5,6 +5,7 @@
 #include "Settings.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include "../../lib/discord_game_sdk/discord_game_sdk.h"
 
 struct Application app;
