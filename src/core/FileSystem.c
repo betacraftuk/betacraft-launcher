@@ -458,7 +458,7 @@ void bc_file_archive_directory(const char* p, int n, struct archive* a, struct a
 
 #ifdef _WIN32
         int mode = O_BINARY;
-#elif __linux__
+#else
         int mode = O_RDONLY;
 #endif
 
