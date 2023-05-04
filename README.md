@@ -9,7 +9,7 @@ Betacraft aims to provide easy access to old Minecraft versions and improve the 
 * OS
     * Windows (10 or higher).
     * Linux.
-    * macOS (10.14 or higher).
+    * macOS (10.11 or higher).
 
 ## Building
 
@@ -19,19 +19,3 @@ Betacraft requires [CMake](https://cmake.org/). Many libraries are bundled with 
 2. `cd build`
 3. `cmake ..`
 4. `make`
-
-If you're building for Linux or macOS, you'll have to build [libtar](https://github.com/tklauser/libtar) which can be pulled as a submodule:
-```sh
-git submodule update --init --recursive
-```
-Alternatively, you can download it as a package:
-
-* Linux (Ubuntu)
-```sh
-sudo apt-get install libtar
-```
-
-* macOS
-```sh
-brew install libtar
-```
