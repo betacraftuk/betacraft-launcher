@@ -45,6 +45,11 @@ InstanceListWidget::InstanceListWidget(QWidget *parent)
 
 void InstanceListWidget::onInstanceClicked(QTreeWidgetItem* item, int column) {
 	bc_instance instance = item->data(0, Qt::UserRole).value<bc_instance>();
+
+	if (instance.path[0] == '\0') {
+		return;
+	}
+
 	QString id(instance.path);
 
 	if (!id.isNull() && id.compare(_selectedInstance) != 0) {
