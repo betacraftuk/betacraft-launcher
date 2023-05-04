@@ -59,13 +59,13 @@ void test_bc_file_directory_copy() {
     assert(bc_file_directory_exists("copyTest/innerDir/") == 1);
 }
 
-void test_bc_file_zip() {
-    bc_file_zip("test/", "test.zip");
+void test_bc_file_archive() {
+    bc_file_archive("test", "test.zip");
     assert(bc_file_exists("test.zip") == 1);
 }
 
-void test_bc_file_unzip() {
-    bc_file_unzip("test.zip", "test/innerDir/instances/");
+void test_bc_file_extract() {
+    bc_file_extract("test.zip", "test/innerDir/instances/");
     assert(bc_file_directory_exists("test/innerDir/instances/innerDir/") == 1);
 }
 
@@ -86,8 +86,8 @@ int main() {
     test_make_path();
     test_bc_file_make_absolute_path("instances/");
     test_bc_file_directory_copy();
-    test_bc_file_zip();
-    test_bc_file_unzip();
+    test_bc_file_archive();
+    test_bc_file_extract();
 
     bc_file_directory_remove("test/");
     bc_file_directory_remove("copyTest/");

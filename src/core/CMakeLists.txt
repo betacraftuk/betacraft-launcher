@@ -43,12 +43,11 @@ add_library(Core
     WindowsProcessHandler.h
     Constants.h
     ../../lib/discord_game_sdk/discord_game_sdk.h
-    ../../lib/libtar/libtar.h
 )
 
 find_package(json-c CONFIG REQUIRED)
-find_package(libzip CONFIG REQUIRED)
 find_package(CURL CONFIG REQUIRED)
+find_package(LibArchive REQUIRED)
 
 if (WIN32)
     target_link_libraries(Core PUBLIC ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.dll.lib)
@@ -57,22 +56,19 @@ elseif (APPLE)
     #set(CMAKE_APPLE_SILICON_PROCESSOR "arm64")
     if(CMAKE_APPLE_SILICON_PROCESSOR STREQUAL "arm64")
         target_link_libraries(Core PUBLIC ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/aarch64/discord_game_sdk.bundle)
-        target_link_libraries(Core PUBLIC ${CMAKE_SOURCE_DIR}/lib/libtar/libtar-arm64.dylib)
     elseif(CMAKE_APPLE_SILICON_PROCESSOR STREQUAL "x86_64")
         target_link_libraries(Core PUBLIC ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.dylib)
-        target_link_libraries(Core PUBLIC ${CMAKE_SOURCE_DIR}/lib/libtar/libtar-x86_64.dylib)
     endif()
 elseif (UNIX AND NOT APPLE) # Linux
-    target_link_libraries(Core PUBLIC tar)
-
     add_library(discordgamesdk SHARED IMPORTED)
     set_target_properties(discordgamesdk PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.so)
-
     target_link_libraries(Core PUBLIC discordgamesdk)
 endif()
+
+target_include_directories(Core PUBLIC ${LibArchive_INCLUDE_DIRS})
 
 target_link_libraries(Core PUBLIC
     CURL::libcurl
     json-c::json-c
-    libzip::zip
+    ${LibArchive_LIBRARIES}
 )

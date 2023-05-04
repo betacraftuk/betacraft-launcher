@@ -497,7 +497,7 @@ void bc_game_download_lib_all(bc_game_data* data) {
 
                 make_path(data->natives_folder, 0);
 
-                bc_file_unzip(fileLoc, data->natives_folder);
+                bc_file_extract(fileLoc, data->natives_folder);
 
                 free(libPath);
             }

@@ -6,12 +6,14 @@
 #include <stdio.h>
 #include <sys/stat.h>
 #include <json-c/json.h>
-#include <zip.h>
+#include <archive.h>
+#include <archive_entry.h>
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <dirent.h>
 #include <limits.h>
+#include <fcntl.h>
 
 #ifdef _WIN32
 #include <io.h>
@@ -24,9 +26,6 @@
 
 #if defined(__linux__) || defined(__APPLE__)
 #include <unistd.h>
-#include "../../lib/libtar/libtar.h"
-#include <fcntl.h>
-#include <zlib.h>
 #endif
 
 char* bc_file_make_absolute_path(const char* relative_path) {
@@ -144,6 +143,7 @@ bc_file_list_array* bc_file_list(const char* path) {
 
         snprintf(arr->arr[arr->len].name, sizeof(arr->arr[arr->len].name), "%s", ent->d_name);
 
+        arr->arr[arr->len].size = statbuf.st_size;
         arr->arr[arr->len].is_directory = S_ISDIR(statbuf.st_mode);
 #if defined(__APPLE__) || defined(__linux__)
         arr->arr[arr->len].is_symlink = S_ISLNK(statbuf.st_mode);
@@ -347,112 +347,96 @@ void bc_file_init() {
     bc_log("%s\n", "Files initialized");
 }
 
-#if defined(__linux__) || defined(__APPLE__)
-void bc_file_gzip_decompress(const char* filepath, const char* out) {
-    int LENGTH = 0x1000;
+int copy_data(struct archive* ar, struct archive* aw) {
+    int r;
+    const void* buff;
+    size_t size;
+    la_int64_t offset;
 
-    gzFile file = gzopen(filepath, "rb");
-    FILE* fileDecomp = fopen(out, "ab");
+    for (;;) {
+        r = archive_read_data_block(ar, &buff, &size, &offset);
 
-    while (1) {
-        int err = 0;
-        unsigned char buffer[LENGTH];
+        if (r == ARCHIVE_EOF)
+            return (ARCHIVE_OK);
+        if (r < ARCHIVE_OK)
+            return (r);
 
-        int bytes_read = gzread(file, buffer, LENGTH - 1);
-        buffer[bytes_read] = '\0';
+        r = archive_write_data_block(aw, buff, size, offset);
 
-        fwrite(buffer, 1, bytes_read, fileDecomp);
-
-        if (bytes_read < LENGTH - 1) {
-            if (gzeof(file)) {
-                break;
-            } else {
-                const char* error_string = gzerror(file, &err);
-                if (err) {
-                    bc_log("Error: bc_file_gzip_decompress failed:  %s\n", error_string);
-                    exit(EXIT_FAILURE);
-                }
-            }
+        if (r < ARCHIVE_OK) {
+            bc_log("%s\n", archive_error_string(aw));
+            return (r);
         }
     }
-
-    gzclose(file);
-    fclose(fileDecomp);
-
-    remove(filepath);
 }
 
-void bc_file_untar(const char* filepath, char* dest) {
-    char decompPath[PATH_MAX];
-    snprintf(decompPath, sizeof(decompPath), "%s", filepath);
-    decompPath[strlen(decompPath) - 3] = '\0';
+void bc_file_extract(const char* filepath, const char* dest) {
+    struct archive* a;
+    struct archive* ext;
+    struct archive_entry* entry;
+    int flags;
+    int r;
 
-    bc_file_gzip_decompress(filepath, decompPath);
+    flags = ARCHIVE_EXTRACT_TIME;
+    flags |= ARCHIVE_EXTRACT_PERM;
+    flags |= ARCHIVE_EXTRACT_ACL;
+    flags |= ARCHIVE_EXTRACT_FFLAGS;
 
-    TAR* tar;
+    a = archive_read_new();
+    archive_read_support_format_all(a);
+    archive_read_support_filter_all(a);
 
-    if (tar_open(&tar, decompPath, 0, O_RDONLY, 0, TAR_GNU) == -1) {
-        bc_log("%s\n", "ERROR: bc_file_untar - tar_open failed");
+    ext = archive_write_disk_new();
+    archive_write_disk_set_options(ext, flags);
+    archive_write_disk_set_standard_lookup(ext);
+
+    if ((r = archive_read_open_filename(a, filepath, 10240)))
         exit(1);
-    }
 
-    if (tar_extract_all(tar, dest) == -1) {
-        bc_log("%s\n", "ERROR: bc_file_untar - tar_extract_all failed");
-    }
+    for (;;) {
+        r = archive_read_next_header(a, &entry);
 
-    if (tar_close(tar) == -1) {
-        bc_log("%s\n", "ERROR: bc_file_untar - tar_close failed");
-        exit(1);
-    }
+        const char* path = archive_entry_pathname(entry);
+        char newPath[PATH_MAX];
+        snprintf(newPath, sizeof(newPath), "%s/%s", dest, path);
+        archive_entry_set_pathname(entry, newPath);
 
-    remove(decompPath);
-}
-#endif
+        if (r == ARCHIVE_EOF)
+            break;
+        if (r < ARCHIVE_OK)
+            bc_log("%s\n", archive_error_string(a));
+        if (r < ARCHIVE_WARN)
+            exit(1);
 
-void bc_file_unzip(const char* filepath, const char* dest) {
-    int err;
-    char* p_strchr;
-    struct zip_stat sb;
-    struct zip_file* zf;
+        r = archive_write_header(ext, entry);
 
-    zip_t* zip = zip_open(filepath, 0, &err);
-
-    for (int i = 0; i < zip_get_num_entries(zip, 0); i++) {
-        if (zip_stat_index(zip, i, 0, &sb) == 0) {
-            int len = strlen(sb.name);
-
-            char path[PATH_MAX];
-            snprintf(path, sizeof(path), "%s%s", dest, sb.name);
-
-            if (sb.name[len - 1] == '/') {
-                make_path(path, 0);
-            } else {
-                zf = zip_fopen_index(zip, i, 0);
-                p_strchr = strrchr(path, '/');
-
-                char pathdir[PATH_MAX];
-                snprintf(pathdir, sizeof(pathdir), "%s", path);
-                pathdir[strlen(pathdir) - strlen(p_strchr)] = '\0';
-
-                make_path(pathdir, 0);
-
-                FILE* fp = fopen(path, "wb+");
-
-                char* buffer = malloc(sb.size);
-                zip_fread(zf, buffer, sb.size);
-                fwrite(buffer, sb.size, 1, fp);
-
-                free(buffer);
-                fclose(fp);
-                zip_fclose(zf);
-            }
+        if (r < ARCHIVE_OK)
+            bc_log("%s\n", archive_error_string(a));
+        else if (archive_entry_size(entry) > 0) {
+            r = copy_data(a, ext);
+            if (r < ARCHIVE_OK)
+                bc_log("%s\n", archive_error_string(a));
+            if (r < ARCHIVE_WARN)
+                exit(1);
         }
+        r = archive_write_finish_entry(ext);
+        if (r < ARCHIVE_OK)
+            bc_log("%s\n", archive_error_string(a));
+        if (r < ARCHIVE_WARN)
+            exit(1);
     }
 
-    zip_close(zip);
+    archive_read_close(a);
+    archive_read_free(a);
+    archive_write_close(ext);
+    archive_write_free(ext);
 }
 
-void bc_file_zip_directory(const char* p, int n, zip_t* zip) {
+void bc_file_archive_directory(const char* p, int n, struct archive* a, struct archive_entry* entry) {
+    char buff[8192];
+    int len;
+    int fd;
+
     bc_file_list_array* files = bc_file_list(p);
 
     for (int i = 0; i < files->len; i++) {
@@ -465,29 +449,46 @@ void bc_file_zip_directory(const char* p, int n, zip_t* zip) {
         strcat(dirPath, files->arr[i].name);
         char* path = dirPath + n;
 
-        if (files->arr[i].is_directory) {
-            zip_dir_add(zip, path, ZIP_FL_ENC_UTF_8);
-            bc_file_zip_directory(dirPath, n, zip);
-        } else {
-            zip_source_t* source = zip_source_file(zip, dirPath, 0, -1);
-            int s = zip_file_add(zip, path, source, ZIP_FL_ENC_UTF_8);
+        entry = archive_entry_new();
 
-            if (source == NULL || s < 0)
-                zip_source_free(source);
+        archive_entry_set_pathname(entry, path);
+        archive_entry_set_size(entry, files->arr[i].size);
+        archive_entry_set_filetype(entry, files->arr[i].is_directory ? AE_IFDIR : AE_IFREG);
+        archive_write_header(a, entry);
+
+        fd = open(dirPath, O_BINARY);
+        len = read(fd, buff, sizeof(buff));
+
+        while (len > 0) {
+            archive_write_data(a, buff, len);
+            len = read(fd, buff, sizeof(buff));
+        }
+
+        close(fd);
+        archive_entry_free(entry);
+
+        if (files->arr[i].is_directory) {
+            bc_file_archive_directory(dirPath, n, a, entry);
         }
     }
 
     free(files);
 }
 
-void bc_file_zip(const char* directory, const char* file_name) {
-    int err = 0;
-    struct zip_stat sb;
-    zip_t* zip = zip_open(file_name, ZIP_CREATE, &err);
+void bc_file_archive(const char* directory, const char* filename) {
+    struct archive* a;
+    struct archive_entry* entry;
 
-    bc_file_zip_directory(directory, strlen(directory), zip);
+    a = archive_write_new();
 
-    zip_close(zip);
+    archive_write_add_filter_none(a);
+    archive_write_set_format_zip(a);
+    archive_write_open_filename(a, filename);
+
+    bc_file_archive_directory(directory, strlen(directory), a, entry);
+
+    archive_write_close(a);
+    archive_write_free(a);
 }
 
 char* bc_file_uuid() {

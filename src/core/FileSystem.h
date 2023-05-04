@@ -8,6 +8,7 @@ typedef struct bc_file_list_array_dirent {
     char name[PATH_MAX];
     int is_directory;
     int is_symlink;
+    int size;
 } bc_file_list_array_dirent;
 
 typedef struct bc_file_list_array {
@@ -39,8 +40,8 @@ int make_path(const char* path, int onlyParents);
 char* bc_file_uuid();
 char* bc_file_os();
 
-void bc_file_unzip(const char* filepath, const char* dest);
-void bc_file_zip(const char* directory, const char* file_name);
+void bc_file_extract(const char* filepath, const char* dest);
+void bc_file_archive(const char* directory, const char* file_name);
 
 #if defined(__linux__) || defined(__APPLE__)
 void bc_file_untar(const char* filepath, char* dest);

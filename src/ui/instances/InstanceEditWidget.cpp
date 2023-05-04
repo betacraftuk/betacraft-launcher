@@ -82,16 +82,22 @@ void InstanceEditWidget::onInstanceSaveButtonClicked()
     snprintf(instance.program_args, sizeof(instance.program_args), "%s", arguments->program_args);
     snprintf(instance.jvm_args, sizeof(instance.jvm_args), "%s", arguments->jvm_args);
 
+	bc_mod_list_installed_move(mods, instance.path);
+
 	if (versionSettings.first.compare(instance.version) != 0) {
 		// Download version json
 		bc_network_download(versionSettings.second.toStdString().c_str(), "versions", 0);
+
+		if (mods->len > 0) {
+			for (int i = 0; i < mods->len; i++) {
+				bc_mod_list_remove(instance.path, mods->arr[i].path);
+			}
+		}
 	}
 
 	snprintf(instance.version, sizeof(instance.version), "%s", versionSettings.first.toStdString().c_str());
 
 	bc_instance_update(&instance);
-
-	bc_mod_list_installed_move(mods, instance.path);
 
 	delete mods;
 	delete appearanceSettings;

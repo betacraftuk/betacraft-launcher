@@ -77,17 +77,7 @@ void bc_java_download(const char* url) {
     if (!downloadRes)
         return;
 
-    if (strcmp(fileExtension, ".zip") == 0) {
-        bc_file_unzip(path_download, path_dir);
-    } else if (strcmp(fileExtension, ".gz") == 0) {
-#ifdef _WIN32
-        bc_log("%s\n", "Error: Extracting tar.gz archives on Windows is not supported");
-        exit(EXIT_FAILURE);
-#elif defined(__linux__) || defined(__APPLE__)
-        bc_file_untar(path_download, path_dir);
-#endif
-    }
-
+    bc_file_extract(path_download, path_dir);
     remove(path_download);
 
     bc_file_list_array* files = bc_file_list(path_dir);
@@ -103,7 +93,7 @@ void bc_java_download(const char* url) {
     free(files);
 
     char path_bin[PATH_MAX];
-    snprintf(path_bin, sizeof(path_bin), "%s/%sbin/java", dir_working, path_dir);
+    snprintf(path_bin, sizeof(path_bin), "%s%sbin/java", dir_working, path_dir);
 
 #ifdef _WIN32
     snprintf(path_bin, sizeof(path_bin), "%sw.exe", path_bin);

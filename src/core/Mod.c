@@ -154,7 +154,7 @@ void bc_mod_install(bc_mod_version_array* installed, const char* instance_dir, c
 
     make_path(jar_dir_path, 0);
 
-    bc_file_unzip(jar_path, jar_dir_path);
+    bc_file_extract(jar_path, jar_dir_path);
     bc_file_directory_remove(meta_inf_path);
 
     for (int i = 0; i < installed->len; i++) {
@@ -166,7 +166,7 @@ void bc_mod_install(bc_mod_version_array* installed, const char* instance_dir, c
     if (bc_file_exists(jar_path))
         remove(jar_path);
 
-    bc_file_zip(jar_dir_path, jar_path);
+    bc_file_archive(jar_dir_path, jar_path);
     bc_file_directory_remove(jar_dir_path);
 }
 
@@ -222,7 +222,7 @@ void bc_mod_add(const char* mod_path, const char* instance_path, const char* gam
     snprintf(directory, sizeof(directory), "libraries/%s/%s/", game_version, filename);
 
     make_path(directory, 0);
-    bc_file_unzip(mod_path, directory);
+    bc_file_extract(mod_path, directory);
 
     bc_mod_version mod;
     snprintf(mod.name, sizeof(mod.name), "%s", filename);
@@ -254,7 +254,7 @@ void bc_mod_download_version(bc_mod_version* mod, const char* instance_path, con
 
         snprintf(path, sizeof(path), "%s%s", directory, filename);
 
-        bc_file_unzip(path, directory);
+        bc_file_extract(path, directory);
         remove(path);
     }
 
@@ -317,7 +317,7 @@ void bc_mod_replace_jar(const char* jar_path, const char* instance_path, const c
         bc_file_directory_remove(replace_dir);
     }
 
-    bc_file_unzip(jar_path, replace_dir);
+    bc_file_extract(jar_path, replace_dir);
 
     char* jar_name = strrchr(jar_path, '/');
     jar_name++;

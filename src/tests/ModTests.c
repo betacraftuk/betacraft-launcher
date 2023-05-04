@@ -69,7 +69,7 @@ int main() {
 
     bc_file_directory_create("testMod");
     bc_file_directory_create("testMod/mod");
-    bc_file_zip("testMod", "mod.zip");
+    bc_file_archive("testMod", "mod.zip");
 
     test_bc_mod_add(instance_path);
     test_bc_mod_list_remove(instance_path);

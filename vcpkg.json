@@ -4,6 +4,6 @@
   "dependencies": [
     "curl",
     "json-c",
-    "libzip"
+    "libarchive"
   ]
 }
