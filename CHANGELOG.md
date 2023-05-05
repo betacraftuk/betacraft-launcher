@@ -1,4 +1,4 @@
-<h3 style="color: #aaaaff;">Betacraft v2.0.0-alpha.20230508</h3>
+<span style="color: #aaaaff;">Betacraft v2.0.0-alpha.20230508</span>
 
 - Added a legacy platforms build
 - Added a proper changelog
@@ -12,6 +12,6 @@
 - Running the Linux build doesn't require *sudo* anymore
 - Changed the working directory on Linux to ~/.local/share/betacraft
 
-<h3 style="color: #aaaaff;">Betacraft v2.0.0-alpha.20230501</h3>
+<span style="color: #aaaaff;">Betacraft v2.0.0-alpha.20230501</span>
 
 - Everything
