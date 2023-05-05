@@ -1,4 +1,5 @@
 <h3 style="color: #aaaaff;"><u>Betacraft v2.0.0-alpha.20230508</u></h3>
+
 - Added a legacy platforms build
 - Added a proper changelog
 - Added update notifications
@@ -10,5 +11,7 @@
 - Fixed memory leaks
 - Running the Linux build doesn't require *sudo* anymore
 - Changed the working directory on Linux to ~/.local/share/betacraft
+
 <h3 style="color: #aaaaff;"><u>Betacraft v2.0.0-alpha.20230501</u></h3>
+
 - Everything
