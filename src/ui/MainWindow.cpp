@@ -35,7 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     _aboutWidget = new AboutWidget();
 
     _changelog->setReadOnly(true);
-    _changelog->setStyleSheet("QTextEdit { background-image: url(':/assets/stone.png'); border: 0; color: white; font-size: 15px; padding-left: 10px; }");
+    _changelog->setStyleSheet(".QTextEdit { background-image: url(':/assets/stone.png'); border: 0; color: #e0d0d0; font-size: 15px; padding-left: 10px; }");
     _changelog->viewport()->setCursor(Qt::ArrowCursor);
 
 	_playButton->setFixedWidth(120);
@@ -67,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent) :
 		_menu->setTabEnabled(2, 0);
 		_menu->setTabEnabled(3, 0);
 	} else {
-		char* response = bc_network_get("https://raw.githubusercontent.com/betacraftuk/betacraft-launcher/v2/README.md", NULL);
+		char* response = bc_network_get("https://raw.githubusercontent.com/betacraftuk/betacraft-launcher/v2/CHANGELOG.md", NULL);
 		_changelog->setMarkdown(QString(response));
 		free(response);
 	}
