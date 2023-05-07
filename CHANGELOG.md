@@ -3,12 +3,15 @@
 - Added a legacy platforms build
 - Added a proper changelog
 - Added update notifications
-- Upgraded the project to use Qt 6.5.0
+- Added a tarball release alongside the Debian package
 - Fixed Discord RPC being enabled after toggling it off in settings
 - Fixed play button being unusuable after clicking on an instance group
-- Replaced libzip and libtar libraries with libarchive
-- Added a tarball alongside the Debian package
 - Fixed memory leaks
+- Fixed trying to run with too many libraries
+- Fixed demo mode not triggering before 1.13
+
+- Replaced libzip and libtar libraries with libarchive
+- Upgraded the project to use Qt 6.5.0
 - Running the Linux build doesn't require *sudo* anymore
 - Changed the working directory on Linux to ~/.local/share/betacraft
 

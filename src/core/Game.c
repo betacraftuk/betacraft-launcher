@@ -187,11 +187,6 @@ char* bc_game_library_path(bc_version_library* lib) {
 }
 
 void bc_game_download_lib(bc_version_library* lib, bc_game_data* data) {
-    if (lib->rules_len > 0
-        && !bc_game_rules_output(lib->rules, lib->rules_len, data)) {
-        return; // disallowed
-    }
-
     char* libPath = bc_game_library_path(lib);
 
     if (lib->downloads.artifact.size > 0) {
@@ -477,6 +472,12 @@ void bc_game_run_cmd(bc_process_args* gameArgs, bc_game_data* data) {
 void bc_game_download_lib_all(bc_game_data* data) {
     for (int i = 0; i < data->version->lib_len; i++) {
         bc_version_library* lib = &data->version->libraries[i];
+
+        if (lib->rules_len > 0
+            && !bc_game_rules_output(lib->rules, lib->rules_len, data)) {
+            continue; // disallowed
+        }
+
         bc_game_download_lib(lib, data);
 
         char* name = bc_game_library_native_get_name(lib->natives, lib->natives_len);
@@ -582,6 +583,11 @@ void bc_game_run(bc_game_data* data) {
     gameArgs.len++;
 
     bc_game_set_args(data->instance->program_args, &gameArgs);
+
+    // Demo mode for before 1.13
+    if (data->account->account_type == BC_ACCOUNT_UNAUTHENTICATED && data->version->usesMinecraftArguments) {
+        bc_game_set_args("--demo", &gameArgs);
+    }
 
     bc_game_concat_properties(data, data->version->arguments.game, data->version->arguments.game_len, &gameArgs);
 

@@ -105,3 +105,12 @@ int count_substring(char* s, char c) {
 int str_starts_with(char* string, char* prefix) {
     return strncmp(prefix, string, strlen(prefix)) == 0;
 }
+
+int str_ends_with(char* string, char* suffix) {
+    char* dot = strrchr(string, '.');
+
+    if (dot == NULL)
+        return 0;
+
+    return strcmp(dot, suffix) == 0;
+}

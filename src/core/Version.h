@@ -115,13 +115,13 @@ typedef struct bc_version {
     char releaseTime[32];
     char time[32];
     char type[16];
-    char minecraftArguments[320];
     char inheritsFrom[32];
     char url[256];
 
     // Betacraft only
     char uuid[48]; // Defaults to 'id' if not specified
     int modern_server_parameters; // Whether to use --server and --port or not
+    int usesMinecraftArguments; // Whether to force --demo when demo or not
 } bc_version;
 
 bc_version* bc_version_read_json(json_object* obj);

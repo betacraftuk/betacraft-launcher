@@ -316,12 +316,12 @@ bc_version* bc_version_read_json(json_object* obj) {
     json_object_object_get_ex(obj, "downloads", &downloads);
 
     v->minimumLauncherVersion = jext_get_int(obj, "minimumLauncherVersion");
+    v->usesMinecraftArguments = json_object_object_get_ex(obj, "minecraftArguments", NULL) == 1;
 
     snprintf(v->id, sizeof(v->id), "%s", jext_get_string_dummy(obj, "id"));
     snprintf(v->assets, sizeof(v->assets), "%s", jext_get_string_dummy(obj, "assets"));
     snprintf(v->type, sizeof(v->type), "%s", jext_get_string_dummy(obj, "type"));
     snprintf(v->mainClass, sizeof(v->mainClass), "%s", jext_get_string_dummy(obj, "mainClass"));
-    snprintf(v->minecraftArguments, sizeof(v->minecraftArguments), "%s", jext_get_string_dummy(obj, "minecraftarguments"));
     snprintf(v->inheritsFrom, sizeof(v->inheritsFrom), "%s", jext_get_string_dummy(obj, "inheritsFrom"));
 
     snprintf(v->releaseTime, sizeof(v->releaseTime), "%s", jext_get_string_dummy(obj, "releaseTime"));
