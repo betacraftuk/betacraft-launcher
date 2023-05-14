@@ -2,12 +2,17 @@
 #include "JsonExtension.h"
 #include "StringUtils.h"
 #include "Logger.h"
+#include "Network.h"
+#include "VersionList.h"
+#include "FileSystem.h"
+#include "Betacraft.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <json-c/json.h>
 
-bc_version_actionRule bc_version_read_rule(json_object* obj) {
+bc_version_actionRule* bc_version_read_rule(json_object* obj) {
     bc_version_actionRule* rule = malloc(sizeof(bc_version_actionRule));
     json_object* tmp;
 
@@ -35,14 +40,14 @@ bc_version_actionRule bc_version_read_rule(json_object* obj) {
         rule->os.is_empty = 1;
     }
 
-    return *rule;
+    return rule;
 }
 
 void bc_version_read_rule_all(bc_version_actionRule* rules, json_object* obj) {
     array_list* rulesJson = json_object_get_array(obj);
 
     for (int j = 0; j < rulesJson->size; j++) {
-        rules[j] = bc_version_read_rule(rulesJson->array[j]);
+        rules[j] = *(bc_version_read_rule(rulesJson->array[j]));
     }
 }
 
@@ -79,7 +84,9 @@ void bc_version_read_arg_rule(bc_version_argRule* rule, json_object* arg_rule) {
     }
 }
 
-void bc_version_read_json_asset_index(json_object* obj, json_object* tmp, bc_version* v) {
+void bc_version_read_json_asset_index(json_object* obj, bc_version* v) {
+    json_object* tmp;
+
     if (json_object_object_get_ex(obj, "assetIndex", &tmp) == 1) {
         snprintf(v->assetIndex.id, sizeof(v->assetIndex.id), "%s", jext_get_string_dummy(tmp, "id"));
         snprintf(v->assetIndex.sha1, sizeof(v->assetIndex.sha1), "%s", jext_get_string_dummy(tmp, "sha1"));
@@ -89,7 +96,9 @@ void bc_version_read_json_asset_index(json_object* obj, json_object* tmp, bc_ver
     }
 }
 
-void bc_version_read_json_downloads(json_object* obj, json_object* tmp, const char* value, bc_version_downloadable* dw) {
+void bc_version_read_json_downloads(json_object* obj, const char* value, bc_version_downloadable* dw) {
+    json_object* tmp;
+
     if (json_object_object_get_ex(obj, value, &tmp) == 1) {
         snprintf(dw->sha1, sizeof(dw->sha1), "%s", jext_get_string_dummy(tmp, "sha1"));
         snprintf(dw->url, sizeof(dw->url), "%s", jext_get_string_dummy(tmp, "url"));
@@ -97,7 +106,9 @@ void bc_version_read_json_downloads(json_object* obj, json_object* tmp, const ch
     }
 }
 
-void bc_version_read_json_java_version(json_object* obj, json_object* tmp, bc_version* v) {
+void bc_version_read_json_java_version(json_object* obj, bc_version* v) {
+    json_object* tmp;
+
     if (json_object_object_get_ex(obj, "javaVersion", &tmp) == 1) {
         snprintf(v->javaVersion.component, sizeof(v->javaVersion.component), "%s", jext_get_string_dummy(tmp, "component"));
         v->javaVersion.majorVersion = jext_get_int(tmp, "majorVersion");
@@ -108,7 +119,9 @@ void bc_version_read_json_java_version(json_object* obj, json_object* tmp, bc_ve
     }
 }
 
-void bc_version_read_json_betacraft(json_object* obj, json_object* tmp, bc_version* v) {
+void bc_version_read_json_betacraft(json_object* obj, bc_version* v) {
+    json_object* tmp;
+
     // Betacraft exclusive
     if (json_object_object_get_ex(obj, "modern_server_parameters", &tmp) == 1) {
         v->modern_server_parameters = jext_get_boolean(obj, "modern_server_parameters");
@@ -124,7 +137,9 @@ void bc_version_read_json_betacraft(json_object* obj, json_object* tmp, bc_versi
     }
 }
 
-void bc_game_version_json_read_logging(json_object* obj, json_object* tmp, bc_version* v) {
+void bc_game_version_json_read_logging(json_object* obj, bc_version* v) {
+    json_object* tmp;
+
     if (json_object_object_get_ex(obj, "logging", &tmp) == 1) {
         if (json_object_object_get_ex(tmp, "client", &tmp) == 1) {
             snprintf(v->logging.client.type, sizeof(v->logging.client.type), "%s", jext_get_string_dummy(tmp, "type"));
@@ -181,30 +196,36 @@ void bc_game_version_read_arguments(json_object* tmp, bc_version* v) {
 
     if (json_object_object_get_ex(tmp, "game", &innerObj) == 1) {
         array_list* gameArr = json_object_get_array(innerObj);
+        int arrlen = json_object_array_length(innerObj);
 
-        v->arguments.game_len = gameArr->size;
+        int base = v->arguments.game_len;
+        v->arguments.game_len += arrlen;
 
-        for (int i = 0; i < gameArr->size; i++) {
+        for (int i = 0; i < arrlen; i++) {
             json_object* gameobj = gameArr->array[i];
 
-            bc_version_read_arg_rule(&v->arguments.game[i], gameobj);
+            bc_version_read_arg_rule(&v->arguments.game[base + i], gameobj);
         }
     }
 
     if (json_object_object_get_ex(tmp, "jvm", &innerObj) == 1) {
         array_list* jvmArr = json_object_get_array(innerObj);
+        int arrlen = json_object_array_length(innerObj);
 
-        v->arguments.jvm_len = jvmArr->size;
+        int base = v->arguments.jvm_len;
+        v->arguments.jvm_len += arrlen;
 
-        for (int i = 0; i < jvmArr->size; i++) {
+        for (int i = 0; i < arrlen; i++) {
             json_object* jvmobj = jvmArr->array[i];
 
-            bc_version_read_arg_rule(&v->arguments.jvm[i], jvmobj);
+            bc_version_read_arg_rule(&v->arguments.jvm[base + i], jvmobj);
         }
     }
 }
 
-void bc_game_version_read_lib_rules(json_object* obj, json_object* tmp, bc_version* v, int i) {
+void bc_game_version_read_lib_rules(json_object* obj, bc_version* v, int i) {
+    json_object* tmp;
+
     if (json_object_object_get_ex(obj, "rules", &tmp) == 1) {
         bc_version_read_rule_all(v->libraries[i].rules, tmp);
 
@@ -215,7 +236,9 @@ void bc_game_version_read_lib_rules(json_object* obj, json_object* tmp, bc_versi
     }
 }
 
-void bc_game_version_read_lib_natives(json_object* obj, json_object* tmp, bc_version* v, int i) {
+void bc_game_version_read_lib_natives(json_object* obj, bc_version* v, int i) {
+    json_object* tmp;
+
     if (json_object_object_get_ex(obj, "natives", &tmp) == 1) {
         struct json_object_iterator itBegin = json_object_iter_begin(tmp);
         struct json_object_iterator itEnd = json_object_iter_end(tmp);
@@ -286,65 +309,143 @@ void bc_game_version_read_lib_dw_classifiers(json_object* obj, bc_version* v, in
     }
 }
 
-void bc_game_version_read_lib_list(json_object* obj, json_object* tmp, bc_version* v) {
+void bc_game_version_read_lib_list(json_object* obj, bc_version* v) {
+    json_object* tmp;
+
     if (json_object_object_get_ex(obj, "libraries", &tmp) == 1) {
         array_list* libArr = json_object_get_array(tmp);
 
-        v->lib_len = libArr->size;
+        int base = v->lib_len;
+        v->lib_len += libArr->size;
 
         for (int i = 0; i < libArr->size; i++) {
             json_object* libraryobj = libArr->array[i];
 
-            snprintf(v->libraries[i].name, sizeof(v->libraries[i].name), "%s", jext_get_string_dummy(libraryobj, "name"));
-            snprintf(v->libraries[i].url, sizeof(v->libraries[i].url), "%s", jext_get_string_dummy(libraryobj, "url"));
+            snprintf(v->libraries[base + i].name, sizeof(v->libraries[base + i].name), "%s", jext_get_string_dummy(libraryobj, "name"));
+            snprintf(v->libraries[base + i].url, sizeof(v->libraries[base + i].url), "%s", jext_get_string_dummy(libraryobj, "url"));
 
             json_object* temp;
-            bc_game_version_read_lib_rules(libraryobj, temp, v, i);
-            bc_game_version_read_lib_natives(libraryobj, temp, v, i);
+            bc_game_version_read_lib_rules(libraryobj, v, base + i);
+            bc_game_version_read_lib_natives(libraryobj, v, base + i);
 
             if (json_object_object_get_ex(libraryobj, "downloads", &temp) == 1) {
-                bc_game_version_read_lib_dw_artifact(temp, v, i);
-                bc_game_version_read_lib_dw_classifiers(temp, v, i);
+                bc_game_version_read_lib_dw_artifact(temp, v, base + i);
+                bc_game_version_read_lib_dw_classifiers(temp, v, base + i);
             }
         }
     }
 }
 
-bc_version* bc_version_read_json(json_object* obj) {
-    bc_version* v = malloc(sizeof(bc_version));
-    json_object* tmp, * downloads;
-    json_object_object_get_ex(obj, "downloads", &downloads);
+void bc_version_read_int_if_exists(int* ipointer, json_object* json, char* key) {
+    json_object* tmp;
+    if (json_object_object_get_ex(json, key, &tmp)) {
+        *ipointer = json_object_get_int(tmp);
+    }
+}
 
-    v->minimumLauncherVersion = jext_get_int(obj, "minimumLauncherVersion");
-    v->usesMinecraftArguments = json_object_object_get_ex(obj, "minecraftArguments", NULL) == 1;
+void bc_version_read_string_if_exists(char* spointer, json_object* json, char* key) {
+    json_object* tmp;
+    if (json_object_object_get_ex(json, key, &tmp)) {
+        snprintf(spointer, json_object_get_string_len(tmp) + 1, "%s", json_object_get_string(tmp));
+    }
+}
 
-    snprintf(v->id, sizeof(v->id), "%s", jext_get_string_dummy(obj, "id"));
-    snprintf(v->assets, sizeof(v->assets), "%s", jext_get_string_dummy(obj, "assets"));
-    snprintf(v->type, sizeof(v->type), "%s", jext_get_string_dummy(obj, "type"));
-    snprintf(v->mainClass, sizeof(v->mainClass), "%s", jext_get_string_dummy(obj, "mainClass"));
-    snprintf(v->inheritsFrom, sizeof(v->inheritsFrom), "%s", jext_get_string_dummy(obj, "inheritsFrom"));
-
-    snprintf(v->releaseTime, sizeof(v->releaseTime), "%s", jext_get_string_dummy(obj, "releaseTime"));
-    snprintf(v->time, sizeof(v->time), "%s", jext_get_string_dummy(obj, "time"));
-
-    bc_version_read_json_betacraft(obj, tmp, v);
-    bc_version_read_json_asset_index(obj, tmp, v);
-    bc_version_read_json_downloads(downloads, tmp, "client", &v->downloads.client);
-    bc_version_read_json_downloads(downloads, tmp, "server", &v->downloads.server);
-    bc_version_read_json_downloads(downloads, tmp, "windows_server", &v->downloads.windows_server);
-    bc_version_read_json_downloads(downloads, tmp, "client_mappings", &v->downloads.client_mappings);
-    bc_version_read_json_downloads(downloads, tmp, "server_mappings", &v->downloads.server_mappings);
-
-    bc_version_read_json_java_version(obj, tmp, v);
-    bc_game_version_read_lib_list(obj, tmp, v);
+void bc_version_read_arguments_partial(bc_version* v, json_object* obj) {
+    json_object* tmp;
 
     if (json_object_object_get_ex(obj, "arguments", &tmp) == 1) {
         bc_game_version_read_arguments(tmp, v);
+        v->usesMinecraftArguments = 0;
     } else if (json_object_object_get_ex(obj, "minecraftArguments", &tmp) == 1) {
-        bc_game_version_json_read_minecraft_arguments(tmp, v);
+
+        // in case of inheritsFrom, `minecraftArguments` overwrites values of the inheritee,
+        // so we can't let the base version's arguments take priority
+        if (!v->usesMinecraftArguments) {
+            v->arguments.game_len = 0;
+            v->arguments.jvm_len = 0;
+
+            bc_game_version_json_read_minecraft_arguments(tmp, v);
+        }
+
+        v->usesMinecraftArguments = 1;
+    }
+}
+
+void bc_version_read_inherit_partial(bc_version* v, json_object* obj) {
+    json_object* tmp, *downloads;
+    json_object_object_get_ex(obj, "downloads", &downloads);
+
+    bc_version_read_json_betacraft(obj, v);
+    bc_version_read_json_asset_index(obj, v);
+    bc_version_read_json_downloads(downloads, "client", &v->downloads.client);
+    bc_version_read_json_downloads(downloads, "server", &v->downloads.server);
+    bc_version_read_json_downloads(downloads, "windows_server", &v->downloads.windows_server);
+    bc_version_read_json_downloads(downloads, "client_mappings", &v->downloads.client_mappings);
+    bc_version_read_json_downloads(downloads, "server_mappings", &v->downloads.server_mappings);
+
+    bc_version_read_json_java_version(obj, v);
+    bc_version_read_string_if_exists(v->assets, obj, "assets");
+
+    bc_version_read_string_if_exists(v->id, obj, "id");
+    bc_version_read_string_if_exists(v->type, obj, "type");
+    bc_version_read_string_if_exists(v->mainClass, obj, "mainClass");
+    bc_version_read_string_if_exists(v->releaseTime, obj, "releaseTime");
+    bc_version_read_string_if_exists(v->time, obj, "time");
+    bc_version_read_int_if_exists(&v->minimumLauncherVersion, obj, "minimumLauncherVersion");
+    bc_game_version_read_lib_list(obj, v);
+
+    bc_game_version_json_read_logging(obj, v);
+}
+
+json_object* bc_version_get_json(char* ver_name) {
+    int size = strlen(ver_name) + strlen("versions/.json") + 1;
+    char* jsonLoc = malloc(size);
+    snprintf(jsonLoc, size, "versions/%s.json", ver_name);
+
+    if (betacraft_online == 1 && !bc_file_exists(jsonLoc)) {
+        bc_versionlist_version* version = bc_versionlist_find(ver_name);
+
+        if (version == NULL) {
+            return NULL;
+        }
+
+        bc_network_download(version->url, jsonLoc, 1);
+        free(version);
     }
 
-    bc_game_version_json_read_logging(obj, tmp, v);
+    return json_object_from_file(jsonLoc);
+}
+
+bc_version* bc_version_read_json(char* ver_name) {
+
+    bc_version* v = malloc(sizeof(bc_version));
+    v->lib_len = 0;
+    v->arguments.game_len = 0;
+    v->arguments.jvm_len = 0;
+
+    json_object* obj = bc_version_get_json(ver_name);
+
+    v->usesMinecraftArguments = 0;
+    bc_version_read_arguments_partial(v, obj);
+
+    json_object* tmp;
+    if (json_object_object_get_ex(obj, "inheritsFrom", &tmp)) {
+        snprintf(v->inheritsFrom, sizeof(v->inheritsFrom), "%s", jext_alloc_string(tmp));
+
+        // if the version inherits from another version, read that one first
+        if (strcmp(v->inheritsFrom, "") != 0) {
+            json_object* basever = bc_version_get_json(v->inheritsFrom);
+            assert(basever != NULL);
+
+            bc_version_read_inherit_partial(v, basever);
+            bc_version_read_arguments_partial(v, basever);
+            json_object_put(basever);
+        }
+    }
+
+    bc_version_read_inherit_partial(v, obj);
+
+    json_object_put(obj);
 
     return v;
 }

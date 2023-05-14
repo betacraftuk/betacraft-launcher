@@ -1,8 +1,6 @@
 #ifndef BC_VERSION_H
 #define BC_VERSION_H
 
-#include <json-c/json_object.h>
-
 typedef struct bc_version_javaExec {
     char component[256];
     int majorVersion;
@@ -56,7 +54,7 @@ typedef struct bc_version_actionRule {
 
 typedef struct bc_version_argRule {
     bc_version_actionRule rules[128];
-    char value[128][128];
+    char value[128][1024];
     int rules_len;
     int value_len;
 } bc_version_argRule;
@@ -124,6 +122,6 @@ typedef struct bc_version {
     int usesMinecraftArguments; // Whether to force --demo when demo or not
 } bc_version;
 
-bc_version* bc_version_read_json(json_object* obj);
+bc_version* bc_version_read_json(char* ver_name);
 
 #endif

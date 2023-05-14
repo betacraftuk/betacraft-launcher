@@ -8,6 +8,7 @@ typedef struct bc_versionlist_version {
     char type[16];
     char url[256];
     char releaseTime[32];
+    int local;
 } bc_versionlist_version;
 
 typedef struct bc_versionlist {

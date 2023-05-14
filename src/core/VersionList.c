@@ -3,15 +3,17 @@
 #include "JsonExtension.h"
 #include "Network.h"
 #include "FileSystem.h"
+#include "StringUtils.h"
 
 #include <stdio.h>
 #include <string.h>
 
-void bc_versionlist_read_version_json(bc_versionlist_version* version, json_object* obj) {
+void bc_versionlist_read_version_json(bc_versionlist_version* version, json_object* obj, int local) {
     snprintf(version->id, sizeof(version->id), "%s", jext_get_string_dummy(obj, "id"));
     snprintf(version->type, sizeof(version->type), "%s", jext_get_string_dummy(obj, "type"));
     snprintf(version->url, sizeof(version->url), "%s", jext_get_string_dummy(obj, "url"));
     snprintf(version->releaseTime, sizeof(version->releaseTime), "%s", jext_get_string_dummy(obj, "releaseTime"));
+    version->local = local;
 }
 
 bc_versionlist* bc_versionlist_read_json(json_object* obj, json_object* bcList) {
@@ -49,15 +51,38 @@ bc_versionlist* bc_versionlist_read_json(json_object* obj, json_object* bcList) 
     for (int i = 0; i < max; i++) {
         verObj = verArr->array[i];
 
-        bc_versionlist_read_version_json(&vl->versions[i], verObj);
+        bc_versionlist_read_version_json(&vl->versions[i], verObj, 0);
     }
 
     // Betacraft version list
     for (int i = 0; i < bc_len; i++) {
         verObj = bcarr->array[i];
 
-        bc_versionlist_read_version_json(&vl->versions[i + max], verObj);
+        bc_versionlist_read_version_json(&vl->versions[i + max], verObj, 0);
     }
+
+    bc_file_list_array* filelist = bc_file_list("versions");
+    int totalfound = 0;
+    for (int i = 0; i < filelist->len; i++) {
+        bc_file_list_array_dirent element = filelist->arr[i];
+        if (!element.is_directory && str_ends_with(element.name, ".json")) {
+            char* vername = strdup(element.name);
+            int indexof = strstr(vername, ".json") - vername;
+            vername[indexof] = '\0';
+
+            int size = strlen(vername) + strlen("versions/.json") + 1;
+            char* abspath = malloc(size);
+            snprintf(abspath, size, "versions/%s.json", vername);
+            json_object* verobj = json_object_from_file(abspath);
+
+            bc_versionlist_read_version_json(&vl->versions[vl->versions_len + totalfound], verobj, 1);
+
+            json_object_put(verobj);
+            totalfound++;
+        }
+    }
+
+    vl->versions_len += totalfound;
 
     json_object_put(verObj);
 

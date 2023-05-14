@@ -30,6 +30,7 @@ char* bc_file_absolute_path(const char* relative_path);
 
 void bc_file_directory_create(const char* name);
 void bc_file_directory_remove(const char* path);
+char* bc_file_minecraft_directory();
 char* bc_file_directory_get_working();
 void bc_file_directory_remove(const char* path);
 void bc_file_directory_copy(const char* source, const char* destination);

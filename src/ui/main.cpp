@@ -100,6 +100,7 @@ int main(int argc, char *argv[]) {
     copyJavaRepo();
 	bc_file_init();
 	betacraft_online = bc_network_status();
+    application_support_path = bc_file_get_application_support();
 	bc_jinst_system_check();
 
 	MainWindow win;

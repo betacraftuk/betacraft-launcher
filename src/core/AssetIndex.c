@@ -50,24 +50,12 @@ bc_assetindex* bc_assetindex_read_objects(const char* responseData) {
 
 bc_assetindex* bc_assetindex_load(bc_version_assetIndexData* data) {
     char* assetsData;
-    char* location;
+    char* location = bc_file_minecraft_directory();
     char jsonLoc[PATH_MAX];
 
     json_object* json = NULL;
 
-#ifdef __APPLE__
-    location = bc_file_directory_get_working();
-
-    snprintf(jsonLoc, sizeof(jsonLoc), "%s/minecraft/assets/indexes/", location);
-#else
-#ifdef _WIN32
-    location = getenv("APPDATA");
-#elif __linux__
-    struct passwd* pw = getpwuid(getuid());
-    location = pw->pw_dir;
-#endif
-    snprintf(jsonLoc, sizeof(jsonLoc), "%s/.minecraft/assets/indexes/", location);
-#endif
+    snprintf(jsonLoc, sizeof(jsonLoc), "%sassets/indexes/", location);
 
     make_path(jsonLoc, 0);
 

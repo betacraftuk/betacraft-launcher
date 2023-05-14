@@ -23,7 +23,7 @@ void bc_log(const char* format, ...) {
 
     strftime(timeString, sizeof(timeString), "%H:%M:%S", tm_info);
 
-    char outFormat[50];
+    char outFormat[256];
     snprintf(outFormat, sizeof(outFormat), "[%s] %s", timeString, format);
 
     vprintf(outFormat, args);

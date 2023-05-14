@@ -2,6 +2,7 @@
 
 #include "StringUtils.h"
 #include "Logger.h"
+#include "Betacraft.h"
 
 #include <stdio.h>
 #include <sys/stat.h>
@@ -156,6 +157,28 @@ bc_file_list_array* bc_file_list(const char* path) {
     closedir(dir);
 
     return arr;
+}
+
+char* bc_file_minecraft_directory() {
+    char* mcdir;
+#ifdef __APPLE__
+    int size = strlen(application_support_path) + strlen("/minecraft/") + 1;
+    mcdir = malloc(size);
+    snprintf(mcdir, size, "%s/minecraft/", application_support_path);
+#elif __linux__
+    struct passwd* pw = getpwuid(getuid());
+
+    int size = strlen(pw->pw_dir) + strlen("/.minecraft/") + 1;
+    mcdir = malloc(size);
+    snprintf(mcdir, size, "%s/.minecraft/", pw->pw_dir);
+#elif _WIN32
+    char* env = getenv("APPDATA");
+
+    int size = strlen(env) + strlen("/.minecraft/") + 1;
+    mcdir = malloc(size);
+    snprintf(mcdir, size, "%s/.minecraft/", env);
+#endif
+    return mcdir;
 }
 
 char* bc_file_directory_get_working() {

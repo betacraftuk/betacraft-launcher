@@ -190,8 +190,9 @@ void bc_game_download_lib(bc_version_library* lib, bc_game_data* data) {
     char* libPath = bc_game_library_path(lib);
 
     if (lib->downloads.artifact.size > 0) {
+        char* mcdir = bc_file_minecraft_directory();
         char fileLoc[PATH_MAX];
-        snprintf(fileLoc, sizeof(fileLoc), "libraries/%s.jar", libPath);
+        snprintf(fileLoc, sizeof(fileLoc), "%slibraries/%s.jar", mcdir, libPath);
 
         bc_game_download(lib->downloads.artifact.url, lib->downloads.artifact.size, fileLoc);
     }
@@ -209,8 +210,9 @@ void bc_game_download_lib(bc_version_library* lib, bc_game_data* data) {
                     continue;
                 }
 
+                char* mcdir = bc_file_minecraft_directory();
                 char fileLoc[PATH_MAX];
-                snprintf(fileLoc, sizeof(fileLoc), "libraries/%s-%s.jar", libPath, map->id);
+                snprintf(fileLoc, sizeof(fileLoc), "%slibraries/%s-%s.jar", mcdir, libPath, map->id);
 
                 bc_game_download(map->object.url, map->object.size, fileLoc);
             }
@@ -223,38 +225,21 @@ void bc_game_download_lib(bc_version_library* lib, bc_game_data* data) {
 }
 
 char* bc_game_get_assets_root() {
-    char assetsDir[32];
-    char* location, * path;
+    char* location = bc_file_minecraft_directory();
+    int size = strlen(location) + strlen("assets/") + 1;
+    char* path = malloc(size);
 
-#ifdef __APPLE__
-    location = bc_file_directory_get_working();
-    strcpy(assetsDir, "/minecraft/assets/");
-#else
-#ifdef _WIN32
-    location = getenv("APPDATA");
-#elif __linux__
-    struct passwd* pw = getpwuid(getuid());
-    location = pw->pw_dir;
-#endif
-    strcpy(assetsDir, "/.minecraft/assets/");
-#endif    
-
-    path = malloc(strlen(location) + strlen(assetsDir) + 1);
-    strcpy(path, location);
-    strcat(path, assetsDir);
-
-#ifdef __APPLE__
-    free(location);
-#endif
+    snprintf(path, size, "%sassets/", location);
 
     return path;
 }
 
 void bc_game_download_assets(bc_assetindex* ai) {
+    char* assetsDir = bc_game_get_assets_root();
+
     for (int i = 0; i < ai->len; i++) {
         bc_assetindex_asset* obj = &ai->objects[i];
 
-        char* assetsDir = bc_game_get_assets_root();
         char assetsLoc[PATH_MAX];
         snprintf(assetsLoc, sizeof(assetsLoc), "%sobjects/%c%c/%s", assetsDir, obj->hash[0], obj->hash[1], obj->hash);
 
@@ -264,8 +249,8 @@ void bc_game_download_assets(bc_assetindex* ai) {
         }
 
         bc_game_download(obj->baseUrl, obj->size, assetsLoc);
-        free(assetsDir);
     }
+    free(assetsDir);
 }
 
 char* bc_game_classpath(bc_game_data* data) {
@@ -296,9 +281,10 @@ char* bc_game_classpath(bc_game_data* data) {
         }
 
         char filePath[PATH_MAX];
+        char* mcdir = bc_file_minecraft_directory();
         char* libPath = bc_game_library_path(lib);
 
-        snprintf(filePath, sizeof(filePath), "%slibraries/%s.jar", workDir, libPath);
+        snprintf(filePath, sizeof(filePath), "%slibraries/%s.jar", mcdir, libPath);
 
         classPath = realloc(classPath, strlen(classPath) + strlen(filePath) + 1 + 1);
         sprintf(classPath, "%s%s%s", classPath, colon, filePath);
@@ -317,6 +303,14 @@ char* fill_properties(const char* input, bc_game_data* data) {
         replaced = repl_str(input, "${arch}", "64");
     } else {
         replaced = repl_str(input, "${arch}", "32");
+    }
+
+    if (strstr(replaced, "${classpath_separator}") != NULL) {
+#ifdef _WIN32
+        replaced = repl_str(replaced, "${classpath_separator}", ";");
+#else
+        replaced = repl_str(replaced, "${classpath_separator}", ":");
+#endif
     }
 
     if (strstr(replaced, "${launcher_name}") != NULL) {
@@ -343,6 +337,16 @@ char* fill_properties(const char* input, bc_game_data* data) {
         replaced = repl_str(replaced, "${game_assets}", bc_file_make_absolute_path(virtualassets));
         bc_log("\ngame_assets=%s\n", replaced);
         free(path);
+    }
+
+    if (strstr(replaced, "${library_directory}") != NULL) {
+        char* mcdir = bc_file_minecraft_directory();
+        char librariesdir[PATH_MAX];
+
+        snprintf(librariesdir, sizeof(librariesdir), "%slibraries", mcdir);
+        replaced = repl_str(replaced, "${library_directory}", librariesdir);
+        bc_log("\nlibrary_directory=%s\n", replaced);
+        free(mcdir);
     }
 
     if (data != NULL) {
@@ -435,7 +439,7 @@ char* fill_properties(const char* input, bc_game_data* data) {
         }
 
         replaced = repl_str(replaced, "${clientid}", "-");
-        replaced = repl_str(replaced, "${auth_xuid}", "-");
+        replaced = repl_str(replaced, "${auth_xuid}", "0");
 
         replaced = repl_str(replaced, "${natives_directory}", data->natives_folder);
     }
@@ -490,9 +494,9 @@ void bc_game_download_lib_all(bc_game_data* data) {
                     continue;
 
                 char* libPath = bc_game_library_path(lib);
-
+                char* mcdir = bc_file_minecraft_directory();
                 char fileLoc[PATH_MAX];
-                snprintf(fileLoc, sizeof(fileLoc), "libraries/%s-%s.jar", libPath, map->id);
+                snprintf(fileLoc, sizeof(fileLoc), "%slibraries/%s-%s.jar", mcdir, libPath, map->id);
 
                 bc_log("%s\n", fileLoc);
 
@@ -600,6 +604,7 @@ void bc_game_run(bc_game_data* data) {
 
     bc_game_run_cmd(&gameArgs, data);
 
+    bc_log("%s\n", "beans");
     free(javaInstall);
 
     for (int i = 1; i < gameArgs.len; i++) {
