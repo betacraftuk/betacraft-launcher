@@ -1,6 +1,4 @@
 add_library(Core
-    AppleExclusive.c
-    AppleExclusive.h
     Betacraft.c
     Betacraft.h
     Instance.c

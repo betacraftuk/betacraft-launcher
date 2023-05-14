@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 int betacraft_online = 0;
-char* application_support_path = "";
+char application_support_path[PATH_MAX] = "";
 const char CRAFATAR_ENDPOINT[] = "https://crafatar.com/avatars/";
 
 bc_server_array* bc_server_list() {

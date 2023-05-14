@@ -4,10 +4,7 @@
 #include <QIcon>
 #include <QTranslator>
 
-#ifdef __APPLE__
-#include <mach-o/dyld.h>
-#include <CoreServices/CoreServices.h>
-#elif _WIN32
+#ifdef _WIN32
 #include <direct.h>
 #include <process.h>
 #endif
@@ -21,10 +18,7 @@
 extern "C" {
 	#include "../core/FileSystem.h"
 	#include "../core/Betacraft.h"
-	#include "../core/JavaInstallations.h"
-#ifdef __APPLE__
-    #include "../core/AppleExclusive.h"
-#endif
+    #include "../core/JavaInstallations.h"
 }
 
 void copyLanguageFiles() {
@@ -67,15 +61,13 @@ void copyJavaRepo() {
 
 void setWorkDir() {
 #ifdef __APPLE__
-	char* path = bc_file_get_application_support();
+    QString path = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
 
-	std::string apploc(path);
-	apploc.append("/betacraft/");
+    strcpy(application_support_path, path.toStdString().c_str());
+    path += "/betacraft/";
 
-	make_path(apploc.c_str(), 0);
-	chdir(apploc.c_str());
-
-	free(path);
+    make_path(path.toStdString().c_str(), 0);
+    chdir(path.toStdString().c_str());
 #elif __linux__
 	char workDir[PATH_MAX];
 	struct passwd* pw = getpwuid(getuid());
@@ -91,7 +83,7 @@ void setWorkDir() {
 }
 
 int main(int argc, char *argv[]) {
-	setWorkDir();
+    setWorkDir();
 
 	QApplication app(argc, argv);
 	app.setWindowIcon(QIcon(":/assets/favicon.ico"));
@@ -99,8 +91,7 @@ int main(int argc, char *argv[]) {
 	copyLanguageFiles();
     copyJavaRepo();
 	bc_file_init();
-	betacraft_online = bc_network_status();
-    application_support_path = bc_file_get_application_support();
+    betacraft_online = bc_network_status();
 	bc_jinst_system_check();
 
 	MainWindow win;

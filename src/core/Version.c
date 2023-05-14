@@ -430,7 +430,7 @@ bc_version* bc_version_read_json(char* ver_name) {
 
     json_object* tmp;
     if (json_object_object_get_ex(obj, "inheritsFrom", &tmp)) {
-        snprintf(v->inheritsFrom, sizeof(v->inheritsFrom), "%s", jext_alloc_string(tmp));
+        snprintf(v->inheritsFrom, sizeof(v->inheritsFrom), "%s", json_object_get_string(tmp));
 
         // if the version inherits from another version, read that one first
         if (strcmp(v->inheritsFrom, "") != 0) {
