@@ -56,6 +56,7 @@ bc_assetindex* bc_assetindex_load(bc_version_assetIndexData* data) {
     json_object* json = NULL;
 
     snprintf(jsonLoc, sizeof(jsonLoc), "%sassets/indexes/", location);
+    free(location);
 
     make_path(jsonLoc, 0);
 

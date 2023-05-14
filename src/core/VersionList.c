@@ -71,8 +71,10 @@ bc_versionlist* bc_versionlist_read_json(json_object* obj, json_object* bcList) 
             vername[indexof] = '\0';
 
             int size = strlen(vername) + strlen("versions/.json") + 1;
-            char* abspath = malloc(size);
+            char abspath[PATH_MAX];
             snprintf(abspath, size, "versions/%s.json", vername);
+            free(vername);
+
             json_object* verobj = json_object_from_file(abspath);
 
             bc_versionlist_read_version_json(&vl->versions[vl->versions_len + totalfound], verobj, 1);

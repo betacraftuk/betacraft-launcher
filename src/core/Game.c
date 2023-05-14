@@ -188,9 +188,9 @@ char* bc_game_library_path(bc_version_library* lib) {
 
 void bc_game_download_lib(bc_version_library* lib, bc_game_data* data) {
     char* libPath = bc_game_library_path(lib);
+    char* mcdir = bc_file_minecraft_directory();
 
     if (lib->downloads.artifact.size > 0) {
-        char* mcdir = bc_file_minecraft_directory();
         char fileLoc[PATH_MAX];
         snprintf(fileLoc, sizeof(fileLoc), "%slibraries/%s.jar", mcdir, libPath);
 
@@ -210,7 +210,6 @@ void bc_game_download_lib(bc_version_library* lib, bc_game_data* data) {
                     continue;
                 }
 
-                char* mcdir = bc_file_minecraft_directory();
                 char fileLoc[PATH_MAX];
                 snprintf(fileLoc, sizeof(fileLoc), "%slibraries/%s-%s.jar", mcdir, libPath, map->id);
 
@@ -222,6 +221,7 @@ void bc_game_download_lib(bc_version_library* lib, bc_game_data* data) {
     }
 
     free(libPath);
+    free(mcdir);
 }
 
 char* bc_game_get_assets_root() {
@@ -230,6 +230,7 @@ char* bc_game_get_assets_root() {
     char* path = malloc(size);
 
     snprintf(path, size, "%sassets/", location);
+    free(location);
 
     return path;
 }
@@ -285,6 +286,7 @@ char* bc_game_classpath(bc_game_data* data) {
         char* libPath = bc_game_library_path(lib);
 
         snprintf(filePath, sizeof(filePath), "%slibraries/%s.jar", mcdir, libPath);
+        free(mcdir);
 
         classPath = realloc(classPath, strlen(classPath) + strlen(filePath) + 1 + 1);
         sprintf(classPath, "%s%s%s", classPath, colon, filePath);
@@ -497,6 +499,7 @@ void bc_game_download_lib_all(bc_game_data* data) {
                 char* mcdir = bc_file_minecraft_directory();
                 char fileLoc[PATH_MAX];
                 snprintf(fileLoc, sizeof(fileLoc), "%slibraries/%s-%s.jar", mcdir, libPath, map->id);
+                free(mcdir);
 
                 bc_log("%s\n", fileLoc);
 
