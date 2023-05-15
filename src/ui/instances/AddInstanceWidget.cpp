@@ -62,7 +62,15 @@ AddInstanceWidget::AddInstanceWidget(QWidget* parent)
 }
 
 void AddInstanceWidget::onCreateButtonClicked() {
-	if (!_instanceNameTextbox->text().trimmed().isEmpty()) {
+	std::string instanceName = _instanceNameTextbox->text().trimmed().toStdString();
+
+	for (auto ch : instanceName) {
+		if (!isalnum(ch) && !isspace(ch) && ch != '-' && ch != '_') {
+			return;
+		}
+	}
+
+	if (!instanceName.empty()) {
 		QString url = _gameVersionDropdown->currentData().toString();
 		QString version = _gameVersionDropdown->currentText();
 		QString name = _instanceNameTextbox->text().trimmed();

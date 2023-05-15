@@ -12,7 +12,7 @@
 #include <string.h>
 #include <stdio.h>
 
-const char API_MODS[] = "http://api.betacraft.uk/repo/mods";
+const char API_MODS[] = "http://api.betacraft.uk/v2/mod_list";
 
 bc_mod_array* bc_mod_list(const char* version) {
     bc_mod_array* mod_list = malloc(sizeof(bc_mod_array));
@@ -26,7 +26,9 @@ bc_mod_array* bc_mod_list(const char* version) {
     free(response);
 
     mod_list->len = 0;
-    if (json == NULL) return mod_list;
+
+    if (json == NULL) 
+        return mod_list;
 
     mod_list->len = json_object_array_length(json);
 
