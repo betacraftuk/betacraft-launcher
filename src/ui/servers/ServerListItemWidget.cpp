@@ -11,16 +11,16 @@ ServerListItemWidget::ServerListItemWidget(bc_server s, QWidget *parent)
     _layout = new QGridLayout(this);
     _image = new QLabel(this);
     _name = new QLabel(s.name, this);
-    _version = new QLabel(s.version, this);
+    _version = new QLabel(s.connect_version, this);
     _players = new QLabel(finalc, this);
     _description = new QLabel(s.description, this);
 
 	if (s.icon != NULL) {
-		QByteArray imageencoded = s.icon;
-		QByteArray imagebytes = QByteArray::fromBase64(imageencoded);
+		QByteArray imageEncoded = s.icon;
+		QByteArray imageBytes = QByteArray::fromBase64(imageEncoded);
 
 		QPixmap pic;
-		pic.loadFromData(imagebytes, "PNG");
+		pic.loadFromData(imageBytes, "PNG");
 
 		_image->setPixmap(pic.scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
 	}

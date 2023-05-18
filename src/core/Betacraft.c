@@ -7,31 +7,37 @@
 
 int betacraft_online = 0;
 const char CRAFATAR_ENDPOINT[] = "https://crafatar.com/avatars/";
+const char API_SERVER_LIST[] = "https://api.betacraft.uk/v2/server_list";
 
 bc_server_array* bc_server_list() {
     bc_server_array* server_list = malloc(sizeof(bc_server_array));
 
-    char* response = bc_network_get("https://servers.api.legacyminecraft.com/api/v1/getServers?type=all&icons=true", NULL);
+    char* response = bc_network_get(API_SERVER_LIST, NULL);
     json_object* json = json_tokener_parse(response);
-    json_object* arr, * tmp;
+    json_object* tmp;
 
     free(response);
 
-    json_object_object_get_ex(json, "servers", &arr);
-
-    server_list->len = json_object_array_length(arr);
+    server_list->len = json_object_array_length(json);
 
     for (int i = 0; i < server_list->len; i++) {
-        tmp = json_object_array_get_idx(arr, i);
+        tmp = json_object_array_get_idx(json, i);
 
-        snprintf(server_list->arr[i].name, sizeof(server_list->arr[i].name), "%s", jext_get_string_dummy(tmp, "serverName"));
-        snprintf(server_list->arr[i].server_ip, sizeof(server_list->arr[i].server_ip), "%s", jext_get_string_dummy(tmp, "serverIP"));
-        snprintf(server_list->arr[i].description, sizeof(server_list->arr[i].description), "%s", jext_get_string_dummy(tmp, "serverDescription"));
-        snprintf(server_list->arr[i].icon, sizeof(server_list->arr[i].icon), "%s", jext_get_string_dummy(tmp, "serverIcon"));
-        snprintf(server_list->arr[i].version, sizeof(server_list->arr[i].version), "%s", jext_get_string_dummy(tmp, "serverVersion"));
-
-        server_list->arr[i].online_players = jext_get_int(tmp, "onlinePlayers");
-        server_list->arr[i].max_players = jext_get_int(tmp, "maxPlayers");
+        server_list->arr[i].icon = jext_get_string(tmp, "icon");
+        snprintf(server_list->arr[i].name, sizeof(server_list->arr[i].name), "%s", jext_get_string_dummy(tmp, "name"));
+        snprintf(server_list->arr[i].description, sizeof(server_list->arr[i].description), "%s", jext_get_string_dummy(tmp, "description"));
+        snprintf(server_list->arr[i].software_name, sizeof(server_list->arr[i].software_name), "%s", jext_get_string_dummy(tmp, "software_name"));
+        snprintf(server_list->arr[i].software_version, sizeof(server_list->arr[i].software_version), "%s", jext_get_string_dummy(tmp, "software_version"));
+        snprintf(server_list->arr[i].player_names, sizeof(server_list->arr[i].player_names), "%s", jext_get_string_dummy(tmp, "players_names"));
+        snprintf(server_list->arr[i].version_category, sizeof(server_list->arr[i].version_category), "%s", jext_get_string_dummy(tmp, "version_category"));
+        snprintf(server_list->arr[i].connect_version, sizeof(server_list->arr[i].connect_version), "%s", jext_get_string_dummy(tmp, "connect_version"));
+        snprintf(server_list->arr[i].connect_protocol, sizeof(server_list->arr[i].connect_protocol), "%s", jext_get_string_dummy(tmp, "connect_protocol"));
+        snprintf(server_list->arr[i].connect_socket, sizeof(server_list->arr[i].connect_socket), "%s", jext_get_string_dummy(tmp, "connect_socket"));
+        server_list->arr[i].is_public = jext_get_boolean(tmp, "is_public");
+        server_list->arr[i].max_players = jext_get_int(tmp, "max_players");
+        server_list->arr[i].online_players = jext_get_int(tmp, "online_players");
+        server_list->arr[i].last_ping_time = jext_get_int(tmp, "last_ping_time");
+        server_list->arr[i].connect_online_mode = jext_get_boolean(tmp, "connect_online_mode");
     }
 
     json_object_put(json);

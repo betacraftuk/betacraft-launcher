@@ -204,8 +204,7 @@ void bc_file_directory_remove(const char* path) {
         }
 
         rmdir(path);
-    } else {
-        bc_log("%s %d\n", "Error: bc_file_directory_remove failed", err);
+        free(arr);
     }
 }
 
@@ -390,8 +389,10 @@ void bc_file_extract(const char* filepath, const char* dest) {
     archive_write_disk_set_options(ext, flags);
     archive_write_disk_set_standard_lookup(ext);
 
-    if ((r = archive_read_open_filename(a, filepath, 10240)))
-        exit(1);
+    if ((r = archive_read_open_filename(a, filepath, 10240))) {
+        bc_log("%s %s\n", "bc_file_extract - couldn't extract", filepath);
+        return;
+    }
 
     for (;;) {
         r = archive_read_next_header(a, &entry);
@@ -405,8 +406,10 @@ void bc_file_extract(const char* filepath, const char* dest) {
             break;
         if (r < ARCHIVE_OK)
             bc_log("%s\n", archive_error_string(a));
-        if (r < ARCHIVE_WARN)
-            exit(1);
+        if (r < ARCHIVE_WARN) {
+            bc_log("%s\n", archive_error_string(a));
+            return;
+        }
 
         r = archive_write_header(ext, entry);
 
@@ -416,14 +419,18 @@ void bc_file_extract(const char* filepath, const char* dest) {
             r = copy_data(a, ext);
             if (r < ARCHIVE_OK)
                 bc_log("%s\n", archive_error_string(a));
-            if (r < ARCHIVE_WARN)
-                exit(1);
+            if (r < ARCHIVE_WARN) {
+                bc_log("%s\n", archive_error_string(a));
+                return;
+            }
         }
         r = archive_write_finish_entry(ext);
         if (r < ARCHIVE_OK)
             bc_log("%s\n", archive_error_string(a));
-        if (r < ARCHIVE_WARN)
-            exit(1);
+        if (r < ARCHIVE_WARN) {
+            bc_log("%s\n", archive_error_string(a));
+            return;
+        }
     }
 
     archive_read_close(a);

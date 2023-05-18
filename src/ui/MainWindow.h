@@ -57,7 +57,7 @@ private:
 	QWidget* _bottomBackground;
 	QTabWidget* _menu;
 	InstanceListWidget* _instanceListWidget;
-	//ServerListWidget* _serverListWidget;
+	ServerListWidget* _serverListWidget;
 	AccountListWidget* _accountsWidget;
 	SettingsWidget* _settingsWidget;
 	AboutWidget* _aboutWidget;

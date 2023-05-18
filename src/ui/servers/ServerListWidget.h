@@ -31,8 +31,8 @@ private:
 	QLineEdit* _searchTextBox;
 	QListWidget* _serverList;
 	QPushButton* _searchButton;
-	void serverListAdd(int index);
-	//bc_server_array* _serverArray;
+	void populateServerList();
+	void addServerItem(bc_server server);
 };
 
 #endif

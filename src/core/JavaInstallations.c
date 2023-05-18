@@ -77,6 +77,7 @@ void bc_java_download(const char* url) {
     if (!downloadRes)
         return;
 
+    bc_log("%s %s\n", "Downloaded Java to", path_dir);
     bc_file_extract(path_download, path_dir);
     remove(path_download);
 
@@ -235,6 +236,7 @@ void bc_jinst_system_check() {
         free(jinstSelected);
     }
 }
+
 void bc_jinst_add(const char* path) {
     char* version = bc_java_version(path);
 

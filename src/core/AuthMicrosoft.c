@@ -34,10 +34,38 @@ void bc_auth_microsoft(const bc_auth_microsoftDeviceResponse* mdevice) {
 
     bc_auth_microsoftResponse* microsoft = bc_auth_microsoft_token(mdevice);
 
+    if (microsoft->access_token[0] == '\0' || microsoft->refresh_token[0] == '\0') {
+        bc_log("%s\n", "Error: bc_auth_microsoft_token - access_token or refresh_token is empty");
+        return;
+    }
+
     bc_auth_XBLResponse* xbl = bc_auth_microsoft_xbl(microsoft->access_token);
+
+    if (xbl->token[0] == '\0' || xbl->uhs[0] == '\0') {
+        bc_log("%s\n", "Error: bc_auth_microsoft_xbl - token or uhs is empty");
+        return;
+    }
+
     char* token_xsts = bc_auth_microsoft_xsts(xbl->token);
+
+    if (token_xsts == NULL) {
+        bc_log("%s\n", "Error: bc_auth_microsoft_xsts - token_xsts is empty");
+        return;
+    }
+
     char* token_minecraft = bc_auth_minecraft(xbl->uhs, token_xsts);
+
+    if (token_minecraft == NULL) {
+        bc_log("%s\n", "Error: bc_auth_minecraft - token_minecraft is empty");
+        return;
+    }
+
     bc_auth_minecraftAccount* profile = bc_auth_minecraft_profile(token_minecraft);
+
+    if (profile->id[0] == '\0' || profile->username[0] == '\0') {
+        bc_log("%s\n", "Error: bc_auth_minecraft_profile - id or username is empty");
+        return;
+    }
 
     bc_account* account = bc_account_get(profile->id);
 
@@ -70,8 +98,7 @@ void bc_auth_microsoft(const bc_auth_microsoftDeviceResponse* mdevice) {
     free(profile);
 }
 
-bc_auth_microsoftDeviceResponse* bc_auth_microsoft_device()
-{
+bc_auth_microsoftDeviceResponse* bc_auth_microsoft_device() {
     bc_auth_microsoftDeviceResponse* res = malloc(sizeof(bc_auth_microsoftDeviceResponse));
 
     char data[100];
@@ -92,8 +119,7 @@ bc_auth_microsoftDeviceResponse* bc_auth_microsoft_device()
     return res;
 }
 
-bc_auth_microsoftResponse* bc_auth_microsoft_token(const bc_auth_microsoftDeviceResponse* dev)
-{
+bc_auth_microsoftResponse* bc_auth_microsoft_token(const bc_auth_microsoftDeviceResponse* dev) {
     bc_auth_microsoftResponse* res = malloc(sizeof(bc_auth_microsoftResponse));
 
     char* error;
@@ -122,8 +148,7 @@ bc_auth_microsoftResponse* bc_auth_microsoft_token(const bc_auth_microsoftDevice
     return res;
 }
 
-bc_auth_XBLResponse* bc_auth_microsoft_xbl(const char* access_token)
-{
+bc_auth_XBLResponse* bc_auth_microsoft_xbl(const char* access_token) {
     bc_auth_XBLResponse* res = malloc(sizeof(bc_auth_XBLResponse));
 
     json_object* data = json_object_new_object();
@@ -159,8 +184,7 @@ bc_auth_XBLResponse* bc_auth_microsoft_xbl(const char* access_token)
     return res;
 }
 
-char* bc_auth_microsoft_xsts(const char* xbl_token)
-{
+char* bc_auth_microsoft_xsts(const char* xbl_token) {
     json_object* data = json_object_new_object();
     json_object* properties = json_object_new_object();
     json_object* user_tokens = json_object_new_array();
@@ -185,8 +209,7 @@ char* bc_auth_microsoft_xsts(const char* xbl_token)
     return token_xsts;
 }
 
-char* bc_auth_minecraft(const char* uhs, const char* xsts_token)
-{
+char* bc_auth_minecraft(const char* uhs, const char* xsts_token) {
     json_object* data = json_object_new_object();
 
     char identity_token[4096];
@@ -207,8 +230,7 @@ char* bc_auth_minecraft(const char* uhs, const char* xsts_token)
     return token;
 }
 
-bc_auth_minecraftAccount* bc_auth_minecraft_profile(const char* token)
-{
+bc_auth_minecraftAccount* bc_auth_minecraft_profile(const char* token) {
     bc_auth_minecraftAccount* res = malloc(sizeof(bc_auth_minecraftAccount));
 
     char auth[4096];

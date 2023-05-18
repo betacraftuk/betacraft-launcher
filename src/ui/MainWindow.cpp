@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	_consoleLog = new ConsoleLogWidget();
     _instanceListWidget = new InstanceListWidget();
-    //_serverListWidget = new ServerListWidget();
+    _serverListWidget = new ServerListWidget();
     _accountsWidget = new AccountListWidget();
     _settingsWidget = new SettingsWidget();
     _aboutWidget = new AboutWidget();
@@ -51,8 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	bc_translate("tab_instances", tr);
 	_menu->addTab(_instanceListWidget, QString(tr));
 	bc_translate("tab_server_list", tr);
-    //_menu->addTab(_serverListWidget, QString(tr));
-	_menu->addTab(new QWidget(this), QString(tr));
+	_menu->addTab(_serverListWidget, QString(tr));
 	bc_translate("tab_accounts", tr);
     _menu->addTab(_accountsWidget, QString(tr));
 	bc_translate("tab_settings", tr);
@@ -60,8 +59,6 @@ MainWindow::MainWindow(QWidget *parent) :
 	bc_translate("tab_about", tr);
 	_menu->addTab(_aboutWidget, QString(tr));
 	_menu->addTab(new QWidget(this), "Donate");
-
-	_menu->setTabEnabled(2, 0);
 
 	if (betacraft_online == 0) {
 		_menu->setTabEnabled(2, 0);
