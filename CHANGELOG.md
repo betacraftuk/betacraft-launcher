@@ -1,6 +1,6 @@
 <b style="color: #aaaaff;"><u>Betacraft v2.0.0-alpha.20230521</u></b>
 
-- Added a legacy platforms build
+- Changed theme to Qt's 'fusion'
 - Added server list
 - Added a proper changelog
 - Added update notifications
