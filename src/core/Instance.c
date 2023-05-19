@@ -269,14 +269,6 @@ void bc_instance_create(const char* name, const char* version, const char* versi
     }
 
     json_object* config = bc_instance_create_default_config(n, version);
-
-    char version_json_path[PATH_MAX];
-    snprintf(version_json_path, sizeof(version_json_path), "versions/%s.json", version);
-
-    if (!bc_file_exists(version_json_path)) {
-        bc_network_download(version_url, "versions", 0);
-    }
-
     bc_instance_update_settings(path, group_name);
 
     make_path(path, 1);
