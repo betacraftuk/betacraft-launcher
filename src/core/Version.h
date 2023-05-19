@@ -56,7 +56,7 @@ typedef struct bc_version_actionRule {
 
 typedef struct bc_version_argRule {
     bc_version_actionRule rules[128];
-    char value[128][128];
+    char value[128][1024];
     int rules_len;
     int value_len;
 } bc_version_argRule;

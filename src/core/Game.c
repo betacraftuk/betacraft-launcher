@@ -188,10 +188,11 @@ char* bc_game_library_path(bc_version_library* lib) {
 
 void bc_game_download_lib(bc_version_library* lib, bc_game_data* data) {
     char* libPath = bc_game_library_path(lib);
+    char* mcdir = bc_file_minecraft_directory();
 
     if (lib->downloads.artifact.size > 0) {
         char fileLoc[PATH_MAX];
-        snprintf(fileLoc, sizeof(fileLoc), "libraries/%s.jar", libPath);
+        snprintf(fileLoc, sizeof(fileLoc), "%slibraries/%s.jar", mcdir, libPath);
 
         bc_game_download(lib->downloads.artifact.url, lib->downloads.artifact.size, fileLoc);
     }
@@ -210,7 +211,7 @@ void bc_game_download_lib(bc_version_library* lib, bc_game_data* data) {
                 }
 
                 char fileLoc[PATH_MAX];
-                snprintf(fileLoc, sizeof(fileLoc), "libraries/%s-%s.jar", libPath, map->id);
+                snprintf(fileLoc, sizeof(fileLoc), "%slibraries/%s-%s.jar", mcdir, libPath, map->id);
 
                 bc_game_download(map->object.url, map->object.size, fileLoc);
             }
@@ -220,41 +221,26 @@ void bc_game_download_lib(bc_version_library* lib, bc_game_data* data) {
     }
 
     free(libPath);
+    free(mcdir);
 }
 
 char* bc_game_get_assets_root() {
-    char assetsDir[32];
-    char* location, * path;
+    char* location = bc_file_minecraft_directory();
+    int size = strlen(location) + strlen("assets/") + 1;
+    char* path = malloc(size);
 
-#ifdef __APPLE__
-    location = bc_file_directory_get_working();
-    strcpy(assetsDir, "/minecraft/assets/");
-#else
-#ifdef _WIN32
-    location = getenv("APPDATA");
-#elif __linux__
-    struct passwd* pw = getpwuid(getuid());
-    location = pw->pw_dir;
-#endif
-    strcpy(assetsDir, "/.minecraft/assets/");
-#endif    
-
-    path = malloc(strlen(location) + strlen(assetsDir) + 1);
-    strcpy(path, location);
-    strcat(path, assetsDir);
-
-#ifdef __APPLE__
+    snprintf(path, size, "%sassets/", location);
     free(location);
-#endif
 
     return path;
 }
 
 void bc_game_download_assets(bc_assetindex* ai) {
+    char* assetsDir = bc_game_get_assets_root();
+
     for (int i = 0; i < ai->len; i++) {
         bc_assetindex_asset* obj = &ai->objects[i];
 
-        char* assetsDir = bc_game_get_assets_root();
         char assetsLoc[PATH_MAX];
         snprintf(assetsLoc, sizeof(assetsLoc), "%sobjects/%c%c/%s", assetsDir, obj->hash[0], obj->hash[1], obj->hash);
 
@@ -264,8 +250,9 @@ void bc_game_download_assets(bc_assetindex* ai) {
         }
 
         bc_game_download(obj->baseUrl, obj->size, assetsLoc);
-        free(assetsDir);
     }
+
+    free(assetsDir);
 }
 
 char* bc_game_classpath(bc_game_data* data) {
@@ -288,6 +275,8 @@ char* bc_game_classpath(bc_game_data* data) {
     char* classPath = malloc(strlen(versionPath) + 1);
     strcpy(classPath, versionPath);
 
+    char* mcdir = bc_file_minecraft_directory();
+
     for (int i = 0; i < data->version->lib_len; i++) {
         bc_version_library* lib = &data->version->libraries[i];
         if (lib->rules_len > 0
@@ -296,9 +285,10 @@ char* bc_game_classpath(bc_game_data* data) {
         }
 
         char filePath[PATH_MAX];
+
         char* libPath = bc_game_library_path(lib);
 
-        snprintf(filePath, sizeof(filePath), "%slibraries/%s.jar", workDir, libPath);
+        snprintf(filePath, sizeof(filePath), "%slibraries/%s.jar", mcdir, libPath);
 
         classPath = realloc(classPath, strlen(classPath) + strlen(filePath) + 1 + 1);
         sprintf(classPath, "%s%s%s", classPath, colon, filePath);
@@ -306,6 +296,7 @@ char* bc_game_classpath(bc_game_data* data) {
         free(libPath);
     }
 
+    free(mcdir);
     free(workDir);
 
     return classPath;
@@ -317,6 +308,14 @@ char* fill_properties(const char* input, bc_game_data* data) {
         replaced = repl_str(input, "${arch}", "64");
     } else {
         replaced = repl_str(input, "${arch}", "32");
+    }
+
+    if (strstr(replaced, "${classpath_separator}") != NULL) {
+#ifdef _WIN32
+        replaced = repl_str(replaced, "${classpath_separator}", ";");
+#else
+        replaced = repl_str(replaced, "${classpath_separator}", ":");
+#endif
     }
 
     if (strstr(replaced, "${launcher_name}") != NULL) {
@@ -343,6 +342,16 @@ char* fill_properties(const char* input, bc_game_data* data) {
         replaced = repl_str(replaced, "${game_assets}", bc_file_make_absolute_path(virtualassets));
         bc_log("\ngame_assets=%s\n", replaced);
         free(path);
+    }
+
+    if (strstr(replaced, "${library_directory}") != NULL) {
+        char* mcdir = bc_file_minecraft_directory();
+        char librariesdir[PATH_MAX];
+
+        snprintf(librariesdir, sizeof(librariesdir), "%slibraries", mcdir);
+        replaced = repl_str(replaced, "${library_directory}", librariesdir);
+        bc_log("\nlibrary_directory=%s\n", replaced);
+        free(mcdir);
     }
 
     if (data != NULL) {
@@ -435,7 +444,7 @@ char* fill_properties(const char* input, bc_game_data* data) {
         }
 
         replaced = repl_str(replaced, "${clientid}", "-");
-        replaced = repl_str(replaced, "${auth_xuid}", "-");
+        replaced = repl_str(replaced, "${auth_xuid}", "0");
 
         replaced = repl_str(replaced, "${natives_directory}", data->natives_folder);
     }
@@ -470,6 +479,8 @@ void bc_game_run_cmd(bc_process_args* gameArgs, bc_game_data* data) {
 }
 
 void bc_game_download_lib_all(bc_game_data* data) {
+    char* mcdir = bc_file_minecraft_directory();
+
     for (int i = 0; i < data->version->lib_len; i++) {
         bc_version_library* lib = &data->version->libraries[i];
 
@@ -492,7 +503,7 @@ void bc_game_download_lib_all(bc_game_data* data) {
                 char* libPath = bc_game_library_path(lib);
 
                 char fileLoc[PATH_MAX];
-                snprintf(fileLoc, sizeof(fileLoc), "libraries/%s-%s.jar", libPath, map->id);
+                snprintf(fileLoc, sizeof(fileLoc), "%slibraries/%s-%s.jar", mcdir, libPath, map->id);
 
                 bc_log("%s\n", fileLoc);
 
@@ -506,6 +517,7 @@ void bc_game_download_lib_all(bc_game_data* data) {
             free(name);
         }
     }
+    free(mcdir);
 }
 
 void bc_game_concat_properties(bc_game_data* data, bc_version_argRule* rules, int rules_len, bc_process_args* gameArgs) {

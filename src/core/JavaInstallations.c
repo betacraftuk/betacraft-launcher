@@ -11,6 +11,10 @@
 #include <assert.h>
 #include <sys/stat.h>
 
+#ifdef __APPLE__
+#include <TargetConditionals.h>
+#endif
+
 char* bc_java_version(const char* path) {
     FILE* fp;
     char buff[512];

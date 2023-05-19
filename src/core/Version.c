@@ -101,6 +101,10 @@ void bc_version_read_json_java_version(json_object* obj, json_object* tmp, bc_ve
     if (json_object_object_get_ex(obj, "javaVersion", &tmp) == 1) {
         snprintf(v->javaVersion.component, sizeof(v->javaVersion.component), "%s", jext_get_string_dummy(tmp, "component"));
         v->javaVersion.majorVersion = jext_get_int(tmp, "majorVersion");
+        // ignore java 16, recommend 17 instead
+        if (v->javaVersion.majorVersion == 16) {
+            v->javaVersion.majorVersion = 17;
+        }
 
         // Betacraft exclusive
         v->javaVersion.advisedMaxVersion = jext_get_int(tmp, "advisedMaxVersion");
