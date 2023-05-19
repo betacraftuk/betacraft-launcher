@@ -84,15 +84,10 @@ void InstanceEditWidget::onInstanceSaveButtonClicked()
 
 	bc_mod_list_installed_move(mods, instance.path);
 
-	if (versionSettings.first.compare(instance.version) != 0) {
-		// Download version json
-		bc_network_download(versionSettings.second.toStdString().c_str(), "versions", 0);
-
-		if (mods->len > 0) {
-			for (int i = 0; i < mods->len; i++) {
-				bc_mod_list_remove(instance.path, mods->arr[i].path);
-			}
-		}
+	if (versionSettings.first.compare(instance.version) != 0 && mods->len > 0) {
+        for (int i = 0; i < mods->len; i++) {
+            bc_mod_list_remove(instance.path, mods->arr[i].path);
+        }
 	}
 
 	snprintf(instance.version, sizeof(instance.version), "%s", versionSettings.first.toStdString().c_str());

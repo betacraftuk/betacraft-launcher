@@ -249,8 +249,7 @@ void bc_mod_download_version(bc_mod_version* mod, const char* instance_path, con
     char directory[PATH_MAX], path[PATH_MAX];
     snprintf(directory, sizeof(directory), "libraries/%s/%s/%s/", game_version, mod->name, mod->version);
 
-    // Download
-    if (bc_file_directory_exists(directory) == 0) {
+    if (!bc_file_directory_exists(directory)) {
         make_path(directory, 0);
         bc_network_download(mod->download_url, directory, 0);
 

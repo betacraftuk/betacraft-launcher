@@ -11,15 +11,6 @@
 #include <assert.h>
 #include <sys/stat.h>
 
-#ifdef _WIN32
-#define popen _popen
-#define pclose _pclose
-#endif
-
-#ifdef __APPLE__
-#include <TargetConditionals.h>
-#endif
-
 char* bc_java_version(const char* path) {
     FILE* fp;
     char buff[512];
@@ -31,6 +22,8 @@ char* bc_java_version(const char* path) {
     fp = popen(command, "r");
 
     fgets(buff, sizeof(buff), fp);
+
+    bc_log("%s\n", buff);
 
     version = strtok(buff, "\"");
     version = strtok(NULL, "\"");

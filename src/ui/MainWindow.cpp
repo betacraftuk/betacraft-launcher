@@ -7,6 +7,7 @@ extern "C" {
 	#include "../core/Discord.h"
 	#include "../core/Betacraft.h"
 	#include "../core/JavaInstallations.h"
+	#include "../core/VersionList.h"
 }
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -102,7 +103,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	setFocusPolicy(Qt::StrongFocus);
 
 	connect(_gameProgressTimer, SIGNAL(timeout()), this, SLOT(updateGameProgress()));
-	connect(_playButton, &QPushButton::released, this, [this]() { launchGame(); });
+	connect(_playButton, &QPushButton::released, this, [this]() { launchGame("", ""); });
 	connect(_instanceListWidget, SIGNAL(signal_instanceUpdate()), this, SLOT(onInstanceUpdate()));
     connect(_accountsWidget, SIGNAL(signal_accountUpdate()), this, SLOT(onAccountUpdate()));
 	connect(_menu, SIGNAL(currentChanged(int)), this, SLOT(onMenuIndexChanged(int)));
@@ -110,6 +111,7 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(_discordLoopTimer, &QTimer::timeout, this, [this]() { bc_discord_loop(); });
 	connect(_settingsWidget, SIGNAL(signal_toggleTabs()), this, SLOT(onToggleTabs()));
 	connect(_settingsWidget, SIGNAL(signal_toggleDiscordRPC()), this, SLOT(onToggleDiscordRPC()));
+	connect(_serverListWidget, SIGNAL(signal_serverGameLaunch(const char*, const char*)), this, SLOT(launchGameJoinServer(const char*, const char*)));
 
 	startDiscordRPC();
 
@@ -136,6 +138,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	}
 
 	free(updateVersion);
+}
+
+void MainWindow::launchGameJoinServer(const char* ip, const char* port) {
+	onInstanceUpdate();
+	launchGame(ip, port);
 }
 
 void MainWindow::startDiscordRPC() {
@@ -180,7 +187,7 @@ void MainWindow::launchingGameFinished() {
 
 void MainWindow::keyPressEvent(QKeyEvent *e) {
 	if(e->key() == Qt::Key_Return) {
-		launchGame();
+		launchGame("", "");
 	}
 }
 
@@ -297,15 +304,16 @@ bool MainWindow::recommendedJavaCheck() {
 
 }
 
-void MainWindow::launchGame() {
-	if (!recommendedJavaCheck())
-		return;
+void MainWindow::launchGame(const char* ip, const char* port) {
+    if (!bc_versionlist_download(_instanceSelectedVersion.toStdString().c_str()) || !recommendedJavaCheck()) {
+        return;
+    }
 
 	_menu->setCurrentIndex(0);
 	_playButton->setDisabled(true);
 	_menu->setDisabled(true);
 
-	QFuture<void> future = QtConcurrent::run(bc_instance_run, "", "");
+	QFuture<void> future = QtConcurrent::run(bc_instance_run, ip, port);
 	_watcher.setFuture(future);
 
 	_progressBar->setVisible(1);

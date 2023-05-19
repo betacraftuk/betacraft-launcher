@@ -48,6 +48,7 @@ private slots:
 	void updateGameProgress();
 	void onToggleTabs();
 	void onToggleDiscordRPC();
+	void launchGameJoinServer(const char* ip, const char* port);
 
 private:
 	QGridLayout* _mainLayout;
@@ -74,10 +75,10 @@ private:
 	QString _instanceSelectedVersion;
 	QString _instanceSelectedName;
 	int _instanceSelectedShowLog;
-	void launchGame();
 	void updateInstanceLabel();
 	bool recommendedJavaCheck();
 	void startDiscordRPC();
+	void launchGame(const char* ip, const char* port);
 };
 
 #endif

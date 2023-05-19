@@ -3,6 +3,7 @@
 #include "JsonExtension.h"
 #include "Network.h"
 #include "FileSystem.h"
+#include "Betacraft.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -96,4 +97,22 @@ bc_versionlist_version* bc_versionlist_find(const char* id) {
 
     free(vl);
     return NULL;
+}
+
+int bc_versionlist_download(const char* gameVersion) {
+    char jsonLoc[PATH_MAX];
+    snprintf(jsonLoc, sizeof(jsonLoc), "versions/%s.json", gameVersion);
+
+    if (betacraft_online == 1 && !bc_file_exists(jsonLoc)) {
+        bc_versionlist_version* version = bc_versionlist_find(gameVersion);
+
+        if (version == NULL) {
+            return 0;
+        }
+
+        bc_network_download(version->url, jsonLoc, 1);
+        free(version);
+    }
+    
+    return 1;
 }

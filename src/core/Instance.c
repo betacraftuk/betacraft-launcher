@@ -437,17 +437,6 @@ void bc_instance_run(const char* server_ip, const char* server_port) {
     char jsonLoc[PATH_MAX];
     snprintf(jsonLoc, sizeof(jsonLoc), "versions/%s.json", in->version);
 
-    if (betacraft_online == 1 && !bc_file_exists(jsonLoc)) {
-        bc_versionlist_version* version = bc_versionlist_find(in->version);
-
-        if (version == NULL) {
-            return;
-        }
-
-        bc_network_download(version->url, jsonLoc, 1);
-        free(version);
-    }
-
     json_object* jsonObj = json_object_from_file(jsonLoc);
     bc_version* ver = bc_version_read_json(jsonObj);
     json_object_put(jsonObj);
@@ -468,8 +457,8 @@ void bc_instance_run(const char* server_ip, const char* server_port) {
     data->version = ver;
     data->account = acc;
     data->mods = mods;
-    strcpy(data->server_ip, "");
-    strcpy(data->server_port, "");
+    strcpy(data->server_ip, server_ip);
+    strcpy(data->server_port, server_port);
 
     char* random_uuid = bc_file_uuid();
     snprintf(data->natives_folder, sizeof(data->natives_folder), "%snatives-%s/", in->path, random_uuid);

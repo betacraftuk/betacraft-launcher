@@ -23,6 +23,9 @@ private slots:
 	void onSearchButton();
 	void onServerClicked(QListWidgetItem* item);
 
+signals:
+	void signal_serverGameLaunch(const char* ip, const char* port);
+
 protected:
 	void keyPressEvent(QKeyEvent* e);
 

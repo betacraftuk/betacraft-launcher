@@ -5,9 +5,12 @@
 
 extern "C" {
 	#include "../../core/Instance.h"
+	#include "../../core/Mod.h"
 }
 
 bc_server_array _serverArray;
+char selected_ip[64] = "";
+char selected_port[16] = "";
 
 ServerListWidget::ServerListWidget(QWidget *parent)
 	: QWidget{parent} {
@@ -45,9 +48,49 @@ ServerListWidget::ServerListWidget(QWidget *parent)
 }
 
 void ServerListWidget::onServerClicked(QListWidgetItem* item) {
-	QString ip = item->data(Qt::UserRole).toString();
+	std::pair<QString, QString> serverInfo = item->data(Qt::UserRole).value<std::pair<QString, QString>>();
 
-	bc_instance_run(ip.toStdString().c_str(), NULL);
+	bc_instance* selectedInstance = bc_instance_select_get();
+
+	if (selectedInstance == NULL) {
+		QMessageBox msg;
+		msg.setText("Create an instance before joining a server.");
+		msg.exec();
+		return;
+	}
+
+	if (serverInfo.second.compare(selectedInstance->version) != 0) {
+		QMessageBox msg;
+		msg.setText(QString("The server's game version is incompatible with your instance.\nWould you like to switch to %0?").arg(serverInfo.second));
+        msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+		int ret = msg.exec();
+
+		if (ret == QMessageBox::Yes) {
+			strcpy(selectedInstance->version, serverInfo.second.toStdString().c_str());
+			bc_instance_update(selectedInstance);
+
+			bc_mod_version_array* mods = bc_mod_list_installed(selectedInstance->path);
+
+			if (mods->len > 0) {
+                for (int i = 0; i < mods->len; i++) {
+                    bc_mod_list_remove(selectedInstance->path, mods->arr[i].path);
+                }
+            }
+
+			free(mods);
+		} else return;
+	}
+
+    free(selectedInstance);
+
+	QStringList ipSplit = serverInfo.first.split(':');
+
+	if (!ipSplit.isEmpty()) {
+		strcpy(selected_ip, ipSplit.first().toStdString().c_str());
+		strcpy(selected_port, ipSplit.last().toStdString().c_str());
+	}
+
+	emit signal_serverGameLaunch(selected_ip, selected_port);
 }
 
 void ServerListWidget::addServerItem(bc_server server) {
@@ -55,7 +98,8 @@ void ServerListWidget::addServerItem(bc_server server) {
     ServerListItemWidget* serverItem = new ServerListItemWidget(server);
     QVariant q;
 
-    q.setValue(QString(server.connect_protocol));
+	std::pair<QString, QString> serverInfo = { QString(server.connect_socket), QString(server.connect_version) };
+    q.setValue(serverInfo);
 
     item->setData(Qt::UserRole, q);
     item->setFlags(item->flags() & ~Qt::ItemIsSelectable);

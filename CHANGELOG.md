@@ -1,6 +1,7 @@
-<b style="color: #aaaaff;"><u>Betacraft v2.0.0-alpha.20230508</u></b>
+<b style="color: #aaaaff;"><u>Betacraft v2.0.0-alpha.20230521</u></b>
 
 - Added a legacy platforms build
+- Added server list
 - Added a proper changelog
 - Added update notifications
 - Added a tarball release alongside the Debian package
@@ -9,6 +10,7 @@
 - Fixed memory leaks
 - Fixed trying to run with too many libraries
 - Fixed demo mode not triggering before 1.13
+- Added additional logging
 
 - Replaced libzip and libtar libraries with libarchive
 - Upgraded the project to use Qt 6.5.0
