@@ -21,7 +21,6 @@
 #include <direct.h>
 #elif defined(__linux__) || defined(__APPLE__)
 #include <unistd.h>
-#include <pwd.h>
 #endif
 
 int bc_game_run_progress = 0;

@@ -26,6 +26,7 @@
 #endif
 
 #if defined(__linux__) || defined(__APPLE__)
+#include <pwd.h>
 #include <unistd.h>
 #endif
 
