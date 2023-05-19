@@ -134,8 +134,8 @@ void InstanceEditVersionWidget::setSelectedInstance() {
 
 	for (int i = 0; i < model->rowCount(); i++) {
 		if (model->item(i)->text().compare(_version) == 0) {
-			model->item(i, 0)->setBackground(QBrush(QColor(206, 250, 208, 255)));
-			model->item(i, 1)->setBackground(QBrush(QColor(206, 250, 208, 255)));
+			model->item(i, 0)->setBackground(QBrush(QColor(86, 184, 91, 255)));
+			model->item(i, 1)->setBackground(QBrush(QColor(86, 184, 91, 255)));
 			break;
 		}
 	}
