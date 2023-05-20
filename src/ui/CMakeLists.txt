@@ -92,4 +92,12 @@ elseif(UNIX AND NOT APPLE)
     set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libstdc++6, libgcc-s1, libxcb-cursor0, libtar")
 
     include(CPack)
+elseif(APPLE)
+    set(MACOSX_BUNDLE_ICON_FILE betacraft.icns)
+
+    set(app_icon_macos ${CMAKE_SOURCE_DIR}/assets/betacraft.icns)
+    set_source_files_properties(${app_icon_macos} PROPERTIES
+           MACOSX_PACKAGE_LOCATION "Resources")
+
+    set_property(TARGET Betacraft APPEND PROPERTY SOURCES ${app_icon_macos})
 endif()
