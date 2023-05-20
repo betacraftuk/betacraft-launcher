@@ -22,6 +22,12 @@ bc_version_actionRule bc_version_read_rule(json_object* obj) {
         rule->features.has_custom_resolution = jext_get_boolean(tmp, "has_custom_resolution");
         rule->features.is_demo_user = jext_get_boolean(tmp, "is_demo_user");
         rule->features.has_server = jext_get_boolean(tmp, "has_server");
+
+        // 1.19.4+
+        rule->features.has_quick_plays_support = jext_get_boolean(tmp, "has_quick_plays_support");
+        rule->features.is_quick_play_singleplayer = jext_get_boolean(tmp, "is_quick_play_singleplayer");
+        rule->features.is_quick_play_multiplayer = jext_get_boolean(tmp, "is_quick_play_multiplayer");
+        rule->features.is_quick_play_realms = jext_get_boolean(tmp, "is_quick_play_realms");
     } else {
         rule->features.is_empty = 1;
     }

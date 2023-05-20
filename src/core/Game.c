@@ -75,6 +75,14 @@ int bc_game_rule_match(bc_version_actionRule* rule, bc_game_data* data) {
             && rule->features.has_server == !(data->server_ip[0] != '\0')) {
             return 0;
         }
+
+        // We don't support 1.8+, always return false.
+        if ((rule->features.has_quick_plays_support != -1 && rule->features.has_quick_plays_support) ||
+            (rule->features.is_quick_play_multiplayer != -1 && rule->features.is_quick_play_multiplayer) ||
+            (rule->features.is_quick_play_realms != -1 && rule->features.is_quick_play_realms) ||
+            (rule->features.is_quick_play_singleplayer != -1 && rule->features.is_quick_play_singleplayer)) {
+            return 0;
+        }
     }
     if (!rule->os.is_empty) {
         if (rule->os.arch[0] != '\0') {

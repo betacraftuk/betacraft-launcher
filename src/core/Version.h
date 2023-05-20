@@ -38,6 +38,10 @@ typedef struct bc_version_featureStruct {
     int is_demo_user;
     int has_custom_resolution;
     int has_server;
+    int has_quick_plays_support;
+    int is_quick_play_singleplayer;
+    int is_quick_play_multiplayer;
+    int is_quick_play_realms;
     int is_empty;
 } bc_version_featureStruct;
 
