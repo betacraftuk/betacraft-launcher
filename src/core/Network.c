@@ -8,7 +8,7 @@
 #include <string.h>
 #include <limits.h>
 
-bc_progress bc_network_progress;
+bc_download_progress bc_network_progress;
 int bc_network_cancel = 0;
 
 static size_t cb(void* data, size_t size, size_t nmemb, void* userp) {

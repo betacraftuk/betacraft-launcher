@@ -8,15 +8,15 @@ typedef struct bc_memory {
     size_t size;
 } bc_memory;
 
-typedef struct bc_progress {
+typedef struct bc_download_progress {
     char filename[256];
     double totalToDownload;
     double nowDownloaded;
     double totalToDownloadMb;
     double nowDownloadedMb;
-} bc_progress;
+} bc_download_progress;
 
-extern bc_progress bc_network_progress;
+extern bc_download_progress bc_network_progress;
 extern int bc_network_cancel;
 
 bc_memory bc_network_get_chunk(const char* url);

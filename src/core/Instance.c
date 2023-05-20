@@ -2,14 +2,13 @@
 #include "FileSystem.h"
 #include "JsonExtension.h"
 #include "VersionList.h"
-#include "Game.h"
 #include "JavaInstallations.h"
 #include "Network.h"
 #include "Settings.h"
 #include "Version.h"
 #include "Logger.h"
 #include "Mod.h"
-#include "Betacraft.h"
+#include "Game.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -412,7 +411,7 @@ bc_instance_group_array* bc_instance_group_get_all() {
     return instance_array;
 }
 
-int bc_instance_run_progress() { return bc_game_run_progress; }
+bc_progress bc_instance_run_progress() { return bc_game_run_progress; }
 
 void bc_instance_run(const char* server_ip, const char* server_port) {
     bc_instance* in = bc_instance_select_get();

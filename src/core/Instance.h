@@ -2,6 +2,7 @@
 #define BC_INSTANCE_H
 
 #include <limits.h>
+#include "Betacraft.h"
 
 typedef struct bc_instance_group_name_array {
     char arr[128][32];
@@ -56,6 +57,6 @@ bc_instance_group_array* bc_instance_group_get_all();
 bc_instance_group_name_array* bc_instance_group_name_get_all();
 
 void bc_instance_run(const char* server_ip, const char* server_port);
-int bc_instance_run_progress();
+bc_progress bc_instance_run_progress();
 
 #endif

@@ -5,10 +5,11 @@
 #include "Account.h"
 #include "Version.h"
 #include "Mod.h"
+#include "Betacraft.h"
 
 #include <limits.h>
 
-extern int bc_game_run_progress;
+extern bc_progress bc_game_run_progress;
 
 struct bc_game_data {
     bc_instance* instance;

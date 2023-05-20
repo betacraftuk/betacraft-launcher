@@ -1,15 +1,12 @@
 #include "Game.h"
 
 #include "JavaInstallations.h"
-#include "Version.h"
 #include "AssetIndex.h"
 #include "FileSystem.h"
 #include "Network.h"
 #include "StringUtils.h"
 #include "Logger.h"
-#include "Mod.h"
 #include "ProcessHandler.h"
-#include "Betacraft.h"
 #include "StringUtils.h"
 
 #include <stdio.h>
@@ -23,7 +20,7 @@
 #include <unistd.h>
 #endif
 
-int bc_game_run_progress = 0;
+bc_progress bc_game_run_progress;
 
 void bc_clear_natives(const char* instanceDir) {
     bc_file_list_array* arr = bc_file_list(instanceDir);
@@ -236,8 +233,10 @@ char* bc_game_get_assets_root() {
 
 void bc_game_download_assets(bc_assetindex* ai) {
     char* assetsDir = bc_game_get_assets_root();
+    bc_game_run_progress.total = ai->len;
 
     for (int i = 0; i < ai->len; i++) {
+        bc_game_run_progress.cur++;
         bc_assetindex_asset* obj = &ai->objects[i];
 
         char assetsLoc[PATH_MAX];
@@ -250,6 +249,8 @@ void bc_game_download_assets(bc_assetindex* ai) {
 
         bc_game_download(obj->baseUrl, obj->size, assetsLoc);
     }
+
+    bc_game_run_progress.cur = 0;
 
     free(assetsDir);
 }
@@ -479,8 +480,10 @@ void bc_game_run_cmd(bc_process_args* gameArgs, bc_game_data* data) {
 
 void bc_game_download_lib_all(bc_game_data* data) {
     char* mcdir = bc_file_minecraft_directory();
+    bc_game_run_progress.total = data->version->lib_len;
 
     for (int i = 0; i < data->version->lib_len; i++) {
+        bc_game_run_progress.cur++;
         bc_version_library* lib = &data->version->libraries[i];
 
         if (lib->rules_len > 0
@@ -516,7 +519,9 @@ void bc_game_download_lib_all(bc_game_data* data) {
             free(name);
         }
     }
+
     free(mcdir);
+    bc_game_run_progress.cur = 0;
 }
 
 void bc_game_concat_properties(bc_game_data* data, bc_version_argRule* rules, int rules_len, bc_process_args* gameArgs) {
@@ -554,15 +559,17 @@ void bc_game_set_args(char* args, bc_process_args* gameArgs) {
 }
 
 void bc_game_run(bc_game_data* data) {
-    bc_game_run_progress = 25;
+    bc_game_run_progress.cur = 0;
+    bc_game_run_progress.total = 0;
+    bc_game_run_progress.progress = 25;
     bc_clear_natives(data->instance->path);
 
     bc_game_version_download(data->version);
-    bc_game_run_progress = 50;
+    bc_game_run_progress.progress = 50;
     bc_game_download_lib_all(data);
 
     bc_assetindex* ai = bc_assetindex_load(&data->version->assetIndex);
-    bc_game_run_progress = 75;
+    bc_game_run_progress.progress = 75;
     bc_game_download_assets(ai);
 
     free(ai->objects);
@@ -602,7 +609,7 @@ void bc_game_run(bc_game_data* data) {
 
     bc_game_concat_properties(data, data->version->arguments.game, data->version->arguments.game_len, &gameArgs);
 
-    bc_game_run_progress = 100;
+    bc_game_run_progress.progress = 100;
 
     for (int i = 0; i < gameArgs.len; i++) {
         gameArgs.size += strlen(gameArgs.arr[i]) + 1;
