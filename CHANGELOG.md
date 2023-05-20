@@ -1,4 +1,4 @@
-<b style="color: #aaaaff;"><u>Betacraft v2.0.0-alpha.20230521</u></b>
+<b style="color: #aaaaff;"><u>Betacraft v2.0.0-alpha.20230520</u></b>
 
 - Changed theme to Qt's 'fusion'
 - Added server list
@@ -8,7 +8,7 @@
 - Fixed Discord RPC being enabled after toggling it off in settings
 - Fixed play button being unusuable after clicking on an instance group
 - Fixed memory leaks
-- Fixed trying to run with too many libraries
+- Fixed running with too many libraries
 - Fixed demo mode not triggering before 1.13
 - Added additional logging
 
