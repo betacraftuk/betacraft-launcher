@@ -10,6 +10,12 @@
 extern int betacraft_online;
 extern char application_support_path[PATH_MAX];
 
+struct bc_progress {
+    int cur;
+    int total;
+    int progress;
+} typedef bc_progress;
+
 typedef struct bc_server {
     char name[64];
     char description[1024];

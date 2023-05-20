@@ -105,7 +105,7 @@ void SettingsJavaWidget::downloadRecommendedJava(QString javaVersion) {
 }
 
 void SettingsJavaWidget::JavaInstallProgressUpdate() {
-	bc_progress progress = bc_network_progress;
+	bc_download_progress progress = bc_network_progress;
 
 	QString progressString(progress.filename);
 	progressString = progressString.split('/').last();

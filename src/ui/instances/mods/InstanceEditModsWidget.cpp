@@ -157,7 +157,7 @@ void InstanceEditModsWidget::onRemoveButtonClicked() {
 }
 
 void InstanceEditModsWidget::ModInstallProgressBarUpdate() {
-	bc_progress progress = bc_network_progress;
+	bc_download_progress progress = bc_network_progress;
 
 	if (progress.filename[0] == '\0') {
 		_progressBar->setFormat("Downloading...");

@@ -192,8 +192,9 @@ void MainWindow::keyPressEvent(QKeyEvent *e) {
 }
 
 void MainWindow::updateGameProgress() {
-	bc_progress downloadProgress = bc_network_progress;
-	_progressBar->setValue(bc_instance_run_progress());
+	bc_download_progress downloadProgress = bc_network_progress;
+	bc_progress gameProgress = bc_instance_run_progress();
+	_progressBar->setValue(gameProgress.progress);
 
 	QString progressString(downloadProgress.filename);
 	progressString = progressString.split('/').last();
@@ -204,6 +205,10 @@ void MainWindow::updateGameProgress() {
 
 	if (downloadProgress.totalToDownload > 0) {
 		progressString += " / " + QString::number(downloadProgress.totalToDownloadMb, 'f', 2) + "MB";
+	}
+
+	if (gameProgress.cur > 0 && gameProgress.total > 0) {
+		progressString += QString(" (%1 / %2)").arg(gameProgress.cur).arg(gameProgress.total);
 	}
 
 	switch (_progressBar->value()) {
@@ -275,6 +280,7 @@ bool MainWindow::recommendedJavaCheck() {
 
 		messageBox.setWindowTitle("Betacraft");
         messageBox.setText(message);
+		messageBox.setModal(true);
         messageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 
         int ret = messageBox.exec();

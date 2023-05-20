@@ -55,6 +55,7 @@ void ServerListWidget::onServerClicked(QListWidgetItem* item) {
 	if (selectedInstance == NULL) {
 		QMessageBox msg;
 		msg.setText("Create an instance before joining a server.");
+		msg.setModal(true);
 		msg.exec();
 		return;
 	}
@@ -62,6 +63,7 @@ void ServerListWidget::onServerClicked(QListWidgetItem* item) {
 	if (serverInfo.second.compare(selectedInstance->version) != 0) {
 		QMessageBox msg;
 		msg.setText(QString("The server's game version is incompatible with your instance.\nWould you like to switch to %0?").arg(serverInfo.second));
+		msg.setModal(true);
         msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 		int ret = msg.exec();
 
