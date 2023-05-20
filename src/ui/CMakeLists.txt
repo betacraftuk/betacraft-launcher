@@ -89,7 +89,7 @@ elseif(UNIX AND NOT APPLE)
     set(CPACK_VERBATIM_VARIABLES ON)
     set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/betacraft")
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Kazu <kazuofficial.contact@gmail.com>")
-    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libstdc++6, libgcc-s1, libxcb-cursor0, libtar")
+    set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6, libstdc++6, libgcc-s1, libxcb-cursor0")
 
     include(CPack)
 elseif(APPLE)
