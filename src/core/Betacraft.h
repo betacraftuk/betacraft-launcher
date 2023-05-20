@@ -5,7 +5,7 @@
 
 #include <limits.h>
 
-#define BETACRAFT_VERSION "2.0.0-alpha.20230521"
+#define BETACRAFT_VERSION "2.0.0-alpha.20230520"
 
 extern int betacraft_online;
 extern char application_support_path[PATH_MAX];
