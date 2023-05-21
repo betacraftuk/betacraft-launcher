@@ -69,6 +69,17 @@ InstanceEditWidget::InstanceEditWidget(QWidget* parent)
 void InstanceEditWidget::onInstanceSaveButtonClicked()
 {
 	bc_instance* appearanceSettings = _instanceEditAppearanceWidget->getSettings();
+
+	if (!bc_instance_validate_name(appearanceSettings->name)) {
+		QMessageBox msg;
+		msg.setModal(1);
+		msg.setText("Instance name must consist of only alphanumeric characters, dots (not at the beginning), dashes, and underscores.");
+		msg.exec();
+
+		delete appearanceSettings;
+		return;
+	}
+
 	std::pair<QString, QString> versionSettings = _instanceEditVersionWidget->getSettings();
 	bc_mod_version_array* mods = _instanceEditModsWidget->getSettings();
     bc_instance* arguments = _instanceEditArgumentsWidget->getSettings();

@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 char* bc_instance_get_path(const char* instance_name) {
     char path[PATH_MAX];
@@ -102,6 +103,22 @@ void bc_instance_group_create(const char* name) {
 
     jext_file_write("settings.json", settings);
     json_object_put(settings);
+}
+
+int bc_instance_validate_name(const char* name) {
+    if (name[0] == '.' || (strlen(name) > 1 && name[0] == '.' && name[1] == '.')) {
+        return 0;
+    }
+
+    for (int i = 0; i < strlen(name); i++) {
+        char ch = name[i];
+
+		if (!isalnum(ch) && !isspace(ch) && ch != '-' && ch != '_') {
+			return 0;
+		}
+    }
+
+    return 1;
 }
 
 void bc_instance_move(bc_instance_array* standard, bc_instance_group_array* grouped, const char* instanceSelected) {

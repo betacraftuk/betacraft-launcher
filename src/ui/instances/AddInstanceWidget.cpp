@@ -64,10 +64,13 @@ AddInstanceWidget::AddInstanceWidget(QWidget* parent)
 void AddInstanceWidget::onCreateButtonClicked() {
 	std::string instanceName = _instanceNameTextbox->text().trimmed().toStdString();
 
-	for (auto ch : instanceName) {
-		if (!isalnum(ch) && !isspace(ch) && ch != '-' && ch != '_') {
-			return;
-		}
+	if (!bc_instance_validate_name(instanceName.c_str())) {
+		QMessageBox msg;
+		msg.setModal(1);
+		msg.setText("Instance name must consist of only alphanumeric characters, dots (not at the beginning), dashes, and underscores.");
+		msg.exec();
+
+		return;
 	}
 
 	if (!instanceName.empty()) {

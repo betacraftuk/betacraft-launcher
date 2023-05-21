@@ -58,5 +58,6 @@ bc_instance_group_name_array* bc_instance_group_name_get_all();
 
 void bc_instance_run(const char* server_ip, const char* server_port);
 bc_progress bc_instance_run_progress();
+int bc_instance_validate_name(const char* name);
 
 #endif
