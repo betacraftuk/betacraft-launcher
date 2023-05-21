@@ -106,16 +106,16 @@ void bc_instance_group_create(const char* name) {
 }
 
 int bc_instance_validate_name(const char* name) {
-    if (name[0] == '.' || (strlen(name) > 1 && name[0] == '.' && name[1] == '.')) {
+    if (name[0] == '.') {
         return 0;
     }
 
     for (int i = 0; i < strlen(name); i++) {
         char ch = name[i];
 
-		if (!isalnum(ch) && !isspace(ch) && ch != '-' && ch != '_') {
-			return 0;
-		}
+        if (!isalnum(ch) && !isspace(ch) && ch != '-' && ch != '_' && ch != '.') {
+            return 0;
+        }
     }
 
     return 1;
