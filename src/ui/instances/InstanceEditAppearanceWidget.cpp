@@ -10,8 +10,7 @@ extern "C" {
 QString icon_path;
 
 InstanceEditAppearanceWidget::InstanceEditAppearanceWidget(QWidget* parent)
-	: QWidget{ parent }
-{
+	: QWidget{ parent } {
 	char tr[256];
 
 	_layout = new QGridLayout(this);
@@ -87,33 +86,27 @@ InstanceEditAppearanceWidget::InstanceEditAppearanceWidget(QWidget* parent)
 	connect(_instanceIconDefaultButton, SIGNAL(released()), this, SLOT(onRevertDefaultButtonClicked()));
 }
 
-void InstanceEditAppearanceWidget::onRevertDefaultButtonClicked()
-{
-	if (QFile::exists(icon_path))
-	{
+void InstanceEditAppearanceWidget::onRevertDefaultButtonClicked() {
+	if (QFile::exists(icon_path)) {
 		remove(icon_path.toStdString().c_str());
 		_instanceIcon->setPixmap(QPixmap(":/assets/unknown_pack.png").scaled(_instanceIcon->width(), _instanceIcon->height(), Qt::KeepAspectRatio));
 	}
 }
 
-void InstanceEditAppearanceWidget::onBrowseButtonClicked()
-{
-	//QString path = QFileDialog::getOpenFileName(this,
-	//	tr("Select an icon"), "/", tr("Image Files (*.png *.jpg )"));
-	// TODO: ADD SUPPORT FOR JPG ICONS
-
+void InstanceEditAppearanceWidget::onBrowseButtonClicked() {
 	QString path = QFileDialog::getOpenFileName(this,
-	tr("Select an icon"), "/", tr("Image Files (*.png )"));
+	    tr("Select an icon"), "/", tr("Image Files (*.png, *.jpg )"));
 
-	if (!path.isNull())
-	{
-		bc_file_copy(path.toStdString().c_str(), icon_path.toStdString().c_str());
+	if (!path.isNull()) {
+        QImage img(path);
+        QImage scaledImage = img.scaled(256, 256, Qt::KeepAspectRatio);
+        scaledImage.save(icon_path, "PNG", 80);
+
 		_instanceIcon->setPixmap(QPixmap(icon_path).scaled(_instanceIcon->width(), _instanceIcon->height(), Qt::KeepAspectRatio));
 	}
 }
 
-void InstanceEditAppearanceWidget::setInstance(bc_instance instance)
-{
+void InstanceEditAppearanceWidget::setInstance(bc_instance instance) {
 	_instanceNameTextbox->setText(instance.name);
 	_instanceGameWidthTextbox->setText(QString::fromStdString(std::to_string(instance.width)));
 	_instanceGameHeightTextbox->setText(QString::fromStdString(std::to_string(instance.height)));
@@ -129,8 +122,7 @@ void InstanceEditAppearanceWidget::setInstance(bc_instance instance)
 	_instanceIcon->setPixmap(QPixmap(icon).scaled(_instanceIcon->width(), _instanceIcon->height(), Qt::KeepAspectRatio));
 }
 
-bc_instance* InstanceEditAppearanceWidget::getSettings()
-{
+bc_instance* InstanceEditAppearanceWidget::getSettings() {
 	bc_instance* instance = new bc_instance();
 
 	snprintf(instance->name, sizeof(instance->name), "%s", _instanceNameTextbox->text().toStdString().c_str());
