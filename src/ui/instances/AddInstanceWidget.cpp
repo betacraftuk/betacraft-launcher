@@ -14,11 +14,11 @@ AddInstanceWidget::AddInstanceWidget(QWidget* parent)
 
 	_layout = new QGridLayout(this);
 	_instanceNameTextbox = new QLineEdit(this);
-	_gameVersionDropdown = new QComboBox(this);
 	_groupList = new QListWidget(this);
 	_createButton = new QPushButton(this);
 	_newGroupButton = new QPushButton(this);
 	_newGroupTextbox = new QLineEdit(this);
+    _versionWidget = new InstanceEditVersionWidget(this);
 
 	bc_translate("instance_create_button", tr);
 	_createButton->setText(QString(tr));
@@ -27,20 +27,18 @@ AddInstanceWidget::AddInstanceWidget(QWidget* parent)
 
 	_layout->setAlignment(Qt::AlignTop);
 
-	populateVersionList();
-
 	bc_translate("instance_name", tr);
-	_layout->addWidget(new QLabel(QString(tr)), 0, 0, 1, 11);
-	_layout->addWidget(_instanceNameTextbox, 1, 0, 1, 11);
-	bc_translate("instance_game_version", tr);
-	_layout->addWidget(new QLabel(QString(tr)), 2, 0, 1, 11);
-	_layout->addWidget(_gameVersionDropdown, 3, 0, 1, 11);
+	_layout->addWidget(new QLabel(QString(tr)), 0, 0, 1, 2);
+	_layout->addWidget(_instanceNameTextbox, 1, 0, 1, 2);
 	bc_translate("instance_group", tr);
-	_layout->addWidget(new QLabel(QString(tr)), 4, 0, 1, 11);
-	_layout->addWidget(_newGroupTextbox, 5, 0, 1, 10);
-	_layout->addWidget(_newGroupButton, 5, 10, 1, 1);
-	_layout->addWidget(_groupList, 6, 0, 1, 11);
-	_layout->addWidget(_createButton, 7, 0, 1, 11);
+	_layout->addWidget(new QLabel(QString(tr)), 2, 0, 1, 2);
+	_layout->addWidget(_newGroupTextbox, 3, 0, 1, 1);
+	_layout->addWidget(_newGroupButton, 3, 1, 1, 1);
+	_layout->addWidget(_groupList, 4, 0, 1, 2);
+	_layout->addWidget(_createButton, 5, 0, 1, 2);
+	_layout->addWidget(_versionWidget, 0, 3, 6, 3);
+
+    _layout->setColumnStretch(3, 3);
 
 	_layout->setRowMinimumHeight(5, 0);
 
@@ -52,8 +50,8 @@ AddInstanceWidget::AddInstanceWidget(QWidget* parent)
 
 	bc_translate("instance_creation_title", tr);
 	setWindowTitle(QString(tr));
-	resize(300, 400);
-	setMinimumSize(300, 400);
+	resize(650, 500);
+	setMinimumSize(650, 500);
 
 	connect(_createButton, SIGNAL(released()), this, SLOT(onCreateButtonClicked()));
 	connect(_newGroupButton, SIGNAL(released()), this, SLOT(onNewGroupButtonClicked()));
@@ -73,9 +71,11 @@ void AddInstanceWidget::onCreateButtonClicked() {
 		return;
 	}
 
-	if (!instanceName.empty()) {
-		QString url = _gameVersionDropdown->currentData().toString();
-		QString version = _gameVersionDropdown->currentText();
+    std::pair<QString, QString> versionInfo = _versionWidget->getSettings();
+
+	if (!instanceName.empty() && !versionInfo.first.isNull()) {
+		QString version = versionInfo.first;
+        QString url = versionInfo.second;
 		QString name = _instanceNameTextbox->text().trimmed();
 		QString group;
 
@@ -98,19 +98,6 @@ void AddInstanceWidget::onNewGroupButtonClicked() {
 		bc_instance_group_create(_newGroupTextbox->text().trimmed().toStdString().c_str());
 		populateGroupList();
 	}
-}
-
-void AddInstanceWidget::populateVersionList() {
-	bc_versionlist* versions = bc_versionlist_fetch();
-
-	for (int i = 0; i < versions->versions_len; i++) {
-		QVariant q;
-		q.setValue(QString(versions->versions[i].url));
-
-		_gameVersionDropdown->addItem(QString(versions->versions[i].id), q);
-	}
-
-	free(versions);
 }
 
 void AddInstanceWidget::populateGroupList() {

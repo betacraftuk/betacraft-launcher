@@ -154,7 +154,8 @@ void InstanceListWidget::onInstanceAdded() {
 
 void InstanceListWidget::onAddInstanceClicked() {
 	_addInstanceWidget->populateGroupList();
-	_addInstanceWidget->_instanceNameTextbox->setText("");
+    _addInstanceWidget->_instanceNameTextbox->setText("");
+    _addInstanceWidget->_versionWidget->clean();
 	_addInstanceWidget->show();
 }
 

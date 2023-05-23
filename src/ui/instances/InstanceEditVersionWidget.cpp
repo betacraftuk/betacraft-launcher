@@ -155,7 +155,12 @@ std::pair<QString, QString> InstanceEditVersionWidget::getSettings() {
 		return { item->text(), item->data().value<QString>()};
 	}
 
-	return { _version, NULL };
+    return { NULL, NULL };
+}
+
+void InstanceEditVersionWidget::clean() {
+    _menu->setCurrentIndex(0);
+    _searchTextbox->setText("");
 }
 
 void InstanceEditVersionWidget::onSearchButtonClicked() {

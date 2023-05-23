@@ -2,6 +2,7 @@
 #define ADDINSTANCEWIDGET_H
 
 #include <QWidget>
+#include "InstanceEditVersionWidget.h"
 
 class QGridLayout;
 class QLineEdit;
@@ -15,6 +16,7 @@ public:
 	explicit AddInstanceWidget(QWidget* parent = nullptr);
 	void populateGroupList();
 	QLineEdit* _instanceNameTextbox;
+    InstanceEditVersionWidget* _versionWidget;
 
 private slots:
 	void onCreateButtonClicked();
@@ -29,7 +31,6 @@ signals:
 private:
 	QGridLayout* _layout;
 	QLineEdit* _newGroupTextbox;
-	QComboBox* _gameVersionDropdown;
 	QListWidget* _groupList;
 	QPushButton* _createButton;
 	QPushButton* _newGroupButton;

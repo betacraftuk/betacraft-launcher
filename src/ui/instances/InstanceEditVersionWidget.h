@@ -22,6 +22,7 @@ public:
 	explicit InstanceEditVersionWidget(QWidget* parent = nullptr);
 	std::pair<QString, QString> getSettings();
 	void setInstance(bc_instance instance);
+    void clean();
 
 private slots:
 	void onSearchButtonClicked();
