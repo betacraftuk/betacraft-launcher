@@ -28,6 +28,7 @@ SettingsGeneralWidget::SettingsGeneralWidget(QWidget* parent)
 	_languageCombo->addItem("Polish");
 	_languageCombo->addItem("Polish (alternative)");
 	_languageCombo->addItem("Polish (cyrillic)");
+	_languageCombo->addItem("Hungarian");
 	_languageCombo->setCurrentText(QString(settings->language));
 
 	_discordCheckbox->setChecked(settings->discord);
