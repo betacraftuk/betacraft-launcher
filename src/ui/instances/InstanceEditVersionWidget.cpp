@@ -1,9 +1,9 @@
 #include "InstanceEditVersionWidget.h"
 
+#include "../Betacraft.h"
 #include <QtWidgets>
 
 extern "C" {
-	#include "../../core/Betacraft.h"
 	#include "../../core/VersionList.h"
 }
 
@@ -23,11 +23,8 @@ InstanceEditVersionWidget::InstanceEditVersionWidget(QWidget* parent)
     _versionListSnapshot = new QStandardItemModel(this);
     _versionListSearch = new QStandardItemModel(this);
 
-	bc_translate("instance_version_search_button", tr);
-	_searchButton->setText(QString(tr));
-
-	bc_translate("instance_version_search_placeholder", tr);
-	_searchTextbox->setPlaceholderText(QString(tr));
+	_searchButton->setText(bc_translate("instance_version_search_button"));
+	_searchTextbox->setPlaceholderText(bc_translate("instance_version_search_placeholder"));
 
 	versionListInit();
 
@@ -36,10 +33,8 @@ InstanceEditVersionWidget::InstanceEditVersionWidget(QWidget* parent)
 	_versionsTreeView->setIndentation(0);
 	_versionsTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-	bc_translate("instance_version_tab_all", tr);
-	_menu->addTab(QString(tr));
-	bc_translate("instance_version_tab_release", tr);
-	_menu->addTab(QString(tr));
+	_menu->addTab(bc_translate("instance_version_tab_all"));
+	_menu->addTab(bc_translate("instance_version_tab_release"));
 	_menu->addTab("Beta");
 	_menu->addTab("Alpha");
 	_menu->addTab("Snapshot");

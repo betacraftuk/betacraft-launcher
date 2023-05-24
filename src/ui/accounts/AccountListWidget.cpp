@@ -1,6 +1,7 @@
 #include "AccountListWidget.h"
 #include "AccountListItemWidget.h"
 
+#include "../Betacraft.h"
 #include <QtWidgets>
 
 extern "C" {
@@ -9,15 +10,12 @@ extern "C" {
 
 AccountListWidget::AccountListWidget(QWidget *parent)
 	: QWidget{parent} {
-	char tr[256];
-
 	_layout = new QGridLayout(this);
 	_accountList = new QListWidget(this);
 	_addAccountButton = new QPushButton(this);
 	_addAccountWidget = new AddAccountWidget();
 
-	bc_translate("accounts_add_button", tr);
-	_addAccountButton->setText(QString(tr));
+	_addAccountButton->setText(bc_translate("accounts_add_button"));
 
 	_accountList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	_accountList->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);

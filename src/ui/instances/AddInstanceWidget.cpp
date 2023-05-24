@@ -1,5 +1,6 @@
 #include "AddInstanceWidget.h"
 
+#include "../Betacraft.h"
 #include <QtWidgets>
 
 extern "C" {
@@ -10,8 +11,6 @@ extern "C" {
 
 AddInstanceWidget::AddInstanceWidget(QWidget* parent)
 	: QWidget{ parent } {
-	char tr[256];
-
 	_layout = new QGridLayout(this);
 	_instanceNameTextbox = new QLineEdit(this);
 	_groupList = new QListWidget(this);
@@ -20,18 +19,14 @@ AddInstanceWidget::AddInstanceWidget(QWidget* parent)
 	_newGroupTextbox = new QLineEdit(this);
     _versionWidget = new InstanceEditVersionWidget(this);
 
-	bc_translate("instance_create_button", tr);
-	_createButton->setText(QString(tr));
-	bc_translate("instance_group_new", tr);
-	_newGroupButton->setText(QString(tr));
+	_createButton->setText(bc_translate("instance_create_button"));
+	_newGroupButton->setText(bc_translate("instance_group_new"));
 
 	_layout->setAlignment(Qt::AlignTop);
 
-	bc_translate("instance_name", tr);
-	_layout->addWidget(new QLabel(QString(tr)), 0, 0, 1, 2);
+    _layout->addWidget(new QLabel(bc_translate("instance_name"), this, {}), 0, 0, 1, 2);
 	_layout->addWidget(_instanceNameTextbox, 1, 0, 1, 2);
-	bc_translate("instance_group", tr);
-	_layout->addWidget(new QLabel(QString(tr)), 2, 0, 1, 2);
+	_layout->addWidget(new QLabel(bc_translate("instance_group"), this, {}), 2, 0, 1, 2);
 	_layout->addWidget(_newGroupTextbox, 3, 0, 1, 1);
 	_layout->addWidget(_newGroupButton, 3, 1, 1, 1);
 	_layout->addWidget(_groupList, 4, 0, 1, 2);
@@ -48,8 +43,7 @@ AddInstanceWidget::AddInstanceWidget(QWidget* parent)
 	setLayout(_layout);
 	setStyleSheet("QLabel { font-size: 14px; }");
 
-	bc_translate("instance_creation_title", tr);
-	setWindowTitle(QString(tr));
+	setWindowTitle(bc_translate("instance_creation_title"));
 	resize(650, 500);
 	setMinimumSize(650, 500);
 

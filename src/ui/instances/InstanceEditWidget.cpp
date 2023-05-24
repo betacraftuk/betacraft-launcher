@@ -1,9 +1,9 @@
 #include "InstanceEditWidget.h"
 
+#include "../Betacraft.h"
 #include <QtWidgets>
 
 extern "C" {
-	#include "../../core/Betacraft.h"
 	#include "../../core/Network.h"
 }
 
@@ -19,12 +19,10 @@ InstanceEditWidget::InstanceEditWidget(QWidget* parent)
 	_instanceSaveButtonLayout = new QGridLayout();
 	_instanceSaveButton = new QPushButton(this);
 	_instanceSaveButtonWidget = new QWidget(this);
-
-	bc_translate("instance_save_button", tr);
-	_instanceSaveButton->setText(QString(tr));
-
 	_instanceEditAppearanceWidget = new InstanceEditAppearanceWidget();
 	_instanceEditArgumentsWidget = new InstanceEditArgumentsWidget();
+
+	_instanceSaveButton->setText(bc_translate("instance_save_button"));
 
 	_instanceSaveButtonLayout->setSpacing(5);
 	_instanceSaveButtonLayout->setContentsMargins(10, 10, 10, 10);
@@ -33,26 +31,22 @@ InstanceEditWidget::InstanceEditWidget(QWidget* parent)
 
 	_menu->setStyleSheet("QTabWidget::pane { border: 0; }");
 
-	bc_translate("instance_tab_appearance", tr);
-	_menu->addTab(_instanceEditAppearanceWidget, QString(tr));
+	_menu->addTab(_instanceEditAppearanceWidget, bc_translate("instance_tab_appearance"));
 
 	if (betacraft_online == 1) {
         _instanceEditVersionWidget = new InstanceEditVersionWidget();
         _instanceEditModsWidget = new InstanceEditModsWidget();
 
-		bc_translate("instance_tab_version", tr);
-        _menu->addTab(_instanceEditVersionWidget, QString(tr));
+        _menu->addTab(_instanceEditVersionWidget, bc_translate("instance_tab_version"));
         _menu->addTab(_instanceEditModsWidget, "Mods");
 	}
 
-	bc_translate("instance_tab_arguments", tr);
-	_menu->addTab(_instanceEditArgumentsWidget, QString(tr));
+	_menu->addTab(_instanceEditArgumentsWidget, bc_translate("instance_tab_arguments"));
 
 	_layout->addWidget(_menu, 0, 0, 1, 11);
 	_layout->addWidget(_instanceSaveButtonWidget, 1, 0, 1, 11);
 
-	bc_translate("instance_edit_title", tr);
-	setWindowTitle(QString(tr));
+	setWindowTitle(bc_translate("instance_edit_title"));
 
 	_layout->setSpacing(0);
 	_layout->setContentsMargins(0, 0, 0, 0);

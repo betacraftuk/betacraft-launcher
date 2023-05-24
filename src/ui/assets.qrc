@@ -12,6 +12,7 @@
         <file alias="Polish">../../lang/Polish.json</file>
         <file alias="Polish (alternative)">../../lang/Polish (alternative).json</file>
         <file alias="Polish (cyrillic)">../../lang/Polish (cyrillic).json</file>
+        <file alias="Hungarian">../../lang/Hungarian.json</file>
     </qresource>
     <qresource prefix="/">
         <file alias="COPYING.md">../../COPYING.md</file>

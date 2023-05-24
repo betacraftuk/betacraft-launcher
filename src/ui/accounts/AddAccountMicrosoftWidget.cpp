@@ -1,28 +1,24 @@
 #include "AddAccountMicrosoftWidget.h"
 
+#include "../Betacraft.h"
 #include <QtWidgets>
 
 extern "C" {
 	#include "../../core/AuthMicrosoft.h"
-	#include "../../core/Betacraft.h"
 }
 
 bc_auth_microsoftDeviceResponse _authDeviceRes;
 
 AddAccountMicrosoftWidget::AddAccountMicrosoftWidget(QWidget* parent)
 	: QWidget{ parent } {
-	char tr[256];
-
 	_layout = new QGridLayout(this);
 	_microsoftLink = new QLabel(this);
 	_code = new QLabel(this);
 	_proceedText = new QLabel(this);
 	_typeCodeText = new QLabel(this);
 
-	bc_translate("accounts_microsoft_instruction1", tr);
-	_proceedText->setText(QString(tr));
-	bc_translate("accounts_microsoft_instruction2", tr);
-	_typeCodeText->setText(QString(tr));
+	_proceedText->setText(bc_translate("accounts_microsoft_instruction1"));
+	_typeCodeText->setText(bc_translate("accounts_microsoft_instruction2"));
 
 	QFont font;
 	font.setPointSize(12);

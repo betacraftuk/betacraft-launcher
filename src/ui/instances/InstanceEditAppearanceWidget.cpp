@@ -1,5 +1,6 @@
 #include "InstanceEditAppearanceWidget.h"
 
+#include "../Betacraft.h"
 #include <QtWidgets>
 
 extern "C" {
@@ -11,8 +12,6 @@ QString icon_path;
 
 InstanceEditAppearanceWidget::InstanceEditAppearanceWidget(QWidget* parent)
 	: QWidget{ parent } {
-	char tr[256];
-
 	_layout = new QGridLayout(this);
 	_instanceNameGroup = new QGroupBox(this);
 	_instanceNameTextbox = new QLineEdit(this);
@@ -33,22 +32,14 @@ InstanceEditAppearanceWidget::InstanceEditAppearanceWidget(QWidget* parent)
 	_instanceCheckboxLayout = new QGridLayout();
 	_instanceCheckboxGroup = new QGroupBox(this);
 
-	bc_translate("instance_name", tr);
-	_instanceNameGroup->setTitle(QString(tr));
-	bc_translate("instance_icon_category", tr);
-	_instanceIconGroup->setTitle(QString(tr));
-	bc_translate("instance_icon_browse", tr);
-	_instanceIconBrowseButton->setText(QString(tr));
-	bc_translate("instance_icon_revert", tr);
-	_instanceIconDefaultButton->setText(QString(tr));
-	bc_translate("instance_game_category", tr);
-	_instanceGameGroup->setTitle(QString(tr));
-	bc_translate("instance_game_width", tr);
-	_instanceGameWidthLabel->setText(QString(tr));
-	bc_translate("instance_game_height", tr);
-	_instanceGameHeightLabel->setText(QString(tr));
-	bc_translate("instance_game_resolution_maximized", tr);
-	_instanceGameMaximizedCheckbox->setText(QString(tr));
+	_instanceNameGroup->setTitle(bc_translate("instance_name"));
+	_instanceIconGroup->setTitle(bc_translate("instance_icon_category"));
+	_instanceIconBrowseButton->setText(bc_translate("instance_icon_browse"));
+	_instanceIconDefaultButton->setText(bc_translate("instance_icon_revert"));
+	_instanceGameGroup->setTitle(bc_translate("instance_game_category"));
+	_instanceGameWidthLabel->setText(bc_translate("instance_game_width"));
+	_instanceGameHeightLabel->setText(bc_translate("instance_game_height"));
+	_instanceGameMaximizedCheckbox->setText(bc_translate("instance_game_resolution_maximized"));
 
 	_instanceNameLayout->addWidget(_instanceNameTextbox);
 	_instanceNameGroup->setLayout(_instanceNameLayout);

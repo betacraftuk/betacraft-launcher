@@ -23,8 +23,6 @@ add_library(Core
     JsonExtension.h
     AuthMicrosoft.c
     AuthMicrosoft.h
-    AuthMojang.c
-    AuthMojang.h
     Account.c
     Account.h
     JavaInstallations.c

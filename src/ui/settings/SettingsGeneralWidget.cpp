@@ -1,5 +1,6 @@
 #include "SettingsGeneralWidget.h"
 
+#include "../Betacraft.h"
 #include <QtWidgets>
 
 extern "C" {
@@ -8,8 +9,6 @@ extern "C" {
 
 SettingsGeneralWidget::SettingsGeneralWidget(QWidget* parent)
 	: QWidget{ parent } {
-	char tr[256];
-
 	_layout = new QGridLayout(this);
 	_languageLayout = new QVBoxLayout();
 	_languageGroup = new QGroupBox(this);
@@ -18,8 +17,7 @@ SettingsGeneralWidget::SettingsGeneralWidget(QWidget* parent)
 	_languageCombo = new QComboBox(this);
 	_discordCheckbox = new QCheckBox("Discord Rich Presence", this);
 
-	bc_translate("settings_general_language_title", tr);
-	_languageGroup->setTitle(QString(tr));
+	_languageGroup->setTitle(bc_translate("settings_general_language_title"));
 
 	bc_settings* settings = bc_settings_get();
 

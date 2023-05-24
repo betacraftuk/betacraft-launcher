@@ -1,15 +1,16 @@
 #include "SettingsJavaWidget.h"
 
+#include "../Betacraft.h"
 #include <QtWidgets>
 
 #ifdef _WIN32
-QString javaExecName = "java.exe (*.exe)";
+QString _javaExecName = "java.exe (*.exe)";
 #elif defined(__linux__) || defined(__APPLE__)
-QString javaExecName = "java (java *.plugin)";
+QString _javaExecName = "java (java *.plugin)";
 #endif
 
 extern "C" {
-	#include "../../core/Betacraft.h"
+	#include "../../core/Network.h"
 }
 
 char _currentDownloadUrl[256];
@@ -17,8 +18,6 @@ bool _downloadRecommendedJava = false;
 
 SettingsJavaWidget::SettingsJavaWidget(QWidget* parent)
 	: QWidget{ parent } {
-	char tr[256];
-
 	_layout = new QGridLayout(this);
 	_addInstallationButton = new QPushButton(this);
 	_removeInstallationButton = new QPushButton(this);
@@ -32,16 +31,11 @@ SettingsJavaWidget::SettingsJavaWidget(QWidget* parent)
 	_progressBar = new QProgressBar(this);
 	_progressTimer = new QTimer(this);
 
-	bc_translate("settings_java_add_button", tr);
-	_addInstallationButton->setText(QString(tr));
-	bc_translate("settings_java_remove_button", tr);
-	_removeInstallationButton->setText(QString(tr));
-	bc_translate("settings_java_download_install_button", tr);
-	_installJavaButton->setText(QString(tr));
-	bc_translate("settings_java_set_default_button", tr);
-	_setAsDefaultButton->setText(QString(tr));
-	bc_translate("settings_java_download_label", tr);
-	_javaInstallLabel->setText(QString(tr));
+	_addInstallationButton->setText(bc_translate("settings_java_add_button"));
+	_removeInstallationButton->setText(bc_translate("settings_java_remove_button"));
+	_installJavaButton->setText(bc_translate("settings_java_download_install_button"));
+	_setAsDefaultButton->setText(bc_translate("settings_java_set_default_button"));
+	_javaInstallLabel->setText(bc_translate("settings_java_download_label"));
 
 	bc_jrepo_download_array* javaRepoList = bc_jrepo_get_all_system();
 
@@ -186,12 +180,8 @@ void SettingsJavaWidget::onSetAsDefaultClicked() {
 }
 
 void SettingsJavaWidget::onAddButtonClicked() {
-	char buf[64];
-
-	bc_translate("settings_java_add_title", buf);
-	QString title(buf);
-
-	QString path = QFileDialog::getOpenFileName(this, title, "", javaExecName);
+	QString title(bc_translate("settings_java_add_title"));
+	QString path = QFileDialog::getOpenFileName(this, title, "", _javaExecName);
 
 	if (!path.isNull()) {
 		if (path.endsWith(QString(".plugin"))) {
@@ -216,13 +206,10 @@ void SettingsJavaWidget::onRemoveButtonClicked() {
 void SettingsJavaWidget::populateJavaTreeView() {
 	_javaTreeItemModel->clear();
 
-	char tr[256];
 	QStringList headers;
 
-	bc_translate("settings_java_version_column", tr);
-	headers << tr;
-	bc_translate("settings_java_path_column", tr);
-	headers << tr;
+	headers << bc_translate("settings_java_version_column");
+	headers << bc_translate("settings_java_path_column");
 
 	_javaTreeItemModel->setHorizontalHeaderLabels(headers);
 

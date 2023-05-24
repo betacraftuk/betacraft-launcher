@@ -1,5 +1,6 @@
 #include "MainWindow.h"
 
+#include "Betacraft.h"
 #include <QtWidgets>
 
 extern "C" {
@@ -12,8 +13,6 @@ extern "C" {
 
 MainWindow::MainWindow(QWidget *parent) :
 	QWidget(parent) {
-	char tr[256];
-
 	_mainLayout = new QGridLayout(this);
 	_menu = new QTabWidget(this);
 	_bottomBackground = new QWidget(this);
@@ -43,22 +42,15 @@ MainWindow::MainWindow(QWidget *parent) :
 	_playButton->setFixedHeight(50);
 	_bottomBackground->setStyleSheet(".QWidget { background-image: url(':/assets/dirt.png'); }");
 	_logo->setPixmap(QPixmap(":/assets/logo.png"));
-	bc_translate("play_button", tr);
-	_playButton->setText(QString(tr));
+	_playButton->setText(bc_translate("play_button"));
 
 	_menu->setStyleSheet("QTabWidget::pane { border: 0; }");
-	bc_translate("tab_changelog", tr);
-	_menu->addTab(_changelog, QString(tr));
-	bc_translate("tab_instances", tr);
-	_menu->addTab(_instanceListWidget, QString(tr));
-	bc_translate("tab_server_list", tr);
-	_menu->addTab(_serverListWidget, QString(tr));
-	bc_translate("tab_accounts", tr);
-    _menu->addTab(_accountsWidget, QString(tr));
-	bc_translate("tab_settings", tr);
-	_menu->addTab(_settingsWidget, QString(tr));
-	bc_translate("tab_about", tr);
-	_menu->addTab(_aboutWidget, QString(tr));
+	_menu->addTab(_changelog, bc_translate("tab_changelog"));
+	_menu->addTab(_instanceListWidget, bc_translate("tab_instances"));
+	_menu->addTab(_serverListWidget, bc_translate("tab_server_list"));
+    _menu->addTab(_accountsWidget, bc_translate("tab_accounts"));
+	_menu->addTab(_settingsWidget, bc_translate("tab_settings"));
+	_menu->addTab(_aboutWidget, bc_translate("tab_about"));
 	_menu->addTab(new QWidget(this), "Donate");
 
 	if (betacraft_online == 0) {

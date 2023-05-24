@@ -1,6 +1,7 @@
 #include "ServerListWidget.h"
 #include "ServerListItemWidget.h"
 
+#include "../Betacraft.h"
 #include <QtWidgets>
 
 extern "C" {
@@ -14,18 +15,13 @@ char selected_port[16] = "";
 
 ServerListWidget::ServerListWidget(QWidget *parent)
 	: QWidget{parent} {
-	char tr[256];
-
 	_layout = new QGridLayout(this);
 	_searchTextBox = new QLineEdit(this);
 	_searchButton = new QPushButton(this);
 	_serverList = new QListWidget(this);
 
-	bc_translate("serverlist_search_button", tr);
-	_searchButton->setText(QString(tr));
-
-	bc_translate("serverlist_search_placeholder", tr);
-	_searchTextBox->setPlaceholderText(QString(tr));
+	_searchButton->setText(bc_translate("serverlist_search_button"));
+	_searchTextBox->setPlaceholderText(bc_translate("serverlist_search_placeholder"));
 
 	_serverList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	_serverList->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);

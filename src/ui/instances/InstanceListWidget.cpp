@@ -1,23 +1,17 @@
 #include "InstanceListWidget.h"
 
+#include "../Betacraft.h"
 #include <QtWidgets>
-
-extern "C" {
-	#include "../../core/Betacraft.h"
-}
 
 InstanceListWidget::InstanceListWidget(QWidget *parent)
 	: QWidget{parent} {
-	char tr[256];
-
 	_layout = new QGridLayout(this);
 	_instanceList = new QTreeWidget(this);
 	_addInstanceButton = new QPushButton(this);
 	_addInstanceWidget = new AddInstanceWidget();
 	_instanceEditWidget = new InstanceEditWidget();
 
-	bc_translate("instance_add_button", tr);
-	_addInstanceButton->setText(QString(tr));
+	_addInstanceButton->setText(bc_translate("instance_add_button"));
 
 	_instanceList->header()->setHidden(1);
 	_instanceList->setIconSize(QSize(28, 28));

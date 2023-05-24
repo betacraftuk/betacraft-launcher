@@ -1,5 +1,6 @@
 #include "SettingsWidget.h"
 
+#include "../Betacraft.h"
 #include <QtWidgets>
 
 extern "C" {
@@ -8,8 +9,6 @@ extern "C" {
 
 SettingsWidget::SettingsWidget(QWidget* parent)
 	: QWidget{ parent } {
-	char tr[256];
-
 	_layout = new QGridLayout(this);
 	_sidebar = new QListWidget(this);
 	_menu = new QStackedWidget(this);
@@ -21,12 +20,10 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 	_sidebar->setStyleSheet("QListWidget { font-size: 12px; }");
 
 	_settingsGeneralItem->setSizeHint(QSize(30, 30));
-	bc_translate("tab_settings_general", tr);
-	_settingsGeneralItem->setText(QString(tr));
+	_settingsGeneralItem->setText(bc_translate("tab_settings_general"));
 
 	_settingsJavaItem->setSizeHint(QSize(30, 30));
-	bc_translate("tab_settings_java_installations", tr);
-	_settingsJavaItem->setText(QString(tr));
+	_settingsJavaItem->setText(bc_translate("tab_settings_java_installations"));
 
 	_sidebar->addItem(_settingsGeneralItem);
 	_sidebar->addItem(_settingsJavaItem);

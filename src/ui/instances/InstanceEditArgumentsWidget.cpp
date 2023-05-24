@@ -1,10 +1,7 @@
 #include "InstanceEditArgumentsWidget.h"
 
+#include "../Betacraft.h"
 #include <QtWidgets>
-
-extern "C" {
-	#include "../../core/Betacraft.h"
-}
 
 InstanceEditArgumentsWidget::InstanceEditArgumentsWidget(QWidget* parent)
 	: QWidget{ parent }
@@ -25,10 +22,8 @@ InstanceEditArgumentsWidget::InstanceEditArgumentsWidget(QWidget* parent)
 
 	_separateArgumentsLabel->setStyleSheet(".QLabel { font-weight: bold; }");
 
-	bc_translate("instance_arguments_jvm_title", tr);
-	_javaArgumentsGroup->setTitle(QString(tr));
-	bc_translate("instance_arguments_program_title", tr);
-	_programArgumentsGroup->setTitle(QString(tr));
+	_javaArgumentsGroup->setTitle(bc_translate("instance_arguments_jvm_title"));
+	_programArgumentsGroup->setTitle(bc_translate("instance_arguments_program_title"));
 
 	_javaArgumentsLayout->addWidget(_javaArgumentsTextEdit);
 	_javaArgumentsGroup->setLayout(_javaArgumentsLayout);
@@ -49,14 +44,12 @@ InstanceEditArgumentsWidget::InstanceEditArgumentsWidget(QWidget* parent)
 	setLayout(_layout);
 }
 
-void InstanceEditArgumentsWidget::setInstance(bc_instance instance)
-{
+void InstanceEditArgumentsWidget::setInstance(bc_instance instance) {
 	_javaArgumentsTextEdit->setText(instance.jvm_args);
 	_programArgumentsTextEdit->setText(instance.program_args);
 }
 
-bc_instance* InstanceEditArgumentsWidget::getSettings()
-{
+bc_instance* InstanceEditArgumentsWidget::getSettings() {
 	bc_instance* instance = new bc_instance();
 
 	snprintf(instance->jvm_args, sizeof(instance->jvm_args), "%s", _javaArgumentsTextEdit->toPlainText().toStdString().c_str());

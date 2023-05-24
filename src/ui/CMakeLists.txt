@@ -16,6 +16,7 @@ qt_add_executable(Betacraft
     MainWindow.cpp MainWindow.h
     main.cpp
     assets.qrc
+	Betacraft.cpp Betacraft.h
     AboutWidget.cpp AboutWidget.h
     instances/InstanceListWidget.cpp instances/InstanceListWidget.h
     instances/AddInstanceWidget.cpp instances/AddInstanceWidget.h
@@ -32,7 +33,6 @@ qt_add_executable(Betacraft
     accounts/AccountListItemWidget.cpp accounts/AccountListItemWidget.h
     accounts/AddAccountWidget.cpp accounts/AddAccountWidget.h
     accounts/AddAccountMicrosoftWidget.cpp accounts/AddAccountMicrosoftWidget.h
-    accounts/AddAccountMojangWidget.cpp accounts/AddAccountMojangWidget.h
     settings/SettingsWidget.cpp settings/SettingsWidget.h
     settings/SettingsGeneralWidget.cpp settings/SettingsGeneralWidget.h
     settings/SettingsJavaWidget.cpp settings/SettingsJavaWidget.h
@@ -60,10 +60,6 @@ if(WIN32)
         COMMENT "Running windeployqt..."
     )
 elseif(UNIX AND NOT APPLE)
-    # cmake --install .
-    # cpack -G DEB
-    # sudo dpkg -i <package-name>
-
     install(TARGETS Betacraft
         BUNDLE  DESTINATION .
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

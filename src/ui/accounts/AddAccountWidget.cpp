@@ -1,7 +1,7 @@
 #include "AddAccountWidget.h"
 #include "AddAccountMicrosoftWidget.h"
-#include "AddAccountMojangWidget.h"
 
+#include "../Betacraft.h"
 #include <QtWidgets>
 
 extern "C" {
@@ -10,21 +10,12 @@ extern "C" {
 
 AddAccountWidget::AddAccountWidget(QWidget* parent)
 	: QWidget{ parent } {
-	char tr[256];
-
 	_layout = new QGridLayout(this);
 	_menu = new QTabWidget(this);
 	_microsoftWidget = new AddAccountMicrosoftWidget(this);
-	//_mojangWidget = new AddAccountMojangWidget(this);
 
 	_menu->setStyleSheet("QTabWidget::pane { border: 0; }");
-	bc_translate("accounts_microsoft_title", tr);
-	_menu->addTab(_microsoftWidget, QString(tr));
-
-	//_menu->addTab(_mojangWidget, bc_translate("accounts_mojang_title"));
-	bc_translate("accounts_mojang_title", tr);
-	_menu->addTab(new QWidget(), QString(tr));
-	_menu->setTabEnabled(1, 0);
+	_menu->addTab(_microsoftWidget, bc_translate("accounts_microsoft_title"));
 
 	_layout->setAlignment(Qt::AlignTop);
 
@@ -35,8 +26,7 @@ AddAccountWidget::AddAccountWidget(QWidget* parent)
 
 	setLayout(_layout);
 
-	bc_translate("accounts_creation_title", tr);
-	setWindowTitle(QString(tr));
+	setWindowTitle(bc_translate("accounts_creation_title"));
 	resize(400, 200);
 	setMinimumSize(400, 200);
 

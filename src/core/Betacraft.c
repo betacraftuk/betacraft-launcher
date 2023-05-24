@@ -53,19 +53,6 @@ bc_memory bc_avatar_get(const char* uuid) {
     return bc_network_get_chunk(endpoint);
 }
 
-void bc_translate(const char* key, char* out) {
-    bc_settings* settings = bc_settings_get();
-
-    char fileName[64];
-    snprintf(fileName, sizeof(fileName), "lang/%s.json", settings->language);
-
-    json_object* json = json_object_from_file(fileName);
-    snprintf(out, 256, "%s", jext_get_string_dummy(json, key));
-
-    json_object_put(json);
-    free(settings);
-}
-
 char* bc_update_check() {
     char* response = bc_network_get("https://api.github.com/repos/betacraftuk/betacraft-launcher/releases?per_page=1", "User-Agent: Betacraft");
     json_object* json = json_tokener_parse(response);
