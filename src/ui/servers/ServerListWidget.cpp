@@ -119,7 +119,11 @@ void ServerListWidget::populateServerList() {
 
 	for (int i = 0; i < servers->len; i++) {
 		_serverArray.arr[i] = servers->arr[i];
-        _serverToIconMap[servers->arr[i].connect_socket] = QByteArray(servers->arr[i].icon);
+
+        if (servers->arr[i].icon != NULL) {
+            _serverToIconMap[servers->arr[i].connect_socket] = QByteArray(servers->arr[i].icon);
+        }
+
 		addServerItem(servers->arr[i]);
 	}
 
