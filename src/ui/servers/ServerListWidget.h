@@ -22,6 +22,7 @@ public:
 private slots:
 	void onSearchButton();
 	void onServerClicked(QListWidgetItem* item);
+	void populateServerList();
 
 signals:
 	void signal_serverGameLaunch(const char* ip, const char* port);
@@ -33,8 +34,8 @@ private:
 	QGridLayout* _layout;
 	QLineEdit* _searchTextBox;
 	QListWidget* _serverList;
+    QPushButton* _serverListRefreshButton;
 	QPushButton* _searchButton;
-	void populateServerList();
 	void addServerItem(bc_server server);
 };
 

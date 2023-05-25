@@ -2,7 +2,7 @@
 
 #include <QtWidgets>
 
-ServerListItemWidget::ServerListItemWidget(bc_server s, QWidget *parent)
+ServerListItemWidget::ServerListItemWidget(bc_server s, std::unordered_map<QString, QByteArray> serverToIconMap, QWidget *parent)
 	: QWidget{parent} {
 	QString max = QString::number(s.max_players); 
 	QString online = QString::number(s.online_players);
@@ -15,8 +15,8 @@ ServerListItemWidget::ServerListItemWidget(bc_server s, QWidget *parent)
     _players = new QLabel(finalc, this);
     _description = new QLabel(s.description, this);
 
-	if (s.icon != NULL) {
-		QByteArray imageEncoded = s.icon;
+	if (serverToIconMap.find(QString(s.connect_socket)) != serverToIconMap.end()) {
+		QByteArray imageEncoded = serverToIconMap[s.connect_socket];
 		QByteArray imageBytes = QByteArray::fromBase64(imageEncoded);
 
 		QPixmap pic;

@@ -10,6 +10,7 @@ extern "C" {
 }
 
 bc_server_array _serverArray;
+std::unordered_map<QString, QByteArray> _serverToIconMap;
 char selected_ip[64] = "";
 char selected_port[16] = "";
 
@@ -19,6 +20,7 @@ ServerListWidget::ServerListWidget(QWidget *parent)
 	_searchTextBox = new QLineEdit(this);
 	_searchButton = new QPushButton(this);
 	_serverList = new QListWidget(this);
+    _serverListRefreshButton = new QPushButton("Refresh", this);
 
 	_searchButton->setText(bc_translate("serverlist_search_button"));
 	_searchTextBox->setPlaceholderText(bc_translate("serverlist_search_placeholder"));
@@ -29,7 +31,8 @@ ServerListWidget::ServerListWidget(QWidget *parent)
 	populateServerList();
 
 	_layout->addWidget(_searchTextBox, 1, 0, 1, 10);
-	_layout->addWidget(_searchButton, 1, 10, 1, 1);
+	_layout->addWidget(_searchButton, 1, 9, 1, 1);
+	_layout->addWidget(_serverListRefreshButton, 1, 10, 1, 1);
 	_layout->addWidget(_serverList, 2, 0, 1, 11);
 
 	_layout->setAlignment(Qt::AlignTop);
@@ -40,6 +43,7 @@ ServerListWidget::ServerListWidget(QWidget *parent)
 	setLayout(_layout);
 
 	connect(_searchButton, SIGNAL(released()), this, SLOT(onSearchButton()));
+	connect(_serverListRefreshButton, SIGNAL(released()), this, SLOT(populateServerList()));
 	connect(_serverList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onServerClicked(QListWidgetItem*)));
 }
 
@@ -93,7 +97,7 @@ void ServerListWidget::onServerClicked(QListWidgetItem* item) {
 
 void ServerListWidget::addServerItem(bc_server server) {
     QListWidgetItem* item = new QListWidgetItem();
-    ServerListItemWidget* serverItem = new ServerListItemWidget(server);
+    ServerListItemWidget* serverItem = new ServerListItemWidget(server, _serverToIconMap);
     QVariant q;
 
 	std::pair<QString, QString> serverInfo = { QString(server.connect_socket), QString(server.connect_version) };
@@ -111,8 +115,11 @@ void ServerListWidget::populateServerList() {
 	bc_server_array* servers = bc_server_list();
 	_serverArray.len = servers->len;
 
+    _serverList->clear();
+
 	for (int i = 0; i < servers->len; i++) {
 		_serverArray.arr[i] = servers->arr[i];
+        _serverToIconMap[servers->arr[i].connect_socket] = QByteArray(servers->arr[i].icon);
 		addServerItem(servers->arr[i]);
 	}
 

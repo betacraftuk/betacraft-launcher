@@ -15,7 +15,7 @@ class ServerListItemWidget : public QWidget
 {
 	Q_OBJECT
 public:
-	explicit ServerListItemWidget(bc_server s, QWidget *parent = nullptr);
+	explicit ServerListItemWidget(bc_server s, std::unordered_map<QString, QByteArray> serverToIconMap, QWidget *parent = nullptr);
 
 private:
 	QGridLayout* _layout;
