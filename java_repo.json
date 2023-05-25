@@ -133,55 +133,55 @@
 	},
 	{
 		"version": 17,
-		"full_version": "17.0.6 (Azul)",
+		"full_version": "17.0.7 (Azul)",
 		"platforms": [
 			{
 				"name": "windows",
 				"arch": "x64",
 				"hash": "TBA",
-				"url": "https://cdn.azul.com/zulu/bin/zulu17.40.19-ca-jre17.0.6-win_x64.zip"
+				"url": "https://cdn.azul.com/zulu/bin/zulu17.42.19-ca-jre17.0.7-win_x64.zip"
 			},
 			{
 				"name": "windows",
 				"arch": "x32",
 				"hash": "TBA",
-				"url": "https://cdn.azul.com/zulu/bin/zulu17.40.19-ca-jre17.0.6-win_i686.zip"
+				"url": "https://cdn.azul.com/zulu/bin/zulu17.42.19-ca-jre17.0.7-win_i686.zip"
 			},
 			{
 				"name": "linux",
 				"arch": "x64",
 				"hash": "TBA",
-				"url": "https://cdn.azul.com/zulu/bin/zulu17.40.19-ca-jre17.0.6-linux_x64.tar.gz"
+				"url": "https://cdn.azul.com/zulu/bin/zulu17.42.19-ca-jre17.0.7-linux_x64.tar.gz"
 			},
 			{
 				"name": "linux",
 				"arch": "x32",
 				"hash": "TBA",
-				"url": "https://cdn.azul.com/zulu/bin/zulu17.40.19-ca-jre17.0.6-linux_i686.tar.gz"
+				"url": "https://cdn.azul.com/zulu/bin/zulu17.42.19-ca-jre17.0.7-linux_i686.tar.gz"
 			},
 			{
 				"name": "linux",
 				"arch": "aarch64",
 				"hash": "TBA",
-				"url": "https://cdn.azul.com/zulu/bin/zulu17.40.19-ca-jre17.0.6-linux_aarch64.tar.gz"
+				"url": "https://cdn.azul.com/zulu/bin/zulu17.42.19-ca-jre17.0.7-linux_aarch64.tar.gz"
 			},
 			{
 				"name": "linux",
 				"arch": "arm32",
 				"hash": "TBA",
-				"url": "https://cdn.azul.com/zulu-embedded/bin/zulu17.40.19-ca-jre17.0.6-linux_aarch32hf.tar.gz"
+				"url": "https://cdn.azul.com/zulu-embedded/bin/zulu17.42.19-ca-jre17.0.7-linux_aarch32hf.tar.gz"
 			},
 			{
 				"name": "macos",
 				"arch": "x64",
 				"hash": "TBA",
-				"url": "https://cdn.azul.com/zulu/bin/zulu17.40.19-ca-jre17.0.6-macosx_x64.tar.gz"
+				"url": "https://cdn.azul.com/zulu/bin/zulu17.42.19-ca-jre17.0.7-macosx_x64.tar.gz"
 			},
 			{
 				"name": "macos",
 				"arch": "aarch64",
 				"hash": "TBA",
-				"url": "https://cdn.azul.com/zulu/bin/zulu17.40.19-ca-jre17.0.6-macosx_aarch64.tar.gz"
+				"url": "https://cdn.azul.com/zulu/bin/zulu17.42.19-ca-jre17.0.7-macosx_aarch64.tar.gz"
 			}
 		]
 	}
