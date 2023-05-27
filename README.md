@@ -24,4 +24,5 @@ Betacraft requires [CMake](https://cmake.org/). Many libraries are bundled with 
 
 1. Create a new file YOURLANGUAGE.json in the `lang` folder.
 2. Copy contents of English.json to the newly created file and translate the content
-3. Add the path to your translation to src/ui/assets.qrc
+3. Add the path to your translation to `src/ui/assets.qrc`
+4. Make a pull request
