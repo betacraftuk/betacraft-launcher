@@ -73,6 +73,16 @@ int bc_game_rule_match(bc_version_actionRule* rule, bc_game_data* data) {
             return 0;
         }
 
+        if (rule->features.is_game_maximized != -1
+            && rule->features.is_game_maximized == !(data->instance->maximized)) {
+            return 0;
+        }
+
+        if (rule->features.is_game_fullscreened != -1
+            && rule->features.is_game_fullscreened == !(data->instance->fullscreen)) {
+            return 0;
+        }
+
         // We don't support 1.8+, always return false.
         if ((rule->features.has_quick_plays_support != -1 && rule->features.has_quick_plays_support) ||
             (rule->features.is_quick_play_multiplayer != -1 && rule->features.is_quick_play_multiplayer) ||

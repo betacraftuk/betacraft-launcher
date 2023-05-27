@@ -51,8 +51,8 @@ InstanceEditWidget::InstanceEditWidget(QWidget* parent)
 	_layout->setSpacing(0);
 	_layout->setContentsMargins(0, 0, 0, 0);
 
-	resize(600, 475);
-	setMinimumSize(600, 475);
+    resize(600, 500);
+    setMinimumSize(600, 500);
 	setLayout(_layout);
 
 	connect(_instanceSaveButton, SIGNAL(released()), this, SLOT(onInstanceSaveButtonClicked()));
@@ -81,6 +81,7 @@ void InstanceEditWidget::onInstanceSaveButtonClicked()
 	snprintf(instance.name, sizeof(instance.name), "%s", appearanceSettings->name);
 	instance.width = appearanceSettings->width;
 	instance.height = appearanceSettings->height;
+    instance.maximized = appearanceSettings->maximized;
 	instance.fullscreen = appearanceSettings->fullscreen;
 	instance.show_log = appearanceSettings->show_log;
 	instance.keep_open = appearanceSettings->keep_open;

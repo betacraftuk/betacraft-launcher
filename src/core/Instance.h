@@ -20,6 +20,7 @@ typedef struct bc_instance {
     char version[32];
     int width;
     int height;
+    int maximized;
     int fullscreen;
     int show_log;
     int keep_open;

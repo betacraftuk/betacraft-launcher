@@ -32,6 +32,7 @@ void bc_instance_fill_object_from_json(bc_instance* instance, const char* instan
 
     instance->height = jext_get_int(json, "height");
     instance->width = jext_get_int(json, "width");
+    instance->maximized = jext_get_int(json, "maximized");
     instance->fullscreen = jext_get_int(json, "fullscreen");
     instance->show_log = jext_get_int(json, "show_log");
     instance->keep_open = jext_get_int(json, "keep_open");
@@ -81,6 +82,9 @@ json_object* bc_instance_create_config(const bc_instance* instance) {
 
     json_object_object_get_ex(json, "width", &tmp);
     json_object_set_int(tmp, instance->width);
+
+    json_object_object_get_ex(json, "maximized", &tmp);
+    json_object_set_boolean(tmp, instance->maximized);
 
     json_object_object_get_ex(json, "fullscreen", &tmp);
     json_object_set_boolean(tmp, instance->fullscreen);

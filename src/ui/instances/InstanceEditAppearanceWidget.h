@@ -42,6 +42,7 @@ private:
 	QLineEdit* _instanceGameWidthTextbox;
 	QLineEdit* _instanceGameHeightTextbox;
 	QCheckBox* _instanceGameMaximizedCheckbox;
+    QCheckBox* _instanceGameFullscreenedCheckbox;
 	QGridLayout* _instanceNameLayout;
 	QGridLayout* _instanceIconLayout;
 	QGridLayout* _instanceGameLayout;
