@@ -2,6 +2,7 @@
 #define SERVERLISTITEMWIDGET_H
 
 #include <QWidget>
+#include <unordered_map>
 
 extern "C" {
 	#include "../../core/Betacraft.h"
