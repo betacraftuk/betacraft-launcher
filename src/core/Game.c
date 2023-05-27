@@ -78,8 +78,8 @@ int bc_game_rule_match(bc_version_actionRule* rule, bc_game_data* data) {
             return 0;
         }
 
-        if (rule->features.is_game_fullscreened != -1
-            && rule->features.is_game_fullscreened == !(data->instance->fullscreen)) {
+        if (rule->features.is_game_fullscreen != -1
+            && rule->features.is_game_fullscreen == !(data->instance->fullscreen)) {
             return 0;
         }
 

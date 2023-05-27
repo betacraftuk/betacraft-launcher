@@ -51,6 +51,7 @@ json_object* bc_instance_create_default_config(const char* name, const char* ver
     json_object_object_add(config, "program_args", json_object_new_string(""));
     json_object_object_add(config, "height", json_object_new_int(480));
     json_object_object_add(config, "width", json_object_new_int(854));
+    json_object_object_add(config, "maximized", json_object_new_boolean(0));
     json_object_object_add(config, "fullscreen", json_object_new_boolean(0));
     json_object_object_add(config, "show_log", json_object_new_boolean(0));
     json_object_object_add(config, "keep_open", json_object_new_boolean(0));

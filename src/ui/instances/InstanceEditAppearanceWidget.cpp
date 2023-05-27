@@ -27,7 +27,7 @@ InstanceEditAppearanceWidget::InstanceEditAppearanceWidget(QWidget* parent)
 	_instanceGameWidthTextbox = new QLineEdit(this);
 	_instanceGameHeightTextbox = new QLineEdit(this);
 	_instanceGameMaximizedCheckbox = new QCheckBox(this);
-    _instanceGameFullscreenedCheckbox = new QCheckBox(this);
+    _instanceGameFullscreenCheckbox = new QCheckBox(this);
 	_instanceNameLayout = new QGridLayout();
 	_instanceIconLayout = new QGridLayout();
 	_instanceGameLayout = new QGridLayout();
@@ -42,7 +42,7 @@ InstanceEditAppearanceWidget::InstanceEditAppearanceWidget(QWidget* parent)
 	_instanceGameWidthLabel->setText(bc_translate("instance_game_width"));
 	_instanceGameHeightLabel->setText(bc_translate("instance_game_height"));
 	_instanceGameMaximizedCheckbox->setText(bc_translate("instance_game_resolution_maximized"));
-    _instanceGameFullscreenedCheckbox->setText(bc_translate("instance_game_fullscreen"));
+    _instanceGameFullscreenCheckbox->setText(bc_translate("instance_game_fullscreen"));
 
 	_instanceNameLayout->addWidget(_instanceNameTextbox);
 	_instanceNameGroup->setLayout(_instanceNameLayout);
@@ -62,7 +62,7 @@ InstanceEditAppearanceWidget::InstanceEditAppearanceWidget(QWidget* parent)
 	_instanceGameLayout->addWidget(_instanceGameWidthTextbox, 0, 1, 1, 1);
 	_instanceGameLayout->addWidget(_instanceGameHeightTextbox, 1, 1, 1, 1);
 	_instanceGameLayout->addWidget(_instanceGameMaximizedCheckbox, 2, 0, 1, 1);
-    _instanceGameLayout->addWidget(_instanceGameFullscreenedCheckbox, 3, 0, 1, 1);
+    _instanceGameLayout->addWidget(_instanceGameFullscreenCheckbox, 3, 0, 1, 1);
 	_instanceGameGroup->setLayout(_instanceGameLayout);
 
 	_layout->addWidget(_instanceNameGroup, 0, 0, 1, 11);
@@ -107,7 +107,7 @@ void InstanceEditAppearanceWidget::setInstance(bc_instance instance) {
 	_instanceGameWidthTextbox->setText(QString::fromStdString(std::to_string(instance.width)));
 	_instanceGameHeightTextbox->setText(QString::fromStdString(std::to_string(instance.height)));
     _instanceGameMaximizedCheckbox->setChecked(instance.maximized);
-    _instanceGameFullscreenedCheckbox->setChecked(instance.fullscreen);
+    _instanceGameFullscreenCheckbox->setChecked(instance.fullscreen);
 	_showGameLogCheckbox->setChecked(instance.show_log);
 	_keepOpenCheckbox->setChecked(instance.keep_open);
 
@@ -128,7 +128,7 @@ bc_instance* InstanceEditAppearanceWidget::getSettings() {
 	instance->width = _instanceGameWidthTextbox->text().toInt();
 	instance->height = _instanceGameHeightTextbox->text().toInt();
     instance->maximized = _instanceGameMaximizedCheckbox->isChecked();
-    instance->fullscreen = _instanceGameFullscreenedCheckbox->isChecked();
+    instance->fullscreen = _instanceGameFullscreenCheckbox->isChecked();
 	instance->show_log = _showGameLogCheckbox->isChecked();
 	instance->keep_open = _keepOpenCheckbox->isChecked();
 
