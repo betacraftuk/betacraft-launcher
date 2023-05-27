@@ -10,10 +10,17 @@
 extern int betacraft_online;
 extern char application_support_path[PATH_MAX];
 
+typedef enum bc_download_type {
+    BC_DOWNLOAD_TYPE_ASSETS,
+    BC_DOWNLOAD_TYPE_LIBRARIES,
+    BC_DOWNLOAD_TYPE_VERSION
+} bc_download_type;
+
 struct bc_progress {
     int cur;
     int total;
     int progress;
+    bc_download_type download_type;
 } typedef bc_progress;
 
 typedef struct bc_server {

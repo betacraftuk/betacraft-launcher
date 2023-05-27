@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
     _menu->addTab(_accountsWidget, bc_translate("tab_accounts"));
 	_menu->addTab(_settingsWidget, bc_translate("tab_settings"));
 	_menu->addTab(_aboutWidget, bc_translate("tab_about"));
-	_menu->addTab(new QWidget(this), "Donate");
+    _menu->addTab(new QWidget(this), bc_translate("tab_donate"));
 
 	if (betacraft_online == 0) {
 		_menu->setTabEnabled(2, 0);
@@ -117,9 +117,8 @@ MainWindow::MainWindow(QWidget *parent) :
 	char* updateVersion = bc_update_check();
 
 	if (updateVersion != NULL) {
-		QString url = "https://github.com/betacraftuk/betacraft-launcher/releases";
-		QString message("A new update is available!<br/>Get Betacraft %0 at<br/>");
-		message += "<a href='%1'>%1</a>";
+        QString url = "https://github.com/betacraftuk/betacraft-launcher/releases";
+        QString message = bc_translate("update_notice_message");
 
 		_messageBox->setWindowTitle("Betacraft");
 		_messageBox->setText(message.arg(QString(updateVersion)).arg(url));
@@ -188,8 +187,24 @@ void MainWindow::updateGameProgress() {
 	bc_progress gameProgress = bc_instance_run_progress();
 	_progressBar->setValue(gameProgress.progress);
 
-	QString progressString(downloadProgress.filename);
-	progressString = progressString.split('/').last();
+    QString progressString("");
+
+    switch (gameProgress.download_type) {
+        case BC_DOWNLOAD_TYPE_VERSION:
+            progressString += "Downloading version: ";
+            break;
+        case BC_DOWNLOAD_TYPE_LIBRARIES:
+            progressString += "Downloading libraries: ";
+            break;
+        case BC_DOWNLOAD_TYPE_ASSETS:
+            progressString += "Downloading assets: ";
+            break;
+        default:
+            progressString += "Downloading: ";
+            break;
+    }
+
+    progressString += QString(downloadProgress.filename).split('/').last();
 
 	if (downloadProgress.nowDownloaded > 0) {
 		progressString += " - " + QString::number(downloadProgress.nowDownloadedMb, 'f', 2) + "MB";
@@ -199,23 +214,14 @@ void MainWindow::updateGameProgress() {
 		progressString += " / " + QString::number(downloadProgress.totalToDownloadMb, 'f', 2) + "MB";
 	}
 
-	if (gameProgress.cur > 0 && gameProgress.total > 0) {
+    if (gameProgress.cur > 0 && gameProgress.total > 0) {
 		progressString += QString(" (%1 / %2)").arg(gameProgress.cur).arg(gameProgress.total);
 	}
 
-	switch (_progressBar->value()) {
-		case 25:
-			_progressBar->setFormat("Downloading version: " + progressString);
-			break;
-		case 50:
-			_progressBar->setFormat("Downloading libraries: " + progressString);
-			break;
-		case 75:
-			_progressBar->setFormat("Downloading assets: " + progressString);
-			break;
+    switch (_progressBar->value()) {
 		case 100:
 			_progressBar->setFormat("Running...");
-			_gameProgressTimer->stop();
+            _gameProgressTimer->stop();
 
 			if (_instanceSelectedShowLog) {
 				_consoleLog->show();
@@ -226,6 +232,7 @@ void MainWindow::updateGameProgress() {
             }
 			break;
 		default:
+            _progressBar->setFormat(progressString);
 			break;
 	}
 

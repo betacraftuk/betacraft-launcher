@@ -22,8 +22,8 @@ ServerListWidget::ServerListWidget(QWidget *parent)
 	_serverList = new QListWidget(this);
     _serverListRefreshButton = new QPushButton("Refresh", this);
 
-	_searchButton->setText(bc_translate("serverlist_search_button"));
-	_searchTextBox->setPlaceholderText(bc_translate("serverlist_search_placeholder"));
+    _searchButton->setText(bc_translate("general_search_button"));
+    _searchTextBox->setPlaceholderText(bc_translate("general_search_placeholder"));
 
 	_serverList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	_serverList->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);

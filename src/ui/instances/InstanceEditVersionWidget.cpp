@@ -23,8 +23,8 @@ InstanceEditVersionWidget::InstanceEditVersionWidget(QWidget* parent)
     _versionListSnapshot = new QStandardItemModel(this);
     _versionListSearch = new QStandardItemModel(this);
 
-	_searchButton->setText(bc_translate("instance_version_search_button"));
-	_searchTextbox->setPlaceholderText(bc_translate("instance_version_search_placeholder"));
+    _searchButton->setText(bc_translate("general_search_button"));
+    _searchTextbox->setPlaceholderText(bc_translate("general_search_placeholder"));
 
 	versionListInit();
 

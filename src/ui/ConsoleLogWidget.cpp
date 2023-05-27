@@ -1,4 +1,5 @@
 #include "ConsoleLogWidget.h"
+#include "Betacraft.h"
 
 extern "C" {
 	#include "../core/ProcessHandler.h"
@@ -16,14 +17,12 @@ ConsoleLogWidget::ConsoleLogWidget(QWidget* parent)
 	_consoleLog = new QTextEdit(this);
 	_consoleLogTimer = new QTimer(this);
 	_searchBar = new QLineEdit(this);
-	_clearButton = new QPushButton("Clear", this);
-	_pauseButton = new QPushButton("Pause", this);
-	_copyButton = new QPushButton("Copy", this);
-
-	QClipboard* clipboard = QApplication::clipboard();
+    _clearButton = new QPushButton(bc_translate("gamelog_clear"), this);
+    _pauseButton = new QPushButton(bc_translate("gamelog_pause"), this);
+    _copyButton = new QPushButton(bc_translate("gamelog_copy"), this);
 
     _consoleLog->setReadOnly(true);
-	_searchBar->setPlaceholderText("Search");
+    _searchBar->setPlaceholderText(bc_translate("general_search_placeholder"));
 
 	_layout->addWidget(_searchBar, 0, 0, 1, 1);
 	_layout->addWidget(_copyButton, 0, 2, 1, 1);
@@ -34,7 +33,7 @@ ConsoleLogWidget::ConsoleLogWidget(QWidget* parent)
 	_layout->setSpacing(0);
 	_layout->setContentsMargins(5, 5, 5, 5);
 
-	setWindowTitle("Console Log");
+    setWindowTitle(bc_translate("gamelog_window_title"));
 
 	resize(600, 450);
 	setMinimumSize(600, 450);
@@ -50,7 +49,7 @@ ConsoleLogWidget::ConsoleLogWidget(QWidget* parent)
 	});
 	connect(_pauseButton, &QPushButton::released, this, [this]() {
 		_paused = !_paused;
-		_paused ? _pauseButton->setText("Unpause") : _pauseButton->setText("Pause");
+        _paused ? _pauseButton->setText(bc_translate("gamelog_unpause")) : _pauseButton->setText(bc_translate("gamelog_pause"));
 	});
 }
 

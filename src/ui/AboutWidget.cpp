@@ -1,4 +1,5 @@
 #include "AboutWidget.h"
+#include "Betacraft.h"
 
 #include <QtWidgets>
 
@@ -28,7 +29,7 @@ QString getLinksHtml() {
 
 	stream << "<a href=\"https://betacraft.uk/\">Website</a>&nbsp;&nbsp;";
 	stream << "<a href=\"https://discord.gg/d4WvXeQ\">Discord</a>&nbsp;&nbsp;";
-	stream << "<a href=\"https://github.com/Moresteck/BetaCraft-Launcher-Java/\">GitHub</a>";
+    stream << "<a href=\"https://github.com/betacraftuk/betacraft-launcher/\">GitHub</a>";
 
 	return output;
 }
@@ -97,9 +98,9 @@ AboutWidget::AboutWidget(QWidget *parent)
 	_licenseSection->setLayout(_licenseSectionLayout);
 	_creditsSection->setLayout(_creditsSectionLayout);
 
-	_menu->addTab(_aboutSection, "About");
-	_menu->addTab(_creditsSection, "Credits");
-	_menu->addTab(_licenseSection, "License");
+    _menu->addTab(_aboutSection, bc_translate("about_about_tab"));
+    _menu->addTab(_creditsSection, bc_translate("about_credits_tab"));
+    _menu->addTab(_licenseSection, bc_translate("about_license_tab"));
 	_menu->setStyleSheet("QTabWidget::tab-bar { alignment: center; } QTabWidget:pane { border-top: 1px solid gray; }");
 
 	_layout->setRowMinimumHeight(0, 15);

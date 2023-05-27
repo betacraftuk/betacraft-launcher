@@ -574,12 +574,16 @@ void bc_game_run(bc_game_data* data) {
     bc_game_run_progress.progress = 25;
     bc_clear_natives(data->instance->path);
 
+    bc_game_run_progress.download_type = BC_DOWNLOAD_TYPE_VERSION;
     bc_game_version_download(data->version);
+
     bc_game_run_progress.progress = 50;
+    bc_game_run_progress.download_type = BC_DOWNLOAD_TYPE_LIBRARIES;
     bc_game_download_lib_all(data);
 
     bc_assetindex* ai = bc_assetindex_load(&data->version->assetIndex);
     bc_game_run_progress.progress = 75;
+    bc_game_run_progress.download_type = BC_DOWNLOAD_TYPE_ASSETS;
     bc_game_download_assets(ai);
 
     free(ai->objects);
