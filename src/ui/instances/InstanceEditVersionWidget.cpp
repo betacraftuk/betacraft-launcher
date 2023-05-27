@@ -63,10 +63,6 @@ void InstanceEditVersionWidget::versionListInit() {
         QList<QStandardItem*> items;
         QStandardItem* item = new QStandardItem(QString(version_list->versions[i].id));
 
-        QVariant q;
-        q.setValue(QString(version_list->versions[i].url));
-        item->setData(q);
-
         QString dateFormatted = QDateTime::fromString(QString(version_list->versions[i].releaseTime), Qt::ISODate).toString("yyyy-MM-dd HH:mm:ss");
         QStandardItem* releaseTime = new QStandardItem(dateFormatted);
 
