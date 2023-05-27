@@ -75,6 +75,7 @@ private:
 	QString _instanceSelectedVersion;
 	QString _instanceSelectedName;
 	int _instanceSelectedShowLog;
+	int _instanceSelectedKeepOpen;
 	void updateInstanceLabel();
 	bool recommendedJavaCheck();
 	void startDiscordRPC();

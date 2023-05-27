@@ -61,7 +61,7 @@ int main() {
     bc_file_clean();
     bc_file_init();
 
-    bc_instance_create("test", "b1.7.3", "http://files.betacraft.uk/launcher/v2/assets/jsons/b1.7.3.json", NULL);
+    bc_instance_create("test", "b1.7.3", NULL);
     char* instance_path = bc_instance_get_path("test");
 
     test_bc_mod_list("b1.7.3");

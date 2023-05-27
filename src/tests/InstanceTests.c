@@ -50,7 +50,7 @@ void test_bc_instance_get(const char* path) {
 }
 
 void test_bc_instance_create(const char* name, const char* group) {
-    bc_instance_create(name, "b1.7.3", "http://files.betacraft.uk/launcher/v2/assets/jsons/b1.7.3.json", group);
+    bc_instance_create(name, "b1.7.3", group);
 
     char* path = bc_instance_get_path(name);
     bc_instance* i = bc_instance_get(path);

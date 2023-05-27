@@ -31,6 +31,7 @@ private:
 	QGroupBox* _instanceNameGroup;
 	QLineEdit* _instanceNameTextbox;
 	QCheckBox* _showGameLogCheckbox;
+	QCheckBox* _keepOpenCheckbox;
 	QGroupBox* _instanceIconGroup;
 	QLabel* _instanceIcon;
 	QPushButton* _instanceIconBrowseButton;

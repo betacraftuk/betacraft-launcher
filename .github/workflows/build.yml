@@ -34,7 +34,7 @@ jobs:
       name: Install Qt (ubuntu-latest || macos-latest)
       uses: jurplel/install-qt-action@v3
       with:
-          version: '6.5.0'
+          version: '6.5.1'
           cache: 'true'
           cache-key-prefix: 'install-qt-action'
           set-env: 'true'
@@ -43,7 +43,7 @@ jobs:
       name: Install Qt (windows-latest)
       uses: jurplel/install-qt-action@v3
       with:
-          version: '6.5.0'
+          version: '6.5.1'
           cache: 'true'
           cache-key-prefix: 'install-qt-action'
           set-env: 'true'

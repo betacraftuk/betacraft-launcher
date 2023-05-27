@@ -473,6 +473,8 @@ void bc_game_run_cmd(bc_process_args* gameArgs, bc_game_data* data) {
     putenv(envar);
 #endif
 
+    bc_game_run_progress.progress = 100;
+
     if (data->instance->show_log == 0) {
         bc_process_create(gameArgs);
     } else {
@@ -616,8 +618,6 @@ void bc_game_run(bc_game_data* data) {
     }
 
     bc_game_concat_properties(data, data->version->arguments.game, data->version->arguments.game_len, &gameArgs);
-
-    bc_game_run_progress.progress = 100;
 
     for (int i = 0; i < gameArgs.len; i++) {
         gameArgs.size += strlen(gameArgs.arr[i]) + 1;

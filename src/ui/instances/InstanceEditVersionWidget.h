@@ -20,7 +20,7 @@ class InstanceEditVersionWidget : public QWidget
 	Q_OBJECT
 public:
 	explicit InstanceEditVersionWidget(QWidget* parent = nullptr);
-	std::pair<QString, QString> getSettings();
+    QString getSettings();
 	void setInstance(bc_instance instance);
     void clean();
 

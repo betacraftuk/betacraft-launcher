@@ -34,6 +34,7 @@ void bc_instance_fill_object_from_json(bc_instance* instance, const char* instan
     instance->width = jext_get_int(json, "width");
     instance->fullscreen = jext_get_int(json, "fullscreen");
     instance->show_log = jext_get_int(json, "show_log");
+    instance->keep_open = jext_get_int(json, "keep_open");
 
     char* absPath = bc_file_absolute_path(instance_path);
     snprintf(instance->path, sizeof(instance->path), "%s", absPath);
@@ -51,6 +52,7 @@ json_object* bc_instance_create_default_config(const char* name, const char* ver
     json_object_object_add(config, "width", json_object_new_int(854));
     json_object_object_add(config, "fullscreen", json_object_new_boolean(0));
     json_object_object_add(config, "show_log", json_object_new_boolean(0));
+    json_object_object_add(config, "keep_open", json_object_new_boolean(0));
     json_object_object_add(config, "server_ip", json_object_new_string(""));
     json_object_object_add(config, "server_port", json_object_new_string(""));
     json_object_object_add(config, "mods", json_object_new_array());
@@ -85,6 +87,9 @@ json_object* bc_instance_create_config(const bc_instance* instance) {
 
     json_object_object_get_ex(json, "show_log", &tmp);
     json_object_set_boolean(tmp, instance->show_log);
+
+    json_object_object_get_ex(json, "keep_open", &tmp);
+    json_object_set_boolean(tmp, instance->keep_open);
 
     return json;
 }
@@ -268,7 +273,7 @@ void bc_instance_remove_group(const char* name) {
     json_object_put(settings);
 }
 
-void bc_instance_create(const char* name, const char* version, const char* version_url, const char* group_name) {
+void bc_instance_create(const char* name, const char* version, const char* group_name) {
     char n[64];
     snprintf(n, sizeof(n), "%s", name);
 

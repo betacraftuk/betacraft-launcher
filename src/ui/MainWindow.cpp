@@ -217,9 +217,13 @@ void MainWindow::updateGameProgress() {
 			_progressBar->setFormat("Running...");
 			_gameProgressTimer->stop();
 
-			if (_instanceSelectedShowLog == 1) {
+			if (_instanceSelectedShowLog) {
 				_consoleLog->show();
 			}
+
+            if (!_instanceSelectedKeepOpen) {
+                QApplication::exit();
+            }
 			break;
 		default:
 			break;
@@ -335,6 +339,7 @@ void MainWindow::onInstanceUpdate() {
 		_instanceSelectedVersion = QString(instance->version);
 		_instanceSelectedName = QString(instance->name);
 		_instanceSelectedShowLog = instance->show_log;
+		_instanceSelectedKeepOpen = instance->keep_open;
 
 		_playButton->setEnabled(1);
 		free(instance);
@@ -342,6 +347,7 @@ void MainWindow::onInstanceUpdate() {
 		_instanceSelectedVersion = NULL;
 		_instanceSelectedName = NULL;
 		_instanceSelectedShowLog = 0;
+		_instanceSelectedKeepOpen = 0;
 		_playButton->setEnabled(0);
 	}
 

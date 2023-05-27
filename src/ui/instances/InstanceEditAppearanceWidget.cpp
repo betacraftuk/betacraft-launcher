@@ -16,6 +16,7 @@ InstanceEditAppearanceWidget::InstanceEditAppearanceWidget(QWidget* parent)
 	_instanceNameGroup = new QGroupBox(this);
 	_instanceNameTextbox = new QLineEdit(this);
 	_showGameLogCheckbox = new QCheckBox("Show game log", this);
+	_keepOpenCheckbox = new QCheckBox("Keep the launcher open", this);
 	_instanceIconGroup = new QGroupBox(this);
 	_instanceIcon = new QLabel(this);
 	_instanceIconBrowseButton = new QPushButton(this);
@@ -45,6 +46,7 @@ InstanceEditAppearanceWidget::InstanceEditAppearanceWidget(QWidget* parent)
 	_instanceNameGroup->setLayout(_instanceNameLayout);
 
 	_instanceCheckboxLayout->addWidget(_showGameLogCheckbox);
+	_instanceCheckboxLayout->addWidget(_keepOpenCheckbox);
 	_instanceCheckboxGroup->setLayout(_instanceCheckboxLayout);
 
 	_instanceIcon->setFixedSize(64, 64);
@@ -103,6 +105,8 @@ void InstanceEditAppearanceWidget::setInstance(bc_instance instance) {
 	_instanceGameHeightTextbox->setText(QString::fromStdString(std::to_string(instance.height)));
 	_instanceGameMaximizedCheckbox->setChecked(instance.fullscreen);
 	_showGameLogCheckbox->setChecked(instance.show_log);
+	_keepOpenCheckbox->setChecked(instance.keep_open);
+
 	icon_path = QString("%1%2").arg(QString(instance.path).split("bc_instance.json")[0]).arg("instance_icon.png");
 
 	QString icon = ":/assets/unknown_pack.png";
@@ -121,6 +125,7 @@ bc_instance* InstanceEditAppearanceWidget::getSettings() {
 	instance->height = _instanceGameHeightTextbox->text().toInt();
 	instance->fullscreen = _instanceGameMaximizedCheckbox->isChecked();
 	instance->show_log = _showGameLogCheckbox->isChecked();
+	instance->keep_open = _keepOpenCheckbox->isChecked();
 
 	return instance;
 }

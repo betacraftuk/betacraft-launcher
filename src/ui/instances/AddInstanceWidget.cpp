@@ -65,11 +65,9 @@ void AddInstanceWidget::onCreateButtonClicked() {
 		return;
 	}
 
-    std::pair<QString, QString> versionInfo = _versionWidget->getSettings();
+    QString versionSelected = _versionWidget->getSettings();
 
-	if (!instanceName.empty() && !versionInfo.first.isNull()) {
-		QString version = versionInfo.first;
-        QString url = versionInfo.second;
+	if (!instanceName.empty() && !versionSelected.isNull()) {
 		QString name = _instanceNameTextbox->text().trimmed();
 		QString group;
 
@@ -79,8 +77,7 @@ void AddInstanceWidget::onCreateButtonClicked() {
 
 		bc_instance_create(
 			name.toStdString().c_str(),
-			version.toStdString().c_str(),
-			url.toStdString().c_str(),
+			versionSelected.toStdString().c_str(),
 			group.isNull() ? NULL : group.toStdString().c_str());
 
 		emit signal_instanceAdded();

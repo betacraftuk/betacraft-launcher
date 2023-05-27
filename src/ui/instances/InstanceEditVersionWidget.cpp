@@ -141,16 +141,16 @@ void InstanceEditVersionWidget::setInstance(bc_instance instance) {
 	setSelectedInstance();
 }
 
-std::pair<QString, QString> InstanceEditVersionWidget::getSettings() {
+QString InstanceEditVersionWidget::getSettings() {
 	QModelIndexList indexes = _versionsTreeView->selectionModel()->selectedIndexes();
 	QStandardItemModel* model = static_cast<QStandardItemModel*>(_versionsTreeView->model());
 
 	if (indexes.size() > 0) {
 		QStandardItem* item = model->itemFromIndex(indexes.at(0));
-		return { item->text(), item->data().value<QString>()};
+		return item->text();
 	}
 
-    return { NULL, NULL };
+    return _version;
 }
 
 void InstanceEditVersionWidget::clean() {

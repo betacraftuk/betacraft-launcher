@@ -22,6 +22,7 @@ typedef struct bc_instance {
     int height;
     int fullscreen;
     int show_log;
+    int keep_open;
 } bc_instance;
 
 typedef struct bc_instance_group {
@@ -41,7 +42,7 @@ typedef struct bc_instance_array {
 } bc_instance_array;
 
 char* bc_instance_get_path(const char* instance_name);
-void bc_instance_create(const char* name, const char* version, const char* version_url, const char* group_name);
+void bc_instance_create(const char* name, const char* version, const char* group_name);
 void bc_instance_group_create(const char* name);
 void bc_instance_update(const bc_instance* instance);
 void bc_instance_select(const char* path);

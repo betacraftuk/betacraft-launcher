@@ -51,8 +51,8 @@ InstanceEditWidget::InstanceEditWidget(QWidget* parent)
 	_layout->setSpacing(0);
 	_layout->setContentsMargins(0, 0, 0, 0);
 
-	resize(600, 450);
-	setMinimumSize(600, 450);
+	resize(600, 475);
+	setMinimumSize(600, 475);
 	setLayout(_layout);
 
 	connect(_instanceSaveButton, SIGNAL(released()), this, SLOT(onInstanceSaveButtonClicked()));
@@ -74,7 +74,7 @@ void InstanceEditWidget::onInstanceSaveButtonClicked()
 		return;
 	}
 
-	std::pair<QString, QString> versionSettings = _instanceEditVersionWidget->getSettings();
+	QString versionSelected = _instanceEditVersionWidget->getSettings();
 	bc_mod_version_array* mods = _instanceEditModsWidget->getSettings();
     bc_instance* arguments = _instanceEditArgumentsWidget->getSettings();
 
@@ -83,19 +83,20 @@ void InstanceEditWidget::onInstanceSaveButtonClicked()
 	instance.height = appearanceSettings->height;
 	instance.fullscreen = appearanceSettings->fullscreen;
 	instance.show_log = appearanceSettings->show_log;
+	instance.keep_open = appearanceSettings->keep_open;
 
     snprintf(instance.program_args, sizeof(instance.program_args), "%s", arguments->program_args);
     snprintf(instance.jvm_args, sizeof(instance.jvm_args), "%s", arguments->jvm_args);
 
 	bc_mod_list_installed_move(mods, instance.path);
 
-	if (versionSettings.first.compare(instance.version) != 0 && mods->len > 0) {
+	if (versionSelected.compare(instance.version) != 0 && mods->len > 0) {
         for (int i = 0; i < mods->len; i++) {
             bc_mod_list_remove(instance.path, mods->arr[i].path);
         }
 	}
 
-	snprintf(instance.version, sizeof(instance.version), "%s", versionSettings.first.toStdString().c_str());
+	snprintf(instance.version, sizeof(instance.version), "%s", versionSelected.toStdString().c_str());
 
 	bc_instance_update(&instance);
 
