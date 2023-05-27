@@ -19,16 +19,13 @@ SettingsGeneralWidget::SettingsGeneralWidget(QWidget* parent)
 
 	_languageGroup->setTitle(bc_translate("settings_general_language_title"));
 
+    QDir langDir(":/lang/");
+    foreach(QString lang, langDir.entryList(QDir::Files)) {
+	    _languageCombo->addItem(lang);
+    }
+
 	bc_settings* settings = bc_settings_get();
-
-	_languageCombo->addItem("English");
-	_languageCombo->addItem("German");
-	_languageCombo->addItem("Polish");
-	_languageCombo->addItem("Polish (alternative)");
-	_languageCombo->addItem("Polish (cyrillic)");
-	_languageCombo->addItem("Hungarian");
 	_languageCombo->setCurrentText(QString(settings->language));
-
 	_discordCheckbox->setChecked(settings->discord);
 
 	free(settings);
