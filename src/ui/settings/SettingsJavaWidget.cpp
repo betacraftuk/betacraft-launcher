@@ -109,7 +109,7 @@ void SettingsJavaWidget::JavaInstallProgressUpdate() {
 		_progressBar->setValue(progress.nowDownloaded);
 
         if (progress.totalToDownload == progress.nowDownloaded) {
-            _progressBar->setFormat("Extracting...");
+            _progressBar->setFormat(bc_translate("settings_java_extracting"));
             return;
         }
 
@@ -122,15 +122,15 @@ void SettingsJavaWidget::JavaInstallProgressUpdate() {
 		progressString += " - " + QString::number(progress.nowDownloadedMb, 'f', 2) + "MB";
 	}
 
-	QString filename(progress.filename);
-	filename = "Downloading " + progressString;
+    QString filename(progress.filename);
+    filename = bc_translate("downloading_undefined") + " " + progressString;
 
 	_progressBar->setFormat(filename);
 }
 
 void SettingsJavaWidget::onJavaInstallClicked() {
-	_installJavaButton->setDisabled(true);
-	_installJavaButton->setText("Installing...");
+    _installJavaButton->setDisabled(true);
+    _installJavaButton->setText(bc_translate("settings_java_installing"));
 
 	QString url = _javaInstallList->currentData(Qt::UserRole).value<QString>();
 	snprintf(_currentDownloadUrl, sizeof(_currentDownloadUrl), "%s", url.toStdString().c_str());
@@ -148,8 +148,8 @@ void SettingsJavaWidget::onJavaInstallClicked() {
 void SettingsJavaWidget::downloadFinished() {
 	populateJavaTreeView();
 
-	_installJavaButton->setDisabled(false);
-	_installJavaButton->setText("Install");
+    _installJavaButton->setDisabled(false);
+    _installJavaButton->setText(bc_translate("settings_java_download_install_button"));
 
 	if (_downloadRecommendedJava) {
 		_downloadRecommendedJava = false;

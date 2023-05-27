@@ -116,7 +116,7 @@ bool AccountListWidget::eventFilter(QObject* source, QEvent* event) {
 			if (item != NULL) {
 				QModelIndex index = _accountList->indexFromItem(item);
 
-				_actRemove = new QAction("Remove", this);
+                _actRemove = new QAction(bc_translate("accounts_action_remove"), this);
 				_actRemove->setData(index);
 				_actRemove->setWhatsThis("remove");
 

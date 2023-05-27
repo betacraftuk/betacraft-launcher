@@ -86,9 +86,9 @@ void InstanceEditVersionWidget::versionListInit() {
 		}
 	}
 
-	_versionsTreeView->setModel(_versionListAll);
-	_versionsTreeView->model()->setHeaderData(0, Qt::Horizontal, "Name");
-	_versionsTreeView->model()->setHeaderData(1, Qt::Horizontal, "Released");
+    _versionsTreeView->setModel(_versionListAll);
+    _versionsTreeView->model()->setHeaderData(0, Qt::Horizontal, bc_translate("instance_version_name_column"));
+    _versionsTreeView->model()->setHeaderData(1, Qt::Horizontal, bc_translate("instance_version_released_column"));
 
 	free(version_list);
 }
@@ -114,8 +114,8 @@ void InstanceEditVersionWidget::onMenuTabChanged(int index) {
 			break;
 	}
 
-	_versionsTreeView->model()->setHeaderData(0, Qt::Horizontal, "Name");
-	_versionsTreeView->model()->setHeaderData(1, Qt::Horizontal, "Released");
+    _versionsTreeView->model()->setHeaderData(0, Qt::Horizontal, bc_translate("instance_version_name_column"));
+    _versionsTreeView->model()->setHeaderData(1, Qt::Horizontal, bc_translate("instance_version_released_column"));
 
 	setSelectedInstance();
 }
@@ -175,8 +175,8 @@ void InstanceEditVersionWidget::onSearchButtonClicked() {
 	_versionsTreeView->setModel(_versionListSearch);
 	setSelectedInstance();
 
-	_versionsTreeView->model()->setHeaderData(0, Qt::Horizontal, "Name");
-	_versionsTreeView->model()->setHeaderData(1, Qt::Horizontal, "Released");
+    _versionsTreeView->model()->setHeaderData(0, Qt::Horizontal, bc_translate("instance_version_name_column"));
+    _versionsTreeView->model()->setHeaderData(1, Qt::Horizontal, bc_translate("instance_version_released_column"));
 }
 
 void InstanceEditVersionWidget::keyPressEvent(QKeyEvent* e) {

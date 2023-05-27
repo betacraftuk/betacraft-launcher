@@ -38,7 +38,7 @@ InstanceEditWidget::InstanceEditWidget(QWidget* parent)
         _instanceEditModsWidget = new InstanceEditModsWidget();
 
         _menu->addTab(_instanceEditVersionWidget, bc_translate("instance_tab_version"));
-        _menu->addTab(_instanceEditModsWidget, "Mods");
+        _menu->addTab(_instanceEditModsWidget, bc_translate("instance_tab_mods"));
 	}
 
 	_menu->addTab(_instanceEditArgumentsWidget, bc_translate("instance_tab_arguments"));
@@ -66,8 +66,8 @@ void InstanceEditWidget::onInstanceSaveButtonClicked()
 
 	if (!bc_instance_validate_name(appearanceSettings->name)) {
 		QMessageBox msg;
-		msg.setModal(1);
-		msg.setText("Instance name must consist of only alphanumeric characters, dots (not at the beginning), dashes, and underscores.");
+        msg.setModal(1);
+        msg.setText(bc_translate("instance_name_requirements"));
 		msg.exec();
 
 		delete appearanceSettings;

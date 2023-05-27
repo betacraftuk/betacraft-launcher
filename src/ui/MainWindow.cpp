@@ -187,59 +187,56 @@ void MainWindow::updateGameProgress() {
 	bc_progress gameProgress = bc_instance_run_progress();
 	_progressBar->setValue(gameProgress.progress);
 
-    QString progressString("");
+    if (_progressBar->value() == 100) {
+        _progressBar->setFormat(bc_translate("running_game"));
+        _gameProgressTimer->stop();
 
-    switch (gameProgress.download_type) {
+        if (_instanceSelectedShowLog) {
+            _consoleLog->show();
+        }
+
+        if (!_instanceSelectedKeepOpen) {
+            QApplication::exit();
+        }
+    } else {
+        if (downloadProgress.filename[0] == '\0') {
+            _progressBar->setFormat(bc_translate("running_game"));
+            return;
+        }
+
+        QString progressString("");
+
+        switch (gameProgress.download_type) {
         case BC_DOWNLOAD_TYPE_VERSION:
-            progressString += "Downloading version: ";
+            progressString += bc_translate("downloading_version") + ": ";
             break;
         case BC_DOWNLOAD_TYPE_LIBRARIES:
-            progressString += "Downloading libraries: ";
+            progressString += bc_translate("downloading_libraries") + ": ";
             break;
         case BC_DOWNLOAD_TYPE_ASSETS:
-            progressString += "Downloading assets: ";
+            progressString += bc_translate("downloading_assets") + ": ";
             break;
         default:
-            progressString += "Downloading: ";
+            progressString += bc_translate("downloading_undefined") + ": ";
             break;
+        }
+
+        progressString += QString(downloadProgress.filename).split('/').last();
+
+        if (downloadProgress.nowDownloaded > 0) {
+            progressString += " - " + QString::number(downloadProgress.nowDownloadedMb, 'f', 2) + "MB";
+        }
+
+        if (downloadProgress.totalToDownload > 0) {
+            progressString += " / " + QString::number(downloadProgress.totalToDownloadMb, 'f', 2) + "MB";
+        }
+
+        if (gameProgress.cur > 0 && gameProgress.total > 0) {
+            progressString += QString(" (%1 / %2)").arg(gameProgress.cur).arg(gameProgress.total);
+        }
+
+        _progressBar->setFormat(progressString);
     }
-
-    progressString += QString(downloadProgress.filename).split('/').last();
-
-	if (downloadProgress.nowDownloaded > 0) {
-		progressString += " - " + QString::number(downloadProgress.nowDownloadedMb, 'f', 2) + "MB";
-	}
-
-	if (downloadProgress.totalToDownload > 0) {
-		progressString += " / " + QString::number(downloadProgress.totalToDownloadMb, 'f', 2) + "MB";
-	}
-
-    if (gameProgress.cur > 0 && gameProgress.total > 0) {
-		progressString += QString(" (%1 / %2)").arg(gameProgress.cur).arg(gameProgress.total);
-	}
-
-    switch (_progressBar->value()) {
-		case 100:
-			_progressBar->setFormat("Running...");
-            _gameProgressTimer->stop();
-
-			if (_instanceSelectedShowLog) {
-				_consoleLog->show();
-			}
-
-            if (!_instanceSelectedKeepOpen) {
-                QApplication::exit();
-            }
-			break;
-		default:
-            _progressBar->setFormat(progressString);
-			break;
-	}
-
-	if (downloadProgress.filename[0] == '\0') {
-		_progressBar->setFormat("Running...");
-		return;
-	}
 }
 
 bool MainWindow::recommendedJavaCheck() {
@@ -275,11 +272,11 @@ bool MainWindow::recommendedJavaCheck() {
         }
 
         QMessageBox messageBox;
-        QString message = "Your Java installation is not supported by this version of the game.\n";
+        QString message = bc_translate("java_version_not_supported");
         
         message += matchingJavaInstallationPath == NULL
-            ? QString("Would you like to install recommended Java %0?").arg(recommendedJavaVersion)
-            : QString("Would you like to switch to Java %0?").arg(parsedRecommended);
+            ? bc_translate("java_version_install_recommended").arg(recommendedJavaVersion)
+            : bc_translate("java_version_switch_to_recommended").arg(parsedRecommended);
 
 		messageBox.setWindowTitle("Betacraft");
         messageBox.setText(message);
@@ -325,18 +322,17 @@ void MainWindow::launchGame(const char* ip, const char* port) {
 	QFuture<void> future = QtConcurrent::run(bc_instance_run, ip, port);
 	_watcher.setFuture(future);
 
-	_progressBar->setVisible(1);
-	_progressBar->setFormat("Reading version json file...");
+    _progressBar->setVisible(1);
+    _progressBar->setFormat(bc_translate("running_game_reading_version_file"));
 
 	_gameProgressTimer->start(1000);
 
-	QString userStatus = "User: Demo";
+    QString userStatus = "Demo user";
 	if (!_username.isNull()) {
-		userStatus = QString("User: %1").arg(_username);
+        userStatus = _username;
 	}
 
-	QString versionStatus = QString("Version: %1").arg(_instanceSelectedVersion);
-	bc_discord_activity_update(userStatus.toStdString().c_str(), versionStatus.toStdString().c_str());
+    bc_discord_activity_update(userStatus.toStdString().c_str(), _instanceSelectedVersion.toStdString().c_str());
 }
 
 void MainWindow::onInstanceUpdate() {
@@ -365,13 +361,12 @@ void MainWindow::onAccountUpdate() {
 	bc_account* account = bc_account_select_get();
 
 	if (account != NULL) {
-		_username = QString(account->username);
-		QString activity = QString("User: %1").arg(_username);
+        _username = QString(account->username);
 
-		bc_discord_activity_update(activity.toStdString().c_str(), "Testing Betacraft v2");
+        bc_discord_activity_update(_username.toStdString().c_str(), "Testing Betacraft v2");
 		free(account);
 	} else {
-		bc_discord_activity_update("", "Testing Betacraft v2");
+        bc_discord_activity_update("", "Testing Betacraft v2");
 	}
 
 	updateInstanceLabel();

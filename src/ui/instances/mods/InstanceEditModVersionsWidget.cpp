@@ -1,4 +1,5 @@
 #include "InstanceEditModVersionsWidget.h"
+#include "../../Betacraft.h"
 
 #include <QtWidgets>
 #include <limits.h>
@@ -19,7 +20,7 @@ InstanceEditModVersionsWidget::InstanceEditModVersionsWidget(QWidget* parent)
 
 	setLayout(_layout);
 
-	setWindowTitle("Mod version");
+    setWindowTitle(bc_translate("mods_mod_version_window_title"));
 	resize(250, 400);
 	setMinimumSize(250, 400);
 	

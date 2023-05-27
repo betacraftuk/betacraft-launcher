@@ -1,4 +1,5 @@
 #include "InstanceEditModsWidget.h"
+#include "../../Betacraft.h"
 
 #include <QtWidgets>
 
@@ -12,15 +13,15 @@ InstanceEditModsWidget::InstanceEditModsWidget(QWidget* parent)
     : QWidget{ parent } {
     _layout = new QGridLayout(this);
     _modList = new QTreeWidget(this);
-    _moveUpButton = new QPushButton("Move up", this);
-    _moveDownButton = new QPushButton("Move down", this);
-    _removeButton = new QPushButton("Remove", this);
-    _modRepoButton = new QPushButton("Mod repository", this);
-    _installForgeButton = new QPushButton("Install Forge", this);
-    _installFabricButton = new QPushButton("Install Fabric", this);
-    _addToMinecraftJarButton = new QPushButton("Add to Minecraft.jar", this);
-    _replaceMinecraftJarButton = new QPushButton("Replace .Minecraft.jar", this);
-    _openMinecraftDirectoryButton = new QPushButton("Open .Minecraft", this);
+    _moveUpButton = new QPushButton(bc_translate("mods_control_move_up"), this);
+    _moveDownButton = new QPushButton(bc_translate("mods_control_move_down"), this);
+    _removeButton = new QPushButton(bc_translate("mods_control_remove"), this);
+    _modRepoButton = new QPushButton(bc_translate("mods_control_mod_repository"), this);
+    _installForgeButton = new QPushButton("Install Forge", this); // TODO: remove
+    _installFabricButton = new QPushButton(bc_translate("mods_control_install_fabric"), this);
+    _addToMinecraftJarButton = new QPushButton(bc_translate("mods_control_add_to_minecraftjar"), this);
+    _replaceMinecraftJarButton = new QPushButton(bc_translate("mods_control_replace_minecraftjar"), this);
+    _openMinecraftDirectoryButton = new QPushButton(bc_translate("mods_control_open_dotminecraft"), this);
     _editModGroup = new QGroupBox(this);
     _modLoaderGroup = new QGroupBox(this);
     _gameDirectoryGroup = new QGroupBox(this);
@@ -34,8 +35,8 @@ InstanceEditModsWidget::InstanceEditModsWidget(QWidget* parent)
     _instanceEditModRepoWidget = new InstanceEditModRepoWidget();
 
     _modList->setIndentation(0);
-    _modList->headerItem()->setText(0, "Name");
-    _modList->headerItem()->setText(1, "Version");
+    _modList->headerItem()->setText(0, bc_translate("mods_mod_name_column"));
+    _modList->headerItem()->setText(1, bc_translate("mods_mod_version_column"));
     _modList->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
 
     _editModLayout->addWidget(_moveUpButton);
@@ -101,7 +102,7 @@ InstanceEditModsWidget::InstanceEditModsWidget(QWidget* parent)
 }
 
 void InstanceEditModsWidget::onReplaceMinecraftJarButtonClicked() {
-    QString path = QFileDialog::getOpenFileName(this, tr("Replace Minecraft.jar"), "/", tr("Jar Files (*.jar)"));
+    QString path = QFileDialog::getOpenFileName(this, tr(bc_translate("mods_control_replace_minecraftjar").toStdString().c_str()), "/", tr("Jar Files (*.jar)"));
 
     if (!path.isNull()) {
         bc_mod_replace_jar(path.toStdString().c_str(), _instance.path, _instance.version);
@@ -110,7 +111,7 @@ void InstanceEditModsWidget::onReplaceMinecraftJarButtonClicked() {
 }
 
 void InstanceEditModsWidget::onAddToMinecraftJarButtonClicked() {
-    QString path = QFileDialog::getOpenFileName(this, tr("Add to Minecraft.jar"), "/", tr("Zip Files (*.zip)"));
+    QString path = QFileDialog::getOpenFileName(this, tr(bc_translate("mods_control_add_to_minecraftjar").toStdString().c_str()), "/", tr("Zip Files (*.zip)"));
 
     if (!path.isNull()) {
         bc_mod_add(path.toStdString().c_str(), _instance.path, _instance.version);
@@ -160,7 +161,7 @@ void InstanceEditModsWidget::ModInstallProgressBarUpdate() {
     bc_download_progress progress = bc_network_progress;
 
     if (progress.filename[0] == '\0') {
-        _progressBar->setFormat("Downloading...");
+        _progressBar->setFormat(bc_translate("downloading_undefined") + "...");
     }
 
     QString progressString(progress.filename);
@@ -178,7 +179,7 @@ void InstanceEditModsWidget::ModInstallProgressBarUpdate() {
     }
 
     QString filename(progress.filename);
-    filename = "Downloading: " + progressString;
+    filename = bc_translate("downloading_undefined") + ": " + progressString;
 
     _progressBar->setFormat(filename);
 }

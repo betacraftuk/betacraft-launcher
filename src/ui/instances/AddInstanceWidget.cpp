@@ -58,8 +58,8 @@ void AddInstanceWidget::onCreateButtonClicked() {
 
 	if (!bc_instance_validate_name(instanceName.c_str())) {
 		QMessageBox msg;
-		msg.setModal(1);
-		msg.setText("Instance name must consist of only alphanumeric characters, dots (not at the beginning), dashes, and underscores.");
+        msg.setModal(1);
+        msg.setText(bc_translate("instance_name_requirements"));
 		msg.exec();
 
 		return;

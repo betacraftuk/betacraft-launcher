@@ -14,8 +14,8 @@ InstanceEditArgumentsWidget::InstanceEditArgumentsWidget(QWidget* parent)
 	_javaArgumentsTextEdit = new QTextEdit();
 	_programArgumentsTextEdit = new QTextEdit();
 	_javaArgumentsLayout = new QGridLayout();
-	_programArgumentsLayout = new QGridLayout();
-	_separateArgumentsLabel = new QLabel("Separate arguments with newlines", this);
+    _programArgumentsLayout = new QGridLayout();
+    _separateArgumentsLabel = new QLabel(bc_translate("instance_arguments_advice"), this);
 
 	_javaArgumentsTextEdit->setAcceptRichText(false);
 	_programArgumentsTextEdit->setAcceptRichText(false);

@@ -20,7 +20,7 @@ ServerListWidget::ServerListWidget(QWidget *parent)
 	_searchTextBox = new QLineEdit(this);
 	_searchButton = new QPushButton(this);
 	_serverList = new QListWidget(this);
-    _serverListRefreshButton = new QPushButton("Refresh", this);
+    _serverListRefreshButton = new QPushButton(bc_translate("serverlist_refresh_button"), this);
 
     _searchButton->setText(bc_translate("general_search_button"));
     _searchTextBox->setPlaceholderText(bc_translate("general_search_placeholder"));
@@ -53,16 +53,16 @@ void ServerListWidget::onServerClicked(QListWidgetItem* item) {
 	bc_instance* selectedInstance = bc_instance_select_get();
 
 	if (selectedInstance == NULL) {
-		QMessageBox msg;
-		msg.setText("Create an instance before joining a server.");
+        QMessageBox msg;
+        msg.setText(bc_translate("serverlist_err_instance_required"));
 		msg.setModal(true);
 		msg.exec();
 		return;
 	}
 
 	if (serverInfo.second.compare(selectedInstance->version) != 0) {
-		QMessageBox msg;
-		msg.setText(QString("The server's game version is incompatible with your instance.\nWould you like to switch to %0?").arg(serverInfo.second));
+        QMessageBox msg;
+        msg.setText(bc_translate("serverlist_err_version_incompatible").arg(serverInfo.second));
 		msg.setModal(true);
         msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 		int ret = msg.exec();

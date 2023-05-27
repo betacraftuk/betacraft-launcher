@@ -14,9 +14,9 @@ InstanceEditAppearanceWidget::InstanceEditAppearanceWidget(QWidget* parent)
 	: QWidget{ parent } {
 	_layout = new QGridLayout(this);
 	_instanceNameGroup = new QGroupBox(this);
-	_instanceNameTextbox = new QLineEdit(this);
-	_showGameLogCheckbox = new QCheckBox("Show game log", this);
-	_keepOpenCheckbox = new QCheckBox("Keep the launcher open", this);
+    _instanceNameTextbox = new QLineEdit(this);
+    _showGameLogCheckbox = new QCheckBox(bc_translate("instance_show_game_log"), this);
+    _keepOpenCheckbox = new QCheckBox(bc_translate("instance_keep_launcher_open"), this);
 	_instanceIconGroup = new QGroupBox(this);
 	_instanceIcon = new QLabel(this);
 	_instanceIconBrowseButton = new QPushButton(this);

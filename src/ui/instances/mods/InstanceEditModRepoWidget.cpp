@@ -1,4 +1,5 @@
 #include "InstanceEditModRepoWidget.h"
+#include "../../Betacraft.h"
 
 #include <QtWidgets>
 
@@ -12,15 +13,15 @@ InstanceEditModRepoWidget::InstanceEditModRepoWidget(QWidget* parent)
 	: QWidget{ parent } {
 	_layout = new QGridLayout(this);
 	_searchTextBox = new QLineEdit(this);
-	_searchButton = new QPushButton("Search", this);
-	_backButton = new QPushButton("Back", this);
+    _searchButton = new QPushButton(bc_translate("general_search_button"), this);
+    _backButton = new QPushButton(bc_translate("mods_repository_back"), this);
 	_modList = new QTreeWidget(this);
 	_versionsWidget = new InstanceEditModVersionsWidget();
 
-	_modList->setIndentation(0);
-	_modList->headerItem()->setText(0, "Name");
+    _modList->setIndentation(0);
+    _modList->headerItem()->setText(0, bc_translate("mods_mod_name_column"));
 
-	_searchTextBox->setPlaceholderText("Search");
+    _searchTextBox->setPlaceholderText(bc_translate("general_search_placeholder"));
 
 	_modList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	_modList->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);

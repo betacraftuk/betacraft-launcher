@@ -188,7 +188,7 @@ bool InstanceListWidget::eventFilter(QObject* source, QEvent* event) {
 				if (item->whatsThis(0).compare("group") == 0) {
 					QModelIndex index = _instanceList->indexFromItem(item);
 
-					_actRemove = new QAction("Remove", this);
+                    _actRemove = new QAction(bc_translate("instance_menu_remove"), this);
 					_actRemove->setData(index);
 					_actRemove->setWhatsThis("remove");
 
@@ -206,11 +206,11 @@ bool InstanceListWidget::eventFilter(QObject* source, QEvent* event) {
 				} else {
 					QModelIndex index = _instanceList->indexFromItem(item);
 
-					_actEdit = new QAction("Edit", this);
+                    _actEdit = new QAction(bc_translate("instance_menu_edit"), this);
 					_actEdit->setData(index);
 					_actEdit->setWhatsThis("edit");
 
-					_actRemove = new QAction("Remove", this);
+                    _actRemove = new QAction(bc_translate("instance_menu_remove"), this);
 					_actRemove->setData(index);
 					_actRemove->setWhatsThis("remove");
 
