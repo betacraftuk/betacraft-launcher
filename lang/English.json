@@ -99,5 +99,5 @@
   "running_game_reading_version_file": "Reading version json file...",
   "java_version_not_supported": "Your Java installation is not supported by this version of the game.\n",
   "java_version_install_recommended": "Would you like to install recommended Java %0?",
-  "java_version_switch_to_recommended": "Would you like to switch to Java %0?",
+  "java_version_switch_to_recommended": "Would you like to switch to Java %0?"
 }
