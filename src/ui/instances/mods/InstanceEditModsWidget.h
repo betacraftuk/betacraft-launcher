@@ -43,7 +43,6 @@ private:
 	QPushButton* _moveDownButton;
 	QPushButton* _removeButton;
 	QPushButton* _modRepoButton;
-	QPushButton* _installForgeButton;
 	QPushButton* _installFabricButton;
 	QPushButton* _addToMinecraftJarButton;
 	QPushButton* _openMinecraftDirectoryButton;

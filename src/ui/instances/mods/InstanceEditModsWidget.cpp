@@ -17,7 +17,6 @@ InstanceEditModsWidget::InstanceEditModsWidget(QWidget* parent)
     _moveDownButton = new QPushButton(bc_translate("mods_control_move_down"), this);
     _removeButton = new QPushButton(bc_translate("mods_control_remove"), this);
     _modRepoButton = new QPushButton(bc_translate("mods_control_mod_repository"), this);
-    _installForgeButton = new QPushButton("Install Forge", this); // TODO: remove
     _installFabricButton = new QPushButton(bc_translate("mods_control_install_fabric"), this);
     _addToMinecraftJarButton = new QPushButton(bc_translate("mods_control_add_to_minecraftjar"), this);
     _replaceMinecraftJarButton = new QPushButton(bc_translate("mods_control_replace_minecraftjar"), this);
@@ -47,10 +46,8 @@ InstanceEditModsWidget::InstanceEditModsWidget(QWidget* parent)
     _modRepoLayout->addWidget(_modRepoButton);
     _modRepoGroup->setLayout(_modRepoLayout);
 
-    _installForgeButton->setEnabled(0);
     _installFabricButton->setEnabled(0);
 
-    _modLoaderLayout->addWidget(_installForgeButton);
     _modLoaderLayout->addWidget(_installFabricButton);
     _modLoaderGroup->setLayout(_modLoaderLayout);
 
