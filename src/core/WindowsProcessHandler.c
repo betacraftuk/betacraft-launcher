@@ -2,6 +2,7 @@
 #include "WindowsProcessHandler.h"
 
 #include "Logger.h"
+#include "Game.h"
 
 #include <windows.h>
 #include <stdio.h>
@@ -58,12 +59,12 @@ void bc_winprocess_create(bc_process_args* args) {
         return;
     }
 
+    free(cmd);
+    bc_game_run_progress.progress = 100;
     WaitForSingleObject(pi.hProcess, INFINITE);
 
     CloseHandle(pi.hProcess);
     CloseHandle(pi.hThread);
-
-    free(cmd);
 }
 
 void bc_winprocess_create_log(bc_process_args* args) {
@@ -90,6 +91,7 @@ void bc_winprocess_create_log(bc_process_args* args) {
     }
 
     PROCESS_INFORMATION piProcInfo = CreateChildProcess(args);
+    bc_game_run_progress.progress = 100;
     ReadFromPipe(piProcInfo);
 }
 
@@ -124,6 +126,7 @@ PROCESS_INFORMATION CreateChildProcess(bc_process_args* args) {
     free(cmd);
 
     if (!bSuccess) {
+        bc_log("%s\n", "Couldn't create a child process");
         exit(1);
     }
 

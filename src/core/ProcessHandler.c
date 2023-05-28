@@ -1,5 +1,6 @@
 #include "ProcessHandler.h"
 #include "Logger.h"
+#include "Game.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -35,6 +36,7 @@ void bc_unixprocess_create(bc_process_args* args, int output) {
         }
 
         execvp(args->arr[0], args->arr);
+        bc_game_run_progress.progress = 100;
     } else if (output) {
         char buffer[1024];
         close(fd[1]);

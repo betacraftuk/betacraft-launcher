@@ -483,8 +483,6 @@ void bc_game_run_cmd(bc_process_args* gameArgs, bc_game_data* data) {
     putenv(envar);
 #endif
 
-    bc_game_run_progress.progress = 100;
-
     if (data->instance->show_log == 0) {
         bc_process_create(gameArgs);
     } else {
