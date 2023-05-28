@@ -196,7 +196,7 @@ void MainWindow::updateGameProgress() {
         }
 
         if (!_instanceSelectedKeepOpen) {
-            QApplication::exit();
+            MainWindow::close();
         }
     } else {
         if (downloadProgress.filename[0] == '\0') {
