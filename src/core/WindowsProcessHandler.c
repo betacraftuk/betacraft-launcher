@@ -17,7 +17,6 @@ PROCESS_INFORMATION CreateChildProcess(bc_process_args* args);
 void ReadFromPipe(PROCESS_INFORMATION);
 
 char* bc_winprocess_get_args(bc_process_args* args) {
-    int size = args->size + (args->len * 3);
     char* cmd = malloc(args->size + (args->len * 3));
     strcpy(cmd, "\"");
     strcat(cmd, args->arr[0]);
@@ -54,6 +53,7 @@ void bc_winprocess_create(bc_process_args* args) {
                        &pi)
         )
     {
+        free(cmd);
         bc_log("CreateProcess failed (%d).\n", GetLastError());
         return;
     }
