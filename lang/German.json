@@ -75,10 +75,12 @@
   "settings_java_remove_button": "Entfernen",
   "settings_java_download_label": "Java-Version:",
   "settings_java_download_install_button": "Installieren",
+  "settings_java_installing": "Wird installiert...",
   "settings_java_version_column": "Version",
   "settings_java_path_column": "Zielordner",
   "settings_java_add_title": "Java-Installation importieren",
   "settings_java_set_default_button": "Als Standard setzen",
+  "settings_java_extracting": "Wird extrahiert...",
   "settings_general_language_title": "Sprachen"
   "about_about_tab": "Über",
   "about_credits_tab": "Credits",
