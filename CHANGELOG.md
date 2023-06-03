@@ -1,3 +1,18 @@
+<b style="color: #aaaaff;"><u>Betacraft v2.0.0-alpha.20230603</u></b>
+
+- Added a robust version picker to Add Instance
+- Added Server tab to Edit Instance
+- Fixed sound on Linux
+- Added Offline Mode
+- Allow dots in instance names
+- Fixed server list bugs
+- Upgrade to Qt 6.5.1
+- Fixed game assets being put in the wrong location on Windows
+- Donate button now links to the launcher's Patreon page
+- Thanks to our translators, added German, Italian, Hungarian, Simplified Chinese, Traditional Chinese, and Brazilian Portuguese
+- Translators are now listed in the About section
+- Added Maximize and Fullscreen options to Edit Instance
+
 <b style="color: #aaaaff;"><u>Betacraft v2.0.0-alpha.20230520</u></b>
 
 - Changed theme to Qt's 'fusion'
