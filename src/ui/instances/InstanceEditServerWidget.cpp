@@ -6,7 +6,6 @@
 InstanceEditServerWidget::InstanceEditServerWidget(QWidget* parent)
     : QWidget{ parent }
 {
-    char tr[256];
 
     _layout = new QGridLayout();
     _serverAddressGroup = new QGroupBox();

@@ -6,8 +6,6 @@
 InstanceEditArgumentsWidget::InstanceEditArgumentsWidget(QWidget* parent)
 	: QWidget{ parent }
 {
-	char tr[256];
-
 	_layout = new QGridLayout();
 	_javaArgumentsGroup = new QGroupBox();
 	_programArgumentsGroup = new QGroupBox();

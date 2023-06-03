@@ -111,6 +111,7 @@ void InstanceEditWidget::onInstanceSaveButtonClicked()
 	delete mods;
 	delete appearanceSettings;
 	delete arguments;
+    delete server;
 
 	emit signal_instanceSettingsSaved();
 }

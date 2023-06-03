@@ -64,53 +64,23 @@ json_object* bc_instance_create_default_config(const char* name, const char* ver
     return config;
 }
 
-void bc_instance_create_or_replace_option_boolean(json_object* json, char* key, int val) {
-    json_object* tmp;
-
-    if (json_object_object_get_ex(json, key, &tmp)) {
-        json_object_set_boolean(tmp, val);
-    } else {
-        json_object_object_add(json, key, json_object_new_boolean(val));
-    }
-}
-
-void bc_instance_create_or_replace_option_int(json_object* json, char* key, int val) {
-    json_object* tmp;
-
-    if (json_object_object_get_ex(json, key, &tmp)) {
-        json_object_set_int(tmp, val);
-    } else {
-        json_object_object_add(json, key, json_object_new_int(val));
-    }
-}
-
-void bc_instance_create_or_replace_option_str(json_object* json, char* key, char* val) {
-    json_object* tmp;
-
-    if (json_object_object_get_ex(json, key, &tmp)) {
-        json_object_set_string(tmp, val);
-    } else {
-        json_object_object_add(json, key, json_object_new_string(val));
-    }
-}
-
 json_object* bc_instance_create_config(const bc_instance* instance) {
     json_object* json = json_object_from_file(instance->path);
     json_object* tmp;
 
-    bc_instance_create_or_replace_option_str(json, "name", instance->name);
-    bc_instance_create_or_replace_option_str(json, "version", instance->version);
-    bc_instance_create_or_replace_option_str(json, "jvm_args", instance->jvm_args);
-    bc_instance_create_or_replace_option_str(json, "program_args", instance->program_args);
-    bc_instance_create_or_replace_option_int(json, "height", instance->height);
-    bc_instance_create_or_replace_option_int(json, "width", instance->width);
-    bc_instance_create_or_replace_option_boolean(json, "maximized", instance->maximized);
-    bc_instance_create_or_replace_option_boolean(json, "fullscreen", instance->fullscreen);
-    bc_instance_create_or_replace_option_boolean(json, "show_log", instance->show_log);
-    bc_instance_create_or_replace_option_boolean(json, "keep_open", instance->keep_open);
-    bc_instance_create_or_replace_option_boolean(json, "join_server", instance->join_server);
-    bc_instance_create_or_replace_option_str(json, "server_ip", instance->server_ip);
-    bc_instance_create_or_replace_option_str(json, "server_port", instance->server_port);
+    jext_replace_or_create_option_str(json, "name", instance->name);
+    jext_replace_or_create_option_str(json, "version", instance->version);
+    jext_replace_or_create_option_str(json, "jvm_args", instance->jvm_args);
+    jext_replace_or_create_option_str(json, "program_args", instance->program_args);
+    jext_replace_or_create_option_int(json, "height", instance->height);
+    jext_replace_or_create_option_int(json, "width", instance->width);
+    jext_replace_or_create_option_boolean(json, "maximized", instance->maximized);
+    jext_replace_or_create_option_boolean(json, "fullscreen", instance->fullscreen);
+    jext_replace_or_create_option_boolean(json, "show_log", instance->show_log);
+    jext_replace_or_create_option_boolean(json, "keep_open", instance->keep_open);
+    jext_replace_or_create_option_boolean(json, "join_server", instance->join_server);
+    jext_replace_or_create_option_str(json, "server_ip", instance->server_ip);
+    jext_replace_or_create_option_str(json, "server_port", instance->server_port);
 
     return json;
 }

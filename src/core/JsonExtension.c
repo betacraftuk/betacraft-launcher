@@ -103,3 +103,33 @@ int jext_get_string_array_index(json_object* arr, const char* section, const cha
 
     return -1;
 }
+
+void jext_replace_or_create_option_boolean(json_object* json, char* key, int val) {
+    json_object* tmp;
+
+    if (json_object_object_get_ex(json, key, &tmp)) {
+        json_object_set_boolean(tmp, val);
+    } else {
+        json_object_object_add(json, key, json_object_new_boolean(val));
+    }
+}
+
+void jext_replace_or_create_option_int(json_object* json, char* key, int val) {
+    json_object* tmp;
+
+    if (json_object_object_get_ex(json, key, &tmp)) {
+        json_object_set_int(tmp, val);
+    } else {
+        json_object_object_add(json, key, json_object_new_int(val));
+    }
+}
+
+void jext_replace_or_create_option_str(json_object* json, char* key, char* val) {
+    json_object* tmp;
+
+    if (json_object_object_get_ex(json, key, &tmp)) {
+        json_object_set_string(tmp, val);
+    } else {
+        json_object_object_add(json, key, json_object_new_string(val));
+    }
+}
