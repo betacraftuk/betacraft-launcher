@@ -7,8 +7,7 @@
 #include <string.h>
 #include <json-c/json.h>
 
-bc_version_actionRule bc_version_read_rule(json_object* obj) {
-    bc_version_actionRule* rule = malloc(sizeof(bc_version_actionRule));
+void bc_version_read_rule(bc_version_actionRule* rule, json_object* obj) {
     json_object* tmp;
 
     if (json_object_object_get_ex(obj, "action", &tmp) == 1) {
@@ -40,15 +39,13 @@ bc_version_actionRule bc_version_read_rule(json_object* obj) {
     } else {
         rule->os.is_empty = 1;
     }
-
-    return *rule;
 }
 
 void bc_version_read_rule_all(bc_version_actionRule* rules, json_object* obj) {
     array_list* rulesJson = json_object_get_array(obj);
 
     for (int j = 0; j < rulesJson->size; j++) {
-        rules[j] = bc_version_read_rule(rulesJson->array[j]);
+        bc_version_read_rule(&rules[j], rulesJson->array[j]);
     }
 }
 
@@ -151,12 +148,9 @@ void bc_game_version_json_read_logging(json_object* obj, json_object* tmp, bc_ve
 }
 
 void bc_game_version_json_read_minecraft_arguments(json_object* tmp, bc_version* v) {
-    char* mcargs = jext_alloc_string(tmp);
-    char** split = split_str(mcargs, " ");
-
-    char* alterable = strdup(mcargs);
-    int size = count_substring(alterable, ' ') + 1 + /* width, height */ 4;
-    free(alterable);
+    const char* mcargs = json_object_get_string(tmp);
+    int size = count_substring(mcargs, ' ') + 1 + /* width, height */ 4;
+    //char** split = split_str(mcargs, " ");
 
     v->arguments.game_len = 1;
     v->arguments.game->rules_len = 0;
@@ -169,10 +163,8 @@ void bc_game_version_json_read_minecraft_arguments(json_object* tmp, bc_version*
     strcpy(v->arguments.game->value[3], "${resolution_height}");
 
     for (int i = 4; i < size; i++) {
-        snprintf(v->arguments.game->value[i], sizeof(v->arguments.game->value[i]), "%s", split[i - 4]);
+        //snprintf(v->arguments.game->value[i], sizeof(v->arguments.game->value[i]), "%s", split[i - 4]);
     }
-
-    free(split);
 
     v->arguments.jvm_len = 1;
     v->arguments.jvm->rules_len = 0;

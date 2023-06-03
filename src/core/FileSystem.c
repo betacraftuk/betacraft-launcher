@@ -36,20 +36,26 @@ char* bc_file_make_absolute_path(const char* relative_path) {
     sprintf(res, "%s%s", workdir, relative_path);
     free(workdir);
 #ifdef _WIN32
-    char* reppath = repl_str(res, "\\", "/");
-    free(res);
-    return reppath;
-#else
-    return res;
+    for (int i = 0; i < strlen(res); i++) {
+        if (res[i] == '\\') {
+            res[i] = '/';
+        }
+    }
 #endif
+    return res;
 }
 
 char* bc_file_absolute_path(const char* relative_path) {
 #ifdef _WIN32
     char* path = _fullpath(NULL, relative_path, _MAX_PATH);
-    char* reppath = repl_str(path, "\\", "/");
-    free(path);
-    return reppath;
+
+    for (int i = 0; i < strlen(path); i++) {
+        if (path[i] == '\\') {
+            path[i] = '/';
+        }
+    }
+
+    return path;
 #elif defined(__linux__) || defined(__APPLE__)
     char* real = realpath(relative_path, NULL);
     int len = strlen(real);
