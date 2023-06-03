@@ -3,6 +3,7 @@
 extern "C" {
     #include "../core/Settings.h"
     #include "../core/JsonExtension.h"
+    #include "../core/FileSystem.h"
 }
 
 char _languagePath[PATH_MAX];
@@ -19,7 +20,11 @@ QString bc_translate(const char* key) {
 
 void bc_translate_init() {
     bc_settings* settings = bc_settings_get();
-    snprintf(_languagePath, sizeof(_languagePath), "lang/%s.json", settings->language);
 
+    snprintf(_languagePath, sizeof(_languagePath), "lang/%s.json", settings->language);
+    char* absoluteLanguagePath = bc_file_absolute_path(_languagePath);
+    snprintf(_languagePath, sizeof(_languagePath), "%s", absoluteLanguagePath);
+
+    free(absoluteLanguagePath);
     free(settings);
 }
