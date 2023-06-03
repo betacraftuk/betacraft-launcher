@@ -31,7 +31,8 @@ jobs:
           vcpkgDirectory: '${{github.workspace}}/lib/vcpkg'
                         
     - name: Update vcpkg
-      run: vcpkg update
+      working-directory: ${{github.workspace}}/lib/vcpkg
+      run: ./bootstrap-vcpkg
       
     - if: ${{ (matrix.os == 'ubuntu-latest') || (matrix.os == 'macos-latest') }}
       name: Install Qt (ubuntu-latest || macos-latest)
