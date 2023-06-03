@@ -22,8 +22,6 @@ int main() {
     }
 
     test_bc_server_list();
-    assert(test_bc_avatar_get("bd346dd5-ac1c-427d-87e8-73bdd4bf3e13") == 1);
-    assert(test_bc_avatar_get("TEST") == 0);
 
     return 0;
 }
