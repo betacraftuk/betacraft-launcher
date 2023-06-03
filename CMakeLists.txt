@@ -33,8 +33,6 @@ elseif (WIN32)
 	    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lang
 	        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/betacraft/)
 	endif()
-	
-    set(VCPKG_TARGET_TRIPLET x64-mingw-static)
 elseif (UNIX AND NOT APPLE) # Linux
     file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.so
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
