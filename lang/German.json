@@ -35,6 +35,7 @@
   "instance_tab_version": "Version",  
   "instance_tab_mods": "Modifikationen",
   "instance_tab_arguments": "Argumente",
+  "instance_tab_server": "Server",
   "instance_version_name_column": "Name",
   "instance_version_released_column": "Veröffentlichungszeitpunkt",
   "instance_version_tab_all": "Alle",
