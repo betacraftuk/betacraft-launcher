@@ -15,6 +15,7 @@ typedef struct bc_instance {
     char program_args[1024];
     char server_ip[128];
     char server_port[16];
+    int join_server;
     char java_path[PATH_MAX];
     char path[PATH_MAX];
     char version[32];

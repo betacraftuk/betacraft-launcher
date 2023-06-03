@@ -21,6 +21,7 @@ InstanceEditWidget::InstanceEditWidget(QWidget* parent)
 	_instanceSaveButtonWidget = new QWidget(this);
 	_instanceEditAppearanceWidget = new InstanceEditAppearanceWidget();
 	_instanceEditArgumentsWidget = new InstanceEditArgumentsWidget();
+    _instanceEditServerWidget = new InstanceEditServerWidget();
 
 	_instanceSaveButton->setText(bc_translate("instance_save_button"));
 
@@ -42,6 +43,7 @@ InstanceEditWidget::InstanceEditWidget(QWidget* parent)
 	}
 
 	_menu->addTab(_instanceEditArgumentsWidget, bc_translate("instance_tab_arguments"));
+    _menu->addTab(_instanceEditServerWidget, bc_translate("instance_tab_server"));
 
 	_layout->addWidget(_menu, 0, 0, 1, 11);
 	_layout->addWidget(_instanceSaveButtonWidget, 1, 0, 1, 11);
@@ -77,6 +79,7 @@ void InstanceEditWidget::onInstanceSaveButtonClicked()
 	QString versionSelected = _instanceEditVersionWidget->getSettings();
 	bc_mod_version_array* mods = _instanceEditModsWidget->getSettings();
     bc_instance* arguments = _instanceEditArgumentsWidget->getSettings();
+    bc_instance* server = _instanceEditServerWidget->getSettings();
 
 	snprintf(instance.name, sizeof(instance.name), "%s", appearanceSettings->name);
 	instance.width = appearanceSettings->width;
@@ -89,6 +92,10 @@ void InstanceEditWidget::onInstanceSaveButtonClicked()
     snprintf(instance.program_args, sizeof(instance.program_args), "%s", arguments->program_args);
     snprintf(instance.jvm_args, sizeof(instance.jvm_args), "%s", arguments->jvm_args);
 
+    instance.join_server = server->join_server;
+    snprintf(instance.server_ip, sizeof(instance.server_ip), "%s", server->server_ip);
+    snprintf(instance.server_port, sizeof(instance.server_port), "%s", server->server_port);
+
 	bc_mod_list_installed_move(mods, instance.path);
 
 	if (versionSelected.compare(instance.version) != 0 && mods->len > 0) {
@@ -97,7 +104,7 @@ void InstanceEditWidget::onInstanceSaveButtonClicked()
         }
 	}
 
-	snprintf(instance.version, sizeof(instance.version), "%s", versionSelected.toStdString().c_str());
+    snprintf(instance.version, sizeof(instance.version), "%s", versionSelected.toStdString().c_str());
 
 	bc_instance_update(&instance);
 
@@ -115,6 +122,7 @@ void InstanceEditWidget::setInstance(bc_instance i)
 
 	_instanceEditAppearanceWidget->setInstance(i);
     _instanceEditArgumentsWidget->setInstance(i);
+    _instanceEditServerWidget->setInstance(i);
 	if (betacraft_online == 1) {
 		_instanceEditVersionWidget->setInstance(i);
 		_instanceEditModsWidget->setInstance(i);

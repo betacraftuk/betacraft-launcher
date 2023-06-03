@@ -24,6 +24,7 @@ qt_add_executable(Betacraft
     instances/InstanceEditVersionWidget.cpp instances/InstanceEditVersionWidget.h
     instances/InstanceEditAppearanceWidget.cpp instances/InstanceEditAppearanceWidget.h
     instances/InstanceEditArgumentsWidget.cpp instances/InstanceEditArgumentsWidget.h
+    instances/InstanceEditServerWidget.cpp instances/InstanceEditServerWidget.h
     instances/mods/InstanceEditModsWidget.cpp instances/mods/InstanceEditModsWidget.h
     instances/mods/InstanceEditModRepoWidget.cpp instances/mods/InstanceEditModRepoWidget.h
     instances/mods/InstanceEditModVersionsWidget.cpp instances/mods/InstanceEditModVersionsWidget.h

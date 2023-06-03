@@ -69,7 +69,7 @@ int bc_game_rule_match(bc_version_actionRule* rule, bc_game_data* data) {
         }
 
         if (rule->features.has_server != -1
-            && rule->features.has_server == !(data->server_ip[0] != '\0')) {
+            && rule->features.has_server == !(data->server_ip[0] != '\0' || data->instance->join_server)) {
             return 0;
         }
 

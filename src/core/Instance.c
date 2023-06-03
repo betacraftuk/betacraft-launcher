@@ -36,6 +36,7 @@ void bc_instance_fill_object_from_json(bc_instance* instance, const char* instan
     instance->fullscreen = jext_get_int(json, "fullscreen");
     instance->show_log = jext_get_int(json, "show_log");
     instance->keep_open = jext_get_int(json, "keep_open");
+    instance->join_server = jext_get_int(json, "join_server");
 
     char* absPath = bc_file_absolute_path(instance_path);
     snprintf(instance->path, sizeof(instance->path), "%s", absPath);
@@ -55,6 +56,7 @@ json_object* bc_instance_create_default_config(const char* name, const char* ver
     json_object_object_add(config, "fullscreen", json_object_new_boolean(0));
     json_object_object_add(config, "show_log", json_object_new_boolean(0));
     json_object_object_add(config, "keep_open", json_object_new_boolean(0));
+    json_object_object_add(config, "join_server", json_object_new_boolean(0));
     json_object_object_add(config, "server_ip", json_object_new_string(""));
     json_object_object_add(config, "server_port", json_object_new_string(""));
     json_object_object_add(config, "mods", json_object_new_array());
@@ -62,39 +64,53 @@ json_object* bc_instance_create_default_config(const char* name, const char* ver
     return config;
 }
 
+void bc_instance_create_or_replace_option_boolean(json_object* json, char* key, int val) {
+    json_object* tmp;
+
+    if (json_object_object_get_ex(json, key, &tmp)) {
+        json_object_set_boolean(tmp, val);
+    } else {
+        json_object_object_add(json, key, json_object_new_boolean(val));
+    }
+}
+
+void bc_instance_create_or_replace_option_int(json_object* json, char* key, int val) {
+    json_object* tmp;
+
+    if (json_object_object_get_ex(json, key, &tmp)) {
+        json_object_set_int(tmp, val);
+    } else {
+        json_object_object_add(json, key, json_object_new_int(val));
+    }
+}
+
+void bc_instance_create_or_replace_option_str(json_object* json, char* key, char* val) {
+    json_object* tmp;
+
+    if (json_object_object_get_ex(json, key, &tmp)) {
+        json_object_set_string(tmp, val);
+    } else {
+        json_object_object_add(json, key, json_object_new_string(val));
+    }
+}
+
 json_object* bc_instance_create_config(const bc_instance* instance) {
     json_object* json = json_object_from_file(instance->path);
     json_object* tmp;
 
-    json_object_object_get_ex(json, "name", &tmp);
-    json_object_set_string(tmp, instance->name);
-
-    json_object_object_get_ex(json, "version", &tmp);
-    json_object_set_string(tmp, instance->version);
-
-    json_object_object_get_ex(json, "jvm_args", &tmp);
-    json_object_set_string(tmp, instance->jvm_args);
-
-    json_object_object_get_ex(json, "program_args", &tmp);
-    json_object_set_string(tmp, instance->program_args);
-
-    json_object_object_get_ex(json, "height", &tmp);
-    json_object_set_int(tmp, instance->height);
-
-    json_object_object_get_ex(json, "width", &tmp);
-    json_object_set_int(tmp, instance->width);
-
-    json_object_object_get_ex(json, "maximized", &tmp);
-    json_object_set_boolean(tmp, instance->maximized);
-
-    json_object_object_get_ex(json, "fullscreen", &tmp);
-    json_object_set_boolean(tmp, instance->fullscreen);
-
-    json_object_object_get_ex(json, "show_log", &tmp);
-    json_object_set_boolean(tmp, instance->show_log);
-
-    json_object_object_get_ex(json, "keep_open", &tmp);
-    json_object_set_boolean(tmp, instance->keep_open);
+    bc_instance_create_or_replace_option_str(json, "name", instance->name);
+    bc_instance_create_or_replace_option_str(json, "version", instance->version);
+    bc_instance_create_or_replace_option_str(json, "jvm_args", instance->jvm_args);
+    bc_instance_create_or_replace_option_str(json, "program_args", instance->program_args);
+    bc_instance_create_or_replace_option_int(json, "height", instance->height);
+    bc_instance_create_or_replace_option_int(json, "width", instance->width);
+    bc_instance_create_or_replace_option_boolean(json, "maximized", instance->maximized);
+    bc_instance_create_or_replace_option_boolean(json, "fullscreen", instance->fullscreen);
+    bc_instance_create_or_replace_option_boolean(json, "show_log", instance->show_log);
+    bc_instance_create_or_replace_option_boolean(json, "keep_open", instance->keep_open);
+    bc_instance_create_or_replace_option_boolean(json, "join_server", instance->join_server);
+    bc_instance_create_or_replace_option_str(json, "server_ip", instance->server_ip);
+    bc_instance_create_or_replace_option_str(json, "server_port", instance->server_port);
 
     return json;
 }

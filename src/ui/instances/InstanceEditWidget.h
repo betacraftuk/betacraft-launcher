@@ -10,6 +10,7 @@ extern "C" {
 #include "InstanceEditAppearanceWidget.h"
 #include "InstanceEditVersionWidget.h"
 #include "InstanceEditArgumentsWidget.h"
+#include "InstanceEditServerWidget.h"
 #include "mods/InstanceEditModsWidget.h"
 
 class QGridLayout;
@@ -34,7 +35,8 @@ private:
 	InstanceEditAppearanceWidget* _instanceEditAppearanceWidget;
 	InstanceEditVersionWidget* _instanceEditVersionWidget;
 	InstanceEditArgumentsWidget* _instanceEditArgumentsWidget;
-	InstanceEditModsWidget* _instanceEditModsWidget;
+    InstanceEditModsWidget* _instanceEditModsWidget;
+    InstanceEditServerWidget* _instanceEditServerWidget;
 	QPushButton* _instanceSaveButton;
 	QGridLayout* _instanceSaveButtonLayout;
 	QWidget* _instanceSaveButtonWidget;
