@@ -24,11 +24,14 @@ jobs:
           submodules: recursive
     
     - uses: lukka/get-cmake@latest
-      
+  
     - name: Setup vcpkg (it does not install any package yet)
       uses: lukka/run-vcpkg@v11.1
       with:
           vcpkgDirectory: '${{github.workspace}}/lib/vcpkg'
+                        
+    - name: Update vcpkg
+      run: vcpkg update
       
     - if: ${{ (matrix.os == 'ubuntu-latest') || (matrix.os == 'macos-latest') }}
       name: Install Qt (ubuntu-latest || macos-latest)
