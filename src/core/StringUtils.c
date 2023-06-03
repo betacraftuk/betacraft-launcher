@@ -14,7 +14,7 @@ void repl_str(char* target, const char* input, const char* from, const char* to)
     const size_t cache_sz_inc_factor = 3;
     const size_t cache_sz_inc_max = 1048576;
 
-    char* pret;
+    char* pret, * ret = NULL;
     const char* pstr2, * pstr = str;
     size_t i, count = 0;
     ptrdiff_t* pos_cache_tmp, * pos_cache = NULL;
@@ -48,11 +48,15 @@ void repl_str(char* target, const char* input, const char* from, const char* to)
         retlen = orglen + (tolen - fromlen) * count;
     }
     else retlen = orglen;
+    ret = malloc(retlen + 1);
+    if (ret == NULL) {
+        goto end_repl_str;
+    }
 
     if (count == 0) {
-        strcpy(target, str);
+        strcpy(ret, str);
     } else {
-        pret = target;
+        pret = ret;
         memcpy(pret, str, pos_cache[0]);
         pret += pos_cache[0];
         for (i = 0; i < count; i++) {
@@ -63,13 +67,16 @@ void repl_str(char* target, const char* input, const char* from, const char* to)
             memcpy(pret, pstr, cpylen);
             pret += cpylen;
         }
-        target[retlen] = '\0';
+        ret[retlen] = '\0';
     }
 
 end_repl_str:
 
     free(pos_cache);
     free(str);
+
+    free(target);
+    target = ret;
 }
 
 int count_substring(char* s, char c) {
