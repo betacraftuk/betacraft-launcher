@@ -36,7 +36,6 @@ void bc_unixprocess_create(bc_process_args* args, int output) {
         }
 
         execvp(args->arr[0], args->arr);
-        bc_game_run_progress.progress = 100;
     } else if (output) {
         char buffer[1024];
         close(fd[1]);
@@ -59,6 +58,7 @@ void bc_unixprocess_create(bc_process_args* args, int output) {
         }
     }
 
+    bc_game_run_progress.progress = 100;
     if (!output) {
         waitpid(pid, NULL, 0);
     }
