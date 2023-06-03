@@ -156,7 +156,7 @@ void MainWindow::onToggleDiscordRPC() {
 
 void MainWindow::onMenuIndexChanged(int index) {
 	if (betacraft_online && index == 6) { // Last tab
-		QDesktopServices::openUrl(QUrl("https://www.patreon.com/"));
+		QDesktopServices::openUrl(QUrl("https://www.patreon.com/BetacraftLauncher"));
 		_menu->setCurrentIndex(0);
 	}
 }
