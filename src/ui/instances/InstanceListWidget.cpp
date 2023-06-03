@@ -8,8 +8,14 @@ InstanceListWidget::InstanceListWidget(QWidget *parent)
 	_layout = new QGridLayout(this);
 	_instanceList = new QTreeWidget(this);
 	_addInstanceButton = new QPushButton(this);
-	_addInstanceWidget = new AddInstanceWidget();
 	_instanceEditWidget = new InstanceEditWidget();
+
+    if (betacraft_online) {
+	    _addInstanceWidget = new AddInstanceWidget();
+	    connect(_addInstanceWidget, SIGNAL(signal_instanceAdded()), this, SLOT(onInstanceAdded()));
+    } else {
+        _addInstanceButton->setDisabled(1);
+    }
 
 	_addInstanceButton->setText(bc_translate("instance_add_button"));
 
@@ -32,7 +38,6 @@ InstanceListWidget::InstanceListWidget(QWidget *parent)
 	setLayout(_layout);
 
 	connect(_addInstanceButton, SIGNAL(released()), this, SLOT(onAddInstanceClicked()));
-	connect(_addInstanceWidget, SIGNAL(signal_instanceAdded()), this, SLOT(onInstanceAdded()));
 	connect(_instanceEditWidget, SIGNAL(signal_instanceSettingsSaved()), this, SLOT(onInstanceSettingsSaved()));
 	connect(_instanceList, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(onInstanceClicked(QTreeWidgetItem*, int)));
 }

@@ -29,10 +29,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
 	_consoleLog = new ConsoleLogWidget();
     _instanceListWidget = new InstanceListWidget();
-    _serverListWidget = new ServerListWidget();
-    _accountsWidget = new AccountListWidget();
-    _settingsWidget = new SettingsWidget();
     _aboutWidget = new AboutWidget();
+    _settingsWidget = new SettingsWidget();
 
     _changelog->setReadOnly(true);
     _changelog->setStyleSheet(".QTextEdit { background-image: url(':/assets/stone.png'); border: 0; color: #e0d0d0; font-size: 15px; padding-left: 10px; }");
@@ -47,16 +45,21 @@ MainWindow::MainWindow(QWidget *parent) :
 	_menu->setStyleSheet("QTabWidget::pane { border: 0; }");
 	_menu->addTab(_changelog, bc_translate("tab_changelog"));
 	_menu->addTab(_instanceListWidget, bc_translate("tab_instances"));
-	_menu->addTab(_serverListWidget, bc_translate("tab_server_list"));
-    _menu->addTab(_accountsWidget, bc_translate("tab_accounts"));
 	_menu->addTab(_settingsWidget, bc_translate("tab_settings"));
 	_menu->addTab(_aboutWidget, bc_translate("tab_about"));
-    _menu->addTab(new QWidget(this), bc_translate("tab_donate"));
 
-	if (betacraft_online == 0) {
-		_menu->setTabEnabled(2, 0);
-		_menu->setTabEnabled(3, 0);
+	if (!betacraft_online) {
+        _changelog->setMarkdown("Offline");
 	} else {
+        _accountsWidget = new AccountListWidget();
+        _serverListWidget = new ServerListWidget();
+	    connect(_serverListWidget, SIGNAL(signal_serverGameLaunch(const char*, const char*)), this, SLOT(launchGameJoinServer(const char*, const char*)));
+        connect(_accountsWidget, SIGNAL(signal_accountUpdate()), this, SLOT(onAccountUpdate()));
+
+    	_menu->addTab(_serverListWidget, bc_translate("tab_server_list"));
+        _menu->addTab(_accountsWidget, bc_translate("tab_accounts"));
+        _menu->addTab(new QWidget(this), bc_translate("tab_donate"));
+
 		char* response = bc_network_get("https://raw.githubusercontent.com/betacraftuk/betacraft-launcher/v2/CHANGELOG.md", NULL);
 		_changelog->setMarkdown(QString(response));
 		free(response);
@@ -97,13 +100,11 @@ MainWindow::MainWindow(QWidget *parent) :
 	connect(_gameProgressTimer, SIGNAL(timeout()), this, SLOT(updateGameProgress()));
 	connect(_playButton, &QPushButton::released, this, [this]() { launchGame("", ""); });
 	connect(_instanceListWidget, SIGNAL(signal_instanceUpdate()), this, SLOT(onInstanceUpdate()));
-    connect(_accountsWidget, SIGNAL(signal_accountUpdate()), this, SLOT(onAccountUpdate()));
 	connect(_menu, SIGNAL(currentChanged(int)), this, SLOT(onMenuIndexChanged(int)));
 	connect(&_watcher, &QFutureWatcher<void>::finished, this, &MainWindow::launchingGameFinished);
 	connect(_discordLoopTimer, &QTimer::timeout, this, [this]() { bc_discord_loop(); });
 	connect(_settingsWidget, SIGNAL(signal_toggleTabs()), this, SLOT(onToggleTabs()));
 	connect(_settingsWidget, SIGNAL(signal_toggleDiscordRPC()), this, SLOT(onToggleDiscordRPC()));
-	connect(_serverListWidget, SIGNAL(signal_serverGameLaunch(const char*, const char*)), this, SLOT(launchGameJoinServer(const char*, const char*)));
 
 	startDiscordRPC();
 
@@ -154,7 +155,7 @@ void MainWindow::onToggleDiscordRPC() {
 }
 
 void MainWindow::onMenuIndexChanged(int index) {
-	if (index == 6) { // Last tab
+	if (betacraft_online && index == 6) { // Last tab
 		QDesktopServices::openUrl(QUrl("https://www.patreon.com/"));
 		_menu->setCurrentIndex(0);
 	}

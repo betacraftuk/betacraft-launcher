@@ -11,6 +11,7 @@ QString _javaExecName = "java (java *.plugin)";
 
 extern "C" {
 	#include "../../core/Network.h"
+	#include "../../core/Betacraft.h"
 }
 
 char _currentDownloadUrl[256];
@@ -55,6 +56,11 @@ SettingsJavaWidget::SettingsJavaWidget(QWidget* parent)
 	_javaTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
 	populateJavaTreeView();
+
+    if (!betacraft_online) {
+        _installJavaButton->setDisabled(1);
+        _javaInstallList->setDisabled(1);
+    }
 
 	_progressBar->setVisible(false);
 	_progressBar->setTextVisible(true);
