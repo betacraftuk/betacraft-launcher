@@ -104,7 +104,7 @@ int jext_get_string_array_index(json_object* arr, const char* section, const cha
     return -1;
 }
 
-void jext_replace_or_create_option_boolean(json_object* json, char* key, int val) {
+void jext_replace_or_create_option_boolean(json_object* json, const char* key, int val) {
     json_object* tmp;
 
     if (json_object_object_get_ex(json, key, &tmp)) {
@@ -114,7 +114,7 @@ void jext_replace_or_create_option_boolean(json_object* json, char* key, int val
     }
 }
 
-void jext_replace_or_create_option_int(json_object* json, char* key, int val) {
+void jext_replace_or_create_option_int(json_object* json, const char* key, int val) {
     json_object* tmp;
 
     if (json_object_object_get_ex(json, key, &tmp)) {
@@ -124,7 +124,7 @@ void jext_replace_or_create_option_int(json_object* json, char* key, int val) {
     }
 }
 
-void jext_replace_or_create_option_str(json_object* json, char* key, char* val) {
+void jext_replace_or_create_option_str(json_object* json, const char* key, const char* val) {
     json_object* tmp;
 
     if (json_object_object_get_ex(json, key, &tmp)) {
