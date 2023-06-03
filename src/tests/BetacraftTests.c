@@ -14,12 +14,6 @@ void test_bc_server_list() {
     free(servers);
 }
 
-int test_bc_avatar_get(const char* uuid) {
-    bc_memory avatar = bc_avatar_get(uuid);
-    return avatar.size != INVALIDAVATARSIZE;
-    free(avatar.response);
-}
-
 int main() {
     int online = bc_network_status();
 
