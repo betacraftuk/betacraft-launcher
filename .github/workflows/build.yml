@@ -29,10 +29,6 @@ jobs:
       uses: lukka/run-vcpkg@v11.1
       with:
           vcpkgDirectory: '${{github.workspace}}/lib/vcpkg'
-                        
-    - name: Update vcpkg
-      working-directory: ${{github.workspace}}/lib/vcpkg
-      run: ./bootstrap-vcpkg
       
     - if: ${{ (matrix.os == 'ubuntu-latest') || (matrix.os == 'macos-latest') }}
       name: Install Qt (ubuntu-latest || macos-latest)
