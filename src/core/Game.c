@@ -15,7 +15,6 @@
 #include <stdlib.h>
 #ifdef _WIN32
 #include <windows.h>
-#include <winbase.h>
 #include <direct.h>
 #elif defined(__linux__) || defined(__APPLE__)
 #include <unistd.h>
@@ -477,12 +476,12 @@ void bc_game_run_cmd(bc_process_args* gameArgs, bc_game_data* data) {
 
 #ifdef _WIN32
     char preenv[PATH_MAX];
-    snprintf(preenv, sizeof(preenv), "%s", getenv("APPDATA"));
+    snprintf(preenv, sizeof(preenv), "APPDATA=%s", getenv("APPDATA"));
 
     char envar[PATH_MAX];
-    snprintf(envar, sizeof(envar), "%s", data->instance->path);
+    snprintf(envar, sizeof(envar), "APPDATA=%s", data->instance->path);
 
-    SetEnvironmentVariable("APPDATA", envar);
+    putenv(envar);
 #endif
 
     if (data->instance->show_log == 0) {
@@ -494,7 +493,7 @@ void bc_game_run_cmd(bc_process_args* gameArgs, bc_game_data* data) {
     // Reset to default
     chdir(predir);
 #ifdef _WIN32
-    SetEnvironmentVariable("APPDATA", preenv);
+    putenv(preenv);
 #endif
 }
 
