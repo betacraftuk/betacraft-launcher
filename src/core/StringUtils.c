@@ -69,9 +69,12 @@ end_repl_str:
 }
 
 int count_substring(char* s, char c) {
-    return *s == '\0'
+    char buffer[1024];
+    snprintf(buffer, sizeof(buffer), "%s", s);
+
+    return *buffer == '\0'
                ? 0
-               : count_substring(s + 1, c) + (*s == c);
+               : count_substring(buffer + 1, c) + (*buffer == c);
 }
 
 int str_starts_with(char* string, char* prefix) {

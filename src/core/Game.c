@@ -181,9 +181,11 @@ char* bc_game_library_native_get_name(bc_version_nativeMap* map, int len) {
 
 char* bc_game_library_path(bc_version_library* lib) {
     int size = count_substring(lib->name, ':');
-
     char pathParts[4][PATH_MAX];
-    char* token = strtok(lib->name, ":");
+    char alterable[512];
+    snprintf(alterable, sizeof(alterable), "%s", lib->name);
+
+    char* token = strtok(alterable, ":");
     int counter = 0;
 
     while (token != NULL) {
