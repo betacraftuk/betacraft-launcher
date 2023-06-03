@@ -79,7 +79,7 @@ elseif(UNIX AND NOT APPLE)
     install(FILES ${CMAKE_SOURCE_DIR}/assets/betacraft.png DESTINATION /usr/share/icons)
 
     set(CPACK_PACKAGE_NAME Betacraft)
-    set(CPACK_PACKAGE_VERSION "2.0.0-alpha.20230603")
+    set(CPACK_PACKAGE_VERSION "2.0.0-alpha.20230604")
     set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Betacraft aims to provide easy access to old Minecraft versions and improve the overall game experience.")
     set(CPACK_PACKAGE_VENDOR "Betacraft")
     set(CPACK_PACKAGE_INSTALL_DIRECTORY ${CPACK_PACKAGE_NAME})
