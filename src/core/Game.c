@@ -195,8 +195,14 @@ char* bc_game_library_path(bc_version_library* lib) {
     }
 
     char* libPath = NULL;
-    char replaced[512];
-    repl_str(replaced, pathParts[0], ".", "/");
+    char replaced[256];
+    snprintf(replaced, sizeof(replaced), "%s", pathParts[0]);
+
+    for (int i = 0; i < strlen(replaced); i++) {
+        if (replaced[i] == '.') {
+            replaced[i] = '/';
+        }
+    }
 
     if (size == 3) {
         libPath = malloc(strlen(pathParts[0]) + strlen("///--") + 2 * strlen(pathParts[1]) + 2 * strlen(pathParts[2]) + strlen(pathParts[3]) + 1);

@@ -5,14 +5,17 @@
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdio.h>
+#include <assert.h>
 
 void repl_str(char* target, const char* input, const char* from, const char* to) {
+    char* str = strdup(input);
+
     size_t cache_sz_inc = 16;
     const size_t cache_sz_inc_factor = 3;
     const size_t cache_sz_inc_max = 1048576;
 
     char* pret;
-    const char* pstr2, * pstr = input;
+    const char* pstr2, * pstr = str;
     size_t i, count = 0;
     ptrdiff_t* pos_cache_tmp, * pos_cache = NULL;
     size_t cache_sz = 0;
@@ -34,11 +37,11 @@ void repl_str(char* target, const char* input, const char* from, const char* to)
             }
         }
 
-        pos_cache[count - 1] = pstr2 - input;
+        pos_cache[count - 1] = pstr2 - str;
         pstr = pstr2 + fromlen;
     }
 
-    orglen = pstr - input + strlen(pstr);
+    orglen = pstr - str + strlen(pstr);
 
     if (count > 0) {
         tolen = strlen(to);
@@ -47,15 +50,15 @@ void repl_str(char* target, const char* input, const char* from, const char* to)
     else retlen = orglen;
 
     if (count == 0) {
-        strcpy(target, input);
+        strcpy(target, str);
     } else {
         pret = target;
-        memcpy(pret, input, pos_cache[0]);
+        memcpy(pret, str, pos_cache[0]);
         pret += pos_cache[0];
         for (i = 0; i < count; i++) {
             memcpy(pret, to, tolen);
             pret += tolen;
-            pstr = input + pos_cache[i] + fromlen;
+            pstr = str + pos_cache[i] + fromlen;
             cpylen = (i == count - 1 ? orglen : pos_cache[i + 1]) - pos_cache[i] - fromlen;
             memcpy(pret, pstr, cpylen);
             pret += cpylen;
@@ -66,10 +69,13 @@ void repl_str(char* target, const char* input, const char* from, const char* to)
 end_repl_str:
 
     free(pos_cache);
+    free(str);
 }
 
 int count_substring(char* s, char c) {
     char buffer[1024];
+    assert(strlen(s) < sizeof(buffer));
+
     snprintf(buffer, sizeof(buffer), "%s", s);
 
     return *buffer == '\0'
