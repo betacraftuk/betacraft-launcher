@@ -17,6 +17,12 @@ QString getCreditsHtml() {
 	stream << "<h3>" << QObject::tr("Developers", "About Credits") << "</h3>\n";
 	stream << "<p>Moresteck &lt;<a href='https://github.com/Moresteck'>https://github.com/Moresteck</a>&gt;</p>\n";
 	stream << "<p>Kazu &lt;<a href='https://github.com/KazuOfficial'>https://github.com/KazuOfficial</a>&gt;</p>\n";
+    stream << "<h3>Translators</h3>\n";
+    stream << "<p>TheClashFruit &lt;<a href='https://github.com/TheClashFruit'>https://github.com/TheClashFruit</a>&gt;</p>\n";
+    stream << "<p>Edvardvs &lt;<a href='https://github.com/Edvardvs'>https://github.com/Edvardvs</a>&gt;</p>\n";
+    stream << "<p>xitieshiz2 &lt;<a href='https://github.com/xitieshiz2'>https://github.com/xitieshiz2</a>&gt;</p>\n";
+    stream << "<p>m-burani &lt;<a href='https://github.com/m-burani'>https://github.com/m-burani</a>&gt;</p>\n";
+    stream << "<p>Don-Leandro &lt;<a href='https://github.com/Don-Leandro '>https://github.com/Don-Leandro</a>&gt;</p>\n";
 
 	stream << "</center>\n";
 

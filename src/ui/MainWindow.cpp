@@ -45,8 +45,6 @@ MainWindow::MainWindow(QWidget *parent) :
 	_menu->setStyleSheet("QTabWidget::pane { border: 0; }");
 	_menu->addTab(_changelog, bc_translate("tab_changelog"));
 	_menu->addTab(_instanceListWidget, bc_translate("tab_instances"));
-	_menu->addTab(_settingsWidget, bc_translate("tab_settings"));
-	_menu->addTab(_aboutWidget, bc_translate("tab_about"));
 
 	if (!betacraft_online) {
         _changelog->setMarkdown("Offline");
@@ -58,12 +56,18 @@ MainWindow::MainWindow(QWidget *parent) :
 
     	_menu->addTab(_serverListWidget, bc_translate("tab_server_list"));
         _menu->addTab(_accountsWidget, bc_translate("tab_accounts"));
-        _menu->addTab(new QWidget(this), bc_translate("tab_donate"));
 
 		char* response = bc_network_get("https://raw.githubusercontent.com/betacraftuk/betacraft-launcher/v2/CHANGELOG.md", NULL);
 		_changelog->setMarkdown(QString(response));
 		free(response);
 	}
+
+	_menu->addTab(_settingsWidget, bc_translate("tab_settings"));
+	_menu->addTab(_aboutWidget, bc_translate("tab_about"));
+
+    if (betacraft_online) {
+        _menu->addTab(new QWidget(this), bc_translate("tab_donate"));
+    }
 
 	_instanceLabel->setStyleSheet(".QLabel { color: white; padding-bottom: 10px; }");
 

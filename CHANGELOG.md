@@ -12,6 +12,7 @@
 - Thanks to our translators, added German, Italian, Hungarian, Simplified Chinese, Traditional Chinese, and Brazilian Portuguese
 - Translators are now listed in the About section
 - Added Maximize and Fullscreen options to Edit Instance
+- Improved progress bar
 
 <b style="color: #aaaaff;"><u>Betacraft v2.0.0-alpha.20230520</u></b>
 
