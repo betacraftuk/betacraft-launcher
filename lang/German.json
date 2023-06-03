@@ -44,6 +44,8 @@
   "instance_arguments_jvm_title": "JVM-Argumente",
   "instance_arguments_program_title": "Programm-Argumente",
   "instance_arguments_advice": "Argumente durch Zeilenumbrüche trennen",
+  "instance_server_join_group_title": "Server",
+  "instance_server_join_server_box": "Server beim Starten beitreten",
   "instance_show_game_log": "Log anzeigen",
   "instance_keep_launcher_open": "Launcher geöffnet lassen",
   "instance_name_requirements": "Namen von Installationen dürfen nur aus alphanumerischen Zeichen (A-Z, a-z und 0-9), Binde- und Unterstrichen sowie aus Punkten (außer am Anfang) bestehen.",
