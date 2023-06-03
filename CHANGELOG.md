@@ -1,4 +1,4 @@
-<b style="color: #aaaaff;"><u>Betacraft v2.0.0-alpha.20230603</u></b>
+<b style="color: #aaaaff;"><u>Betacraft v2.0.0-alpha.20230604</u></b>
 
 - Added a robust version picker to Add Instance
 - Added Server tab to Edit Instance
