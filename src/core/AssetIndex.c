@@ -51,16 +51,17 @@ bc_assetindex* bc_assetindex_read_objects(const char* responseData) {
 bc_assetindex* bc_assetindex_load(bc_version_assetIndexData* data) {
     char* assetsData;
     char* location = bc_file_minecraft_directory();
-    char jsonLoc[PATH_MAX];
+    char indexesLoc[PATH_MAX];
 
     json_object* json = NULL;
 
-    snprintf(jsonLoc, sizeof(jsonLoc), "%sassets/indexes/", location);
+    snprintf(indexesLoc, sizeof(indexesLoc), "%sassets/indexes/", location);
     free(location);
 
-    make_path(jsonLoc, 0);
+    make_path(indexesLoc, 0);
 
-    snprintf(jsonLoc, sizeof(jsonLoc), "%s%s.json", jsonLoc, data->id);
+    char jsonLoc[PATH_MAX];
+    snprintf(jsonLoc, sizeof(jsonLoc), "%s%s.json", indexesLoc, data->id);
 
     if (betacraft_online == 1
         && (!bc_file_exists(jsonLoc)

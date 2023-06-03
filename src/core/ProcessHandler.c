@@ -37,6 +37,7 @@ void bc_unixprocess_create(bc_process_args* args, int output) {
 
         execvp(args->arr[0], args->arr);
     } else if (output) {
+        bc_game_run_progress.progress = 100;
         char buffer[1024];
         close(fd[1]);
 
