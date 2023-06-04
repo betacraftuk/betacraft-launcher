@@ -254,7 +254,7 @@ void bc_instance_remove_group(const char* name) {
     for (int i = 0; i < json_object_array_length(tmp); i++) {
         arr_tmp = json_object_array_get_idx(tmp, i);
 
-        if (strcmp(jext_get_string(arr_tmp, "group_name"), name) == 0) {
+        if (strcmp(jext_get_string_dummy(arr_tmp, "group_name"), name) == 0) {
             json_object_array_del_idx(tmp, i, 1);
             break;
         }

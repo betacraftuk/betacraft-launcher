@@ -11,8 +11,8 @@
 - Donate button now links to the launcher's Patreon page
 - Thanks to our translators, added German, Italian, Hungarian, Simplified Chinese, Traditional Chinese, and Brazilian Portuguese
 - Translators are now listed in the About section
-- Added Maximize and Fullscreen options to Edit Instance
 - Improved progress bar
+- Fixed memory leaks
 
 <b style="color: #aaaaff;"><u>Betacraft v2.0.0-alpha.20230520</u></b>
 

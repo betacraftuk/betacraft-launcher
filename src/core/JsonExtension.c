@@ -38,8 +38,7 @@ char** jext_alloc_string_array(json_object* obj) {
     return strings;
 }
 
-char* jext_get_string(json_object* json, const char* section)
-{
+char* jext_get_string(json_object* json, const char* section) {
     json_object* tmp;
     json_object_object_get_ex(json, section, &tmp);
     return jext_alloc_string(tmp);
@@ -53,22 +52,19 @@ const char* jext_get_string_dummy(json_object* json, const char* section) {
     return ret == NULL ? "" : ret;
 }
 
-int jext_get_int(json_object* json, const char* section)
-{
+int jext_get_int(json_object* json, const char* section) {
     json_object* tmp;
     json_object_object_get_ex(json, section, &tmp);
     return json_object_get_int(tmp);
 }
 
-int jext_get_double(json_object* json, const char* section)
-{
+int jext_get_double(json_object* json, const char* section) {
     json_object* tmp;
     json_object_object_get_ex(json, section, &tmp);
     return json_object_get_double(tmp);
 }
 
-int jext_get_boolean(json_object* json, const char* section)
-{
+int jext_get_boolean(json_object* json, const char* section) {
     json_object* tmp;
     if (json_object_object_get_ex(json, section, &tmp) == 0) {
         // undefined if non existent
@@ -77,8 +73,7 @@ int jext_get_boolean(json_object* json, const char* section)
     return json_object_get_boolean(tmp);
 }
 
-char** jext_get_string_array(json_object* json, const char* section)
-{
+char** jext_get_string_array(json_object* json, const char* section) {
     json_object* tmp;
 
     if (json_object_object_get_ex(json, section, &tmp) == 0) {
@@ -88,8 +83,7 @@ char** jext_get_string_array(json_object* json, const char* section)
     return jext_alloc_string_array(tmp);
 }
 
-int jext_get_string_array_index(json_object* arr, const char* section, const char* value)
-{
+int jext_get_string_array_index(json_object* arr, const char* section, const char* value) {
     json_object* tmp;
 
     for (int i = 0; i < json_object_array_length(arr); i++) {

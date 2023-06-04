@@ -57,6 +57,9 @@ InstanceEditAppearanceWidget::InstanceEditAppearanceWidget(QWidget* parent)
 	_instanceIconLayout->addWidget(_instanceIconDefaultButton, 0, 2, 1, 1);
 	_instanceIconGroup->setLayout(_instanceIconLayout);
 
+    _instanceGameMaximizedCheckbox->setDisabled(1);
+    _instanceGameFullscreenCheckbox->setDisabled(1);
+
 	_instanceGameLayout->addWidget(_instanceGameWidthLabel, 0, 0, 1, 1);
 	_instanceGameLayout->addWidget(_instanceGameHeightLabel, 1, 0, 1, 1);
 	_instanceGameLayout->addWidget(_instanceGameWidthTextbox, 0, 1, 1, 1);

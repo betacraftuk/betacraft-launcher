@@ -21,6 +21,8 @@ void bc_version_read_rule(bc_version_actionRule* rule, json_object* obj) {
         rule->features.has_custom_resolution = jext_get_boolean(tmp, "has_custom_resolution");
         rule->features.is_demo_user = jext_get_boolean(tmp, "is_demo_user");
         rule->features.has_server = jext_get_boolean(tmp, "has_server");
+        rule->features.is_game_fullscreen = 0;
+        rule->features.is_game_fullscreen = 0;
 
         // 1.19.4+
         rule->features.has_quick_plays_support = jext_get_boolean(tmp, "has_quick_plays_support");
@@ -148,7 +150,7 @@ void bc_game_version_json_read_logging(json_object* obj, json_object* tmp, bc_ve
 }
 
 void bc_game_version_json_read_minecraft_arguments(json_object* tmp, bc_version* v) {
-    const char* mcargs = json_object_get_string(tmp);
+    char* mcargs = json_object_get_string(tmp);
     int size = count_substring(mcargs, ' ') + 1 + /* width, height */ 4;
     char split[128][1024];
 
