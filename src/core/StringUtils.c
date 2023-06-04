@@ -1,5 +1,6 @@
 #include "StringUtils.h"
 #include "Betacraft.h"
+#include "Logger.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -7,76 +8,33 @@
 #include <stdio.h>
 #include <assert.h>
 
-void repl_str(char* target, const char* input, const char* from, const char* to) {
-    char* str = strdup(input);
+void repl_str(char* source, char* substring, char* with) {
+    char* substring_source = strstr(source, substring);
 
-    size_t cache_sz_inc = 16;
-    const size_t cache_sz_inc_factor = 3;
-    const size_t cache_sz_inc_max = 1048576;
-
-    char* pret, * ret = NULL;
-    const char* pstr2, * pstr = str;
-    size_t i, count = 0;
-    ptrdiff_t* pos_cache_tmp, * pos_cache = NULL;
-    size_t cache_sz = 0;
-    size_t cpylen, orglen, retlen, tolen, fromlen = strlen(from);
-
-    while ((pstr2 = strstr(pstr, from)) != NULL) {
-        count++;
-
-        if (cache_sz < count) {
-            cache_sz += cache_sz_inc;
-            pos_cache_tmp = realloc(pos_cache, sizeof(*pos_cache) * cache_sz);
-            if (pos_cache_tmp == NULL) {
-                goto end_repl_str;
-            }
-            else pos_cache = pos_cache_tmp;
-            cache_sz_inc *= cache_sz_inc_factor;
-            if (cache_sz_inc > cache_sz_inc_max) {
-                cache_sz_inc = cache_sz_inc_max;
-            }
-        }
-
-        pos_cache[count - 1] = pstr2 - str;
-        pstr = pstr2 + fromlen;
+    if (substring_source == NULL) {
+        return;
     }
 
-    orglen = pstr - str + strlen(pstr);
+    memmove(
+        substring_source + strlen(with),
+        substring_source + strlen(substring),
+        strlen(substring_source) - strlen(substring) + 1
+    );
 
-    if (count > 0) {
-        tolen = strlen(to);
-        retlen = orglen + (tolen - fromlen) * count;
-    }
-    else retlen = orglen;
-    ret = malloc(retlen + 1);
-    if (ret == NULL) {
-        goto end_repl_str;
-    }
+    memcpy(substring_source, with, strlen(with));
+}
 
-    if (count == 0) {
-        strcpy(ret, str);
-    } else {
-        pret = ret;
-        memcpy(pret, str, pos_cache[0]);
-        pret += pos_cache[0];
-        for (i = 0; i < count; i++) {
-            memcpy(pret, to, tolen);
-            pret += tolen;
-            pstr = str + pos_cache[i] + fromlen;
-            cpylen = (i == count - 1 ? orglen : pos_cache[i + 1]) - pos_cache[i] - fromlen;
-            memcpy(pret, pstr, cpylen);
-            pret += cpylen;
-        }
-        ret[retlen] = '\0';
+char* repl_str_alloc(char* source, char* substring, char* with, int freeSource) {
+    char* ret = malloc(strlen(source) + strlen(with) + 1);
+    strcpy(ret, source);
+
+    if (freeSource) {
+        free(source);
     }
 
-end_repl_str:
+    repl_str(ret, substring, with);
 
-    free(pos_cache);
-    free(str);
-
-    free(target);
-    target = ret;
+    return ret;
 }
 
 int count_substring(char* s, char c) {

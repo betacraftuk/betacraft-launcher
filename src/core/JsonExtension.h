@@ -13,8 +13,8 @@ char** jext_get_string_array(json_object* json, const char* section);
 int jext_get_string_array_index(json_object* arr, const char* section, const char* value);
 int jext_get_double(json_object* json, const char* section);
 void jext_file_write(const char* path, json_object* obj);
-void jext_replace_or_create_option_boolean(json_object* json, char* key, int val);
-void jext_replace_or_create_option_int(json_object* json, char* key, int val);
-void jext_replace_or_create_option_str(json_object* json, char* key, char* val);
+void jext_replace_or_create_option_boolean(json_object* json, const char* key, int val);
+void jext_replace_or_create_option_int(json_object* json, const char* key, int val);
+void jext_replace_or_create_option_str(json_object* json, const char* key, const char* val);
 
 #endif

@@ -150,7 +150,16 @@ void bc_game_version_json_read_logging(json_object* obj, json_object* tmp, bc_ve
 void bc_game_version_json_read_minecraft_arguments(json_object* tmp, bc_version* v) {
     const char* mcargs = json_object_get_string(tmp);
     int size = count_substring(mcargs, ' ') + 1 + /* width, height */ 4;
-    //char** split = split_str(mcargs, " ");
+    char split[128][1024];
+
+    char* token = strtok(mcargs, " ");
+    int counter = 0;
+
+    while (token != NULL) {
+        snprintf(split[counter], 256, "%s", token);
+        token = strtok(NULL, " ");
+        counter++;
+    }
 
     v->arguments.game_len = 1;
     v->arguments.game->rules_len = 0;
@@ -163,7 +172,7 @@ void bc_game_version_json_read_minecraft_arguments(json_object* tmp, bc_version*
     strcpy(v->arguments.game->value[3], "${resolution_height}");
 
     for (int i = 4; i < size; i++) {
-        //snprintf(v->arguments.game->value[i], sizeof(v->arguments.game->value[i]), "%s", split[i - 4]);
+        snprintf(v->arguments.game->value[i], sizeof(v->arguments.game->value[i]), "%s", split[i - 4]);
     }
 
     v->arguments.jvm_len = 1;

@@ -339,32 +339,33 @@ char* bc_game_classpath(bc_game_data* data) {
 
 char* fill_properties(const char* input, bc_game_data* data) {
     char* replaced = strdup(input);
+
     if ((size_t)-1 > 0xffffffffUL) {
-        repl_str(replaced, input, "${arch}", "64");
+        replaced = repl_str_alloc(replaced, "${arch}", "64", 1);
     } else {
-        repl_str(replaced, input, "${arch}", "32");
+        replaced = repl_str_alloc(replaced, "${arch}", "32", 1);
     }
 
     if (strstr(replaced, "${classpath_separator}") != NULL) {
 #ifdef _WIN32
-        repl_str(replaced, replaced, "${classpath_separator}", ";");
+        replaced = repl_str_alloc(replaced, "${classpath_separator}", ";", 1);
 #else
-        repl_str(replaced, replaced, "${classpath_separator}", ":");
+        replaced = repl_str_alloc(replaced, "${classpath_separator}", ":", 1);
 #endif
     }
 
     if (strstr(replaced, "${launcher_name}") != NULL) {
-        repl_str(replaced, replaced, "${launcher_name}", "Betacraft");
+        replaced = repl_str_alloc(replaced, "${launcher_name}", "Betacraft", 1);
     }
 
     if (strstr(replaced, "${launcher_version}") != NULL) {
-        repl_str(replaced, replaced, "${launcher_version}", BETACRAFT_VERSION);
+        replaced = repl_str_alloc(replaced, "${launcher_version}", BETACRAFT_VERSION, 1);
     }
 
     if (strstr(replaced, "${assets_root}") != NULL) {
         char* path = bc_game_get_assets_root();
 
-        repl_str(replaced, replaced, "${assets_root}", path);
+        replaced = repl_str_alloc(replaced, "${assets_root}", path, 1);
         bc_log("\nassets_root=%s\n", replaced);
         free(path);
     }
@@ -374,7 +375,7 @@ char* fill_properties(const char* input, bc_game_data* data) {
         char* path = bc_game_get_assets_root();
 
         snprintf(virtualassets, sizeof(virtualassets), "%svirtual/%s/", path, data->version->assets);
-        repl_str(replaced, replaced, "${game_assets}", bc_file_make_absolute_path(virtualassets));
+        replaced = repl_str_alloc(replaced, "${game_assets}", bc_file_make_absolute_path(virtualassets), 1);
         bc_log("\ngame_assets=%s\n", replaced);
         free(path);
     }
@@ -384,7 +385,7 @@ char* fill_properties(const char* input, bc_game_data* data) {
         char librariesdir[PATH_MAX];
 
         snprintf(librariesdir, sizeof(librariesdir), "%slibraries", mcdir);
-        repl_str(replaced, replaced, "${library_directory}", librariesdir);
+        replaced = repl_str_alloc(replaced, "${library_directory}", librariesdir, 1);
         bc_log("\nlibrary_directory=%s\n", replaced);
         free(mcdir);
     }
@@ -393,95 +394,95 @@ char* fill_properties(const char* input, bc_game_data* data) {
         // complex stuff, execute as rarely as possible
         if (strstr(replaced, "${classpath}") != NULL) {
             char* cp = bc_game_classpath(data);
-            repl_str(replaced, replaced, "${classpath}", cp);
+            replaced = repl_str_alloc(replaced, "${classpath}", cp, 1);
             free(cp);
         }
 
         if (strstr(replaced, "${resolution_width}") != NULL) {
             char widthstr[16];
             snprintf(widthstr, sizeof(widthstr), "%i", data->instance->width);
-            repl_str(replaced, replaced, "${resolution_width}", widthstr);
+            replaced = repl_str_alloc(replaced, "${resolution_width}", widthstr, 1);
         }
 
         if (strstr(replaced, "${resolution_height}") != NULL) {
             char heightstr[16];
             snprintf(heightstr, sizeof(heightstr), "%i", data->instance->height);
-            repl_str(replaced, replaced, "${resolution_height}", heightstr);
+            replaced = repl_str_alloc(replaced, "${resolution_height}", heightstr, 1);
         }
 
-        repl_str(replaced, replaced, "${username}", data->account->username);
-        repl_str(replaced, replaced, "${auth_player_name}", data->account->username);
+        replaced = repl_str_alloc(replaced, "${username}", data->account->username, 1);
+        replaced = repl_str_alloc(replaced, "${auth_player_name}", data->account->username, 1);
 
         if (strstr(replaced, "${auth_uuid}") != NULL) {
             char uuid_nodash[48];
             snprintf(uuid_nodash, sizeof(uuid_nodash), "%s", data->account->uuid);
-            repl_str(replaced, replaced, "${auth_uuid}", uuid_nodash);
+            replaced = repl_str_alloc(replaced, "${auth_uuid}", uuid_nodash, 1);
         }
 
-        repl_str(replaced, replaced, "${auth_access_token}", data->account->access_token);
-        repl_str(replaced, replaced, "${access_token}", data->account->access_token);
+        replaced = repl_str_alloc(replaced, "${auth_access_token}", data->account->access_token, 1);
+        replaced = repl_str_alloc(replaced, "${access_token}", data->account->access_token, 1);
 
         if (strstr(replaced, "${auth_session}") != NULL) {
             char session[2048];
             snprintf(session, sizeof(session), "token:%s:%s", data->account->access_token, data->account->uuid);
-            repl_str(replaced, replaced, "${auth_session}", session);
+            replaced = repl_str_alloc(replaced, "${auth_session}", session, 1);
         }
 
-        repl_str(replaced, replaced, "${user_properties}", "{}");
+        replaced = repl_str_alloc(replaced, "${user_properties}", "{}", 1);
 
         if (data->account->account_type == BC_ACCOUNT_MOJANG) {
-            repl_str(replaced, replaced, "${user_type}", "mojang");
+            replaced = repl_str_alloc(replaced, "${user_type}", "mojang", 1);
         } else if (data->account->account_type == BC_ACCOUNT_MICROSOFT) {
-            repl_str(replaced, replaced, "${user_type}", "msa");
+            replaced = repl_str_alloc(replaced, "${user_type}", "msa", 1);
         } else {
-            repl_str(replaced, replaced, "${user_type}", "legacy");
+            replaced = repl_str_alloc(replaced, "${user_type}", "legacy", 1);
         }
 
         // priority temporary over permanent
         if (data->server_ip[0] != '\0') {
-            repl_str(replaced, replaced, "${server_ip}", data->server_ip);
+            replaced = repl_str_alloc(replaced, "${server_ip}", data->server_ip, 1);
 
             if (data->server_port[0] != '\0') {
-                repl_str(replaced, replaced, "${server_port}", data->server_port);
+                replaced = repl_str_alloc(replaced, "${server_port}", data->server_port, 1);
             } else {
-                repl_str(replaced, replaced, "${server_port}", "25565");
+                replaced = repl_str_alloc(replaced, "${server_port}", "25565", 1);
             }
         } else if (data->instance->server_ip[0] != '\0') {
-            repl_str(replaced, replaced, "${server_ip}", data->instance->server_ip);
+            replaced = repl_str_alloc(replaced, "${server_ip}", data->instance->server_ip, 1);
 
             if (data->instance->server_port[0] != '\0') {
-                repl_str(replaced, replaced, "${server_port}", data->instance->server_port);
+                replaced = repl_str_alloc(replaced, "${server_port}", data->instance->server_port, 1);
             } else {
-                repl_str(replaced, replaced, "${server_port}", "25565");
+                replaced = repl_str_alloc(replaced, "${server_port}", "25565", 1);
             }
         }
 
-        repl_str(replaced, replaced, "${loadmap_id}", data->loadmap_id);
-        repl_str(replaced, replaced, "${loadmap_user}", data->loadmap_user);
+        replaced = repl_str_alloc(replaced, "${loadmap_id}", data->loadmap_id, 1);
+        replaced = repl_str_alloc(replaced, "${loadmap_user}", data->loadmap_user, 1);
 
         if (strstr(replaced, "${game_directory}") != NULL) {
             char mcpath[PATH_MAX];
             snprintf(mcpath, sizeof(mcpath), "%s%s", data->instance->path, ".minecraft/");
 
-            repl_str(replaced, replaced, "${game_directory}", mcpath);
+            replaced = repl_str_alloc(replaced, "${game_directory}", mcpath, 1);
         }
 
-        repl_str(replaced, replaced, "${version_name}", data->version->id);
-        repl_str(replaced, replaced, "${assets_index_name}", data->version->assetIndex.id);
-        repl_str(replaced, replaced, "${version_type}", data->version->type);
-        repl_str(replaced, replaced, "${profile_name}", data->instance->name);
+        replaced = repl_str_alloc(replaced, "${version_name}", data->version->id, 1);
+        replaced = repl_str_alloc(replaced, "${assets_index_name}", data->version->assetIndex.id, 1);
+        replaced = repl_str_alloc(replaced, "${version_type}", data->version->type, 1);
+        replaced = repl_str_alloc(replaced, "${profile_name}", data->instance->name, 1);
 
         if (strstr(replaced, "${instance_icon}") != NULL) {
             char iconpath[PATH_MAX];
             snprintf(iconpath, sizeof(iconpath), "%s%s", data->instance->path, "instance_icon.png");
 
-            repl_str(replaced, replaced, "${instance_icon}", iconpath);
+            replaced = repl_str_alloc(replaced, "${instance_icon}", iconpath, 1);
         }
 
-        repl_str(replaced, replaced, "${clientid}", "-");
-        repl_str(replaced, replaced, "${auth_xuid}", "0");
+        replaced = repl_str_alloc(replaced, "${clientid}", "-", 1);
+        replaced = repl_str_alloc(replaced, "${auth_xuid}", "0", 1);
 
-        repl_str(replaced, replaced, "${natives_directory}", data->natives_folder);
+        replaced = repl_str_alloc(replaced, "${natives_directory}", data->natives_folder, 1);
     }
 
     return replaced;
