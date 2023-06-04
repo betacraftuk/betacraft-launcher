@@ -11,26 +11,26 @@ class QPushButton;
 
 class ConsoleLogWidget : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit ConsoleLogWidget(QWidget *parent = nullptr);
+    explicit ConsoleLogWidget(QWidget *parent = nullptr);
 
 private slots:
-	void UpdateConsoleLog();
+    void UpdateConsoleLog();
 
 protected:
-	void showEvent(QShowEvent* e);
-	void closeEvent(QCloseEvent* e);
-	void keyPressEvent(QKeyEvent* e);
+    void showEvent(QShowEvent* e);
+    void closeEvent(QCloseEvent* e);
+    void keyPressEvent(QKeyEvent* e);
 
 private:
-	QGridLayout* _layout;
-	QTextEdit* _consoleLog;
-	QTimer* _consoleLogTimer;
-	QLineEdit* _searchBar;
-	QPushButton* _clearButton;
-	QPushButton* _pauseButton;
-	QPushButton* _copyButton;
+    QGridLayout* _layout;
+    QTextEdit* _consoleLog;
+    QTimer* _consoleLogTimer;
+    QLineEdit* _searchBar;
+    QPushButton* _clearButton;
+    QPushButton* _pauseButton;
+    QPushButton* _copyButton;
 };
 
 #endif // CONSOLELOGWIDGET_H

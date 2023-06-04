@@ -408,13 +408,13 @@ char* bc_jrepo_parse_version(const char* version) {
 
 char* bc_jrepo_get_recommended(const char* gameVersion) {
     char* res = NULL;
-	char jsonLoc[PATH_MAX];
-	snprintf(jsonLoc, sizeof(jsonLoc), "versions/%s.json", gameVersion);
+    char jsonLoc[PATH_MAX];
+    snprintf(jsonLoc, sizeof(jsonLoc), "versions/%s.json", gameVersion);
 
     json_object* json = json_object_from_file(jsonLoc);
     assert(json != NULL);
 
-	bc_version* version = bc_version_read_json(json);
+    bc_version* version = bc_version_read_json(json);
 
     bc_jrepo_download_array* jrepo = bc_jrepo_get_all_system();
     assert(jrepo->len > 0);
@@ -431,10 +431,10 @@ char* bc_jrepo_get_recommended(const char* gameVersion) {
     }
 
     json_object_put(json);
-	free(version);
-	free(jrepo);
+    free(version);
+    free(jrepo);
 
     assert(res != NULL);
 
-	return res;
+    return res;
 }

@@ -8,26 +8,26 @@ class QGridLayout;
 class QLabel;
 
 class AddAccountMicrosoftWidget : public QWidget {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit AddAccountMicrosoftWidget(QWidget* parent = nullptr);
+    explicit AddAccountMicrosoftWidget(QWidget* parent = nullptr);
 
 protected:
-	void showEvent(QShowEvent* event);
+    void showEvent(QShowEvent* event);
 
 private slots:
-	void Authenticate();
+    void Authenticate();
 
 signals:
-	void signal_accountAddSuccess();
+    void signal_accountAddSuccess();
 
 private:
-	QGridLayout* _layout;
-	QLabel* _microsoftLink;
-	QLabel* _code;
-	QLabel* _proceedText;
-	QLabel* _typeCodeText;
-	QFutureWatcher<void> _watcher;
+    QGridLayout* _layout;
+    QLabel* _microsoftLink;
+    QLabel* _code;
+    QLabel* _proceedText;
+    QLabel* _typeCodeText;
+    QFutureWatcher<void> _watcher;
 };
 
 #endif

@@ -5,7 +5,7 @@
 #include <unordered_map>
 
 extern "C" {
-	#include "../../core/Betacraft.h"
+    #include "../../core/Betacraft.h"
 }
 
 class QGridLayout;
@@ -14,18 +14,18 @@ class QPushButton;
 
 class ServerListItemWidget : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit ServerListItemWidget(bc_server s, std::unordered_map<QString, QByteArray> serverToIconMap, QWidget *parent = nullptr);
+    explicit ServerListItemWidget(bc_server s, std::unordered_map<QString, QByteArray> serverToIconMap, QWidget *parent = nullptr);
 
 private:
-	QGridLayout* _layout;
-	QLabel* _image;
-	QLabel* _name;
-	QLabel* _version;
-	QLabel* _players;
-	QLabel* _description;
-	QPushButton* _readMore;
+    QGridLayout* _layout;
+    QLabel* _image;
+    QLabel* _name;
+    QLabel* _version;
+    QLabel* _players;
+    QLabel* _description;
+    QPushButton* _readMore;
 };
 
 #endif

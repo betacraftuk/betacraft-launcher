@@ -4,7 +4,7 @@
 #include <QWidget>
 
 extern "C" {
-	#include "../../core/Instance.h"
+    #include "../../core/Instance.h"
 }
 
 class QGridLayout;
@@ -15,25 +15,25 @@ class QLabel;
 
 class InstanceEditArgumentsWidget : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit InstanceEditArgumentsWidget(QWidget* parent = nullptr);
-	void setInstance(bc_instance instance);
-	bc_instance* getSettings();
+    explicit InstanceEditArgumentsWidget(QWidget* parent = nullptr);
+    void setInstance(bc_instance instance);
+    bc_instance* getSettings();
 
 private slots:
 
 private:
-	QGridLayout* _layout;
-	QGroupBox* _javaArgumentsGroup;
-	QGroupBox* _programArgumentsGroup;
-	QGroupBox* _appletArgumentsGroup;
-	QGridLayout* _javaArgumentsLayout;
-	QGridLayout* _programArgumentsLayout;
-	QGridLayout* _appletArgumentsLayout;
-	QTextEdit* _javaArgumentsTextEdit;
-	QTextEdit* _programArgumentsTextEdit;
-	QLabel* _separateArgumentsLabel;
+    QGridLayout* _layout;
+    QGroupBox* _javaArgumentsGroup;
+    QGroupBox* _programArgumentsGroup;
+    QGroupBox* _appletArgumentsGroup;
+    QGridLayout* _javaArgumentsLayout;
+    QGridLayout* _programArgumentsLayout;
+    QGridLayout* _appletArgumentsLayout;
+    QTextEdit* _javaArgumentsTextEdit;
+    QTextEdit* _programArgumentsTextEdit;
+    QLabel* _separateArgumentsLabel;
 };
 
 #endif

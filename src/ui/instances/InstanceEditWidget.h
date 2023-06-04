@@ -4,7 +4,7 @@
 #include <QWidget>
 
 extern "C" {
-	#include "../../core/Instance.h"
+    #include "../../core/Instance.h"
 }
 
 #include "InstanceEditAppearanceWidget.h"
@@ -18,28 +18,28 @@ class QTabWidget;
 class QPushButton;
 
 class InstanceEditWidget : public QWidget {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit InstanceEditWidget(QWidget* parent = nullptr);
-	void setInstance(bc_instance instance);
+    explicit InstanceEditWidget(QWidget* parent = nullptr);
+    void setInstance(bc_instance instance);
 
 private slots:
-	void onInstanceSaveButtonClicked();
+    void onInstanceSaveButtonClicked();
 
 signals:
-	void signal_instanceSettingsSaved();
+    void signal_instanceSettingsSaved();
 
 private:
-	QGridLayout* _layout;
-	QTabWidget* _menu;
-	InstanceEditAppearanceWidget* _instanceEditAppearanceWidget;
-	InstanceEditVersionWidget* _instanceEditVersionWidget;
-	InstanceEditArgumentsWidget* _instanceEditArgumentsWidget;
+    QGridLayout* _layout;
+    QTabWidget* _menu;
+    InstanceEditAppearanceWidget* _instanceEditAppearanceWidget;
+    InstanceEditVersionWidget* _instanceEditVersionWidget;
+    InstanceEditArgumentsWidget* _instanceEditArgumentsWidget;
     InstanceEditModsWidget* _instanceEditModsWidget;
     InstanceEditServerWidget* _instanceEditServerWidget;
-	QPushButton* _instanceSaveButton;
-	QGridLayout* _instanceSaveButtonLayout;
-	QWidget* _instanceSaveButtonWidget;
+    QPushButton* _instanceSaveButton;
+    QGridLayout* _instanceSaveButtonLayout;
+    QWidget* _instanceSaveButtonWidget;
 };
 
 #endif

@@ -4,7 +4,7 @@
 #include <QWidget>
 
 extern "C" {
-	#include "../../core/Betacraft.h"
+    #include "../../core/Betacraft.h"
 }
 
 class QGridLayout;
@@ -15,28 +15,28 @@ class QPushButton;
 
 class ServerListWidget : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit ServerListWidget(QWidget *parent = nullptr);
+    explicit ServerListWidget(QWidget *parent = nullptr);
 
 private slots:
-	void onSearchButton();
-	void onServerClicked(QListWidgetItem* item);
-	void populateServerList();
+    void onSearchButton();
+    void onServerClicked(QListWidgetItem* item);
+    void populateServerList();
 
 signals:
-	void signal_serverGameLaunch(const char* ip, const char* port);
+    void signal_serverGameLaunch(const char* ip, const char* port);
 
 protected:
-	void keyPressEvent(QKeyEvent* e);
+    void keyPressEvent(QKeyEvent* e);
 
 private:
-	QGridLayout* _layout;
-	QLineEdit* _searchTextBox;
-	QListWidget* _serverList;
+    QGridLayout* _layout;
+    QLineEdit* _searchTextBox;
+    QListWidget* _serverList;
     QPushButton* _serverListRefreshButton;
-	QPushButton* _searchButton;
-	void addServerItem(bc_server server);
+    QPushButton* _searchButton;
+    void addServerItem(bc_server server);
 };
 
 #endif

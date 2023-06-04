@@ -11,30 +11,30 @@ class QListWidget;
 class QPushButton;
 
 class AddInstanceWidget : public QWidget {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit AddInstanceWidget(QWidget* parent = nullptr);
-	void populateGroupList();
-	QLineEdit* _instanceNameTextbox;
+    explicit AddInstanceWidget(QWidget* parent = nullptr);
+    void populateGroupList();
+    QLineEdit* _instanceNameTextbox;
     InstanceEditVersionWidget* _versionWidget;
 
 private slots:
-	void onCreateButtonClicked();
-	void onNewGroupButtonClicked();
+    void onCreateButtonClicked();
+    void onNewGroupButtonClicked();
 
 protected:
-	void keyPressEvent(QKeyEvent* e);
+    void keyPressEvent(QKeyEvent* e);
 
 signals:
-	void signal_instanceAdded();
+    void signal_instanceAdded();
 
 private:
-	QGridLayout* _layout;
-	QLineEdit* _newGroupTextbox;
-	QListWidget* _groupList;
-	QPushButton* _createButton;
-	QPushButton* _newGroupButton;
-	void populateVersionList();
+    QGridLayout* _layout;
+    QLineEdit* _newGroupTextbox;
+    QListWidget* _groupList;
+    QPushButton* _createButton;
+    QPushButton* _newGroupButton;
+    void populateVersionList();
 };
 
 #endif

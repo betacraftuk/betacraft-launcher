@@ -13,27 +13,27 @@ class QListWidgetItem;
 
 class SettingsWidget : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 public:
-	explicit SettingsWidget(QWidget* parent = nullptr);
-	void downloadRecommendedJava(QString javaVersion);
-	void setRecommendedJava(QString javaPath);
+    explicit SettingsWidget(QWidget* parent = nullptr);
+    void downloadRecommendedJava(QString javaVersion);
+    void setRecommendedJava(QString javaPath);
 
 private slots:
-	void onSidebarItemClicked(QListWidgetItem* item);
+    void onSidebarItemClicked(QListWidgetItem* item);
 
 signals:
-	void signal_toggleTabs();
-	void signal_toggleDiscordRPC();
+    void signal_toggleTabs();
+    void signal_toggleDiscordRPC();
 
 private:
-	QGridLayout* _layout;
-	QListWidget* _sidebar;
-	QStackedWidget* _menu;
-	SettingsGeneralWidget* _settingsGeneralWidget;
-	QListWidgetItem* _settingsGeneralItem;
-	SettingsJavaWidget* _settingsJavaWidget;
-	QListWidgetItem* _settingsJavaItem;
+    QGridLayout* _layout;
+    QListWidget* _sidebar;
+    QStackedWidget* _menu;
+    SettingsGeneralWidget* _settingsGeneralWidget;
+    QListWidgetItem* _settingsGeneralItem;
+    SettingsJavaWidget* _settingsJavaWidget;
+    QListWidgetItem* _settingsJavaItem;
 };
 
 #endif
