@@ -75,8 +75,8 @@ char* bc_network_get(const char* url, const char* header) {
     curl = curl_easy_init();
 
     if (curl) {
+        struct curl_slist* curl_headers = NULL;
         if (header != NULL) {
-            struct curl_slist* curl_headers = NULL;
             curl_headers = curl_slist_append(curl_headers, header);
             curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_headers);
         }
@@ -91,6 +91,9 @@ char* bc_network_get(const char* url, const char* header) {
             bc_log("GET failed: %s\n", curl_easy_strerror(res));
         }
 
+        if (header != NULL) {
+            curl_slist_free_all(curl_headers);
+        }
         curl_easy_cleanup(curl);
     }
 
@@ -107,7 +110,9 @@ char* bc_network_post(const char* url, const char* data, const char* header) {
 
     if (curl) {
         struct curl_slist* curl_headers = NULL;
-        curl_headers = curl_slist_append(curl_headers, header);
+        if (header != NULL) {
+            curl_headers = curl_slist_append(curl_headers, header);
+        }
 
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_headers);
         curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -121,6 +126,9 @@ char* bc_network_post(const char* url, const char* data, const char* header) {
             bc_log("POST failed: %s\n", curl_easy_strerror(res));
         }
 
+        if (header != NULL) {
+            curl_slist_free_all(curl_headers);
+        }
         curl_easy_cleanup(curl);
     }
 

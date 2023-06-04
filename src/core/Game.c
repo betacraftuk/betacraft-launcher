@@ -510,6 +510,7 @@ void bc_game_run_cmd(bc_process_args* gameArgs, bc_game_data* data) {
 
     // Reset to default
     chdir(predir);
+    free(predir);
 #ifdef _WIN32
     putenv(preenv);
 #endif

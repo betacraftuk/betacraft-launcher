@@ -131,9 +131,8 @@ MainWindow::MainWindow(QWidget *parent) :
 		_messageBox->setTextFormat(Qt::RichText);
 
 		_messageBox->show();
+	    free(updateVersion);
 	}
-
-	free(updateVersion);
 }
 
 void MainWindow::launchGameJoinServer(const char* ip, const char* port) {
