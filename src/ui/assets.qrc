@@ -7,16 +7,17 @@
         <file alias="favicon.ico">../../assets/favicon.ico</file>
     </qresource>
     <qresource prefix="/lang">
+        <file alias="Deutsch">../../lang/German.json</file>
         <file alias="English">../../lang/English.json</file>
-        <file alias="German">../../lang/German.json</file>
-        <file alias="Polish">../../lang/Polish.json</file>
-        <file alias="Polish (alternative)">../../lang/Polish (alternative).json</file>
-        <file alias="Polish (cyrillic)">../../lang/Polish (cyrillic).json</file>
-        <file alias="Hungarian">../../lang/Hungarian.json</file>
-        <file alias="Italian">../../lang/Italian.json</file>
-        <file alias="Brazilian Portuguese">../../lang/Brazilian Portuguese.json</file>
-        <file alias="Simplified Chinese">../../lang/Simplified Chinese.json</file>
-        <file alias="Traditional Chinese">../../lang/Traditional Chinese.json</file>
+        <file alias="italiano">../../lang/Italian.json</file>
+        <file alias="magyar">../../lang/Hungarian.json</file>
+        <file alias="polski">../../lang/Polish.json</file>
+        <file alias="polski (alternatywny)">../../lang/Polish (alternative).json</file>
+        <file alias="polski (cyrylica)">../../lang/Polish (cyrillic).json</file>
+        <file alias="português do Brasil">../../lang/Brazilian Portuguese.json</file>
+        <file alias="toki pona">../../lang/Toki Pona.json</file>
+        <file alias="简体中文">../../lang/Simplified Chinese.json</file>
+        <file alias="繁體中文">../../lang/Traditional Chinese.json</file>
     </qresource>
     <qresource prefix="/">
         <file alias="COPYING.md">../../COPYING.md</file>
