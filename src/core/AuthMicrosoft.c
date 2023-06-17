@@ -74,7 +74,7 @@ void bc_auth_microsoft(const bc_auth_microsoftDeviceResponse* mdevice) {
 
         snprintf(new_account->username, sizeof(new_account->username), "%s", profile->username);
         snprintf(new_account->uuid, sizeof(new_account->uuid), "%s", profile->id);
-        snprintf(new_account->access_token, sizeof(new_account->access_token), "%s", microsoft->access_token);
+        snprintf(new_account->access_token, sizeof(new_account->access_token), "%s", token_minecraft);
         snprintf(new_account->refresh_token, sizeof(new_account->refresh_token), "%s", microsoft->refresh_token);
         new_account->account_type = BC_ACCOUNT_MICROSOFT;
 
@@ -82,7 +82,7 @@ void bc_auth_microsoft(const bc_auth_microsoftDeviceResponse* mdevice) {
         free(new_account);
     } else {
         snprintf(account->username, sizeof(account->username), "%s", profile->username);
-        snprintf(account->access_token, sizeof(account->access_token), "%s", microsoft->access_token);
+        snprintf(account->access_token, sizeof(account->access_token), "%s", token_minecraft);
         snprintf(account->refresh_token, sizeof(account->refresh_token), "%s", microsoft->refresh_token);
 
         bc_account_update(account);
