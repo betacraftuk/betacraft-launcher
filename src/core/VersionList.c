@@ -107,6 +107,10 @@ int bc_versionlist_download(const char* gameVersion) {
         bc_versionlist_version* version = bc_versionlist_find(gameVersion);
 
         if (version == NULL) {
+            if (!bc_file_exists(jsonLoc)) {
+                return 0;
+            }
+
             // custom json
             return 1;
         }
