@@ -7,8 +7,10 @@
 #include "Constants.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include <time.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -28,11 +30,19 @@ const char API_XBOX_XSTS[] = "https://xsts.auth.xboxlive.com/xsts/authorize";
 const char API_MINECRAFT[] = "https://api.minecraftservices.com/authentication/login_with_xbox";
 const char API_MINECRAFT_PROFILE[] = "https://api.minecraftservices.com/minecraft/profile";
 
-void bc_auth_microsoft(const bc_auth_microsoftDeviceResponse* mdevice) {
+bc_auth_microsoftResponse* bc_auth_microsoft_refresh_token(const char* refresh_token);
+
+void bc_auth_microsoft_handle_device_flow(const bc_auth_microsoftDeviceResponse* device_res) {
+    bc_auth_microsoftResponse* microsoft = bc_auth_microsoft_device_token(device_res);
+    bc_auth_microsoft(microsoft->refresh_token);
+    free(microsoft);
+}
+
+void bc_auth_microsoft(const char* refresh_token) {
     if (API_MICROSOFT_CLIENT_ID[0] == '\0')
         return;
 
-    bc_auth_microsoftResponse* microsoft = bc_auth_microsoft_token(mdevice);
+    bc_auth_microsoftResponse* microsoft = bc_auth_microsoft_refresh_token(refresh_token);
 
     if (microsoft->access_token[0] == '\0' || microsoft->refresh_token[0] == '\0') {
         bc_log("%s\n", "Error: bc_auth_microsoft_token - access_token or refresh_token is empty");
@@ -74,7 +84,8 @@ void bc_auth_microsoft(const bc_auth_microsoftDeviceResponse* mdevice) {
 
         snprintf(new_account->username, sizeof(new_account->username), "%s", profile->username);
         snprintf(new_account->uuid, sizeof(new_account->uuid), "%s", profile->id);
-        snprintf(new_account->access_token, sizeof(new_account->access_token), "%s", token_minecraft);
+        snprintf(new_account->access_token, sizeof(new_account->access_token), "%s", microsoft->access_token);
+        snprintf(new_account->minecraft_access_token, sizeof(new_account->minecraft_access_token), "%s", token_minecraft);
         snprintf(new_account->refresh_token, sizeof(new_account->refresh_token), "%s", microsoft->refresh_token);
         new_account->account_type = BC_ACCOUNT_MICROSOFT;
 
@@ -82,7 +93,8 @@ void bc_auth_microsoft(const bc_auth_microsoftDeviceResponse* mdevice) {
         free(new_account);
     } else {
         snprintf(account->username, sizeof(account->username), "%s", profile->username);
-        snprintf(account->access_token, sizeof(account->access_token), "%s", token_minecraft);
+        snprintf(account->access_token, sizeof(account->access_token), "%s", microsoft->access_token);
+        snprintf(account->minecraft_access_token, sizeof(account->minecraft_access_token), "%s", token_minecraft);
         snprintf(account->refresh_token, sizeof(account->refresh_token), "%s", microsoft->refresh_token);
 
         bc_account_update(account);
@@ -119,7 +131,42 @@ bc_auth_microsoftDeviceResponse* bc_auth_microsoft_device() {
     return res;
 }
 
-bc_auth_microsoftResponse* bc_auth_microsoft_token(const bc_auth_microsoftDeviceResponse* dev) {
+int bc_auth_microsoft_check_token(const char* data, const bc_auth_microsoftResponse* res) {
+    char* response = bc_network_post(API_MICROSOFT_TOKEN, data, "Content-Type: application/x-www-form-urlencoded");
+    json_object* json = json_tokener_parse(response);
+    free(response);
+
+    char* error = jext_get_string_dummy(json, "error");
+
+    if (error == NULL || strcmp(error, "") == 0) {
+        snprintf(res->access_token, sizeof(res->access_token), "%s", jext_get_string_dummy(json, "access_token"));
+        snprintf(res->refresh_token, sizeof(res->refresh_token), "%s", jext_get_string_dummy(json, "refresh_token"));
+        return 0;
+    } else if (strcmp(error, "authorization_pending") == 0) {
+        return 1;
+    }
+
+    bc_log("Error: bc_auth_microsoft_check_token - \n\"%s\"\n", error);
+    return 0;
+}
+
+bc_auth_microsoftResponse* bc_auth_microsoft_refresh_token(const char* refresh_token) {
+    bc_auth_microsoftResponse* res = malloc(sizeof(bc_auth_microsoftResponse));
+
+    char* error;
+    char data[2048];
+    snprintf(data, sizeof(data), "grant_type=refresh_token&client_id=%s&refresh_token=%s",
+             API_MICROSOFT_CLIENT_ID, refresh_token);
+
+    if (!bc_auth_microsoft_check_token(data, res)) {
+        // TODO: handle (malformed request/token? no connection? api down?)
+        return res;
+    }
+
+    return res;
+}
+
+bc_auth_microsoftResponse* bc_auth_microsoft_device_token(const bc_auth_microsoftDeviceResponse* dev) {
     bc_auth_microsoftResponse* res = malloc(sizeof(bc_auth_microsoftResponse));
 
     char* error;
@@ -127,22 +174,9 @@ bc_auth_microsoftResponse* bc_auth_microsoft_token(const bc_auth_microsoftDevice
     snprintf(data, sizeof(data), "grant_type=urn:ietf:params:oauth:grant-type:device_code&client_id=%s&device_code=%s",
              API_MICROSOFT_CLIENT_ID, dev->device_code);
 
-    while (1) {
-        char* response = bc_network_post(API_MICROSOFT_TOKEN, data, "Content-Type: application/x-www-form-urlencoded");
-        json_object* json = json_tokener_parse(response);
-        free(response);
-
-        error = jext_get_string(json, "error");
-
-        if (error == NULL) {
-            snprintf(res->access_token, sizeof(res->access_token), "%s", jext_get_string_dummy(json, "access_token"));
-            snprintf(res->refresh_token, sizeof(res->refresh_token), "%s", jext_get_string_dummy(json, "refresh_token"));
-        } else if (strcmp(error, "authorization_pending") == 0) {
-            sleep(dev->interval * sleepMultiplier);
-            continue;
-        }
-
-        break;
+    // while authorization pending
+    while (bc_auth_microsoft_check_token(data, res)) {
+        sleep(dev->interval * sleepMultiplier);
     }
 
     return res;
@@ -222,7 +256,7 @@ char* bc_auth_minecraft(const char* uhs, const char* xsts_token) {
     free(response);
 
     char* token = jext_get_string(json, "access_token");
-    bc_log("%s\n", json_object_to_json_string(json));
+    bc_log("%s\n", "Processed Minecraft auth successfully");
 
     json_object_put(data);
     json_object_put(json);

@@ -419,12 +419,12 @@ char* fill_properties(const char* input, bc_game_data* data) {
             replaced = repl_str_alloc(replaced, "${auth_uuid}", uuid_nodash, 1);
         }
 
-        replaced = repl_str_alloc(replaced, "${auth_access_token}", data->account->access_token, 1);
-        replaced = repl_str_alloc(replaced, "${access_token}", data->account->access_token, 1);
+        replaced = repl_str_alloc(replaced, "${auth_access_token}", data->account->minecraft_access_token, 1);
+        replaced = repl_str_alloc(replaced, "${access_token}", data->account->minecraft_access_token, 1);
 
         if (strstr(replaced, "${auth_session}") != NULL) {
             char session[2048];
-            snprintf(session, sizeof(session), "token:%s:%s", data->account->access_token, data->account->uuid);
+            snprintf(session, sizeof(session), "token:%s:%s", data->account->minecraft_access_token, data->account->uuid);
             replaced = repl_str_alloc(replaced, "${auth_session}", session, 1);
         }
 

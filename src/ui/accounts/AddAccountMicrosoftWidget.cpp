@@ -68,6 +68,6 @@ void AddAccountMicrosoftWidget::Authenticate() {
 
     _code->setText(_authDeviceRes.user_code);
 
-    QFuture<void> future = QtConcurrent::run(bc_auth_microsoft, &_authDeviceRes);
+    QFuture<void> future = QtConcurrent::run(bc_auth_microsoft_handle_device_flow, &_authDeviceRes);
     _watcher.setFuture(future);
 }

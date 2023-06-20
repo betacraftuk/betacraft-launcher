@@ -20,6 +20,7 @@
 extern "C" {
 #include "../core/FileSystem.h"
 #include "../core/Betacraft.h"
+#include "../core/Account.h"
 #include "../core/JavaInstallations.h"
 }
 
@@ -94,6 +95,7 @@ int main(int argc, char *argv[]) {
     copyLanguageFiles();
     copyJavaRepo();
     bc_file_init();
+    bc_account_refresh();
     betacraft_online = bc_network_status();
     bc_jinst_system_check();
     bc_translate_init();

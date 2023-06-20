@@ -1,6 +1,7 @@
 #include "Account.h"
 #include "JsonExtension.h"
 #include "Network.h"
+#include "AuthMicrosoft.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -11,6 +12,7 @@ json_object* bc_account_create_json(const bc_account* account) {
     json_object_object_add(json, "uuid", json_object_new_string(account->uuid));
     json_object_object_add(json, "username", json_object_new_string(account->username));
     json_object_object_add(json, "account_type", json_object_new_int(account->account_type));
+    json_object_object_add(json, "minecraft_access_token", json_object_new_string(account->minecraft_access_token));
     json_object_object_add(json, "access_token", json_object_new_string(account->access_token));
     json_object_object_add(json, "refresh_token", json_object_new_string(account->refresh_token));
 
@@ -108,6 +110,7 @@ bc_account* bc_account_get(const char* uuid) {
 
     snprintf(account->uuid, sizeof(account->uuid), "%s", jext_get_string_dummy(tmp_accounts, "uuid"));
     snprintf(account->username, sizeof(account->username), "%s", jext_get_string_dummy(tmp_accounts, "username"));
+    snprintf(account->minecraft_access_token, sizeof(account->minecraft_access_token), "%s", jext_get_string_dummy(tmp_accounts, "minecraft_access_token"));
     snprintf(account->access_token, sizeof(account->access_token), "%s", jext_get_string_dummy(tmp_accounts, "access_token"));
     snprintf(account->refresh_token, sizeof(account->refresh_token), "%s", jext_get_string_dummy(tmp_accounts, "refresh_token"));
     account->account_type = jext_get_int(tmp_accounts, "account_type");
@@ -140,6 +143,7 @@ bc_account_array* bc_account_list() {
 
         snprintf(accounts->arr[i].uuid, sizeof(accounts->arr[i].uuid), "%s", jext_get_string_dummy(tmp_arr, "uuid"));
         snprintf(accounts->arr[i].username, sizeof(accounts->arr[i].username), "%s", jext_get_string_dummy(tmp_arr, "username"));
+        snprintf(accounts->arr[i].minecraft_access_token, sizeof(accounts->arr[i].minecraft_access_token), "%s", jext_get_string_dummy(tmp_arr, "minecraft_access_token"));
         snprintf(accounts->arr[i].access_token, sizeof(accounts->arr[i].access_token), "%s", jext_get_string_dummy(tmp_arr, "access_token"));
         snprintf(accounts->arr[i].refresh_token, sizeof(accounts->arr[i].refresh_token), "%s", jext_get_string_dummy(tmp_arr, "refresh_token"));
         accounts->arr[i].account_type = jext_get_int(tmp_arr, "account_type");
@@ -148,4 +152,14 @@ bc_account_array* bc_account_list() {
     json_object_put(json);
 
     return accounts;
+}
+
+void bc_account_refresh() {
+    bc_account* account_selected = bc_account_select_get();
+
+    if (account_selected != NULL) {
+        bc_auth_microsoft(account_selected->refresh_token);
+
+        free(account_selected);
+    }
 }

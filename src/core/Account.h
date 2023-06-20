@@ -12,6 +12,7 @@ typedef struct bc_account {
     char username[32];
     char access_token[2048];
     char refresh_token[2048];
+    char minecraft_access_token[2048];
     bc_account_type account_type;
 } bc_account;
 
@@ -27,5 +28,6 @@ void bc_account_select(const char* uuid);
 bc_account* bc_account_select_get();
 bc_account* bc_account_get(const char* uuid);
 bc_account_array* bc_account_list();
+void bc_account_refresh();
 
 #endif
