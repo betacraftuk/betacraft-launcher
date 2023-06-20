@@ -6,6 +6,11 @@
 #include <stdio.h>
 #include <string.h>
 
+char forbidden_accesstokens[128][2048];
+int forbidden_accesstokens_size = 0;
+char forbidden_profileids[64][64];
+int forbidden_profileids_size = 0;
+
 json_object* bc_account_create_json(const bc_account* account) {
     json_object* json = json_object_new_object();
 
@@ -54,6 +59,8 @@ void bc_account_update(const bc_account* account) {
     jext_file_write("accounts.json", json);
 
     json_object_put(json);
+
+    bc_account_register_forbidden(account, 0);
 }
 
 void bc_account_create(const bc_account* account) {
@@ -67,6 +74,8 @@ void bc_account_create(const bc_account* account) {
     jext_file_write("accounts.json", json);
 
     json_object_put(json);
+
+    bc_account_register_forbidden(account, 1);
 }
 
 void bc_account_remove(const char* uuid) {
@@ -161,5 +170,25 @@ void bc_account_refresh() {
         bc_auth_microsoft(account_selected->refresh_token);
 
         free(account_selected);
+    }
+}
+
+void bc_account_register_forbidden_all() {
+    bc_account_array* arr = bc_account_list();
+
+    for (int i = 0; i < arr->len; i++) {
+        bc_account_register_forbidden(&arr->arr[i], 1);
+    }
+
+    free(arr);
+}
+
+void bc_account_register_forbidden(bc_account* account, int uuid) {
+    snprintf(forbidden_accesstokens[forbidden_accesstokens_size], 2048, "%s", account->minecraft_access_token);
+    forbidden_accesstokens_size++;
+
+    if (uuid) {
+        snprintf(forbidden_profileids[forbidden_profileids_size], 64, "%s", account->uuid);
+        forbidden_profileids_size++;
     }
 }

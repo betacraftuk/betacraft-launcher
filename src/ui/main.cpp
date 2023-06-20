@@ -96,6 +96,7 @@ int main(int argc, char *argv[]) {
     copyJavaRepo();
     bc_file_init();
     bc_account_refresh();
+    bc_account_register_forbidden_all();
     betacraft_online = bc_network_status();
     bc_jinst_system_check();
     bc_translate_init();
