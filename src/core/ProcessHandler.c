@@ -1,6 +1,7 @@
 #include "ProcessHandler.h"
 #include "Logger.h"
 #include "Game.h"
+#include "StringUtils.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -17,7 +18,7 @@
 char* bc_process_log = NULL;
 
 #if defined(__APPLE__) || defined(__linux__)
-void bc_unixprocess_create(bc_process_args* args, int output) {
+void bc_unixprocess_create(bc_process_args* args, int output, bc_account* acc) {
     args->arr[args->len] = NULL;
 
     int fd[2];
@@ -42,6 +43,8 @@ void bc_unixprocess_create(bc_process_args* args, int output) {
         close(fd[1]);
 
         while (read(fd[0], buffer, sizeof(buffer)) != 0) {
+            repl_str(buffer, acc->minecraft_access_token, "<ACCESS TOKEN>");
+            repl_str(buffer, acc->uuid, "<PROFILE ID>");
             write(1, buffer, strlen(buffer));
             if (bc_process_log != NULL) {
                 char* newLog = malloc(strlen(bc_process_log) + strlen(buffer) + 1);
@@ -70,19 +73,19 @@ void bc_process_create(bc_process_args* args) {
 #ifdef _WIN32
     bc_winprocess_create(args);
 #elif defined(__APPLE__) || defined(__linux__)
-    bc_unixprocess_create(args, 0);
+    bc_unixprocess_create(args, 0, NULL);
 #endif
 }
 
-void bc_process_create_log(bc_process_args* args) {
+void bc_process_create_log(bc_process_args* args, bc_account* account) {
     if (bc_process_log != NULL) {
         free(bc_process_log);
         bc_process_log = NULL;
     }
 
 #ifdef _WIN32
-    bc_winprocess_create_log(args);
+    bc_winprocess_create_log(args, account);
 #elif defined(__APPLE__) || defined(__linux__)
-    bc_unixprocess_create(args, 1);
+    bc_unixprocess_create(args, 1, account);
 #endif
 }

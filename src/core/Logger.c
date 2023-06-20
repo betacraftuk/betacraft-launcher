@@ -26,8 +26,12 @@ void bc_log(const char* format, ...) {
     char outFormat[256];
     snprintf(outFormat, sizeof(outFormat), "[%s] %s", timeString, format);
 
-    vprintf(outFormat, args);
-    vfprintf(fp, outFormat, args2);
+    char printbuffer[8192];
+    vsprintf(printbuffer, outFormat, args);
+    // TODO: make a list of forbidden strings at startup and exclude them from logging
+
+    printf(printbuffer);
+    fprintf(fp, printbuffer);
 
     va_end(args);
     va_end(args2);
