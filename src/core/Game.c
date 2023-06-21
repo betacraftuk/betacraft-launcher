@@ -457,9 +457,6 @@ char* fill_properties(const char* input, bc_game_data* data) {
             }
         }
 
-        replaced = repl_str_alloc(replaced, "${loadmap_id}", data->loadmap_id, 1);
-        replaced = repl_str_alloc(replaced, "${loadmap_user}", data->loadmap_user, 1);
-
         if (strstr(replaced, "${game_directory}") != NULL) {
             char mcpath[PATH_MAX];
             snprintf(mcpath, sizeof(mcpath), "%s%s", data->instance->path, ".minecraft/");
