@@ -373,6 +373,8 @@ void bc_file_init() {
     json_object_put(settings);
     json_object_put(accounts);
 
+    remove("betacraft.log"); // start a fresh log every time
+
     bc_log("%s\n", "Files initialized");
 }
 

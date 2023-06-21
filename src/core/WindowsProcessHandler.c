@@ -15,7 +15,7 @@ HANDLE g_hChildStd_ERR_Rd = NULL;
 HANDLE g_hChildStd_ERR_Wr = NULL;
 
 PROCESS_INFORMATION CreateChildProcess(bc_process_args* args);
-void ReadFromPipe(PROCESS_INFORMATION);
+void ReadFromPipe(PROCESS_INFORMATION, bc_account* account);
 
 char* bc_winprocess_get_args(bc_process_args* args) {
     char* cmd = malloc(args->size + (args->len * 3));
@@ -67,7 +67,7 @@ void bc_winprocess_create(bc_process_args* args) {
     CloseHandle(pi.hThread);
 }
 
-void bc_winprocess_create_log(bc_process_args* args) {
+void bc_winprocess_create_log(bc_process_args* args, bc_account* account) {
     SECURITY_ATTRIBUTES sa;
 
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -92,7 +92,7 @@ void bc_winprocess_create_log(bc_process_args* args) {
 
     PROCESS_INFORMATION piProcInfo = CreateChildProcess(args);
     bc_game_run_progress.progress = 100;
-    ReadFromPipe(piProcInfo);
+    ReadFromPipe(piProcInfo, account);
 }
 
 PROCESS_INFORMATION CreateChildProcess(bc_process_args* args) {
@@ -133,7 +133,7 @@ PROCESS_INFORMATION CreateChildProcess(bc_process_args* args) {
     return piProcInfo;
 }
 
-void ReadFromPipe(PROCESS_INFORMATION piProcInfo) {
+void ReadFromPipe(PROCESS_INFORMATION piProcInfo, bc_account* account) {
     DWORD dwRead;
     CHAR chBuf[BUFSIZE];
     int bSuccess = FALSE;
@@ -142,6 +142,9 @@ void ReadFromPipe(PROCESS_INFORMATION piProcInfo) {
         bSuccess = ReadFile(g_hChildStd_OUT_Rd, chBuf, BUFSIZE, &dwRead, NULL);
         if (!bSuccess || dwRead == 0) break;
         chBuf[dwRead] = '\0';
+
+        repl_str(chBuf, account->minecraft_access_token, "<ACCESS TOKEN>");
+        repl_str(chBuf, account->uuid, "<PROFILE ID>");
 
         if (bc_process_log != NULL) {
             char* newLog = malloc(strlen(bc_process_log) + dwRead + 1);

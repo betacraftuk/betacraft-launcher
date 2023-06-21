@@ -51,6 +51,7 @@ void AccountListWidget::onAccountClicked(QListWidgetItem* item) {
 
     if (uuidNew.compare(_selectedAccount) != 0) {
         bc_account_select(uuidNew.toStdString().c_str());
+        bc_account_refresh();
         emit signal_accountUpdate();
         populateList();
     }
