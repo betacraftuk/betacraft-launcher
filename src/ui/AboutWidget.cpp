@@ -22,7 +22,9 @@ QString getCreditsHtml() {
     stream << "<p>Edvardvs &lt;<a href='https://github.com/Edvardvs'>https://github.com/Edvardvs</a>&gt;</p>\n";
     stream << "<p>xitieshiz2 &lt;<a href='https://github.com/xitieshiz2'>https://github.com/xitieshiz2</a>&gt;</p>\n";
     stream << "<p>m-burani &lt;<a href='https://github.com/m-burani'>https://github.com/m-burani</a>&gt;</p>\n";
-    stream << "<p>Don-Leandro &lt;<a href='https://github.com/Don-Leandro '>https://github.com/Don-Leandro</a>&gt;</p>\n";
+    stream << "<p>Don-Leandro &lt;<a href='https://github.com/Don-Leandro'>https://github.com/Don-Leandro</a>&gt;</p>\n";
+    stream << "<p>TheEntropyShard &lt;<a href='https://github.com/TheEntropyShard'>https://github.com/TheEntropyShard</a>&gt;</p>\n";
+    stream << "<p>Zormein &lt;<a href='https://github.com/Zormein'>https://github.com/Zormein</a>&gt;</p>\n";
 
     stream << "</center>\n";
 

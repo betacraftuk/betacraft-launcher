@@ -1,3 +1,14 @@
+<b style="color: #aaaaff;"><u>Betacraft v2.0.0-alpha.20230623</u></b>
+
+- Authentication tokens are now refreshed properly
+- Sensitive data no longer writes to game log and launcher log
+- Launcher log now clears with every run
+- Version jsons now re-download every launch (except for custom ones)
+- Thanks to our translators, added Estonian and Russian
+- Fixed joining online mode servers
+- Fixed German language not loading (invalid json)
+- No longer references undefined loadmap_x pointers (possibly caused unexpected behavior)
+
 <b style="color: #aaaaff;"><u>Betacraft v2.0.0-alpha.20230604</u></b>
 
 - Added a robust version picker to Add Instance
