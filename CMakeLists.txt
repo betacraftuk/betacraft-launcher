@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 3.8)
+﻿cmake_minimum_required(VERSION 3.12)
 set(CMAKE_C_STANDARD_REQUIRED 99)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -43,6 +43,9 @@ elseif (UNIX AND NOT APPLE) # Linux
 endif()
 
 project(Betacraft)
+
+add_compile_definitions(API_MICROSOFT_CLIENT_ID="${API_MICROSOFT_CLIENT_ID}")
+add_compile_definitions(DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID})
 
 enable_testing()
 

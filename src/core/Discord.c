@@ -1,7 +1,6 @@
 #include "Discord.h"
 
 #include "Logger.h"
-#include "Constants.h"
 #include "Settings.h"
 
 #include <stdio.h>

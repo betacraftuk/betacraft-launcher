@@ -37,7 +37,6 @@ add_library(Core
     ProcessHandler.h
     WindowsProcessHandler.c
     WindowsProcessHandler.h
-    Constants.h
     ../../lib/discord_game_sdk/discord_game_sdk.h
 )
 
