@@ -9,7 +9,7 @@
 
 void test_bc_file_create() {
     bc_file_create("fileSystemTest.txt", "TEST");
-    assert(bc_file_exists("fileSystemTest.txt") == 1);
+    assert(bc_file_exists("fileSystemTest.txt"));
 }
 
 void test_bc_file_size() {
@@ -20,23 +20,23 @@ void test_bc_file_size() {
 void test_bc_file_copy() {
     bc_file_copy("fileSystemTest.txt", "fileSystemTestCopy.txt");
 
-    assert(bc_file_exists("fileSystemTestCopy.txt") == 1);
+    assert(bc_file_exists("fileSystemTestCopy.txt"));
     assert(bc_file_size("fileSystemTestCopy.txt") == 4);
 }
 
 void test_bc_file_directory_create() {
     bc_file_directory_create("test/");
-    assert(bc_file_directory_exists("test/") == 1);
+    assert(bc_file_directory_exists("test/"));
 }
 
 void test_bc_file_directory_remove() {
     bc_file_directory_remove("test/");
-    assert(bc_file_directory_exists("test/") == 0);
+    assert(!bc_file_directory_exists("test/"));
 }
 
 void test_make_path() {
     make_path("test/innerDir/", 0);
-    assert(bc_file_directory_exists("test/innerDir/") == 1);
+    assert(bc_file_directory_exists("test/innerDir/"));
 }
 
 int test_bc_file_list(const char* dest) {
@@ -56,29 +56,29 @@ void test_bc_file_make_absolute_path(const char* path) {
 
 void test_bc_file_directory_copy() {
     bc_file_directory_copy("test/", "copyTest/");
-    assert(bc_file_directory_exists("copyTest/innerDir/") == 1);
+    assert(bc_file_directory_exists("copyTest/innerDir/"));
 }
 
 void test_bc_file_archive() {
     bc_file_archive("test", "test.zip");
-    assert(bc_file_exists("test.zip") == 1);
+    assert(bc_file_exists("test.zip"));
 }
 
 void test_bc_file_extract() {
     bc_file_extract("test.zip", "test/innerDir/instances/");
-    assert(bc_file_directory_exists("test/innerDir/instances/innerDir/") == 1);
+    assert(bc_file_directory_exists("test/innerDir/instances/innerDir/"));
 }
 
 int main() {
     bc_file_clean();
-    assert(bc_file_exists("settings.json") == 0);
+    assert(!bc_file_exists("settings.json"));
     bc_file_init();
 
-    assert(bc_file_exists("settings.json") == 1);
+    assert(bc_file_exists("settings.json"));
     test_bc_file_create();
     test_bc_file_size();
     test_bc_file_copy();
-    assert(bc_file_directory_exists("instances/") == 1);
+    assert(bc_file_directory_exists("instances/"));
     test_bc_file_directory_create();
     assert(test_bc_file_list("./") > 0);
     assert(test_bc_file_list("versions/") == 0);

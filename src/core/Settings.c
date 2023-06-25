@@ -30,11 +30,11 @@ bc_settings* bc_settings_get() {
     snprintf(settings->language, sizeof(settings->language), "%s", jext_get_string_dummy(json, "language"));
 
     json_object* tmp;
-    if (json_object_object_get_ex(json, "instance", &tmp) == 1) {
+    if (json_object_object_get_ex(json, "instance", &tmp)) {
         snprintf(settings->instance, sizeof(settings->instance), "%s", jext_get_string_dummy(tmp, "selected"));
     }
 
-    if (json_object_object_get_ex(json, "java", &tmp) == 1) {
+    if (json_object_object_get_ex(json, "java", &tmp)) {
         snprintf(settings->java_install, sizeof(settings->java_install), "%s", jext_get_string_dummy(tmp, "selected"));
     }
 

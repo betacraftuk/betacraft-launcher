@@ -19,7 +19,7 @@ bc_assetindex* bc_assetindex_read_objects(const char* responseData) {
     bc_assetindex* index = malloc(sizeof(bc_assetindex));
 
     json_object* assetArray;
-    if (json_object_object_get_ex(responseJson, "objects", &assetArray) == 1) {
+    if (json_object_object_get_ex(responseJson, "objects", &assetArray)) {
         struct json_object_iterator itBegin = json_object_iter_begin(assetArray);
         struct json_object_iterator itEnd = json_object_iter_end(assetArray);
 
@@ -63,7 +63,7 @@ bc_assetindex* bc_assetindex_load(bc_version_assetIndexData* data) {
     char jsonLoc[PATH_MAX];
     snprintf(jsonLoc, sizeof(jsonLoc), "%s%s.json", indexesLoc, data->id);
 
-    if (betacraft_online == 1
+    if (betacraft_online
         && (!bc_file_exists(jsonLoc)
             || bc_file_size(jsonLoc) != data->size)) {
 

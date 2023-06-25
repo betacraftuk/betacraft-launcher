@@ -60,7 +60,8 @@ bc_versionlist* bc_versionlist_read_json(json_object* obj, json_object* bcList) 
         bc_versionlist_read_version_json(&vl->versions[i + max], verObj);
     }
 
-    json_object_put(verObj);
+    json_object_put(obj);
+    json_object_put(bcList);
 
     return vl;
 }
@@ -81,45 +82,47 @@ bc_versionlist* bc_versionlist_fetch() {
 
 bc_versionlist_version* bc_versionlist_find(const char* id) {
     bc_versionlist* vl = bc_versionlist_fetch();
+    bc_versionlist_version* version = NULL;
 
     for (int i = 0; i < vl->versions_len; i++) {
         if (strcmp(vl->versions[i].id, id) == 0) {
-            bc_versionlist_version* version = malloc(sizeof(bc_versionlist_version));
+            version = malloc(sizeof(bc_versionlist_version));
+
             snprintf(version->id, sizeof(version->id), "%s", vl->versions[i].id);
             snprintf(version->url, sizeof(version->url), "%s", vl->versions[i].url);
             snprintf(version->releaseTime, sizeof(version->releaseTime), "%s", vl->versions[i].releaseTime);
             snprintf(version->type, sizeof(version->type), "%s", vl->versions[i].type);
 
-            free(vl);
-            return version;
+            break;
         }
     }
 
     free(vl);
-    return NULL;
+    return version;
 }
 
 int bc_versionlist_download(const char* gameVersion) {
+    if (!betacraft_online) {
+        // offline
+        return 1;
+    }
+
     char jsonLoc[PATH_MAX];
     snprintf(jsonLoc, sizeof(jsonLoc), "versions/%s.json", gameVersion);
 
-    if (betacraft_online == 1) {
-        bc_versionlist_version* version = bc_versionlist_find(gameVersion);
+    bc_versionlist_version* version = bc_versionlist_find(gameVersion);
 
-        if (version == NULL) {
-            if (!bc_file_exists(jsonLoc)) {
-                return 0;
-            }
-
-            // custom json
-            return 1;
+    if (version == NULL) {
+        if (!bc_file_exists(jsonLoc)) {
+            return 0;
         }
 
-        int result = bc_network_download(version->url, jsonLoc, 1);
-        free(version);
-
-        return result;
+        // custom json
+        return 1;
     }
-    
-    return 1;
+
+    int result = bc_network_download(version->url, jsonLoc, 1);
+    free(version);
+
+    return result;
 }

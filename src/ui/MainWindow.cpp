@@ -116,7 +116,7 @@ MainWindow::MainWindow(QWidget *parent) :
     onAccountUpdate();
     updateInstanceLabel();
 
-    if (betacraft_online == 0)
+    if (!betacraft_online)
         return;
 
     char* updateVersion = bc_update_check();

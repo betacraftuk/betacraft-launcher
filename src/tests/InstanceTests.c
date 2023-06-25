@@ -85,7 +85,7 @@ void test_bc_instance_remove(const char* name) {
         }
     }
 
-    assert(found == 0);
+    assert(!found);
 
     free(path);
 }

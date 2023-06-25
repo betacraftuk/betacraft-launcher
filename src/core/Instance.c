@@ -271,7 +271,7 @@ void bc_instance_create(const char* name, const char* version, const char* group
     char* path = bc_instance_get_path(n);
     int counter = 1;
 
-    while (bc_file_exists(path) == 1) {
+    while (bc_file_exists(path)) {
         for (int i = 0; i < counter; i++)
             snprintf(n, sizeof(n), "%s-", n);
 

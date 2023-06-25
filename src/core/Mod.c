@@ -103,7 +103,7 @@ bc_mod_version_array* bc_mod_list_installed(const char* instance_path) {
     json_object* json = json_object_from_file(instance_path);
     json_object* tmp, *m_tmp;
 
-    if (json_object_object_get_ex(json, "mods", &tmp) == 0) {
+    if (!json_object_object_get_ex(json, "mods", &tmp)) {
         mods->len = 0;
         json_object_put(json);
         return mods;
@@ -314,7 +314,7 @@ void bc_mod_replace_jar(const char* jar_path, const char* instance_path, const c
     replace_dir[strlen(replace_dir) - 16] = '\0'; // remove bc_instance.json
     snprintf(replace_dir, sizeof(replace_dir), "%sbc_replace/", replace_dir);
 
-    if (bc_file_directory_exists(replace_dir) == 1) {
+    if (bc_file_directory_exists(replace_dir)) {
         bc_file_directory_remove(replace_dir);
     }
 

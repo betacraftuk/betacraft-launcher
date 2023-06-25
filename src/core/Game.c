@@ -499,7 +499,7 @@ void bc_game_run_cmd(bc_process_args* gameArgs, bc_game_data* data) {
     putenv(envar);
 #endif
 
-    if (data->instance->show_log == 0) {
+    if (!data->instance->show_log) {
         bc_process_create(gameArgs);
     } else {
         bc_process_create_log(gameArgs, data->account);

@@ -103,7 +103,7 @@ bc_account* bc_account_get(const char* uuid) {
     json_object* json = json_object_from_file("accounts.json");
     json_object* tmp;
 
-    if (json_object_object_get_ex(json, "accounts", &tmp) == 0) {
+    if (!json_object_object_get_ex(json, "accounts", &tmp)) {
         json_object_put(json);
         return NULL;
     }

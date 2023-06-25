@@ -34,7 +34,7 @@ InstanceEditWidget::InstanceEditWidget(QWidget* parent)
 
     _menu->addTab(_instanceEditAppearanceWidget, bc_translate("instance_tab_appearance"));
 
-    if (betacraft_online == 1) {
+    if (betacraft_online) {
         _instanceEditVersionWidget = new InstanceEditVersionWidget();
         _instanceEditModsWidget = new InstanceEditModsWidget();
 
@@ -124,7 +124,7 @@ void InstanceEditWidget::setInstance(bc_instance i)
     _instanceEditAppearanceWidget->setInstance(i);
     _instanceEditArgumentsWidget->setInstance(i);
     _instanceEditServerWidget->setInstance(i);
-    if (betacraft_online == 1) {
+    if (betacraft_online) {
         _instanceEditVersionWidget->setInstance(i);
         _instanceEditModsWidget->setInstance(i);
     }

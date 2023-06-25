@@ -182,8 +182,8 @@ bc_jrepo_download_array* bc_jrepo_get_all_system() {
 
     for (int i = 0; i < jrepo_array->len; i++) {
         for (int p = 0; p < jrepo_array->arr[i].platforms_len; p++) {
-            if (bc_jrepo_check_os(jrepo_array->arr[i].platforms[p].name,
-                                  jrepo_array->arr[i].platforms[p].arch) == 0) {
+            if (!bc_jrepo_check_os(jrepo_array->arr[i].platforms[p].name,
+                                  jrepo_array->arr[i].platforms[p].arch)) {
                 bc_jrepo_download* download = &jrepo_download_array->arr[jrepo_download_array->len];
 
                 download->version = jrepo_array->arr[i].version;
@@ -206,7 +206,7 @@ void bc_jinst_system_check() {
 
     if (jinstSelected == NULL) {
 #if defined(__linux__) || defined(__APPLE__)
-        if (bc_file_exists("/usr/bin/java") == 1) {
+        if (bc_file_exists("/usr/bin/java")) {
             bc_jinst_add("/usr/bin/java");
             bc_jinst_select("/usr/bin/java");
             return;

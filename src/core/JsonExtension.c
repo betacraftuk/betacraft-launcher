@@ -66,7 +66,7 @@ int jext_get_double(json_object* json, const char* section) {
 
 int jext_get_boolean(json_object* json, const char* section) {
     json_object* tmp;
-    if (json_object_object_get_ex(json, section, &tmp) == 0) {
+    if (!json_object_object_get_ex(json, section, &tmp)) {
         // undefined if non existent
         return -1;
     }
@@ -76,7 +76,7 @@ int jext_get_boolean(json_object* json, const char* section) {
 char** jext_get_string_array(json_object* json, const char* section) {
     json_object* tmp;
 
-    if (json_object_object_get_ex(json, section, &tmp) == 0) {
+    if (!json_object_object_get_ex(json, section, &tmp)) {
         return NULL;
     }
 

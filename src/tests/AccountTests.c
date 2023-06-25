@@ -117,11 +117,11 @@ int main() {
     char* uuid = bc_file_uuid();
 
     test_bc_account_get(uuid);
-    assert(test_bc_account_select_get() == 0);
+    assert(!test_bc_account_select_get());
     assert(test_bc_account_list() == 0);
     test_bc_account_create(uuid);
     test_bc_account_select(uuid);
-    assert(test_bc_account_select_get() == 1);
+    assert(test_bc_account_select_get());
     test_bc_account_update(uuid);
     assert(test_bc_account_list() == 1);
     test_bc_account_remove(uuid);
