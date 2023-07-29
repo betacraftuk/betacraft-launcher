@@ -73,10 +73,10 @@ int bc_game_rule_match(bc_version_actionRule* rule, bc_game_data* data) {
             return 0;
         }
 
-        if (rule->features.is_game_maximized != -1
-            && rule->features.is_game_maximized == !(data->instance->maximized)) {
-            return 0;
-        }
+        // if (rule->features.is_game_maximized != -1
+        //     && rule->features.is_game_maximized == !(data->instance->maximized)) {
+        //     return 0;
+        // }
 
         if (rule->features.is_game_fullscreen != -1
             && rule->features.is_game_fullscreen == !(data->instance->fullscreen)) {

@@ -452,8 +452,9 @@ void bc_instance_run(const char* server_ip, const char* server_port) {
 
         acc->account_type = BC_ACCOUNT_UNAUTHENTICATED;
         strcpy(acc->username, "Player");
-        strcpy(acc->uuid, "bd346dd5-ac1c-427d-87e8-73bdd4bf3e13");
+        strcpy(acc->uuid, DEMO_ACCOUNT_UUID);
         strcpy(acc->access_token, "-");
+        strcpy(acc->minecraft_access_token, "-");
     }
 
     bc_game_data* data = malloc(sizeof(bc_game_data));

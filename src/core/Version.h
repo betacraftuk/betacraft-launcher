@@ -38,7 +38,6 @@ typedef struct bc_version_featureStruct {
     int is_demo_user;
     int has_custom_resolution;
     int has_server;
-    int is_game_maximized;
     int is_game_fullscreen;
     int has_quick_plays_support;
     int is_quick_play_singleplayer;

@@ -43,9 +43,14 @@ void bc_unixprocess_create(bc_process_args* args, int output, bc_account* acc) {
         close(fd[1]);
 
         while (read(fd[0], buffer, sizeof(buffer)) != 0) {
-            repl_str(buffer, acc->minecraft_access_token, "<ACCESS TOKEN>");
-            repl_str(buffer, acc->uuid, "<PROFILE ID>");
+            if (acc->minecraft_access_token[0] != '-'
+                || strcmp(acc->uuid, DEMO_ACCOUNT_UUID) != 0) {
+                repl_str(buffer, acc->minecraft_access_token, "<ACCESS TOKEN>");
+                repl_str(buffer, acc->uuid, "<PROFILE ID>");
+            }
+
             write(1, buffer, strlen(buffer));
+
             if (bc_process_log != NULL) {
                 char* newLog = malloc(strlen(bc_process_log) + strlen(buffer) + 1);
                 strcpy(newLog, bc_process_log);

@@ -6,6 +6,7 @@
 #include <limits.h>
 
 #define BETACRAFT_VERSION "2.0.0-alpha.20230623"
+#define DEMO_ACCOUNT_ID "bd346dd5-ac1c-427d-87e8-73bdd4bf3e13"
 
 extern int betacraft_online;
 extern char application_support_path[PATH_MAX];

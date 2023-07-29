@@ -16,7 +16,7 @@ qt_add_executable(Betacraft
     MainWindow.cpp MainWindow.h
     main.cpp
     assets.qrc
-	Betacraft.cpp Betacraft.h
+    Betacraft.cpp Betacraft.h
     AboutWidget.cpp AboutWidget.h
     instances/InstanceListWidget.cpp instances/InstanceListWidget.h
     instances/AddInstanceWidget.cpp instances/AddInstanceWidget.h
