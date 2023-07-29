@@ -51,4 +51,5 @@ add_compile_definitions(DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID})
 
 enable_testing()
 
+add_subdirectory(lib/json-c)
 add_subdirectory(src)
