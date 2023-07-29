@@ -3,6 +3,7 @@
 
 #include "Logger.h"
 #include "Game.h"
+#include "StringUtils.h"
 
 #include <windows.h>
 #include <stdio.h>
@@ -143,10 +144,10 @@ void ReadFromPipe(PROCESS_INFORMATION piProcInfo, bc_account* account) {
         if (!bSuccess || dwRead == 0) break;
         chBuf[dwRead] = '\0';
 
-        if (acc->minecraft_access_token[0] != '-'
-            || strcmp(acc->uuid, DEMO_ACCOUNT_UUID) != 0) {
-            repl_str(buffer, acc->minecraft_access_token, "<ACCESS TOKEN>");
-            repl_str(buffer, acc->uuid, "<PROFILE ID>");
+        if (account->minecraft_access_token[0] != '-'
+            || strcmp(account->uuid, DEMO_ACCOUNT_UUID) != 0) {
+            repl_str(chBuf, account->minecraft_access_token, "<ACCESS TOKEN>");
+            repl_str(chBuf, account->uuid, "<PROFILE ID>");
         }
 
         if (bc_process_log != NULL) {

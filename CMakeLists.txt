@@ -21,6 +21,8 @@ elseif (WIN32)
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
 
     set(CMAKE_PREFIX_PATH "C:/Qt/6.5.1/mingw_64")
+	set(CMAKE_C_COMPILER "C:/Qt/Tools/mingw1120_64/bin/gcc.exe")
+	set(CMAKE_CXX_COMPILER "C:/Qt/Tools/mingw1120_64/bin/g++.exe")
 elseif (UNIX AND NOT APPLE) # Linux
     file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.so
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
