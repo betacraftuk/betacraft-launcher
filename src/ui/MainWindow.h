@@ -67,6 +67,8 @@ private:
     QLabel* _accountLabel;
     QProgressBar* _progressBar;
     QFutureWatcher<void> _watcher;
+    QFutureWatcher<char*> _changelogWatcher;
+    QFutureWatcher<char*> _updateWatcher;
     QTimer* _gameProgressTimer;
     QTimer* _discordLoopTimer;
     QProcess* _gameProcess;

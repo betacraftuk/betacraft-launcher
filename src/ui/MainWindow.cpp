@@ -35,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     _changelog->setReadOnly(true);
     _changelog->setStyleSheet(".QTextEdit { background-image: url(':/assets/stone.png'); border: 0; color: #e0d0d0; font-size: 15px; padding-left: 10px; }");
     _changelog->viewport()->setCursor(Qt::ArrowCursor);
+    _changelog->setMarkdown("Loading...");
 
     _playButton->setFixedWidth(120);
     _playButton->setFixedHeight(50);
@@ -53,13 +54,17 @@ MainWindow::MainWindow(QWidget *parent) :
         _serverListWidget = new ServerListWidget();
         connect(_serverListWidget, SIGNAL(signal_serverGameLaunch(const char*, const char*)), this, SLOT(launchGameJoinServer(const char*, const char*)));
         connect(_accountsWidget, SIGNAL(signal_accountUpdate()), this, SLOT(onAccountUpdate()));
+        connect(&_changelogWatcher, &QFutureWatcher<char*>::finished, this, [this]() { 
+            char* response = _changelogWatcher.future().result();
+            _changelog->setMarkdown(QString(response));
+            free(response);
+        });
 
         _menu->addTab(_serverListWidget, bc_translate("tab_server_list"));
         _menu->addTab(_accountsWidget, bc_translate("tab_accounts"));
 
-        char* response = bc_network_get("https://raw.githubusercontent.com/betacraftuk/betacraft-launcher/v2/CHANGELOG.md", NULL);
-        _changelog->setMarkdown(QString(response));
-        free(response);
+        QFuture<char*> future = QtConcurrent::run(bc_network_get, "https://raw.githubusercontent.com/betacraftuk/betacraft-launcher/v2/CHANGELOG.md", "");
+        _changelogWatcher.setFuture(future);
     }
 
     _menu->addTab(_settingsWidget, bc_translate("tab_settings"));
@@ -105,10 +110,27 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(_playButton, &QPushButton::released, this, [this]() { launchGame("", ""); });
     connect(_instanceListWidget, SIGNAL(signal_instanceUpdate()), this, SLOT(onInstanceUpdate()));
     connect(_menu, SIGNAL(currentChanged(int)), this, SLOT(onMenuIndexChanged(int)));
-    connect(&_watcher, &QFutureWatcher<void>::finished, this, &MainWindow::launchingGameFinished);
     connect(_discordLoopTimer, &QTimer::timeout, this, [this]() { bc_discord_loop(); });
     connect(_settingsWidget, SIGNAL(signal_toggleTabs()), this, SLOT(onToggleTabs()));
     connect(_settingsWidget, SIGNAL(signal_toggleDiscordRPC()), this, SLOT(onToggleDiscordRPC()));
+    connect(&_watcher, &QFutureWatcher<void>::finished, this, &MainWindow::launchingGameFinished);
+    connect(&_updateWatcher, &QFutureWatcher<char*>::finished, this, [this]() {
+        char* updateVersion = _updateWatcher.future().result();
+        qDebug() << updateVersion;
+
+        if (updateVersion != NULL) {
+            QString url = "https://github.com/betacraftuk/betacraft-launcher/releases";
+            QString message = bc_translate("update_notice_message");
+
+            _messageBox->setWindowTitle("Betacraft");
+            _messageBox->setText(message.arg(QString(updateVersion)).arg(url));
+            _messageBox->setModal(true);
+            _messageBox->setTextFormat(Qt::RichText);
+
+            _messageBox->show();
+            free(updateVersion);
+        }
+    });
 
     startDiscordRPC();
 
@@ -119,20 +141,11 @@ MainWindow::MainWindow(QWidget *parent) :
     if (!betacraft_online)
         return;
 
-    char* updateVersion = bc_update_check();
+    QFuture<char*> updateFuture = QtConcurrent::run(bc_update_check);
+    _updateWatcher.setFuture(updateFuture);
 
-    if (updateVersion != NULL) {
-        QString url = "https://github.com/betacraftuk/betacraft-launcher/releases";
-        QString message = bc_translate("update_notice_message");
-
-        _messageBox->setWindowTitle("Betacraft");
-        _messageBox->setText(message.arg(QString(updateVersion)).arg(url));
-        _messageBox->setModal(true);
-        _messageBox->setTextFormat(Qt::RichText);
-
-        _messageBox->show();
-        free(updateVersion);
-    }
+    bc_account_refresh();
+    bc_account_register_forbidden_all();
 }
 
 void MainWindow::launchGameJoinServer(const char* ip, const char* port) {

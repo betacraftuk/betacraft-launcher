@@ -381,6 +381,7 @@ char* bc_jrepo_parse_version(const char* version) {
     int len = 0;
 
     if (strlen(version) < 2) {
+        bc_log("Can't read Java version: %s\n", version);
         exit(1);
     }
 
