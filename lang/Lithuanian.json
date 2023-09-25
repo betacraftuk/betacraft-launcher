@@ -93,7 +93,7 @@
   "gamelog_copy": "Kopijuoti",
   "gamelog_clear": "Išvalyti",
   "gamelog_window_title": "Žaidimo žurnalas",
-  "update_notice_message": "Yra naujas atnaujinimas!<br/>Gauk ''Betacraft'' %0 <br/><a href='%1'>%1</a>",
+  "update_notice_message": "Yra naujas atnaujinimas!<br/>Gauk ,,Betacraft'' %0 <br/><a href='%1'>%1</a>",
   "downloading_assets": "Siunčiami failai",
   "downloading_version": "Siunčiama versija",
   "downloading_libraries": "Siunčiami resursai",
@@ -101,6 +101,6 @@
   "running_game": "Paleidžiama...",
   "running_game_reading_version_file": "Skaitomas versijos ,,json'' file...",
   "java_version_not_supported": "Jūsų ,,Java'' instaliacija nepalaikoma šios žaidimo versijos.\n",
-  "java_version_install_recommended": "Ar norėtumėt instaliuoti rekomenduojamą ,,Java'' versiją %0?",
-  "java_version_switch_to_recommended": "Ar norėtumėt keisti ,,Java'' versiją %0?"
+  "java_version_install_recommended": "Ar norėtumėte instaliuoti rekomenduojamą ,,Java'' versiją %0?",
+  "java_version_switch_to_recommended": "Ar norėtumėte keisti ,,Java'' versiją %0?"
 }
