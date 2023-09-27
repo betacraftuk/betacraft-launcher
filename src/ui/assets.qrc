@@ -8,6 +8,7 @@
     </qresource>
     <qresource prefix="/lang">
         <file alias="English">../../lang/English.json</file>
+        <file alias="Lithuanian">../../lang/Lithuanian.json</file>
         <file alias="Russian">../../lang/Russian.json</file>
         <file alias="Estonian">../../lang/Estonian.json</file>
         <file alias="German">../../lang/German.json</file>
