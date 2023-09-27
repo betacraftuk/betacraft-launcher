@@ -12,17 +12,21 @@ if(APPLE)
     if(CMAKE_APPLE_SILICON_PROCESSOR STREQUAL "arm64")
         file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/aarch64/discord_game_sdk.dylib
             DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
+
+        set(VCPKG_TARGET_ARCHITECTURE "arm64")
+        set(VCPKG_TARGET_TRIPLET arm64-osx)
     elseif(CMAKE_APPLE_SILICON_PROCESSOR STREQUAL "x86_64")
         file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.dylib
             DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
+
+        set(VCPKG_TARGET_ARCHITECTURE "x64")
+        set(VCPKG_TARGET_TRIPLET x64-osx)
     endif()
+
+    set(VCPKG_LIBRARY_LINKAGE "static")
 elseif (WIN32)
     file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.dll
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
-
-    set(CMAKE_PREFIX_PATH "C:/Qt/6.5.1/mingw_64")
-	set(CMAKE_C_COMPILER "C:/Qt/Tools/mingw1120_64/bin/gcc.exe")
-	set(CMAKE_CXX_COMPILER "C:/Qt/Tools/mingw1120_64/bin/g++.exe")
 elseif (UNIX AND NOT APPLE) # Linux
     file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.so
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
@@ -51,5 +55,4 @@ add_compile_definitions(DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID})
 
 enable_testing()
 
-add_subdirectory(lib/json-c)
 add_subdirectory(src)

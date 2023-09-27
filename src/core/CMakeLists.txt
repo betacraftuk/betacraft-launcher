@@ -40,21 +40,9 @@ add_library(Core
     ../../lib/discord_game_sdk/discord_game_sdk.h
 )
 
-find_package(json-c CONFIG)
-find_package(CURL)
-find_package(LibArchive)
-
-if (CURL_FOUND)
-    target_link_libraries(Core PUBLIC CURL::libcurl)
-endif()
-
-if (json-c_FOUND)
-    target_link_libraries(Core PUBLIC json-c::json-c)
-endif()
-
-if (LibArchive_FOUND)
-    target_link_libraries(Core PUBLIC ${LibArchive_LIBRARIES})
-endif()
+find_package(json-c CONFIG REQUIRED)
+find_package(CURL CONFIG REQUIRED)
+find_package(LibArchive REQUIRED)
 
 if (WIN32)
     target_link_libraries(Core PUBLIC ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.dll.lib)
@@ -71,3 +59,11 @@ elseif (UNIX AND NOT APPLE) # Linux
     set_target_properties(discordgamesdk PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.so)
     target_link_libraries(Core PUBLIC discordgamesdk)
 endif()
+
+target_include_directories(Core PUBLIC ${LibArchive_INCLUDE_DIRS})
+
+target_link_libraries(Core PUBLIC
+    CURL::libcurl
+    json-c::json-c
+    ${LibArchive_LIBRARIES}
+)
