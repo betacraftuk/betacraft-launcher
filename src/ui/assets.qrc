@@ -20,6 +20,7 @@
         <file alias="Brazilian Portuguese">../../lang/Brazilian Portuguese.json</file>
         <file alias="Simplified Chinese">../../lang/Simplified Chinese.json</file>
         <file alias="Spanish">../../lang/Spanish.json</file>
+        <file alias="Ukrainian">../../lang/Ukrainian.json</file>
         <file alias="Traditional Chinese">../../lang/Traditional Chinese.json</file>
     </qresource>
     <qresource prefix="/">
