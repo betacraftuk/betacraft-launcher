@@ -1,0 +1,89 @@
+/* Home */
+QTextEdit#home-changelog {
+    background-image: url(':/assets/stone.png');
+    border: none;
+    color: #e0d0d0;
+    font-size: 15px;
+    padding-left: 10px;
+}
+
+QWidget#home-bottom {
+    background-image: url(':/assets/dirt.png');
+}
+
+QTabWidget::pane#home-menu {
+    border: none;
+}
+
+QLabel#home-instance-label {
+    color: white;
+    padding-bottom: 10px;
+}
+
+/* About */
+QTabWidget::tab-bar#about {
+    alignment: center;
+}
+
+QTabWidget:pane#about {
+    border-top: 1px solid gray;
+}
+
+/* Settings */
+QListWidget#settings-sidebar {
+    font-size: 14px;
+}
+
+/* Add Account */
+QTabWidget::pane#add-account-menu {
+    border: none;
+}
+
+/* Account List */
+QLabel#account-list-item-image {
+    margin-right: 4px;
+}
+
+QLabel#account-list-item-name {
+    font-size: 15px;
+    font-weight: bold;
+}
+
+QLabel#account-list-item {
+    font-size: 11px;
+}
+
+/* Add Instance */
+QLabel#add-instance {
+    font-size: 14px;
+}
+
+/* Edit Instance */
+QTabWidget::pane#edit-instance-menu {
+    border: none;
+}
+
+QLabel#instance-version-edit {
+    font-size: 14px;
+}
+
+QLabel#instance-args-edit {
+    font-size: 14px;
+}
+
+QLabel#separate-args-label {
+    font-weight: bold;
+}
+
+QLabel#instance-server-edit {
+    font-size: 14px;
+}
+
+QLabel#instance-appearance-edit {
+    font-size: 14px;
+}
+
+/* Server List */
+QLabel#server-list-item {
+    font-size: 1px;
+}
