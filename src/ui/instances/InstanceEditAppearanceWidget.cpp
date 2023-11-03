@@ -78,7 +78,7 @@ InstanceEditAppearanceWidget::InstanceEditAppearanceWidget(QWidget* parent)
     _layout->setSpacing(5);
     _layout->setContentsMargins(10, 10, 10, 10);
 
-    setStyleSheet("QLabel { font-size: 14px; }");
+    setObjectName("instance-appearance-edit");
     setLayout(_layout);
 
     connect(_instanceIconBrowseButton, SIGNAL(released()), this, SLOT(onBrowseButtonClicked()));

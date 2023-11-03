@@ -30,7 +30,7 @@ InstanceEditWidget::InstanceEditWidget(QWidget* parent)
     _instanceSaveButtonLayout->addWidget(_instanceSaveButton);
     _instanceSaveButtonWidget->setLayout(_instanceSaveButtonLayout);
 
-    _menu->setStyleSheet("QTabWidget::pane { border: 0; }");
+    _menu->setObjectName("edit-instance-menu");
 
     _menu->addTab(_instanceEditAppearanceWidget, bc_translate("instance_tab_appearance"));
 

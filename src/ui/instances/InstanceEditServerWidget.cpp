@@ -31,7 +31,7 @@ InstanceEditServerWidget::InstanceEditServerWidget(QWidget* parent)
     _layout->setSpacing(5);
     _layout->setContentsMargins(10, 10, 10, 10);
 
-    setStyleSheet("QLabel { font-size: 14px; }");
+    setObjectName("instance-server-edit");
     setLayout(_layout);
 }
 

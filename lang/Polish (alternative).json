@@ -99,5 +99,6 @@
   "running_game_reading_version_file": "Zčytyvańe pliku json versji...",
   "java_version_not_supported": "Ta versja gry ńe jest kompatybilna z vybraną versją Javy.\n",
   "java_version_install_recommended": "Hćawbyś zainstalovać zalecaną versję Javy %0?",
-  "java_version_switch_to_recommended": "Hćawbyś zmieńić versję Javy na zalecaną %0?"
+  "java_version_switch_to_recommended": "Hćawbyś zmieńić versję Javy na zalecaną %0?",
+  "theme": "Motyv"
 }

@@ -41,7 +41,7 @@ AddInstanceWidget::AddInstanceWidget(QWidget* parent)
     _layout->setContentsMargins(10, 10, 10, 10);
 
     setLayout(_layout);
-    setStyleSheet("QLabel { font-size: 14px; }");
+    setObjectName("add-instance");
 
     setWindowTitle(bc_translate("instance_creation_title"));
     resize(650, 500);

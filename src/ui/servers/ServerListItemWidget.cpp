@@ -41,7 +41,7 @@ ServerListItemWidget::ServerListItemWidget(bc_server s, std::unordered_map<QStri
     _layout->setSpacing(0);
     _layout->setContentsMargins(3, 3, 3, 3);
 
-    setStyleSheet("QLabel { font-size: 11px; }");
+    setObjectName("server-list-item");
 
     setLayout(_layout);
 }

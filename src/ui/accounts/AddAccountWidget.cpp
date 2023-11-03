@@ -14,7 +14,7 @@ AddAccountWidget::AddAccountWidget(QWidget* parent)
     _menu = new QTabWidget(this);
     _microsoftWidget = new AddAccountMicrosoftWidget(this);
 
-    _menu->setStyleSheet("QTabWidget::pane { border: 0; }");
+    _menu->setObjectName("add-account-menu");
     _menu->addTab(_microsoftWidget, bc_translate("accounts_microsoft_title"));
 
     _layout->setAlignment(Qt::AlignTop);

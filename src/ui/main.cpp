@@ -51,6 +51,32 @@ void copyLanguageFiles() {
     free(workDir);
 }
 
+void copyThemeFiles() {
+    char* workDir = bc_file_directory_get_working();
+
+    QString langRelative("theme/");
+
+    QDir dir = QDir(QString(workDir));
+    dir.mkdir(langRelative);
+
+    QString langPath = dir.absoluteFilePath(langRelative);
+    QString langRes(":/theme/");
+
+    QDir langResSourceDir(langRes);
+    foreach(QString f, langResSourceDir.entryList(QDir::Files)) {
+        QString source = QString(langRes + QDir::separator() + f);
+        QString dest = QString(langPath + f + QString(".qss"));
+
+        if (QFile::exists(dest)) {
+            QFile::remove(dest);
+        }
+
+        QFile::copy(source, dest);
+    }
+
+    free(workDir);
+}
+
 void copyJavaRepo() {
     char* workDir = bc_file_directory_get_working();
 
@@ -60,6 +86,16 @@ void copyJavaRepo() {
 
     QFile::copy(source, dest);
     free(workDir);
+}
+
+QString getTheme() {
+    bc_settings* settings = bc_settings_get();
+    QFile file(":/theme/" + QString(settings->theme));
+    file.open(QFile::ReadOnly);
+    QString stylesheet = QLatin1String(file.readAll());
+    free(settings);
+
+    return stylesheet;
 }
 
 void setWorkDir() {
@@ -91,8 +127,10 @@ int main(int argc, char *argv[]) {
     QApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/assets/favicon.ico"));
     app.setStyle("fusion");
+    app.setStyleSheet(getTheme());
 
     copyLanguageFiles();
+    copyThemeFiles();
     copyJavaRepo();
     bc_file_init();
     betacraft_online = bc_network_status();

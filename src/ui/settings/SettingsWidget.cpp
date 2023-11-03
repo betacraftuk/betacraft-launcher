@@ -17,7 +17,7 @@ SettingsWidget::SettingsWidget(QWidget* parent)
     _settingsGeneralItem = new QListWidgetItem();
     _settingsJavaItem = new QListWidgetItem();
 
-    _sidebar->setStyleSheet("QListWidget { font-size: 12px; }");
+    _sidebar->setObjectName("settings-sidebar");
 
     _settingsGeneralItem->setSizeHint(QSize(30, 30));
     _settingsGeneralItem->setText(bc_translate("tab_settings_general"));

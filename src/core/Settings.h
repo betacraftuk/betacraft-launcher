@@ -4,6 +4,7 @@
 #include <limits.h>
 
 typedef struct bc_settings {
+    char theme[32];
     char language[32];
     char instance[PATH_MAX];
     char java_install[PATH_MAX];

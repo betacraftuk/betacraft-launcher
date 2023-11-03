@@ -33,17 +33,17 @@ MainWindow::MainWindow(QWidget *parent) :
     _settingsWidget = new SettingsWidget();
 
     _changelog->setReadOnly(true);
-    _changelog->setStyleSheet(".QTextEdit { background-image: url(':/assets/stone.png'); border: 0; color: #e0d0d0; font-size: 15px; padding-left: 10px; }");
+    _changelog->setObjectName("home-changelog");
     _changelog->viewport()->setCursor(Qt::ArrowCursor);
     _changelog->setMarkdown("Loading...");
 
     _playButton->setFixedWidth(120);
     _playButton->setFixedHeight(50);
-    _bottomBackground->setStyleSheet(".QWidget { background-image: url(':/assets/dirt.png'); }");
+    _bottomBackground->setObjectName("home-bottom");
     _logo->setPixmap(QPixmap(":/assets/logo.png"));
     _playButton->setText(bc_translate("play_button"));
 
-    _menu->setStyleSheet("QTabWidget::pane { border: 0; }");
+    _menu->setObjectName("home-menu");
     _menu->addTab(_changelog, bc_translate("tab_changelog"));
     _menu->addTab(_instanceListWidget, bc_translate("tab_instances"));
 
@@ -74,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent) :
         _menu->addTab(new QWidget(this), bc_translate("tab_donate"));
     }
 
-    _instanceLabel->setStyleSheet(".QLabel { color: white; padding-bottom: 10px; }");
+    _instanceLabel->setObjectName("home-instance-label");
 
     _mainLayout->setSpacing(0);
     _mainLayout->setContentsMargins(0, 0, 0, 0);
@@ -85,6 +85,7 @@ MainWindow::MainWindow(QWidget *parent) :
     _progressBar->setValue(0);
     _progressBar->setRange(0, 100);
 
+    _mainLayout->setObjectName("home");
     _mainLayout->addWidget(_menu, 0, 0, 1, 11);
     _mainLayout->addWidget(_progressBar, 1, 0, 1, 11);
     _mainLayout->addWidget(_bottomBackground, 2, 0, 1, 11);

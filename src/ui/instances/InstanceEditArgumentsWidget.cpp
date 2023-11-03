@@ -18,7 +18,7 @@ InstanceEditArgumentsWidget::InstanceEditArgumentsWidget(QWidget* parent)
     _javaArgumentsTextEdit->setAcceptRichText(false);
     _programArgumentsTextEdit->setAcceptRichText(false);
 
-    _separateArgumentsLabel->setStyleSheet(".QLabel { font-weight: bold; }");
+    _separateArgumentsLabel->setObjectName("separate-args-label");
 
     _javaArgumentsGroup->setTitle(bc_translate("instance_arguments_jvm_title"));
     _programArgumentsGroup->setTitle(bc_translate("instance_arguments_program_title"));
@@ -38,7 +38,7 @@ InstanceEditArgumentsWidget::InstanceEditArgumentsWidget(QWidget* parent)
     _layout->setSpacing(5);
     _layout->setContentsMargins(10, 10, 10, 10);
 
-    setStyleSheet("QLabel { font-size: 14px; }");
+    setObjectName("instance-args-edit");
     setLayout(_layout);
 }
 

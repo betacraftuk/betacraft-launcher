@@ -23,6 +23,9 @@
         <file alias="Ukrainian">../../lang/Ukrainian.json</file>
         <file alias="Traditional Chinese">../../lang/Traditional Chinese.json</file>
     </qresource>
+    <qresource prefix="/theme">
+        <file alias="Default">../../theme/Default.qss</file>
+    </qresource>
     <qresource prefix="/">
         <file alias="COPYING.md">../../COPYING.md</file>
         <file alias="java_repo.json">../../java_repo.json</file>

@@ -14,6 +14,9 @@ void bc_settings_update(bc_settings* settings) {
     json_object_object_get_ex(json, "language", &tmp);
     json_object_set_string(tmp, settings->language);
 
+    json_object_object_get_ex(json, "theme", &tmp);
+    json_object_set_string(tmp, settings->theme);
+
     json_object_object_get_ex(json, "discord", &tmp);
     json_object_set_boolean(tmp, settings->discord);
 
@@ -28,6 +31,7 @@ bc_settings* bc_settings_get() {
 
     settings->discord = jext_get_boolean(json, "discord");
     snprintf(settings->language, sizeof(settings->language), "%s", jext_get_string_dummy(json, "language"));
+    snprintf(settings->theme, sizeof(settings->theme), "%s", jext_get_string_dummy(json, "theme"));
 
     json_object* tmp;
     if (json_object_object_get_ex(json, "instance", &tmp)) {

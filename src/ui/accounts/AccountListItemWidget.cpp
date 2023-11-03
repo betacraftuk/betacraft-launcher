@@ -12,7 +12,7 @@ AccountListItemWidget::AccountListItemWidget(bc_account a, QWidget* parent)
     _image = new QLabel(this);
     _name = new QLabel(a.username, this);
     _uuid = new QLabel(a.uuid, this);
-    _image->setStyleSheet(".QLabel { margin-right: 4px; }");
+    _image->setObjectName("account-list-item-image");
 
     bc_memory avatar = bc_avatar_get(a.uuid);
 
@@ -24,7 +24,7 @@ AccountListItemWidget::AccountListItemWidget(bc_account a, QWidget* parent)
 
     free(avatar.response);
 
-    _name->setStyleSheet(".QLabel { font-size: 15px; font-weight: bold; }");
+    _name->setObjectName("account-list-item-name");
 
     _layout->addWidget(_image, 0, 0, 3, 1, Qt::AlignLeft);
     _layout->addWidget(_name, 0, 1, 1, 1, Qt::AlignLeft);
@@ -37,7 +37,7 @@ AccountListItemWidget::AccountListItemWidget(bc_account a, QWidget* parent)
     _layout->setSpacing(0);
     _layout->setContentsMargins(3, 3, 3, 3);
 
-    setStyleSheet("QLabel { font-size: 11px; }");
+    setObjectName("account-list-item");
 
     setLayout(_layout);
 }

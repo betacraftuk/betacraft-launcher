@@ -109,7 +109,7 @@ AboutWidget::AboutWidget(QWidget *parent)
     _menu->addTab(_aboutSection, bc_translate("about_about_tab"));
     _menu->addTab(_creditsSection, bc_translate("about_credits_tab"));
     _menu->addTab(_licenseSection, bc_translate("about_license_tab"));
-    _menu->setStyleSheet("QTabWidget::tab-bar { alignment: center; } QTabWidget:pane { border-top: 1px solid gray; }");
+    _menu->setObjectName("about");
 
     _layout->setRowMinimumHeight(0, 15);
     _layout->addWidget(_logo, 1, 1, Qt::AlignCenter | Qt::AlignTop);

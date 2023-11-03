@@ -360,6 +360,7 @@ void bc_file_init() {
     json_object_object_add(settings_java, "installations", json_object_new_array());
 
     json_object_object_add(settings, "language", json_object_new_string("English"));
+    json_object_object_add(settings, "theme", json_object_new_string("Default"));
     json_object_object_add(settings, "discord", json_object_new_boolean(1));
     json_object_object_add(settings, "instance", instance);
     json_object_object_add(settings, "java", settings_java);
