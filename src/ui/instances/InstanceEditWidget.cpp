@@ -124,7 +124,9 @@ void InstanceEditWidget::setInstance(bc_instance i)
     _instanceEditAppearanceWidget->setInstance(i);
     _instanceEditArgumentsWidget->setInstance(i);
     _instanceEditServerWidget->setInstance(i);
+
     if (betacraft_online) {
+        _instanceEditVersionWidget->versionListInit();
         _instanceEditVersionWidget->setInstance(i);
         _instanceEditModsWidget->setInstance(i);
     }

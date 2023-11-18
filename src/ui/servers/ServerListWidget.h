@@ -2,6 +2,7 @@
 #define SERVERLISTWIDGET_H
 
 #include <QWidget>
+#include <QtConcurrent>
 
 extern "C" {
     #include "../../core/Betacraft.h"
@@ -18,11 +19,12 @@ class ServerListWidget : public QWidget
     Q_OBJECT
 public:
     explicit ServerListWidget(QWidget *parent = nullptr);
+    void initServerList();
 
 private slots:
     void onSearchButton();
     void onServerClicked(QListWidgetItem* item);
-    void populateServerList();
+    void populateServerList(bc_server_array* servers);
 
 signals:
     void signal_serverGameLaunch(const char* ip, const char* port);
@@ -31,12 +33,13 @@ protected:
     void keyPressEvent(QKeyEvent* e);
 
 private:
+    void addServerItem(bc_server server);
     QGridLayout* _layout;
     QLineEdit* _searchTextBox;
     QListWidget* _serverList;
     QPushButton* _serverListRefreshButton;
     QPushButton* _searchButton;
-    void addServerItem(bc_server server);
+    QFutureWatcher<bc_server_array*> _serverArrayWatcher;
 };
 
 #endif

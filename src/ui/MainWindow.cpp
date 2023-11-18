@@ -115,7 +115,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(_settingsWidget, SIGNAL(signal_toggleDiscordRPC()), this, SLOT(onToggleDiscordRPC()));
     connect(&_watcher, &QFutureWatcher<void>::finished, this, &MainWindow::launchingGameFinished);
     connect(&_updateWatcher, &QFutureWatcher<char*>::finished, this, [this]() {
-        char* updateVersion = _updateWatcher.future().result();
+        char* updateVersion = (char*) _updateWatcher.future().result();
         qDebug() << updateVersion;
 
         if (updateVersion != NULL) {
@@ -171,9 +171,18 @@ void MainWindow::onToggleDiscordRPC() {
 }
 
 void MainWindow::onMenuIndexChanged(int index) {
-    if (betacraft_online && index == 6) { // Last tab
-        QDesktopServices::openUrl(QUrl("https://www.patreon.com/BetacraftLauncher"));
-        _menu->setCurrentIndex(0);
+    if (betacraft_online) {
+        switch (index) {
+        case 2:
+            _serverListWidget->initServerList();
+            break;
+        case 6:
+            QDesktopServices::openUrl(QUrl("https://www.patreon.com/BetacraftLauncher"));
+            _menu->setCurrentIndex(0);
+            break;
+        default:
+            break;
+        }
     }
 }
 

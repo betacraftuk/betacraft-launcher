@@ -8,6 +8,8 @@
 #include <stdio.h>
 #include <string.h>
 
+bc_versionlist* bc_versionlist_instance = NULL;
+
 void bc_versionlist_read_version_json(bc_versionlist_version* version, json_object* obj) {
     snprintf(version->id, sizeof(version->id), "%s", jext_get_string_dummy(obj, "id"));
     snprintf(version->type, sizeof(version->type), "%s", jext_get_string_dummy(obj, "type"));

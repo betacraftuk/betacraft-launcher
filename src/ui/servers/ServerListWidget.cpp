@@ -10,6 +10,7 @@ extern "C" {
 }
 
 bc_server_array _serverArray;
+bool _serverListFetchPending = false;
 std::unordered_map<QString, QByteArray> _serverToIconMap;
 char selected_ip[64] = "";
 char selected_port[16] = "";
@@ -28,8 +29,6 @@ ServerListWidget::ServerListWidget(QWidget *parent)
     _serverList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     _serverList->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
-    populateServerList();
-
     _layout->addWidget(_searchTextBox, 1, 0, 1, 10);
     _layout->addWidget(_searchButton, 1, 9, 1, 1);
     _layout->addWidget(_serverListRefreshButton, 1, 10, 1, 1);
@@ -42,13 +41,29 @@ ServerListWidget::ServerListWidget(QWidget *parent)
 
     setLayout(_layout);
 
+    _serverArray.len = -1;
+
     connect(_searchButton, SIGNAL(released()), this, SLOT(onSearchButton()));
-    connect(_serverListRefreshButton, SIGNAL(released()), this, SLOT(populateServerList()));
+    connect(_serverListRefreshButton, &QPushButton::released, this, [this]() {
+        _serverArray.len = -1;
+        initServerList();
+    });
     connect(_serverList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onServerClicked(QListWidgetItem*)));
+    connect(&_serverArrayWatcher, &QFutureWatcher<bc_server_array*>::finished, this, [this]() {
+        bc_server_array* servers = (bc_server_array*) _serverArrayWatcher.future().result();
+        _serverArray.len = servers->len;
+
+        populateServerList(servers);
+        free(servers);
+        _serverListFetchPending = false;
+    });
 }
 
 void ServerListWidget::onServerClicked(QListWidgetItem* item) {
     std::pair<QString, QString> serverInfo = item->data(Qt::UserRole).value<std::pair<QString, QString>>();
+
+    if (serverInfo.first == "")
+        return;
 
     bc_instance* selectedInstance = bc_instance_select_get();
 
@@ -111,8 +126,18 @@ void ServerListWidget::addServerItem(bc_server server) {
     _serverList->setItemWidget(item, serverItem);
 }
 
-void ServerListWidget::populateServerList() {
-    bc_server_array* servers = bc_server_list();
+void ServerListWidget::initServerList() {
+    if (_serverArray.len == -1 && !_serverListFetchPending) {
+        _serverList->clear();
+        _serverList->addItem("Loading...");
+
+        _serverListFetchPending = true;
+        QFuture<bc_server_array*> serverArrayFuture = QtConcurrent::run(bc_server_list);
+        _serverArrayWatcher.setFuture(serverArrayFuture);
+    }
+}
+
+void ServerListWidget::populateServerList(bc_server_array* servers) {
     _serverArray.len = servers->len;
 
     _serverList->clear();
@@ -130,8 +155,6 @@ void ServerListWidget::populateServerList() {
     for (int i = 0; i < servers->len; i++) {
         free(servers->arr[i].icon);
     }
-
-    free(servers);
 }
 
 void ServerListWidget::onSearchButton() {

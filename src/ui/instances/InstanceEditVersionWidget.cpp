@@ -3,9 +3,7 @@
 #include "../Betacraft.h"
 #include <QtWidgets>
 
-extern "C" {
-    #include "../../core/VersionList.h"
-}
+bool _instanceVersionListFetchPending = false;
 
 InstanceEditVersionWidget::InstanceEditVersionWidget(QWidget* parent)
     : QWidget{ parent } {
@@ -26,18 +24,14 @@ InstanceEditVersionWidget::InstanceEditVersionWidget(QWidget* parent)
     _searchButton->setText(bc_translate("general_search_button"));
     _searchTextbox->setPlaceholderText(bc_translate("general_search_placeholder"));
 
-    versionListInit();
-
-    _versionsTreeView->header()->setStretchLastSection(true);
-    _versionsTreeView->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    _versionsTreeView->setIndentation(0);
-    _versionsTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
     _menu->addTab(bc_translate("instance_version_tab_all"));
     _menu->addTab(bc_translate("instance_version_tab_release"));
     _menu->addTab("Beta");
     _menu->addTab("Alpha");
     _menu->addTab("Snapshot");
+
+    _versionListAll->appendRow(new QStandardItem("Loading..."));
+    _versionsTreeView->setModel(_versionListAll);
 
     _layout->addWidget(_searchTextbox, 0, 0, 1, 10);
     _layout->addWidget(_searchButton, 0, 10, 1, 1);
@@ -54,16 +48,34 @@ InstanceEditVersionWidget::InstanceEditVersionWidget(QWidget* parent)
 
     connect(_searchButton, SIGNAL(released()), this, SLOT(onSearchButtonClicked()));
     connect(_menu, SIGNAL(currentChanged(int)), this, SLOT(onMenuTabChanged(int)));
+    connect(&_versionListWatcher, &QFutureWatcher<bc_versionlist*>::finished, this, [this]() {
+        bc_versionlist_instance = (bc_versionlist*) _versionListWatcher.future().result();
+        populateVersionList();
+        _instanceVersionListFetchPending = false;
+    });
 }
 
 void InstanceEditVersionWidget::versionListInit() {
-    bc_versionlist* version_list = bc_versionlist_fetch();
+    if (bc_versionlist_instance == NULL && !_instanceVersionListFetchPending) {
+        _instanceVersionListFetchPending = true;
+        QFuture<bc_versionlist*> versionListFuture = QtConcurrent::run(bc_versionlist_fetch);
+        _versionListWatcher.setFuture(versionListFuture);
+        return;
+    }
 
-    for (int i = 0; i < version_list->versions_len; i++) {
+    if (_versionListAll->rowCount() == 0 || _versionListAll->rowCount() == 1) {
+        populateVersionList();
+    }
+}
+
+void InstanceEditVersionWidget::populateVersionList() {
+    _versionListAll->clear();
+
+    for (int i = 0; i < bc_versionlist_instance->versions_len; i++) {
         QList<QStandardItem*> items;
-        QStandardItem* item = new QStandardItem(QString(version_list->versions[i].id));
+        QStandardItem* item = new QStandardItem(QString(bc_versionlist_instance->versions[i].id));
 
-        QString dateFormatted = QDateTime::fromString(QString(version_list->versions[i].releaseTime), Qt::ISODate).toString("yyyy-MM-dd HH:mm:ss");
+        QString dateFormatted = QDateTime::fromString(QString(bc_versionlist_instance->versions[i].releaseTime), Qt::ISODate).toString("yyyy-MM-dd HH:mm:ss");
         QStandardItem* releaseTime = new QStandardItem(dateFormatted);
 
         items.append(item);
@@ -75,22 +87,24 @@ void InstanceEditVersionWidget::versionListInit() {
         itemsClone.append(item->clone());
         itemsClone.append(releaseTime->clone());
 
-        if (strcmp(version_list->versions[i].type, "release") == 0) {
+        if (strcmp(bc_versionlist_instance->versions[i].type, "release") == 0) {
             _versionListRelease->appendRow(itemsClone);
-        } else if (strcmp(version_list->versions[i].type, "old_beta") == 0) {
+        } else if (strcmp(bc_versionlist_instance->versions[i].type, "old_beta") == 0) {
             _versionListOldBeta->appendRow(itemsClone);
-        } else if (strcmp(version_list->versions[i].type, "old_alpha") == 0) {
+        } else if (strcmp(bc_versionlist_instance->versions[i].type, "old_alpha") == 0) {
             _versionListOldAlpha->appendRow(itemsClone);
-        } else if (strcmp(version_list->versions[i].type, "snapshot") == 0) {
+        } else if (strcmp(bc_versionlist_instance->versions[i].type, "snapshot") == 0) {
             _versionListSnapshot->appendRow(itemsClone);
         }
     }
 
-    _versionsTreeView->setModel(_versionListAll);
     _versionsTreeView->model()->setHeaderData(0, Qt::Horizontal, bc_translate("instance_version_name_column"));
     _versionsTreeView->model()->setHeaderData(1, Qt::Horizontal, bc_translate("instance_version_released_column"));
 
-    free(version_list);
+    _versionsTreeView->header()->setStretchLastSection(true);
+    _versionsTreeView->header()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    _versionsTreeView->setIndentation(0);
+    _versionsTreeView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 }
 
 void InstanceEditVersionWidget::onMenuTabChanged(int index) {

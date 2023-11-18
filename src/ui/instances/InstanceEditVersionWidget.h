@@ -2,9 +2,11 @@
 #define INSTANCEEDITVERSIONWIDGET_H
 
 #include <QWidget>
+#include <QtConcurrent>
 
 extern "C" {
     #include "../../core/Instance.h"
+    #include "../../core/VersionList.h"
 }
 
 class QGridLayout;
@@ -23,6 +25,7 @@ public:
     QString getSettings();
     void setInstance(bc_instance instance);
     void clean();
+    void versionListInit();
 
 private slots:
     void onSearchButtonClicked();
@@ -43,9 +46,10 @@ private:
     QStandardItemModel* _versionListOldAlpha;
     QStandardItemModel* _versionListSnapshot;
     QStandardItemModel* _versionListSearch;
-    void versionListInit();
+    void populateVersionList();
     void setSelectedInstance();
     QString _version;
+    QFutureWatcher<bc_versionlist*> _versionListWatcher;
 };
 
 #endif
