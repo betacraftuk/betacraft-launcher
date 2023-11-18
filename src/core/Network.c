@@ -198,9 +198,14 @@ int bc_network_status() {
     if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, "http://checkip.amazonaws.com/");
 
+        char* data = 0;
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
+
         res = curl_easy_perform(curl);
 
-        if (res != CURLE_OK) {
+        // We expect the data to not be written, so CURLE_WRITE_ERROR is a successful scenario.
+        if (res != CURLE_WRITE_ERROR) {
             bc_log("Failed: %s\n", curl_easy_strerror(res));
             return 0;
         }
