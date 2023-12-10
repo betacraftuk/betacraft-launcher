@@ -9,9 +9,9 @@
 #define INVALIDAVATARSIZE 12
 
 void test_bc_server_list() {
-    bc_server_array* servers = bc_server_list();
-    assert(servers->len > 0);
-    free(servers);
+    bc_server_array servers;
+    bc_server_list(&servers);
+    assert(servers.len > 0);
 }
 
 int main() {

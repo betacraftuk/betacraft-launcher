@@ -10,21 +10,22 @@ char application_support_path[PATH_MAX] = "";
 const char CRAFATAR_ENDPOINT[] = "https://crafatar.com/avatars/";
 const char API_SERVER_LIST[] = "https://api.betacraft.uk/v2/server_list";
 
-bc_server_array* bc_server_list() {
-    bc_server_array* server_list = malloc(sizeof(bc_server_array));
-
+int bc_server_list(bc_server_array* server_list) {
     char* response = bc_network_get(API_SERVER_LIST, NULL);
     json_object* json = json_tokener_parse(response);
     json_object* tmp;
 
-    free(response);
+    if (response == NULL) {
+        return 0;
+    }
 
+    free(response);
     server_list->len = json_object_array_length(json);
 
     for (int i = 0; i < server_list->len; i++) {
         tmp = json_object_array_get_idx(json, i);
 
-        server_list->arr[i].icon = jext_get_string(tmp, "icon");
+        snprintf(server_list->arr[i].icon, sizeof(server_list->arr[i].icon), "%s", jext_get_string_dummy(tmp, "icon"));
         snprintf(server_list->arr[i].name, sizeof(server_list->arr[i].name), "%s", jext_get_string_dummy(tmp, "name"));
         snprintf(server_list->arr[i].description, sizeof(server_list->arr[i].description), "%s", jext_get_string_dummy(tmp, "description"));
         snprintf(server_list->arr[i].software_name, sizeof(server_list->arr[i].software_name), "%s", jext_get_string_dummy(tmp, "software_name"));
@@ -42,8 +43,7 @@ bc_server_array* bc_server_list() {
     }
 
     json_object_put(json);
-
-    return server_list;
+    return 1;
 }
 
 bc_memory bc_avatar_get(const char* uuid) {

@@ -6,6 +6,7 @@
 #include <limits.h>
 
 #define BETACRAFT_VERSION "2.0.0-alpha.20230623"
+#define BETACRAFT_MAX_SIZE 65536
 #define DEMO_ACCOUNT_UUID "bd346dd5-ac1c-427d-87e8-73bdd4bf3e13"
 
 extern int betacraft_online;
@@ -27,7 +28,7 @@ struct bc_progress {
 typedef struct bc_server {
     char name[64];
     char description[1024];
-    char* icon;
+    char icon[BETACRAFT_MAX_SIZE];
     int is_public;
     char software_name[128];
     char software_version[64];
@@ -47,7 +48,7 @@ typedef struct bc_server_array {
     int len;
 } bc_server_array;
 
-bc_server_array* bc_server_list();
+int bc_server_list(bc_server_array* server_list);
 bc_memory bc_avatar_get(const char* uuid);
 char* bc_update_check();
 

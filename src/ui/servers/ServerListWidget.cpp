@@ -49,12 +49,16 @@ ServerListWidget::ServerListWidget(QWidget *parent)
         initServerList();
     });
     connect(_serverList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onServerClicked(QListWidgetItem*)));
-    connect(&_serverArrayWatcher, &QFutureWatcher<bc_server_array*>::finished, this, [this]() {
-        bc_server_array* servers = (bc_server_array*) _serverArrayWatcher.future().result();
-        _serverArray.len = servers->len;
+    connect(&_serverArrayWatcher, &QFutureWatcher<int>::finished, this, [this]() {
+        int success = _serverArrayWatcher.future().result();
 
-        populateServerList(servers);
-        free(servers);
+        if (!success) {
+            _serverList->clear();
+            _serverList->addItem("Can't load server list");
+        } else {
+            populateServerList();
+        }
+
         _serverListFetchPending = false;
     });
 }
@@ -132,28 +136,20 @@ void ServerListWidget::initServerList() {
         _serverList->addItem("Loading...");
 
         _serverListFetchPending = true;
-        QFuture<bc_server_array*> serverArrayFuture = QtConcurrent::run(bc_server_list);
+        QFuture<int> serverArrayFuture = QtConcurrent::run(bc_server_list, &_serverArray);
         _serverArrayWatcher.setFuture(serverArrayFuture);
     }
 }
 
-void ServerListWidget::populateServerList(bc_server_array* servers) {
-    _serverArray.len = servers->len;
-
+void ServerListWidget::populateServerList() {
     _serverList->clear();
 
-    for (int i = 0; i < servers->len; i++) {
-        _serverArray.arr[i] = servers->arr[i];
-
-        if (servers->arr[i].icon != NULL) {
-            _serverToIconMap[servers->arr[i].connect_socket] = QByteArray(servers->arr[i].icon);
+    for (int i = 0; i < _serverArray.len; i++) {
+        if (_serverArray.arr[i].icon[0] != '\0') {
+            _serverToIconMap[_serverArray.arr[i].connect_socket] = QByteArray(_serverArray.arr[i].icon);
         }
 
-        addServerItem(servers->arr[i]);
-    }
-
-    for (int i = 0; i < servers->len; i++) {
-        free(servers->arr[i].icon);
+        addServerItem(_serverArray.arr[i]);
     }
 }
 

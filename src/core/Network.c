@@ -1,5 +1,6 @@
 #include "Network.h"
 #include "Logger.h"
+#include "Betacraft.h"
 
 #include <curl/curl.h>
 
@@ -50,6 +51,7 @@ bc_memory bc_network_get_chunk(const char* url) {
     curl = curl_easy_init();
 
     if (curl) {
+        curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, BETACRAFT_MAX_SIZE);
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&chunk);
@@ -81,6 +83,7 @@ char* bc_network_get(const char* url, const char* header) {
             curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_headers);
         }
 
+        curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, BETACRAFT_MAX_SIZE);
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&chunk);
@@ -114,6 +117,7 @@ char* bc_network_post(const char* url, const char* data, const char* header) {
             curl_headers = curl_slist_append(curl_headers, header);
         }
 
+        curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, BETACRAFT_MAX_SIZE);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_headers);
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
@@ -166,6 +170,7 @@ int bc_network_download(const char* url, const char* dest, int isFile) {
 
         fp = fopen(path, "wb");
 
+        curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, BETACRAFT_MAX_SIZE);
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, fwrite);
@@ -199,6 +204,7 @@ int bc_network_status() {
         curl_easy_setopt(curl, CURLOPT_URL, "http://checkip.amazonaws.com/");
 
         char* data = 0;
+        curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, BETACRAFT_MAX_SIZE);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
 
