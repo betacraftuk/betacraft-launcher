@@ -49,6 +49,8 @@ private slots:
     void onToggleTabs();
     void onToggleDiscordRPC();
     void launchGameJoinServer(const char* ip, const char* port);
+    void updateCheck();
+    void loadChangelog();
 
 private:
     QGridLayout* _mainLayout;
@@ -68,7 +70,7 @@ private:
     QProgressBar* _progressBar;
     QFutureWatcher<void> _watcher;
     QFutureWatcher<char*> _changelogWatcher;
-    QFutureWatcher<char*> _updateWatcher;
+    QFutureWatcher<int> _updateWatcher;
     QTimer* _gameProgressTimer;
     QTimer* _discordLoopTimer;
     QProcess* _gameProcess;
@@ -82,6 +84,15 @@ private:
     bool recommendedJavaCheck();
     void startDiscordRPC();
     void launchGame(const char* ip, const char* port);
+    void connectSignalsToSlots();
+    void initProgressBar();
+    void initMainLayout();
+    void initWindow();
+    void initChangelog();
+    void initPlayButton();
+    void initMenu();
+    void initObjects();
+    void onStartup();
 };
 
 #endif

@@ -39,8 +39,8 @@ void bc_log(const char* format, ...) {
     for (int i = 0; i < forbidden_profileids_size; i++) {
         repl_str(printbuffer, forbidden_profileids[i], "<PROFILE ID>");
     }
-    // TODO: make a list of forbidden strings at startup and exclude them from logging
 
+    // TODO: make a list of forbidden strings at startup and exclude them from logging
     printf(printbuffer);
     fprintf(fp, printbuffer);
 

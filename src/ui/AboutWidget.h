@@ -26,6 +26,16 @@ private:
     QLabel* _links;
     QTextBrowser* _licenseList;
     QTextBrowser* _creditsList;
+    QString getCreditsHtml();
+    QString getLinksHtml();
+    void initObjects();
+    void initLayout();
+    void initAboutLayout();
+    void initAboutLayoutLinks();
+    void initAboutLayoutLogo();
+    void initLicenseLayout();
+    void initCreditsLayout();
+    void initMenu();
 };
 
 #endif // ABOUTWIDGET_H

@@ -37,7 +37,7 @@ void copyLanguageFiles() {
 
     QDir langResSourceDir(langRes);
 
-    foreach(QString f, langResSourceDir.entryList(QDir::Files)) {
+    foreach (QString f, langResSourceDir.entryList(QDir::Files)) {
         QString source = QString(langRes + QDir::separator() + f);
         QString dest = QString(langPath + f + QString(".json"));
 

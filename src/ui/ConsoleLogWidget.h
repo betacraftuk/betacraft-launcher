@@ -17,6 +17,8 @@ public:
 
 private slots:
     void UpdateConsoleLog();
+    void pauseConsoleLog();
+    void clearConsoleLog();
 
 protected:
     void showEvent(QShowEvent* e);
@@ -31,6 +33,9 @@ private:
     QPushButton* _clearButton;
     QPushButton* _pauseButton;
     QPushButton* _copyButton;
+    void initObjects();
+    void connectSignalsToSlots();
+    void initLayout();
 };
 
 #endif // CONSOLELOGWIDGET_H

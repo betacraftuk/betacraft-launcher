@@ -11,8 +11,41 @@ extern "C" {
     #include "../core/VersionList.h"
 }
 
-MainWindow::MainWindow(QWidget *parent) :
-    QWidget(parent) {
+char _updateVersion[BETACRAFT_MAX_UPDATE_TAG_SIZE] = "";
+
+MainWindow::MainWindow(QWidget *parent) : QWidget(parent) {
+    initObjects();
+    initChangelog();
+    initPlayButton();
+    initMenu();
+
+    initProgressBar();
+    initMainLayout();
+    initWindow();
+
+    connectSignalsToSlots();
+    startDiscordRPC();
+    onInstanceUpdate();
+    onAccountUpdate();
+    updateInstanceLabel();
+
+    onStartup();
+}
+
+void MainWindow::onStartup() {
+    if (betacraft_online) {
+        QFuture<char*> future = QtConcurrent::run(bc_network_get, "https://raw.githubusercontent.com/betacraftuk/betacraft-launcher/v2/CHANGELOG.md", "");
+        _changelogWatcher.setFuture(future);
+
+        QFuture<int> updateFuture = QtConcurrent::run(bc_update_check, _updateVersion);
+        _updateWatcher.setFuture(updateFuture);
+
+        bc_account_refresh();
+        bc_account_register_forbidden_all();
+    }
+}
+
+void MainWindow::initObjects() {
     _mainLayout = new QGridLayout(this);
     _menu = new QTabWidget(this);
     _bottomBackground = new QWidget(this);
@@ -32,39 +65,20 @@ MainWindow::MainWindow(QWidget *parent) :
     _aboutWidget = new AboutWidget();
     _settingsWidget = new SettingsWidget();
 
-    _changelog->setReadOnly(true);
-    _changelog->setStyleSheet(".QTextEdit { background-image: url(':/assets/stone.png'); border: 0; color: #e0d0d0; font-size: 15px; padding-left: 10px; }");
-    _changelog->viewport()->setCursor(Qt::ArrowCursor);
-    _changelog->setMarkdown("Loading...");
+    if (betacraft_online) {
+        _accountsWidget = new AccountListWidget();
+        _serverListWidget = new ServerListWidget();
+    }
+}
 
-    _playButton->setFixedWidth(120);
-    _playButton->setFixedHeight(50);
-    _bottomBackground->setStyleSheet(".QWidget { background-image: url(':/assets/dirt.png'); }");
-    _logo->setPixmap(QPixmap(":/assets/logo.png"));
-    _playButton->setText(bc_translate("play_button"));
-
+void MainWindow::initMenu() {
     _menu->setStyleSheet("QTabWidget::pane { border: 0; }");
     _menu->addTab(_changelog, bc_translate("tab_changelog"));
     _menu->addTab(_instanceListWidget, bc_translate("tab_instances"));
 
-    if (!betacraft_online) {
-        _changelog->setMarkdown("Offline");
-    } else {
-        _accountsWidget = new AccountListWidget();
-        _serverListWidget = new ServerListWidget();
-        connect(_serverListWidget, SIGNAL(signal_serverGameLaunch(const char*, const char*)), this, SLOT(launchGameJoinServer(const char*, const char*)));
-        connect(_accountsWidget, SIGNAL(signal_accountUpdate()), this, SLOT(onAccountUpdate()));
-        connect(&_changelogWatcher, &QFutureWatcher<char*>::finished, this, [this]() { 
-            char* response = _changelogWatcher.future().result();
-            _changelog->setMarkdown(QString(response));
-            free(response);
-        });
-
+    if (betacraft_online) {
         _menu->addTab(_serverListWidget, bc_translate("tab_server_list"));
         _menu->addTab(_accountsWidget, bc_translate("tab_accounts"));
-
-        QFuture<char*> future = QtConcurrent::run(bc_network_get, "https://raw.githubusercontent.com/betacraftuk/betacraft-launcher/v2/CHANGELOG.md", "");
-        _changelogWatcher.setFuture(future);
     }
 
     _menu->addTab(_settingsWidget, bc_translate("tab_settings"));
@@ -73,17 +87,42 @@ MainWindow::MainWindow(QWidget *parent) :
     if (betacraft_online) {
         _menu->addTab(new QWidget(this), bc_translate("tab_donate"));
     }
+}
 
+void MainWindow::initPlayButton() {
+    _playButton->setFixedWidth(120);
+    _playButton->setFixedHeight(50);
+    _playButton->setText(bc_translate("play_button"));
+}
+
+void MainWindow::initChangelog() {
+    _changelog->setReadOnly(true);
+    _changelog->setStyleSheet(".QTextEdit { background-image: url(':/assets/stone.png'); border: 0; color: #e0d0d0; font-size: 15px; padding-left: 10px; }");
+    _changelog->viewport()->setCursor(Qt::ArrowCursor);
+
+    if (!betacraft_online) {
+        _changelog->setMarkdown("Offline");
+        return;
+    }
+
+    _changelog->setMarkdown("Loading...");
+}
+
+void MainWindow::initWindow() {
+    QString winTitle = "Betacraft " + QString("(%1)").arg(BETACRAFT_VERSION);
+    setWindowTitle(winTitle);
+    resize(850, 480);
+    setMinimumSize(850, 480);
+    setFocusPolicy(Qt::StrongFocus);
+}
+
+void MainWindow::initMainLayout() {
     _instanceLabel->setStyleSheet(".QLabel { color: white; padding-bottom: 10px; }");
+    _bottomBackground->setStyleSheet(".QWidget { background-image: url(':/assets/dirt.png'); }");
+    _logo->setPixmap(QPixmap(":/assets/logo.png"));
 
     _mainLayout->setSpacing(0);
     _mainLayout->setContentsMargins(0, 0, 0, 0);
-
-    _progressBar->setVisible(false);
-    _progressBar->setTextVisible(true);
-    _progressBar->setAlignment(Qt::AlignCenter);
-    _progressBar->setValue(0);
-    _progressBar->setRange(0, 100);
 
     _mainLayout->addWidget(_menu, 0, 0, 1, 11);
     _mainLayout->addWidget(_progressBar, 1, 0, 1, 11);
@@ -99,13 +138,23 @@ MainWindow::MainWindow(QWidget *parent) :
     _mainLayout->setRowMinimumHeight(2, 100);
 
     setLayout(_mainLayout);
+}
 
-    QString winTitle = "Betacraft " + QString("(%1)").arg(BETACRAFT_VERSION);
-    setWindowTitle(winTitle);
-    resize(850, 480);
-    setMinimumSize(850, 480);
-    setFocusPolicy(Qt::StrongFocus);
+void MainWindow::initProgressBar() {
+    _progressBar->setVisible(false);
+    _progressBar->setTextVisible(true);
+    _progressBar->setAlignment(Qt::AlignCenter);
+    _progressBar->setValue(0);
+    _progressBar->setRange(0, 100);
+}
 
+void MainWindow::loadChangelog() {
+    char* response = _changelogWatcher.future().result();
+    _changelog->setMarkdown(QString(response));
+    free(response);
+}
+
+void MainWindow::connectSignalsToSlots() {
     connect(_gameProgressTimer, SIGNAL(timeout()), this, SLOT(updateGameProgress()));
     connect(_playButton, &QPushButton::released, this, [this]() { launchGame("", ""); });
     connect(_instanceListWidget, SIGNAL(signal_instanceUpdate()), this, SLOT(onInstanceUpdate()));
@@ -114,38 +163,36 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(_settingsWidget, SIGNAL(signal_toggleTabs()), this, SLOT(onToggleTabs()));
     connect(_settingsWidget, SIGNAL(signal_toggleDiscordRPC()), this, SLOT(onToggleDiscordRPC()));
     connect(&_watcher, &QFutureWatcher<void>::finished, this, &MainWindow::launchingGameFinished);
-    connect(&_updateWatcher, &QFutureWatcher<char*>::finished, this, [this]() {
-        char* updateVersion = (char*) _updateWatcher.future().result();
-        qDebug() << updateVersion;
+    connect(&_updateWatcher, &QFutureWatcher<int>::finished, this, &MainWindow::updateCheck);
 
-        if (updateVersion != NULL) {
-            QString url = "https://github.com/betacraftuk/betacraft-launcher/releases";
-            QString message = bc_translate("update_notice_message");
+    if (betacraft_online) {
+        connect(&_changelogWatcher, &QFutureWatcher<char*>::finished, this, &MainWindow::loadChangelog);
+        connect(_serverListWidget, SIGNAL(signal_serverGameLaunch(const char*, const char*)), this, SLOT(launchGameJoinServer(const char*, const char*)));
+        connect(_accountsWidget, SIGNAL(signal_accountUpdate()), this, SLOT(onAccountUpdate()));
+    }
+}
 
-            _messageBox->setWindowTitle("Betacraft");
-            _messageBox->setText(message.arg(QString(updateVersion)).arg(url));
-            _messageBox->setModal(true);
-            _messageBox->setTextFormat(Qt::RichText);
+void MainWindow::updateCheck() {
+    int success = _updateWatcher.future().result();
 
-            _messageBox->show();
-            free(updateVersion);
-        }
-    });
-
-    startDiscordRPC();
-
-    onInstanceUpdate();
-    onAccountUpdate();
-    updateInstanceLabel();
-
-    if (!betacraft_online)
+    if (!success) {
+        _messageBox->setText("Update check failed");
+        _messageBox->setModal(true);
+        _messageBox->show();
         return;
+    }
 
-    QFuture<char*> updateFuture = QtConcurrent::run(bc_update_check);
-    _updateWatcher.setFuture(updateFuture);
+    if (_updateVersion[0] != '\0') {
+        QString url = "https://github.com/betacraftuk/betacraft-launcher/releases";
+        QString message = bc_translate("update_notice_message");
 
-    bc_account_refresh();
-    bc_account_register_forbidden_all();
+        _messageBox->setWindowTitle("Betacraft");
+        _messageBox->setText(message.arg(QString(_updateVersion)).arg(url));
+        _messageBox->setModal(true);
+        _messageBox->setTextFormat(Qt::RichText);
+
+        _messageBox->show();
+    }
 }
 
 void MainWindow::launchGameJoinServer(const char* ip, const char* port) {
@@ -333,7 +380,6 @@ bool MainWindow::recommendedJavaCheck() {
     }
 
     return startGame;
-
 }
 
 void MainWindow::launchGame(const char* ip, const char* port) {
