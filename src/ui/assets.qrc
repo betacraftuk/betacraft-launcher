@@ -12,6 +12,7 @@
         <file alias="Russian">../../lang/Russian.json</file>
         <file alias="Estonian">../../lang/Estonian.json</file>
         <file alias="German">../../lang/German.json</file>
+        <file alias="German (cyrillic)">../../lang/German (cyrillic).json</file>
         <file alias="Polish">../../lang/Polish.json</file>
         <file alias="Polish (alternative)">../../lang/Polish (alternative).json</file>
         <file alias="Polish (cyrillic)">../../lang/Polish (cyrillic).json</file>
