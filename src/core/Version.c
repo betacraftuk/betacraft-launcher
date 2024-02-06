@@ -149,7 +149,7 @@ void bc_game_version_json_read_logging(json_object* obj, json_object* tmp, bc_ve
 }
 
 void bc_game_version_json_read_minecraft_arguments(json_object* tmp, bc_version* v) {
-    const char* mcargs = json_object_get_string(tmp);
+    char* mcargs = json_object_get_string(tmp);
     int size = count_substring(mcargs, ' ') + 1 + /* width, height */ 4;
     char split[128][1024];
 

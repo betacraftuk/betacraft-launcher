@@ -25,8 +25,6 @@ elseif (UNIX AND NOT APPLE) # Linux
     target_link_libraries(Core PUBLIC discordgamesdk)
 endif()
 
-target_include_directories(Core PUBLIC /usr/local/include/json-c)
-
 target_link_libraries(Core PUBLIC
     libcurl
     json-c
