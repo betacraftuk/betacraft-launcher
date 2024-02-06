@@ -5,7 +5,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <json-c/json.h>
+#include <json.h>
 
 void bc_version_read_rule(bc_version_actionRule* rule, json_object* obj) {
     json_object* tmp;
@@ -149,7 +149,7 @@ void bc_game_version_json_read_logging(json_object* obj, json_object* tmp, bc_ve
 }
 
 void bc_game_version_json_read_minecraft_arguments(json_object* tmp, bc_version* v) {
-    char* mcargs = json_object_get_string(tmp);
+    const char* mcargs = json_object_get_string(tmp);
     int size = count_substring(mcargs, ' ') + 1 + /* width, height */ 4;
     char split[128][1024];
 

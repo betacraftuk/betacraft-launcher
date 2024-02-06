@@ -1,48 +1,12 @@
+set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+file(GLOB Core_SRC "*.h" "*.c")
+
 add_library(Core
-    Betacraft.c
-    Betacraft.h
-    Instance.c
-    Instance.h
-    Game.c
-    Game.h
-    Network.c
-    Network.h
-    FileSystem.c
-    FileSystem.h
-    Version.c
-    Version.h
-    AssetIndex.c
-    AssetIndex.h
-    VersionList.c
-    VersionList.h
-    Settings.c
-    Settings.h
-    StringUtils.c
-    StringUtils.h
-    JsonExtension.c
-    JsonExtension.h
-    AuthMicrosoft.c
-    AuthMicrosoft.h
-    Account.c
-    Account.h
-    JavaInstallations.c
-    JavaInstallations.h
-    Logger.c
-    Logger.h
-    Discord.c
-    Discord.h
-    Mod.c
-    Mod.h
-    ProcessHandler.c
-    ProcessHandler.h
-    WindowsProcessHandler.c
-    WindowsProcessHandler.h
+    ${Core_SRC}
     ../../lib/discord_game_sdk/discord_game_sdk.h
 )
-
-find_package(json-c CONFIG REQUIRED)
-find_package(CURL CONFIG REQUIRED)
-find_package(LibArchive REQUIRED)
 
 if (WIN32)
     target_link_libraries(Core PUBLIC ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.dll.lib)
@@ -51,7 +15,7 @@ elseif (APPLE)
     set(CMAKE_APPLE_SILICON_PROCESSOR "arm64")
 
     if(CMAKE_APPLE_SILICON_PROCESSOR STREQUAL "arm64")
-        target_link_libraries(Core PUBLIC ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/aarch64/discord_game_sdk.bundle)
+        target_link_libraries(Core PUBLIC ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.dylib)
     elseif(CMAKE_APPLE_SILICON_PROCESSOR STREQUAL "x86_64")
         target_link_libraries(Core PUBLIC ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.dylib)
     endif()
@@ -61,10 +25,10 @@ elseif (UNIX AND NOT APPLE) # Linux
     target_link_libraries(Core PUBLIC discordgamesdk)
 endif()
 
-target_include_directories(Core PUBLIC ${LibArchive_INCLUDE_DIRS})
+target_include_directories(Core PUBLIC /usr/local/include/json-c)
 
 target_link_libraries(Core PUBLIC
-    CURL::libcurl
-    json-c::json-c
-    ${LibArchive_LIBRARIES}
+    libcurl
+    json-c
+    archive
 )

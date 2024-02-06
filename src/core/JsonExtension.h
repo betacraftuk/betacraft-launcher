@@ -1,7 +1,7 @@
 #ifndef BC_JSONEXTENSION_H
 #define BC_JSONEXTENSION_H
 
-#include <json-c/json.h>
+#include <json.h>
 
 char* jext_alloc_string(json_object* json);
 char** jext_alloc_string_array(json_object* json);

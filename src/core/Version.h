@@ -1,7 +1,7 @@
 #ifndef BC_VERSION_H
 #define BC_VERSION_H
 
-#include <json-c/json_object.h>
+#include <json_object.h>
 
 typedef struct bc_version_javaExec {
     char component[256];

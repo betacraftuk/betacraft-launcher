@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <json-c/json.h>
+#include <json.h>
 
 void bc_settings_update(bc_settings* settings) {
     json_object* json = json_object_from_file("settings.json");

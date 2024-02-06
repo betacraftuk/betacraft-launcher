@@ -1,7 +1,7 @@
 #ifndef BC_VERSIONLIST_H
 #define BC_VERSIONLIST_H
 
-#include <json-c/json_object.h>
+#include <json_object.h>
 
 typedef struct bc_versionlist_version {
     char id[32];

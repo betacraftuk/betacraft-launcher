@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <json-c/json.h>
+#include <json.h>
 #include <stdlib.h>
 #ifdef _WIN32
 #include <windows.h>

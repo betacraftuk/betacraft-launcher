@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 #include <sys/stat.h>
-#include <json-c/json.h>
+#include <json.h>
 #include <archive.h>
 #include <archive_entry.h>
 #include <errno.h>

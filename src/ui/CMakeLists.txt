@@ -1,4 +1,4 @@
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_AUTOMOC ON)
@@ -12,32 +12,8 @@ endif()
 find_package(Qt6 REQUIRED COMPONENTS Widgets Concurrent)
 qt_standard_project_setup()
 
-qt_add_executable(Betacraft
-    MainWindow.cpp MainWindow.h
-    main.cpp
-    assets.qrc
-    Betacraft.cpp Betacraft.h
-    AboutWidget.cpp AboutWidget.h
-    instances/InstanceListWidget.cpp instances/InstanceListWidget.h
-    instances/AddInstanceWidget.cpp instances/AddInstanceWidget.h
-    instances/InstanceEditWidget.cpp instances/InstanceEditWidget.h
-    instances/InstanceEditVersionWidget.cpp instances/InstanceEditVersionWidget.h
-    instances/InstanceEditAppearanceWidget.cpp instances/InstanceEditAppearanceWidget.h
-    instances/InstanceEditArgumentsWidget.cpp instances/InstanceEditArgumentsWidget.h
-    instances/InstanceEditServerWidget.cpp instances/InstanceEditServerWidget.h
-    instances/mods/InstanceEditModsWidget.cpp instances/mods/InstanceEditModsWidget.h
-    instances/mods/InstanceEditModRepoWidget.cpp instances/mods/InstanceEditModRepoWidget.h
-    instances/mods/InstanceEditModVersionsWidget.cpp instances/mods/InstanceEditModVersionsWidget.h
-    servers/ServerListWidget.cpp servers/ServerListWidget.h
-    servers/ServerListItemWidget.h servers/ServerListItemWidget.cpp
-    accounts/AccountListWidget.cpp accounts/AccountListWidget.h
-    accounts/AccountListItemWidget.cpp accounts/AccountListItemWidget.h
-    accounts/AddAccountWidget.cpp accounts/AddAccountWidget.h
-    accounts/AddAccountMicrosoftWidget.cpp accounts/AddAccountMicrosoftWidget.h
-    settings/SettingsWidget.cpp settings/SettingsWidget.h
-    settings/SettingsGeneralWidget.cpp settings/SettingsGeneralWidget.h
-    settings/SettingsJavaWidget.cpp settings/SettingsJavaWidget.h
-    ConsoleLogWidget.cpp ConsoleLogWidget.h)
+file(GLOB_RECURSE Betacraft_SRC "*.h" "*.cpp" "*.qrc")
+qt_add_executable(Betacraft ${Betacraft_SRC})
 
 target_link_libraries(Betacraft PRIVATE
     Core
