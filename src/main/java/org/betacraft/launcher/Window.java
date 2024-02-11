@@ -17,13 +17,17 @@ import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import uk.betacraft.auth.MicrosoftAuth;
 import uk.betacraft.auth.NoAuth;
+import uk.betacraft.auth.jsons.microsoft.DeviceCodeRequest;
+import uk.betacraft.auth.jsons.microsoft.DeviceCodeResponse;
 
 public class Window extends JFrame implements ActionListener, LanguageElement {
 
@@ -43,7 +47,6 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 	public static Lang lang = null;
 	public static SelectAddons addonsList = null;
 	public static SelectVersion versionsList = null;
-	public static AuthWindow loginPanel = null;
 
 	public static Tab tab = Tab.CHANGELOG;
 
@@ -110,8 +113,8 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 						loginButton.setText(Lang.LOGIN_BUTTON);
 					}
 				} else {
-					if (loginPanel == null) loginPanel = new AuthWindow();
-					else loginPanel.setVisible(true);
+					DeviceCodeResponse dcr = new DeviceCodeRequest().perform();
+					new AwaitingMSALogin(dcr.verification_uri, dcr.user_code, dcr.device_code, dcr.expires_in, dcr.interval);
 				}
 			}
 		});
@@ -177,7 +180,7 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 
 		this.add(stuffz, BorderLayout.NORTH);
 
-		// Buttons are being added in AuthWindow.paintComponent()
+		// Buttons are being added in BottomPanel.paintComponent()
 		// because it will put them above the bottom panel's background? (TODO verify)
 
 		// Add some texture to the components
@@ -222,6 +225,19 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 		positionButtons();
 		if (mainWindow.isVisible())
 			this.pack();
+	}
+
+	public static void continueMSA(MicrosoftAuth auth) {
+		if (auth.authenticate()) {
+			Util.saveAccounts();
+		} else {
+			SwingUtilities.invokeLater(new Runnable() {
+				public void run() {
+					JOptionPane.showMessageDialog(mainWindow, Lang.LOGIN_FAILED, Lang.LOGIN_MICROSOFT_ERROR, JOptionPane.ERROR_MESSAGE);
+				}
+			});
+		}
+		mainWindow.requestFocus();
 	}
 
 	public static void setTab(Tab tab) {

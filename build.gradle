@@ -3,8 +3,9 @@ plugins {
 	id 'eclipse'
 }
 
-targetCompatibility = 5;
-sourceCompatibility = 5;
+// Gson 2.10 requires Java 7, there's no point in compiling this for Java 5
+targetCompatibility = 7;
+sourceCompatibility = 7;
 
 repositories {
 	mavenCentral()
@@ -65,6 +66,12 @@ configurations {
 }
 
 dependencies {
+	extraLibs 'com.google.code.gson:gson:2.10.1'
 	compile fileTree(dir: 'lib', include: ['*.jar'])
-	extraLibs files('lib/gson-java5-2.8.10-SNAPSHOT.jar')
 }
+
+task copyGson(type: Copy) {
+	into "lib/" from configurations.extraLibs
+}
+
+compileJava.dependsOn copyGson

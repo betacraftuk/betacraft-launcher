@@ -42,8 +42,7 @@ public class BC {
 		} else {
 			System.out.println("Your operating system is not supported.");
 			JOptionPane.showMessageDialog(Window.mainWindow, "Your operating system is not supported ;(", "I'm sorry, but", JOptionPane.WARNING_MESSAGE);
-			System.exit(0);
-			return null;
+			folder = prefBC() + "/betacraft/";
 		}
 
 		File betacraft = new File(folder);

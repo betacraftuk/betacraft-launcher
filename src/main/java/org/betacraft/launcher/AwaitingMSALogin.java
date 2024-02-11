@@ -144,7 +144,7 @@ public class AwaitingMSALogin extends JFrame {
 							
 							MicrosoftAuth msa = new MicrosoftAuth(cred);
 							
-							AuthWindow.continueMSA(msa);
+							Window.continueMSA(msa);
 							break;
 						}
 					} else {

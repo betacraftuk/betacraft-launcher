@@ -164,7 +164,7 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 				dirChooser.setDialogTitle(Lang.INSTANCE_GAME_DIRECTORY_TITLE);
 				dirChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				dirChooser.setAcceptAllFileFilterUsed(false);
-				if (dirChooser.showOpenDialog(Window.mainWindow) == JFileChooser.APPROVE_OPTION) { 
+				if (dirChooser.showOpenDialog(Window.instanceSettings) == JFileChooser.APPROVE_OPTION) { 
 					System.out.println("getCurrentDirectory(): " 
 							+  dirChooser.getCurrentDirectory());
 					System.out.println("getSelectedFile() : " 
@@ -213,8 +213,11 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 				dirChooser.setDialogTitle(Lang.JAVA_EXECUTABLE);
 				dirChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
-				if (dirChooser.showOpenDialog(Window.mainWindow) == JFileChooser.APPROVE_OPTION) {
+				if (dirChooser.showOpenDialog(Window.instanceSettings) == JFileChooser.APPROVE_OPTION) {
 					File gameDir = dirChooser.getSelectedFile();
+					if (gameDir.getAbsolutePath().endsWith(".plugin") && OS.isMac()) {
+					    gameDir = new File(gameDir, "Contents/Home/bin/java");
+					}
 					javaPath.setText(gameDir.getAbsolutePath());
 				}
 			}
@@ -459,21 +462,57 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		this.pack();
 	}
 
+	public static String checkJava(String jpath) {
+		int i = Util.getMajorJavaVersion(jpath);
+		if (i == -1) {
+			int res = JOptionPane.showConfirmDialog(Window.instanceSettings, Lang.JAVA_INVALID, "",
+					JOptionPane.YES_NO_OPTION);
+			if (res == JOptionPane.YES_OPTION) {
+				// user has chosen to use recommended java
+				String recommended = Util.findRecommendedJava();
+				if (recommended == null) {
+					if (JOptionPane.showConfirmDialog(Window.instanceSettings, Lang.JAVA_RECOMMENDED_NOT_FOUND, "",
+							JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+						new SimpleWebAddressFrame("https://www.java.com/download/manual.jsp");
+					}
+					return null;
+				}
+				return recommended;
+			} else {
+				return null;
+			}
+		} else if (i > 8) {
+			int res = JOptionPane.showConfirmDialog(Window.instanceSettings, Lang.JAVA_TOO_RECENT, "",
+					JOptionPane.YES_NO_OPTION);
+			if (res == JOptionPane.YES_OPTION) {
+				// user has chosen to use recommended java
+				String recommended = Util.findRecommendedJava();
+				if (recommended == null) {
+					if (JOptionPane.showConfirmDialog(Window.instanceSettings, Lang.JAVA_RECOMMENDED_NOT_FOUND, "",
+							JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+						new SimpleWebAddressFrame("https://www.java.com/download/manual.jsp");
+					}
+					return null;
+				}
+				return recommended;
+			} else {
+				return jpath;
+			}
+		}
+		return jpath;
+	}
+
 	public boolean saveOptions() {
 		String jpath = javaPath.getText();
 
 		// warn on unrecommended java version
 		if (!Launcher.disableWarnings) {
-			int i = Util.getMajorJavaVersion(jpath);
-			if (i == -1) {
-				JOptionPane.showMessageDialog(this, Lang.JAVA_INVALID);
+			jpath = checkJava(jpath);
+
+			if (jpath == null)
 				return false;
-			} else if (i > 8) {
-				int res = JOptionPane.showConfirmDialog(this, Lang.JAVA_TOO_RECENT, "", JOptionPane.YES_NO_OPTION);
-				if (res != JOptionPane.YES_OPTION) {
-					return false;
-				}
-			}
+			
+			javaPath.setText(jpath);
 		}
 		
 		Launcher.forceUpdate = forceUpdate.isSelected();

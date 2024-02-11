@@ -44,6 +44,11 @@ public class MicrosoftAuth extends Authenticator {
 		
 		CheckTokenResponse ctres = new CheckTokenRequest(null, this.credentials.refresh_token).perform();
 
+		if (ctres == null) {
+			// token most likely timed out
+			return false;
+		}
+
 		// Xbox stuff
 		XBLXSTSAuthResponse xblres = new XBLAuthRequest(ctres.access_token).perform();
 		if (xblres == null || xblres.isEmpty()) {

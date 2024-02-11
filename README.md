@@ -1,6 +1,6 @@
-# BetaCraft Launcher
+# Betacraft Launcher
 
-BetaCraft launcher aims to provide easy access to old Minecraft versions and improve the overall game experience.
+Betacraft launcher aims to provide easy access to old Minecraft versions and improve the overall game experience.
 
 ## FEATURES:
 - Supports versions from Pre-Classic to 1.5.2:
@@ -14,7 +14,7 @@ BetaCraft launcher aims to provide easy access to old Minecraft versions and imp
   - joining custom servers with the c0.0.15a version
   - resize game easily in versions that don't support resizing
   - can play every currently available legacy Minecraft version
-- Microsoft/Mojang sign in
+- Microsoft sign in
 - Mod repository, featuring great community mods
 - Server list:
   - servers with live playercount and description
@@ -36,23 +36,24 @@ BetaCraft launcher aims to provide easy access to old Minecraft versions and imp
   - instance icon
   - starting resolution
 - Console output
-### Additional features:
 - BetaEvolutions support
-- Potential Java 5 support
-- Launcher language options
+- Supports many languages
 
-## Supported platforms:
+## Supported platforms (v1):
 - Windows 7+ (32/64 bit)
 - any up-to-date Linux distro (64 bit)
 - macOS 10.8+
 ### Note:
-- Silicon Macs have inverted blue/red colors, for now you can only bypass this by going fullscreen
-- Earlier versions of Windows (like XP) may work, so long as the Java they run on can handle TLSv1.3 for official Microsoft/Mojang links. There's no guarantee that the launcher will work in full. Earliest Java updates to support TLSv1.3 are **8u181**, **7u191** and **6u201**
+- We target Java 7 (because Gson targets Java 7)
+- Silicon Macs have inverted blue/red colors, for now you can only bypass this by going fullscreen on v1 (if you get Betacraft v2, the issue is fixed there)
+- Earlier versions of Windows (like XP) may work, so long as the Java they run on can handle TLSv1.2 for official Microsoft/Mojang links. There's no guarantee the launcher is going to fully work on non-compliant Java. Earliest Java updates to support TLSv1.2 are **8u181** and **7u191**
 
 ## Reporting bugs or requesting features
-Report bugs in [issues](https://github.com/Moresteck/BetaCraft-Launcher-Java/issues) or on our Discord server below.
+Report bugs in [issues](https://github.com/betacraftuk/betacraft-launcher/issues).
 
 ## Contact:
+- Website: https://betacraft.uk
+- Mastodon: https://mastodon.social/@betacraft
+- Telegram: https://t.me/betacraftukgroup
+- Twitter: https://twitter.com/betacraftuk
 - Discord: https://discord.gg/d4WvXeQ
-- Twitter: [@betacraftuk](https://twitter.com/betacraftuk)
-- Website: https://betacraft.uk - account option is only there if you wish to have your modern versions skin separate from legacy versions, there's no other additional functionality.

@@ -30,7 +30,6 @@ import uk.betacraft.auth.Credentials.AccountType;
 import uk.betacraft.auth.DownloadRequest;
 import uk.betacraft.auth.DownloadResponse;
 import uk.betacraft.auth.MicrosoftAuth;
-import uk.betacraft.auth.MojangAuth;
 import uk.betacraft.auth.NoAuth;
 import uk.betacraft.json.lib.MouseFixMacOSJson;
 
@@ -69,8 +68,6 @@ public class Util {
 	public static Authenticator getAuthenticator(Credentials c) {
 		if (c.account_type == AccountType.MICROSOFT) {
 			return new MicrosoftAuth(c);
-		} else if (c.account_type == AccountType.MOJANG) {
-			return new MojangAuth(c);
 		} else if (c.account_type == AccountType.OFFLINE) {
 			return new NoAuth(c);
 		}
@@ -284,6 +281,7 @@ public class Util {
 							fos.write(buffer, 0, length);
 						}
 
+						fos.flush();
 						fos.close();
 						zis.closeEntry();
 						entry = zis.getNextEntry();
@@ -302,6 +300,7 @@ public class Util {
 		return unrarthread;
 	}
 
+	// TODO fix not repacking properly? BTA can't start because of this
 	public static Thread rezip(final File[] sources, final File dest) {
 		Thread rezipthread = new Thread() {
 			public void run() {
@@ -342,6 +341,7 @@ public class Util {
 								fos.write(buffer, 0, length);
 							}
 
+							fos.flush();
 							fos.close();
 							zis.closeEntry();
 							entry = zis.getNextEntry();
@@ -372,6 +372,7 @@ public class Util {
 
 						zos.closeEntry();
 					}
+					zos.flush();
 					zos.close();
 
 					if (tempFolder.exists()) {
@@ -494,6 +495,39 @@ public class Util {
 			t.printStackTrace();
 			return false;
 		}
+	}
+	
+	public static String getExpectedJavaLocation() {
+		String expectedPath;
+
+		if (OS.isMac())
+			expectedPath = "/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java";
+		else if (OS.isWindows())
+			expectedPath = "C:/Program Files/Java/jre-1.8/bin/java.exe";
+		else // TODO: this does not ensure this is Java 8. maybe we should make this more specific?
+			expectedPath = "/usr/bin/java";
+
+		File expectedFile = new File(expectedPath);
+		if (expectedFile.exists() && expectedFile.isFile())
+			return expectedFile.getAbsolutePath();
+
+		return null;
+	}
+
+	public static String findRecommendedJava() {
+		String runtime = Launcher.javaRuntime.getAbsolutePath();
+
+		if (Util.getMajorJavaVersion(runtime) > 8) {
+			String expected = Util.getExpectedJavaLocation();
+
+			if (expected != null && !runtime.equals(expected)
+					&& Util.getMajorJavaVersion(expected) <= 8) {
+				return expected;
+			}
+		} else {
+			return runtime;
+		}
+		return null;
 	}
 
 	public static String getFullJavaVersion(String javapath) {

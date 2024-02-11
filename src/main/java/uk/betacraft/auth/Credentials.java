@@ -40,7 +40,6 @@ public class Credentials {
 	}
 
 	public enum AccountType {
-		MOJANG,
 		MICROSOFT,
 		OFFLINE;
 	}

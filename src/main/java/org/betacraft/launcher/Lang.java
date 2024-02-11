@@ -36,7 +36,7 @@ public class Lang extends JFrame implements LanguageElement {
 	static JPanel panel;
 	static GridBagConstraints constr;
 
-	public static String locale_id = "1.09_16";
+	public static String locale_id = "1.09_17";
 
 	public Lang() {
 		System.out.println("Language selection window opened.");
@@ -350,6 +350,12 @@ public class Lang extends JFrame implements LanguageElement {
 		if (langentries.hasProperty("java_too_recent"))
 			JAVA_TOO_RECENT = langentries.getProperty("java_too_recent");
 
+		if (langentries.hasProperty("java_recommended_not_found"))
+			JAVA_RECOMMENDED_NOT_FOUND = langentries.getProperty("java_recommended_not_found");
+
+		if (langentries.hasProperty("java_wrong_arch"))
+			JAVA_WRONG_ARCH = langentries.getProperty("java_wrong_arch");
+
 
 		if (langentries.hasProperty("instance_directory"))
 			INSTANCE_DIRECTORY = langentries.getProperty("instance_directory");
@@ -512,7 +518,6 @@ public class Lang extends JFrame implements LanguageElement {
 			if (Window.instanceList != null) Window.instanceList.update();
 			if (Window.instanceSettings != null) Window.instanceSettings.update();
 			if (Window.versionsList != null) Window.versionsList.update();
-			if (Window.loginPanel != null) Window.loginPanel.update();
 		}
 	}
 
@@ -569,8 +574,10 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String LOGIN_FAILED_INVALID_CREDENTIALS = "Invalid e-mail or password.";
 
 	public static String JAVA_EXECUTABLE = "Java executable:";
-	public static String JAVA_INVALID = "Given Java path is not valid.";
-	public static String JAVA_TOO_RECENT = "Given Java's version is greater than 8. Are you sure you want to use it?";
+	public static String JAVA_INVALID = "Given Java path is not valid. Do you want the instance to use recommended Java?";
+	public static String JAVA_TOO_RECENT = "Given Java version is greater than 8. Do you want the instance to use recommended Java?";
+	public static String JAVA_RECOMMENDED_NOT_FOUND = "Could not find recommended Java in your system. Do you want to download and install it?";
+	public static String JAVA_WRONG_ARCH = "It seems that you're running the wrong architecture of Java (ARM or 32-bit x86). Should you run into issues, get 64-bit Java 8 from https://java.com";
 
 	public static String INSTANCE_REMOVE_DIRECTORY = "Would you want to permanently remove this instance's directory? This cannot be undone.";
 	public static String INSTANCE_DIRECTORY = "Instance directory:";

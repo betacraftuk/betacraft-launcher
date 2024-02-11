@@ -9,6 +9,12 @@ build
 .project
 .settings
 
+# VS Code project files
+.vscode
+
 # Outputs
 bin
 build
+
+# System-specific
+.DS_Store

@@ -141,6 +141,18 @@ public class Launcher {
 			BC.SETTINGS_FILE = new File(BC.get() + "launcher", "launcher.settings");
 			BC.SETTINGS = new PropertyFile(BC.SETTINGS_FILE);
 			Lang.refresh(false, false);
+
+			// Hacky way to detect Java architecture.
+			// It was done this way to avoid overhauling the codebase,
+			// as v1 shouldn't see any new breaking changes.
+			if (OS.isArchOdd()) {
+				System.out.println("Odd Java architecture detected!");
+
+				if (OS.isWindows10_11() || OS.isMac()) {
+					JOptionPane.showMessageDialog(null, Lang.JAVA_WRONG_ARCH, "", JOptionPane.WARNING_MESSAGE);
+				}
+			}
+
 			String username = args[1];
 			String sessionid = args[2];
 			String server = args[3].equals("-") ? null : args[3];
@@ -366,7 +378,7 @@ public class Launcher {
 				Util.copy(BC.currentPath, wrapper);
 			} catch (Exception ex) {
 				ex.printStackTrace();
-				JOptionPane.showMessageDialog(Window.mainWindow, "The file could not be copied! Try running with Administrator rights. If that won't help, contact: @Moresteck#1688", "Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(Window.mainWindow, "The file could not be copied! Try running with Administrator rights. If that won't help, create an issue on our Github repo.", "Error", JOptionPane.ERROR_MESSAGE);
 				return;
 			}
 		}
@@ -443,9 +455,21 @@ public class Launcher {
 					JOptionPane.showMessageDialog(Window.mainWindow, Lang.WINDOW_USERNAME_FIELD_EMPTY, "Error", JOptionPane.ERROR_MESSAGE);
 					return;
 				}
+
+				String javapath = instance.javaPath;
+				if (!Launcher.disableWarnings) {
+					javapath = InstanceSettings.checkJava(instance.javaPath);
+					if (javapath == null)
+						return;
+					else if (!javapath.equals(instance.javaPath)) {
+						instance.javaPath = javapath;
+						instance.saveInstance();
+					}
+				}
+
 				ArrayList<String> params = new ArrayList<String>();
 
-				params.add(instance.javaPath);
+				params.add(javapath);
 
 				// The colon in the launch arguments is different for Windows
 				String colon = ":";
