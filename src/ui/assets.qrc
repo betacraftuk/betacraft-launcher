@@ -22,6 +22,7 @@
         <file alias="Spanish">../../assets/lang/Spanish.json</file>
         <file alias="Ukrainian">../../assets/lang/Ukrainian.json</file>
         <file alias="Traditional Chinese">../../assets/lang/Traditional Chinese.json</file>
+        <file alias="Toki Pona">../../assets/lang/Toki Pona.json</file>
     </qresource>
     <qresource prefix="/">
         <file alias="COPYING.md">../../COPYING.md</file>
