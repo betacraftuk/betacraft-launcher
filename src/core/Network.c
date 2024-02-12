@@ -210,8 +210,7 @@ int bc_network_status() {
 
         res = curl_easy_perform(curl);
 
-        // We expect the data to not be written, so CURLE_WRITE_ERROR is a successful scenario.
-        if (res != CURLE_WRITE_ERROR) {
+        if (res != CURLE_OK) {
             bc_log("Failed: %s\n", curl_easy_strerror(res));
             return 0;
         }

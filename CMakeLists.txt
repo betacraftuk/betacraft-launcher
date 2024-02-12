@@ -6,25 +6,16 @@ if(APPLE)
     set(CMAKE_APPLE_SILICON_PROCESSOR "arm64")
 
     message(STATUS "${CMAKE_APPLE_SILICON_PROCESSOR}")
-    set(CMAKE_TOOLCHAIN_FILE "/Users/kazu/Programming/vcpkg/scripts/buildsystems/vcpkg.cmake")
 
     if(CMAKE_APPLE_SILICON_PROCESSOR STREQUAL "arm64")
         set(CMAKE_OSX_ARCHITECTURES "arm64")
         file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/aarch64/discord_game_sdk.dylib
             DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
-
-        set(VCPKG_TARGET_ARCHITECTURE "arm64")
-        set(VCPKG_TARGET_TRIPLET arm64-osx)
     elseif(CMAKE_APPLE_SILICON_PROCESSOR STREQUAL "x86_64")
         set(CMAKE_OSX_ARCHITECTURES "x86_64")
         file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.dylib
             DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
-
-        set(VCPKG_TARGET_ARCHITECTURE "x64")
-        set(VCPKG_TARGET_TRIPLET x64-osx)
     endif()
-
-    set(VCPKG_LIBRARY_LINKAGE "static")
 elseif (WIN32)
     file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.dll
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
