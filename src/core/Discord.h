@@ -1,4 +1,4 @@
-#ifndef BC_DISCORD_H
+#if !defined(BC_DISCORD_H) && !defined(BC_RETRO)
 #define BC_DISCORD_H
 
 struct Application {

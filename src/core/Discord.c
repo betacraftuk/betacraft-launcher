@@ -1,3 +1,4 @@
+#ifndef BC_RETRO
 #include "Discord.h"
 
 #include "Logger.h"
@@ -73,3 +74,4 @@ void bc_discord_loop() {
 void bc_discord_stop() {
     app.core->destroy(app.core);
 }
+#endif

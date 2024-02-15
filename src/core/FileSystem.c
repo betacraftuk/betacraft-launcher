@@ -48,24 +48,33 @@ char* bc_file_make_absolute_path(const char* relative_path) {
 char* bc_file_absolute_path(const char* relative_path) {
 #ifdef _WIN32
     char path[_MAX_PATH + 2];
-    char* pathee = _fullpath(path, relative_path, _MAX_PATH);
+    _fullpath(path, relative_path, _MAX_PATH);
+    int len = strlen(path);
 
-    for (int i = 0; i < strlen(path); i++) {
+    for (int i = 0; i < len; i++) {
         if (path[i] == '\\') {
             path[i] = '/';
         }
     }
 
+    char* pathee = malloc(len + 1);
+    strcpy(pathee, path);
+
     return pathee;
 #elif defined(__linux__) || defined(__APPLE__)
     char real[PATH_MAX + 2];
-    char* realee = realpath(relative_path, real);
+    realpath(relative_path, real);
     int len = strlen(real);
 
     if (bc_file_directory_exists(real) && real[len-1] != '/') {
         real[len] = '/';
         real[len+1] = '\0';
+        len++;
     }
+
+    char* realee = malloc(len + 1);
+    strcpy(realee, real);
+
     return realee;
 #endif
 }
@@ -565,11 +574,19 @@ char* bc_file_os() {
 #elif __linux__
     strcpy(os, "linux");
 #elif __APPLE__
+
 #ifdef __aarch64__
-    strcpy(os, "osxarm64");
-#elif TARGET_OS_MAC
-    strcpy(os, "osx64");
+    strcpy(os, "macos-arm64");
+#elif __i386__
+    strcpy(os, "macos-i386");
+#elif __ppc__
+    strcpy(os, "macos-ppc");
+#elif __ppc64__
+    strcpy(os, "macos-ppc64");
+#else
+    strcpy(os, "macos-x86_64");
 #endif
+
 #endif
 
     return os;

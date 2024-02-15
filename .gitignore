@@ -3,6 +3,7 @@
 .vscode
 out
 build
+relbuild
 .cache/
 
 .DS_Store
