@@ -47,7 +47,8 @@ char* bc_file_make_absolute_path(const char* relative_path) {
 
 char* bc_file_absolute_path(const char* relative_path) {
 #ifdef _WIN32
-    char* path = _fullpath(NULL, relative_path, _MAX_PATH);
+    char path[_MAX_PATH + 2];
+    char* pathee = _fullpath(path, relative_path, _MAX_PATH);
 
     for (int i = 0; i < strlen(path); i++) {
         if (path[i] == '\\') {
@@ -55,7 +56,7 @@ char* bc_file_absolute_path(const char* relative_path) {
         }
     }
 
-    return path;
+    return pathee;
 #elif defined(__linux__) || defined(__APPLE__)
     char real[PATH_MAX + 2];
     char* realee = realpath(relative_path, real);
