@@ -57,15 +57,15 @@ char* bc_file_absolute_path(const char* relative_path) {
 
     return path;
 #elif defined(__linux__) || defined(__APPLE__)
-    char* real = realpath(relative_path, NULL);
+    char real[PATH_MAX + 2];
+    char* realee = realpath(relative_path, real);
     int len = strlen(real);
 
     if (bc_file_directory_exists(real) && real[len-1] != '/') {
-        real = realloc(real, len+2);
         real[len] = '/';
         real[len+1] = '\0';
     }
-    return real;
+    return realee;
 #endif
 }
 
