@@ -1,0 +1,188 @@
+[
+	{
+		"version": 5,
+		"full_version": "1.5.0_22 (Sun)",
+		"platforms": [
+			{
+				"name": "windows",
+				"arch": "x64",
+				"hash": "TBA",
+				"url": "https://archive.org/download/Java_5_update_22/jre1.5.0_22-windows-x64.zip"
+			},
+			{
+				"name": "windows",
+				"arch": "x32",
+				"hash": "TBA",
+				"url": "https://archive.org/download/Java_5_update_22/jre1.5.0_22-windows-i586.zip"
+			}
+		]
+	},
+	{
+		"version": 6,
+		"full_version": "1.6.0_07 (Sun)",
+		"platforms": [
+			{
+				"name": "windows",
+				"arch": "x64",
+				"hash": "TBA",
+				"url": "https://archive.org/download/Java_6_update_7/jre-6u7-windows-i586.zip"
+			},
+			{
+				"name": "windows",
+				"arch": "x32",
+				"hash": "TBA",
+				"url": "https://archive.org/download/Java_6_update_7/jre-6u7-windows-i586.zip"
+			}
+		]
+	},
+	{
+		"version": 8,
+		"full_version": "1.8.0_51 (Oracle)",
+		"platforms": [
+			{
+				"name": "windows",
+				"arch": "x64",
+				"hash": "TBA",
+				"url": "http://archive.org/download/Java_8_update_51/jre-8u51-windows-x64.zip"
+			},
+			{
+				"name": "windows",
+				"arch": "x32",
+				"hash": "TBA",
+				"url": "http://archive.org/download/Java_8_update_51/jre-8u51-windows-x32.zip"
+			},
+			{
+				"name": "macos",
+				"arch": "x64",
+				"hash": "TBA",
+				"url": "http://archive.org/download/Java_8_update_51/jre-8u51-macosx-x64.tar.gz"
+			},
+			{
+				"name": "linux",
+				"arch": "x64",
+				"hash": "TBA",
+				"url": "http://archive.org/download/Java_8_update_51/jre-8u51-linux-x64.tar.gz"
+			},
+			{
+				"name": "linux",
+				"arch": "x32",
+				"hash": "TBA",
+				"url": "http://archive.org/download/Java_8_update_51/jre-8u51-linux-i586.tar.gz"
+			}
+		]
+	},
+	{
+		"version": 8,
+		"full_version": "1.8.0_362 (Azul)",
+		"platforms": [
+			{
+				"name": "windows",
+				"arch": "x64",
+				"hash": "",
+				"url": "https://cdn.azul.com/zulu/bin/zulu8.68.0.21-ca-jre8.0.362-win_x64.zip"
+			},
+			{
+				"name": "windows",
+				"arch": "x32",
+				"hash": "",
+				"url": "https://cdn.azul.com/zulu/bin/zulu8.68.0.21-ca-jre8.0.362-win_i686.zip"
+			},
+			{
+				"name": "macos",
+				"arch": "x64",
+				"hash": "",
+				"url": "https://cdn.azul.com/zulu/bin/zulu8.68.0.21-ca-jre8.0.362-macosx_x64.tar.gz"
+			},
+			{
+				"name": "macos",
+				"arch": "aarch64",
+				"hash": "TBA",
+				"url": "https://cdn.azul.com/zulu/bin/zulu8.68.0.21-ca-jre8.0.362-macosx_aarch64.tar.gz"
+			},
+			{
+				"name": "linux",
+				"arch": "x64",
+				"hash": "",
+				"url": "https://cdn.azul.com/zulu/bin/zulu8.68.0.21-ca-jre8.0.362-linux_x64.tar.gz"
+			},
+			{
+				"name": "linux",
+				"arch": "x32",
+				"hash": "",
+				"url": "https://cdn.azul.com/zulu/bin/zulu8.68.0.21-ca-jre8.0.362-linux_i686.tar.gz"
+			},
+			{
+				"name": "linux",
+				"arch": "aarch64",
+				"hash": "TBA",
+				"url": "https://cdn.azul.com/zulu-embedded/bin/zulu8.68.0.21-ca-jre8.0.362-linux_aarch64.tar.gz"
+			}
+		]
+	},
+	{
+		"version": 8,
+		"full_version": "1.8.0_362 (Temurin)",
+		"platforms": [
+			{
+				"name": "linux",
+				"arch": "arm32",
+				"hash": "TBA",
+				"url": "https://github.com/adoptium/temurin8-binaries/releases/download/jdk8u362-b09/OpenJDK8U-jre_arm_linux_hotspot_8u362b09.tar.gz"
+			}
+		]
+	},
+	{
+		"version": 17,
+		"full_version": "17.0.7 (Azul)",
+		"platforms": [
+			{
+				"name": "windows",
+				"arch": "x64",
+				"hash": "TBA",
+				"url": "https://cdn.azul.com/zulu/bin/zulu17.42.19-ca-jre17.0.7-win_x64.zip"
+			},
+			{
+				"name": "windows",
+				"arch": "x32",
+				"hash": "TBA",
+				"url": "https://cdn.azul.com/zulu/bin/zulu17.42.19-ca-jre17.0.7-win_i686.zip"
+			},
+			{
+				"name": "linux",
+				"arch": "x64",
+				"hash": "TBA",
+				"url": "https://cdn.azul.com/zulu/bin/zulu17.42.19-ca-jre17.0.7-linux_x64.tar.gz"
+			},
+			{
+				"name": "linux",
+				"arch": "x32",
+				"hash": "TBA",
+				"url": "https://cdn.azul.com/zulu/bin/zulu17.42.19-ca-jre17.0.7-linux_i686.tar.gz"
+			},
+			{
+				"name": "linux",
+				"arch": "aarch64",
+				"hash": "TBA",
+				"url": "https://cdn.azul.com/zulu/bin/zulu17.42.19-ca-jre17.0.7-linux_aarch64.tar.gz"
+			},
+			{
+				"name": "linux",
+				"arch": "arm32",
+				"hash": "TBA",
+				"url": "https://cdn.azul.com/zulu-embedded/bin/zulu17.42.19-ca-jre17.0.7-linux_aarch32hf.tar.gz"
+			},
+			{
+				"name": "macos",
+				"arch": "x64",
+				"hash": "TBA",
+				"url": "https://cdn.azul.com/zulu/bin/zulu17.42.19-ca-jre17.0.7-macosx_x64.tar.gz"
+			},
+			{
+				"name": "macos",
+				"arch": "aarch64",
+				"hash": "TBA",
+				"url": "https://cdn.azul.com/zulu/bin/zulu17.42.19-ca-jre17.0.7-macosx_aarch64.tar.gz"
+			}
+		]
+	}
+]

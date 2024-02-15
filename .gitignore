@@ -1,0 +1,14 @@
+.idea
+.vs
+.vscode
+out
+build
+relbuild
+.cache/
+
+.DS_Store
+CMakeSettings.json
+CMakeLists.txt.user
+compile_commands.json
+
+betacraft-retro.pro.user
