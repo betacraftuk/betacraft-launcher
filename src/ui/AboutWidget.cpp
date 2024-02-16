@@ -80,7 +80,7 @@ void AboutWidget::initAboutLayout() {
 
     _aboutSectionLayout->addWidget(_links, 0, 0, Qt::AlignCenter);
     _aboutSectionLayout->addWidget(new QLabel(versionString), 1, 0, Qt::AlignCenter);
-    _aboutSectionLayout->addWidget(new QLabel("© Betacraft 2018-2024"), 2, 0, Qt::AlignCenter);
+    _aboutSectionLayout->addWidget(new QLabel(QString::fromUtf8("© Betacraft 2018-2024")), 2, 0, Qt::AlignCenter);
 
     _aboutSectionLayout->setAlignment(Qt::AlignTop);
     _aboutSectionLayout->setSpacing(10);

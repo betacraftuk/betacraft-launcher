@@ -18,11 +18,11 @@ class ServerListWidget : public QWidget
     Q_OBJECT
 public:
     explicit ServerListWidget(QWidget *parent = NULL);
-    void onServerListRefresh();
-    void onServerListFetchFinish();
     void initServerList();
 
 private slots:
+    void onServerListRefresh();
+    void onServerListFetchFinish();
     void onSearchButton();
     void onServerClicked(QListWidgetItem* item);
     void populateServerList();

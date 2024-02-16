@@ -11,7 +11,7 @@ char _languagePath[PATH_MAX];
 QString bc_translate(const char* key) {
     json_object* json = json_object_from_file(_languagePath);
 
-    QString ret = QString(jext_get_string_dummy(json, key));
+    QString ret = QString::fromUtf8(jext_get_string_dummy(json, key));
 
     json_object_put(json);
 

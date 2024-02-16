@@ -20,9 +20,9 @@ ConsoleLogWidget::ConsoleLogWidget(QWidget* parent)
 
 void ConsoleLogWidget::connectSignalsToSlots() {
     connect(_consoleLogTimer, SIGNAL(timeout()), this, SLOT(UpdateConsoleLog()));
-    connect(_copyButton, SIGNAL(QPushButton::released()), this, SLOT(copyLog()));
-    connect(_clearButton, SIGNAL(QPushButton::released()), this, SLOT(ConsoleLogWidget::clearConsoleLog()));
-    connect(_pauseButton, SIGNAL(QPushButton::released()), this, SLOT(ConsoleLogWidget::pauseConsoleLog()));
+    connect(_copyButton, SIGNAL(released()), this, SLOT(copyLog()));
+    connect(_clearButton, SIGNAL(released()), this, SLOT(clearConsoleLog()));
+    connect(_pauseButton, SIGNAL(released()), this, SLOT(pauseConsoleLog()));
 }
 
 void ConsoleLogWidget::copyLog() {

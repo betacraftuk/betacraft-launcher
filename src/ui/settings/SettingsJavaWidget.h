@@ -21,11 +21,11 @@ class SettingsJavaWidget : public QWidget
     Q_OBJECT
 public:
     explicit SettingsJavaWidget(QWidget* parent = NULL);
-    void cancelNetwork();
     void downloadRecommendedJava(QString javaVersion);
     QStandardItemModel* _javaTreeItemModel;
 
 private slots:
+    void cancelNetwork();
     void onJavaInstallClicked();
     void onSetAsDefaultClicked();
     void onAddButtonClicked();

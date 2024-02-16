@@ -40,9 +40,9 @@ InstanceEditModRepoWidget::InstanceEditModRepoWidget(QWidget* parent)
 
     connect(_modList, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(onModClicked(QTreeWidgetItem*, int)));
     connect(_searchButton, SIGNAL(released()), this, SLOT(onSearchButtonClicked()));
-    connect(_backButton, SIGNAL(QPushButton::released()), this, SLOT(onBackClicked()));
-    connect(_versionsWidget, SIGNAL(InstanceEditModVersionsWidget::signal_ModDownloadStarted()), this, SLOT(onModDownloadStarted()));
-    connect(_versionsWidget, SIGNAL(InstanceEditModVersionsWidget::signal_ModDownloadFinished()), this, SLOT(onModDownloadFinished()));
+    connect(_backButton, SIGNAL(released()), this, SLOT(onBackClicked()));
+    connect(_versionsWidget, SIGNAL(signal_ModDownloadStarted()), this, SLOT(onModDownloadStarted()));
+    connect(_versionsWidget, SIGNAL(signal_ModDownloadFinished()), this, SLOT(onModDownloadFinished()));
 }
 
 void InstanceEditModRepoWidget::onModDownloadStarted() {

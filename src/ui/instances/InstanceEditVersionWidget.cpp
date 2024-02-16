@@ -48,7 +48,7 @@ InstanceEditVersionWidget::InstanceEditVersionWidget(QWidget* parent)
 
     connect(_searchButton, SIGNAL(released()), this, SLOT(onSearchButtonClicked()));
     connect(_menu, SIGNAL(currentChanged(int)), this, SLOT(onMenuTabChanged(int)));
-    connect(&_versionListWatcher, SIGNAL(QFutureWatcher<bc_versionlist*>::finished()), this, SLOT(onVersionListFetchFinished()));
+    connect(&_versionListWatcher, SIGNAL(finished()), this, SLOT(onVersionListFetchFinished()));
 }
 
 void InstanceEditVersionWidget::onVersionListFetchFinished() {

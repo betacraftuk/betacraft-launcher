@@ -46,7 +46,7 @@ SettingsGeneralWidget::SettingsGeneralWidget(QWidget* parent)
 
     setLayout(_layout);
 
-    connect(_languageCombo, SIGNAL(currentTextChanged(const QString&)), this, SLOT(onLanguageChange(const QString&)));
+    connect(_languageCombo, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(onLanguageChange(const QString&)));
     connect(_discordCheckbox, SIGNAL(clicked(bool)), this, SLOT(onDiscordCheckboxClicked(bool)));
 }
 

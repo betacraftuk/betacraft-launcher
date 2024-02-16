@@ -21,13 +21,13 @@ class InstanceEditVersionWidget : public QWidget
     Q_OBJECT
 public:
     explicit InstanceEditVersionWidget(QWidget* parent = NULL);
-    void onVersionListFetchFinished();
     QString getSettings();
     void setInstance(bc_instance instance);
     void clean();
     void versionListInit();
 
 private slots:
+    void onVersionListFetchFinished();
     void onSearchButtonClicked();
     void onMenuTabChanged(int index);
 

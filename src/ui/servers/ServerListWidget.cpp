@@ -47,9 +47,9 @@ ServerListWidget::ServerListWidget(QWidget *parent)
     _serverArray.len = -1;
 
     connect(_searchButton, SIGNAL(released()), this, SLOT(onSearchButton()));
-    connect(_serverListRefreshButton, SIGNAL(QPushButton::released()), this, SLOT(onServerListRefresh()));
+    connect(_serverListRefreshButton, SIGNAL(released()), this, SLOT(onServerListRefresh()));
     connect(_serverList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onServerClicked(QListWidgetItem*)));
-    connect(&_serverArrayWatcher, SIGNAL(QFutureWatcher<int>::finished()), this, SLOT(onServerListFetchFinish()));
+    connect(&_serverArrayWatcher, SIGNAL(finished()), this, SLOT(onServerListFetchFinish()));
 }
 
 void ServerListWidget::onServerListRefresh() {

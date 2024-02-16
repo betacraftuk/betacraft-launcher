@@ -68,26 +68,26 @@ void MainWindow::initObjects() {
 
 void MainWindow::initMenu() {
     _menu->setStyleSheet("QTabWidget::pane { border: 0; }");
-    _menu->addTab(_changelog, "Changelog");
-    _menu->addTab(_instanceListWidget, "Instances");
+    _menu->addTab(_changelog, bc_translate("tab_changelog"));
+    _menu->addTab(_instanceListWidget, bc_translate("tab_instances"));
 
     if (betacraft_online) {
-        _menu->addTab(_serverListWidget, "Server List");
-        _menu->addTab(_accountsWidget, "Accounts");
+        _menu->addTab(_serverListWidget, bc_translate("tab_server_list"));
+        _menu->addTab(_accountsWidget, bc_translate("tab_accounts"));
     }
 
-    _menu->addTab(_settingsWidget, "Settings");
-    _menu->addTab(_aboutWidget, "About");
+    _menu->addTab(_settingsWidget, bc_translate("tab_settings"));
+    _menu->addTab(_aboutWidget, bc_translate("tab_about"));
 
     if (betacraft_online) {
-        _menu->addTab(new QWidget(this), "Donate");
+        _menu->addTab(new QWidget(this), bc_translate("tab_donate"));
     }
 }
 
 void MainWindow::initPlayButton() {
     _playButton->setFixedWidth(120);
     _playButton->setFixedHeight(50);
-    _playButton->setText("Play");
+    _playButton->setText(bc_translate("play_button"));
 }
 
 void MainWindow::initChangelog() {
@@ -151,15 +151,15 @@ void MainWindow::loadChangelog() {
 
 void MainWindow::connectSignalsToSlots() {
     connect(_gameProgressTimer, SIGNAL(timeout()), this, SLOT(updateGameProgress()));
-    connect(_playButton, SIGNAL(QPushButton::released()), this, SLOT(launchGameNoServer()));
+    connect(_playButton, SIGNAL(released()), this, SLOT(launchGameNoServer()));
     connect(_instanceListWidget, SIGNAL(signal_instanceUpdate()), this, SLOT(onInstanceUpdate()));
     connect(_menu, SIGNAL(currentChanged(int)), this, SLOT(onMenuIndexChanged(int)));
     connect(_settingsWidget, SIGNAL(signal_toggleTabs()), this, SLOT(onToggleTabs()));
-    connect(&_watcher, SIGNAL(started()), this, SLOT(MainWindow::launchingGameFinished()));
-    connect(&_updateWatcher, SIGNAL(finished()), this, SLOT(MainWindow::updateCheck()));
+    connect(&_watcher, SIGNAL(started()), this, SLOT(launchingGameFinished()));
+    connect(&_updateWatcher, SIGNAL(finished()), this, SLOT(updateCheck()));
 
     if (betacraft_online) {
-        connect(&_changelogWatcher, SIGNAL(finished()), this, SLOT(MainWindow::loadChangelog()));
+        connect(&_changelogWatcher, SIGNAL(finished()), this, SLOT(loadChangelog()));
         connect(_serverListWidget, SIGNAL(signal_serverGameLaunch(const char*, const char*)), this, SLOT(launchGameJoinServer(const char*, const char*)));
         connect(_accountsWidget, SIGNAL(signal_accountUpdate()), this, SLOT(onAccountUpdate()));
     }
@@ -181,7 +181,7 @@ void MainWindow::updateCheck() {
 
     if (_updateVersion[0] != '\0') {
         QString url = "https://github.com/betacraftuk/betacraft-launcher/releases";
-        QString message = "New Betacraft version found (%1). Update?";
+        QString message = bc_translate("update_notice_message");
 
         _messageBox->setWindowTitle("Betacraft");
         _messageBox->setText(message.arg(QString(_updateVersion)).arg(url));
@@ -396,13 +396,6 @@ void MainWindow::launchGame(const char* ip, const char* port) {
     _progressBar->setFormat(bc_translate("running_game_reading_version_file"));
 
     _gameProgressTimer->start(1000);
-
-//    QString userStatus = "Demo user";
-//    if (!_username.isNull()) {
-//        userStatus = _username;
-//    }
-//
-//    bc_discord_activity_update(userStatus.toStdString().c_str(), _instanceSelectedVersion.toStdString().c_str());
 }
 
 void MainWindow::onInstanceUpdate() {

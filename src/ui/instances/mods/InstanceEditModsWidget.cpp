@@ -82,7 +82,7 @@ InstanceEditModsWidget::InstanceEditModsWidget(QWidget* parent)
     mapper->setMapping(_moveUpButton, -1);
     mapper->setMapping(_moveDownButton, 1);
 
-    connect(mapper, SIGNAL(QSignalMapper::mappedInt()), this, SLOT(InstanceEditModsWidget::onMoveButtonClicked()));
+    connect(mapper, SIGNAL(mapped(int)), this, SLOT(onMoveButtonClicked(int)));
     connect(_modRepoButton, SIGNAL(released()), this, SLOT(onModRepoButtonClicked()));
     connect(_openMinecraftDirectoryButton, SIGNAL(released()), this, SLOT(onOpenMinecraftDirectoryClicked()));
     connect(_replaceMinecraftJarButton, SIGNAL(released()), this, SLOT(onReplaceMinecraftJarButtonClicked()));
@@ -93,7 +93,7 @@ InstanceEditModsWidget::InstanceEditModsWidget(QWidget* parent)
     connect(_instanceEditModRepoWidget, SIGNAL(signal_BackButtonClicked()), this, SLOT(onModRepoButtonClicked()));
     connect(_instanceEditModRepoWidget, SIGNAL(signal_ModDownloadStarted()), this, SLOT(onModDownloadStarted()));
     connect(_progressTimer, SIGNAL(timeout()), this, SLOT(ModInstallProgressBarUpdate()));
-    connect(_instanceEditModRepoWidget, SIGNAL(InstanceEditModRepoWidget::signal_ModDownloadFinished()), this, SLOT(onModDownloadFinished()));
+    connect(_instanceEditModRepoWidget, SIGNAL(signal_ModDownloadFinished()), this, SLOT(onModDownloadFinished()));
 }
 
 void InstanceEditModsWidget::onModDownloadFinished() {

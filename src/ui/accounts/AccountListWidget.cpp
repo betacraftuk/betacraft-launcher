@@ -36,7 +36,7 @@ AccountListWidget::AccountListWidget(QWidget *parent)
 
     connect(_addAccountWidget, SIGNAL(signal_accountAddSuccess()), this, SLOT(onAccountAdded()));
     connect(_accountList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onAccountClicked(QListWidgetItem*)));
-    connect(_addAccountButton, SIGNAL(QPushButton::released()), this, SLOT(showAddAccountWidget()));
+    connect(_addAccountButton, SIGNAL(released()), this, SLOT(showAddAccountWidget()));
 }
 
 void AccountListWidget::showAddAccountWidget() {

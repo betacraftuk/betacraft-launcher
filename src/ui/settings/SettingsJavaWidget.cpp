@@ -91,9 +91,9 @@ SettingsJavaWidget::SettingsJavaWidget(QWidget* parent)
     connect(_setAsDefaultButton, SIGNAL(released()), this, SLOT(onSetAsDefaultClicked()));
     connect(_removeInstallationButton, SIGNAL(released()), this, SLOT(onRemoveButtonClicked()));
     connect(_addInstallationButton, SIGNAL(released()), this, SLOT(onAddButtonClicked()));
-    connect(&_watcher, SIGNAL(QFutureWatcher<void>::finished()), this, SLOT(SettingsJavaWidget::downloadFinished()));
+    connect(&_watcher, SIGNAL(finished()), this, SLOT(downloadFinished()));
     connect(_progressTimer, SIGNAL(timeout()), this, SLOT(JavaInstallProgressUpdate()));
-    connect(_cancelDownloadButton, SIGNAL(QPushButton::released()), this, SLOT(cancelNetwork()));
+    connect(_cancelDownloadButton, SIGNAL(released()), this, SLOT(cancelNetwork()));
 }
 
 void SettingsJavaWidget::cancelNetwork() {
