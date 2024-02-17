@@ -356,6 +356,15 @@ public class Lang extends JFrame implements LanguageElement {
 		if (langentries.hasProperty("java_wrong_arch"))
 			JAVA_WRONG_ARCH = langentries.getProperty("java_wrong_arch");
 
+		if (langentries.hasProperty("java_ssl_not_supported"))
+			JAVA_SSL_NOT_SUPPORTED = langentries.getProperty("java_ssl_not_supported");
+
+		if (langentries.hasProperty("java_ssl_to_download_resource"))
+			JAVA_SSL_TO_DOWNLOAD_RESOURCE = langentries.getProperty("java_ssl_to_download_resource");
+
+		if (langentries.hasProperty("java_ssl_to_microsoft_account"))
+			JAVA_SSL_TO_MICROSOFT_ACCOUNT = langentries.getProperty("java_ssl_to_microsoft_account");
+
 
 		if (langentries.hasProperty("instance_directory"))
 			INSTANCE_DIRECTORY = langentries.getProperty("instance_directory");
@@ -577,7 +586,10 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String JAVA_INVALID = "Given Java path is not valid. Do you want the instance to use recommended Java?";
 	public static String JAVA_TOO_RECENT = "Given Java version is greater than 8. Do you want the instance to use recommended Java?";
 	public static String JAVA_RECOMMENDED_NOT_FOUND = "Could not find recommended Java in your system. Do you want to download and install it?";
-	public static String JAVA_WRONG_ARCH = "It seems that you're running the wrong architecture of Java (ARM or 32-bit x86). Should you run into issues, get 64-bit Java 8 from https://java.com";
+	public static String JAVA_WRONG_ARCH = "It seems that you're running the wrong architecture of Java (ARM or 32-bit x86). \nShould you run into issues, get 64-bit Java 8 from https://java.com and make your instance use it.";
+	public static String JAVA_SSL_NOT_SUPPORTED = "Your Java is too old to connect to the required resource. Update your Java to %s";
+	public static String JAVA_SSL_TO_MICROSOFT_ACCOUNT = "login to your Minecraft account.";
+	public static String JAVA_SSL_TO_DOWNLOAD_RESOURCE = "download the required resource.";
 
 	public static String INSTANCE_REMOVE_DIRECTORY = "Would you want to permanently remove this instance's directory? This cannot be undone.";
 	public static String INSTANCE_DIRECTORY = "Instance directory:";

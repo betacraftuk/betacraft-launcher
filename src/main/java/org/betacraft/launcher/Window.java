@@ -353,14 +353,14 @@ public class Window extends JFrame implements ActionListener, LanguageElement {
 						}
 						setStatus(playButton, Lang.WINDOW_DOWNLOADING);
 
-						Launcher.initStartup();
+						boolean success = Launcher.initStartup();
 
 						// Update the button state
 						setStatus(playButton, Lang.WINDOW_PLAY);
 						playButton.setEnabled(true);
 
 						// Start the wrapper
-						new Launcher().launchGame(Launcher.currentInstance);
+						if (success) new Launcher().launchGame(Launcher.currentInstance);
 					}
 				}.start();
 			} catch (Exception ex) {

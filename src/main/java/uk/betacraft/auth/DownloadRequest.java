@@ -3,8 +3,11 @@ package uk.betacraft.auth;
 import java.io.File;
 import java.util.Map;
 
+import javax.swing.JOptionPane;
+
 import org.betacraft.launcher.BC;
 import org.betacraft.launcher.DownloadResult;
+import org.betacraft.launcher.Lang;
 import org.betacraft.launcher.Util;
 
 import uk.betacraft.auth.CustomRequest.RequestType;
@@ -52,6 +55,10 @@ public class DownloadRequest extends Request {
 			if (data.successful()) {
 				Util.writeBytes(file, data.getData());
 			} else {
+				if (data.getResponseCode() == -2) {
+					JOptionPane.showMessageDialog(null, String.format(Lang.JAVA_SSL_NOT_SUPPORTED, Lang.JAVA_SSL_TO_DOWNLOAD_RESOURCE), "", JOptionPane.ERROR_MESSAGE);
+				}
+
 				dl_failed = true;
 			}
 		} catch (Throwable t) {

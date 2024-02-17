@@ -2,6 +2,7 @@ package uk.betacraft.auth.jsons.microsoft;
 
 import com.google.gson.Gson;
 
+import uk.betacraft.auth.MicrosoftAuth;
 import uk.betacraft.auth.Request;
 import uk.betacraft.auth.RequestUtil;
 
@@ -15,7 +16,7 @@ public class MinecraftProfileRequest extends Request {
 	@Override
 	public MinecraftProfileResponse perform() {
 		Gson gson = new Gson();
-		String response = RequestUtil.performGETRequest(this);
+		String response = MicrosoftAuth.fireAuthRequest(this);
 
 		MinecraftProfileResponse ret;
 		try {

@@ -6,6 +6,10 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import javax.swing.JOptionPane;
+
+import org.betacraft.launcher.Lang;
+
 import com.google.gson.Gson;
 
 import uk.betacraft.util.WebData;
@@ -13,8 +17,7 @@ import uk.betacraft.util.WebData;
 public class RequestUtil {
 	private static boolean debug = false;
 
-	public static String performPOSTRequest(Request req) {
-		WebData data = performRawPOSTRequest(req);
+	public static String webDataToString(WebData data) {
 		if (data.getData() != null) {
 			try {
 				String response = new String(data.getData(), "UTF-8");
@@ -25,6 +28,11 @@ public class RequestUtil {
 			}
 		}
 		return null;
+	}
+
+	public static String performPOSTRequest(Request req) {
+		WebData data = performRawPOSTRequest(req);
+		return webDataToString(data);
 	}
 
 	public static WebData performRawPOSTRequest(Request req) {
@@ -69,6 +77,9 @@ public class RequestUtil {
 			}
 
 			return new WebData(data, http);
+		} catch (javax.net.ssl.SSLHandshakeException e) {
+			e.printStackTrace();
+			return new WebData(null, -2);
 		} catch (Throwable t) {
 			t.printStackTrace();
 			return new WebData(null, -1);
@@ -77,16 +88,7 @@ public class RequestUtil {
 
 	public static String performGETRequest(Request req) {
 		WebData data = performRawGETRequest(req);
-		if (data.getData() != null) {
-			try {
-				String response = new String(data.getData(), "UTF-8");
-				if (debug) System.out.println("INCOMING: " + response);
-				return response;
-			} catch (Throwable t) {
-				t.printStackTrace();
-			}
-		}
-		return null;
+		return webDataToString(data);
 	}
 
 	public static WebData performRawGETRequest(Request req) {
@@ -120,6 +122,9 @@ public class RequestUtil {
 			}
 
 			return new WebData(data, http);
+		} catch (javax.net.ssl.SSLHandshakeException e) {
+			e.printStackTrace();
+			return new WebData(null, -2);
 		} catch (Throwable t) {
 			t.printStackTrace();
 			return new WebData(null, -1);

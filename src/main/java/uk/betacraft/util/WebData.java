@@ -19,6 +19,6 @@ public class WebData {
 	}
 
 	public boolean successful() {
-		return this.http < 400;
+		return this.http < 400 && this.http >= 200;
 	}
 }

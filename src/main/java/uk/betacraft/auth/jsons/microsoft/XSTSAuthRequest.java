@@ -2,6 +2,7 @@ package uk.betacraft.auth.jsons.microsoft;
 
 import com.google.gson.Gson;
 
+import uk.betacraft.auth.MicrosoftAuth;
 import uk.betacraft.auth.Request;
 import uk.betacraft.auth.RequestUtil;
 
@@ -21,7 +22,7 @@ public class XSTSAuthRequest extends Request {
 	@Override
 	public XBLXSTSAuthResponse perform() {
 		Gson gson = new Gson();
-		String response = RequestUtil.performPOSTRequest(this);
+		String response = MicrosoftAuth.fireAuthRequest(this);
 
 		XBLXSTSAuthResponse ret;
 		try {

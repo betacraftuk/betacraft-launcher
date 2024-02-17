@@ -22,6 +22,7 @@ import uk.betacraft.auth.jsons.microsoft.MinecraftProfileResponse;
 import uk.betacraft.auth.jsons.microsoft.XBLAuthRequest;
 import uk.betacraft.auth.jsons.microsoft.XBLXSTSAuthResponse;
 import uk.betacraft.auth.jsons.microsoft.XSTSAuthRequest;
+import uk.betacraft.util.WebData;
 
 public class MicrosoftAuth extends Authenticator {
 
@@ -154,5 +155,15 @@ public class MicrosoftAuth extends Authenticator {
 			}
 		});
 		System.out.println("-----------------");
+	}
+
+	public static String fireAuthRequest(Request req) {
+		WebData data = RequestUtil.performRawPOSTRequest(req);
+
+		if (data.getResponseCode() == -2) {
+			JOptionPane.showMessageDialog(null, String.format(Lang.JAVA_SSL_NOT_SUPPORTED, Lang.JAVA_SSL_TO_MICROSOFT_ACCOUNT), "", JOptionPane.ERROR_MESSAGE);
+		}
+
+		return RequestUtil.webDataToString(data);
 	}
 }

@@ -1,11 +1,16 @@
 package uk.betacraft.auth.jsons.microsoft;
 
+import javax.swing.JOptionPane;
+
+import org.betacraft.launcher.Lang;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonParseException;
 
 import uk.betacraft.auth.MicrosoftAuth;
 import uk.betacraft.auth.Request;
 import uk.betacraft.auth.RequestUtil;
+import uk.betacraft.util.WebData;
 
 public class CheckTokenRequest extends Request {
 
@@ -27,7 +32,7 @@ public class CheckTokenRequest extends Request {
 	@Override
 	public CheckTokenResponse perform() {
 		Gson gson = new Gson();
-		String response = RequestUtil.performPOSTRequest(this);
+		String response = MicrosoftAuth.fireAuthRequest(this);
 
 		CheckTokenResponse ret;
 		try {
