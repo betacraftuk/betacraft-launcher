@@ -516,6 +516,9 @@ public class InstanceSettings extends JFrame implements LanguageElement {
 		}
 		
 		Launcher.forceUpdate = forceUpdate.isSelected();
+		if (!jpath.equals(Launcher.currentInstance.javaPath)) {
+			Launcher.currentInstance.isJavaPathNew = true;
+		}
 		Launcher.currentInstance.javaPath = jpath;
 		try {
 			Launcher.currentInstance.width = Integer.parseInt(dimensions1.getText());

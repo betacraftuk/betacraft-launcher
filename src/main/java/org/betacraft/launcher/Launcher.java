@@ -11,6 +11,7 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.UnknownHostException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Scanner;
@@ -461,6 +462,47 @@ public class Launcher {
 				JOptionPane.showMessageDialog(Window.mainWindow, Lang.ERR_NO_CONNECTION, Lang.ERR_DL_FAIL, JOptionPane.ERROR_MESSAGE);
 				return false;
 			}
+		}
+
+		// Check for Intel graphics
+		if (!Launcher.disableWarnings && OS.isWindows10_11() && Launcher.currentInstance.isJavaPathNew) {
+			File reportFile = new File(BC.get(), "launcher/dxdiag_report.txt");
+
+			try {
+				ArrayList<String> cmd = new ArrayList<String>();
+				cmd.add("cmd.exe");
+				cmd.add("/C");
+				cmd.add("dxdiag");
+				cmd.add("/t");
+				cmd.add(reportFile.toPath().toString());
+				ProcessBuilder pb = new ProcessBuilder(cmd);
+				Process p = pb.start();
+
+				// wait for the process to finish
+				while (p.isAlive());
+
+				String report = (new String(Files.readAllBytes(reportFile.toPath()), "UTF-8")).toLowerCase();
+
+				report = report.substring(report.indexOf("card name:") + "card name:".length());
+				report = report.substring(0, report.indexOf("\n"));
+
+				String javaver = Util.getFullJavaVersion(Launcher.currentInstance.javaPath);
+				if (report.contains("intel(r) hd graphics family")) {
+					if (javaver == null || !javaver.equals("1.8.0_51")) {
+						JOptionPane.showMessageDialog(Window.mainWindow,
+							String.format(Lang.JAVA_INTEL_GRAPHICS, javaver) + "\n" + Lang.JAVA_INTEL_GRAPHICS_WIKI,
+							"", JOptionPane.INFORMATION_MESSAGE);
+						return false;
+					} else {
+						Launcher.currentInstance.isJavaPathNew = false;
+						Launcher.currentInstance.saveInstance();
+					}
+				}
+			} catch (Throwable t) {
+				t.printStackTrace();
+			}
+
+			reportFile.delete();
 		}
 		return true;
 	}

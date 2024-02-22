@@ -25,6 +25,7 @@ public class Instance {
 	public List<String> addons;
 	public String gameDir;
 	public String javaPath;
+	public boolean isJavaPathNew;
 
 	private Instance(String name, String launchArgs, String version, int width, int height, boolean proxy, boolean keepopen, boolean RPC, List<String> addons, String gameDir) {
 		this.name = name;
@@ -39,6 +40,7 @@ public class Instance {
 		this.gameDir = gameDir;
 		this.console = false;
 		this.javaPath = Launcher.javaRuntime.getAbsolutePath();
+		this.isJavaPathNew = true;
 	}
 
 	public static Instance newInstance(String name) {
@@ -91,6 +93,12 @@ public class Instance {
 				} else {
 					instance.javaPath = jpath;
 				}
+
+				try {
+					instance.isJavaPathNew = Boolean.parseBoolean(instancesettings.getProperty("isJavaPathNew"));
+				} catch (Throwable t) {
+					instance.isJavaPathNew = true;
+				}
 			} catch (Throwable t) {
 				System.err.println("Instance '" + name + "' is corrupted!");
 				t.printStackTrace();
@@ -119,6 +127,7 @@ public class Instance {
 			instancesettings.setProperty("RPC", Boolean.toString(this.RPC));
 			instancesettings.setProperty("console", Boolean.toString(this.console));
 			instancesettings.setProperty("javaPath", javaPath);
+			instancesettings.setProperty("isJavaPathNew", Boolean.toString(this.isJavaPathNew));
 
 			StringBuilder builder = new StringBuilder();
 			String addons = "";
@@ -169,6 +178,7 @@ public class Instance {
 		cloned.version = this.version;
 		cloned.javaPath = this.javaPath;
 		cloned.console = this.console;
+		cloned.isJavaPathNew = this.isJavaPathNew;
 		return cloned;
 	}
 
