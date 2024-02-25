@@ -47,7 +47,7 @@ import uk.betacraft.json.lib.MouseFixMacOSJson;
 
 /** Main class */
 public class Launcher {
-	public static String VERSION = "1.09_16"; // TODO Always update this
+	public static String VERSION = "1.09_17-rc1"; // TODO Always update this
 
 	public static Instance currentInstance;
 	public static boolean forceUpdate = false;
@@ -483,26 +483,50 @@ public class Launcher {
 
 				String report = (new String(Files.readAllBytes(reportFile.toPath()), "UTF-8")).toLowerCase();
 
+				reportFile.delete();
+
 				report = report.substring(report.indexOf("card name:") + "card name:".length());
 				report = report.substring(0, report.indexOf("\n"));
 
+				if (!report.contains("intel(r) hd graphics family"))
+					return true; // can return true here as it's the last check
+
 				String javaver = Util.getFullJavaVersion(Launcher.currentInstance.javaPath);
-				if (report.contains("intel(r) hd graphics family")) {
-					if (javaver == null || !javaver.equals("1.8.0_51")) {
-						JOptionPane.showMessageDialog(Window.mainWindow,
-							String.format(Lang.JAVA_INTEL_GRAPHICS, javaver) + "\n" + Lang.JAVA_INTEL_GRAPHICS_WIKI,
-							"", JOptionPane.INFORMATION_MESSAGE);
-						return false;
-					} else {
+				if (javaver == null || !javaver.equals("1.8.0_51")) {
+
+					File u51loc = Util.getJava8u51Location();
+					if (u51loc != null) {
+						Launcher.currentInstance.javaPath = u51loc.getAbsolutePath();
 						Launcher.currentInstance.isJavaPathNew = false;
 						Launcher.currentInstance.saveInstance();
+					} else {
+						if (!Util.downloadJava8u51()) {
+							JOptionPane.showMessageDialog(Window.mainWindow,
+								String.format(Lang.JAVA_INTEL_GRAPHICS, javaver) + "\n" + Lang.JAVA_INTEL_GRAPHICS_WIKI,
+								"", JOptionPane.INFORMATION_MESSAGE);
+							return false;
+						}
+						
+						File u51zip = new File(BC.get(), "jre-8u51-windows-x64.zip");
+						File u51dir = new File(BC.get(), "java-8u51/");
+						u51dir.mkdir();
+
+						Thread t = Util.unzip(u51zip, u51dir, true);
+						totalThreads.add(t);
+						while (t.isAlive()); // wait for it to unzip
+
+						File u51javaexe = new File(u51dir, "bin/java.exe");
+						Launcher.currentInstance.isJavaPathNew = false;
+						Launcher.currentInstance.javaPath = u51javaexe.getAbsolutePath();
+						Launcher.currentInstance.saveInstance();
 					}
+				} else {
+					Launcher.currentInstance.isJavaPathNew = false;
+					Launcher.currentInstance.saveInstance();
 				}
 			} catch (Throwable t) {
 				t.printStackTrace();
 			}
-
-			reportFile.delete();
 		}
 		return true;
 	}

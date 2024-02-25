@@ -27,10 +27,13 @@ import uk.betacraft.auth.Accounts;
 import uk.betacraft.auth.Authenticator;
 import uk.betacraft.auth.Credentials;
 import uk.betacraft.auth.Credentials.AccountType;
+import uk.betacraft.auth.CustomRequest;
+import uk.betacraft.auth.CustomResponse;
 import uk.betacraft.auth.DownloadRequest;
 import uk.betacraft.auth.DownloadResponse;
 import uk.betacraft.auth.MicrosoftAuth;
 import uk.betacraft.auth.NoAuth;
+import uk.betacraft.auth.RequestUtil;
 import uk.betacraft.json.lib.MouseFixMacOSJson;
 
 public class Util {
@@ -495,6 +498,43 @@ public class Util {
 			t.printStackTrace();
 			return false;
 		}
+	}
+
+	public static boolean downloadJava8u51() {
+		String mirror1 = "https://archive.org/download/Java_8_update_51/jre-8u51-windows-x64.zip";
+		String dest = new File(BC.get(), "jre-8u51-windows-x64.zip").getAbsolutePath();
+		DownloadResponse res = new DownloadRequest(mirror1, dest, null, false).perform();
+		if (res.result == DownloadResult.FAILED_WITHOUT_BACKUP) {
+			// get alternative mirror
+			CustomResponse cres = new CustomRequest("http://files.betacraft.uk/launcher/assets/java-8u51-url.txt").perform();
+			if (cres.response == null) {
+				return false;
+			}
+
+			res = new DownloadRequest(cres.response, dest, null, false).perform();
+			if (res.result == DownloadResult.FAILED_WITHOUT_BACKUP) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	public static File getJava8u51Location() {
+		// paths where java 8u51 is stored by the official mc launcher
+		String[] expectedPaths = new String[] {
+			"C:\\Program Files\\Java\\jre1.8.0_51\\bin\\java.exe",
+			"C:\\Program Files (x86)\\Minecraft Launcher\\runtime\\jre-legacy\\windows-x64\\jre-legacy\\bin\\java.exe",
+			System.getenv("USERPROFILE") + "\\AppData\\Local\\Packages\\Microsoft.4297127D64EC6_8wekyb3d8bbwe\\LocalCache\\Local\\runtime\\jre-legacy\\windows-x64\\jre-legacy\\bin\\java.exe"
+		};
+
+		for (String expectedPath : expectedPaths) {
+			File expectedFile = new File(expectedPath);
+			if (expectedFile.exists() && expectedFile.isFile()) {
+				return expectedFile;
+			}
+		}
+		return null;
 	}
 	
 	public static String getExpectedJavaLocation() {
