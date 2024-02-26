@@ -488,7 +488,7 @@ public class Launcher {
 				report = report.substring(report.indexOf("card name:") + "card name:".length());
 				report = report.substring(0, report.indexOf("\n"));
 
-				if (!report.contains("intel(r) hd graphics family"))
+				if (!report.contains("intel(r) hd graphics"))
 					return true; // can return true here as it's the last check
 
 				String javaver = Util.getFullJavaVersion(Launcher.currentInstance.javaPath);
@@ -500,6 +500,12 @@ public class Launcher {
 						Launcher.currentInstance.isJavaPathNew = false;
 						Launcher.currentInstance.saveInstance();
 					} else {
+						SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+								Window.setStatus(Window.playButton, String.format(Lang.WINDOW_DOWNLOADING_RESOURCE, "Java 8u51"));
+							}
+						});
+
 						if (!Util.downloadJava8u51()) {
 							JOptionPane.showMessageDialog(Window.mainWindow,
 								String.format(Lang.JAVA_INTEL_GRAPHICS, javaver) + "\n" + Lang.JAVA_INTEL_GRAPHICS_WIKI,
