@@ -83,12 +83,14 @@ public class MicrosoftAuth extends Authenticator {
 		MinecraftAuthResponse mcres = new MinecraftAuthRequest(xblres.DisplayClaims.xui[0].uhs, xstsres.Token).perform();
 		if (mcres == null || mcres.isEmpty()) {
 			System.out.println("MinecraftAuth failed!");
+			displayError(mcres, Lang.LOGIN_MICROSOFT_NO_MINECRAFT, Lang.LOGIN_MICROSOFT_ERROR);
 			return false;
 		}
 
 		MinecraftGameOwnResponse mcgores = new MinecraftGameOwnRequest(mcres.access_token).perform();
 		if (mcgores == null || mcgores.isEmpty()) {
 			System.out.println("MinecraftOwnership failed!");
+			displayError(mcgores, Lang.LOGIN_MICROSOFT_NO_MINECRAFT, Lang.LOGIN_MICROSOFT_ERROR);
 			return false;
 		}
 
@@ -102,6 +104,7 @@ public class MicrosoftAuth extends Authenticator {
 		MinecraftProfileResponse mcpres = new MinecraftProfileRequest(mcres.access_token).perform();
 		if (mcpres == null || mcpres.isEmpty()) {
 			System.out.println("MinecraftProfile failed!");
+			displayError(mcpres, Lang.LOGIN_MICROSOFT_NO_MINECRAFT, Lang.LOGIN_MICROSOFT_ERROR);
 			return false;
 		}
 
