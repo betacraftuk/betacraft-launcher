@@ -47,6 +47,7 @@ public class MicrosoftAuth extends Authenticator {
 
 		if (ctres == null) {
 			// token most likely timed out
+			displayError(null, Lang.LOGIN_RELOGIN, Lang.LOGIN_MICROSOFT_ERROR);
 			return false;
 		}
 
@@ -143,6 +144,15 @@ public class MicrosoftAuth extends Authenticator {
 	}
 
 	public static void displayError(Object error, final String title, final String msg) {
+		SwingUtilities.invokeLater(new Runnable() {
+			public void run() {
+				JOptionPane.showMessageDialog(Window.mainWindow, msg, title, JOptionPane.ERROR_MESSAGE);
+			}
+		});
+
+		if (error == null)
+			return;
+
 		System.out.println("-Stack of " + error.getClass().getSimpleName() + "-");
 		for (Field f : error.getClass().getDeclaredFields()) {
 			if (!Modifier.isTransient(f.getModifiers())) {
@@ -152,11 +162,6 @@ public class MicrosoftAuth extends Authenticator {
 				} catch (Throwable t) {}
 			}
 		}
-		SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				JOptionPane.showMessageDialog(Window.mainWindow, msg, title, JOptionPane.ERROR_MESSAGE);
-			}
-		});
 		System.out.println("-----------------");
 	}
 

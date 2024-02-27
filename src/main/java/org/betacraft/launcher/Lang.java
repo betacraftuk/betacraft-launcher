@@ -332,6 +332,9 @@ public class Lang extends JFrame implements LanguageElement {
 
 		if (langentries.hasProperty("login_microsoft_code_line2"))
 			LOGIN_MICROSOFT_CODE_LINE2 = langentries.getProperty("login_microsoft_code_line2");
+		
+		if (langentries.hasProperty("login_relogin"))
+			LOGIN_RELOGIN = langentries.getProperty("login_relogin");
 
 
 		if (langentries.hasProperty("login_failed"))
@@ -584,6 +587,7 @@ public class Lang extends JFrame implements LanguageElement {
 	public static String LOGIN_MICROSOFT_NO_MINECRAFT = "You don't own Minecraft on this account.";
 	public static String LOGIN_MICROSOFT_CODE_LINE1 = "To proceed, open up:";
 	public static String LOGIN_MICROSOFT_CODE_LINE2 = "in a browser and type the code:";
+	public static String LOGIN_RELOGIN = "You need to re-login to your Microsoft account (token timed out)";
 
 	public static String LOGIN_FAILED = "Failed to complete the login process";
 	public static String LOGIN_FAILED_INVALID_CREDENTIALS = "Invalid e-mail or password.";
