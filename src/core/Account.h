@@ -35,6 +35,6 @@ bc_account* bc_account_get(const char* uuid);
 bc_account_array* bc_account_list();
 void bc_account_refresh();
 void bc_account_register_forbidden_all();
-void bc_account_register_forbidden(bc_account* account, int uuid);
+void bc_account_register_forbidden(const bc_account* account, int uuid);
 
 #endif

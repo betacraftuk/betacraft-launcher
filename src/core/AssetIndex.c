@@ -6,8 +6,8 @@
 #include "Betacraft.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <limits.h>
 
 #ifdef __linux__
 #include <pwd.h>
@@ -49,7 +49,7 @@ bc_assetindex* bc_assetindex_read_objects(const char* responseData) {
 }
 
 bc_assetindex* bc_assetindex_load(bc_version_assetIndexData* data) {
-    char* assetsData;
+    char* assetsData = NULL;
     char* location = bc_file_minecraft_directory();
     char indexesLoc[PATH_MAX];
 
@@ -71,16 +71,19 @@ bc_assetindex* bc_assetindex_load(bc_version_assetIndexData* data) {
         bc_file_create(jsonLoc, assetsData);
     } else {
         json = json_object_from_file(jsonLoc);
-        assetsData = json_object_to_json_string(json);
+        const char* json_str = json_object_to_json_string(json);
+
+        assetsData = malloc(sizeof(char) * strlen(json_str));
+        strcpy(assetsData, json_str);
     }
 
     bc_assetindex* assetIndex = bc_assetindex_read_objects(assetsData);
 
     if (json != NULL) {
         json_object_put(json);
-    } else {
-        free(assetsData);
     }
+
+    free(assetsData);
 
     return assetIndex;
 }

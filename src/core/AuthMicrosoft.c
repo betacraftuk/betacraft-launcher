@@ -8,7 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <time.h>
 
 #ifdef _WIN32
@@ -130,12 +129,12 @@ bc_auth_microsoftDeviceResponse* bc_auth_microsoft_device() {
     return res;
 }
 
-int bc_auth_microsoft_check_token(const char* data, const bc_auth_microsoftResponse* res) {
+int bc_auth_microsoft_check_token(const char* data, bc_auth_microsoftResponse* res) {
     char* response = bc_network_post(API_MICROSOFT_TOKEN, data, "Content-Type: application/x-www-form-urlencoded");
     json_object* json = json_tokener_parse(response);
     free(response);
 
-    char* error = jext_get_string_dummy(json, "error");
+    const char* error = jext_get_string_dummy(json, "error");
 
     if (error == NULL || strcmp(error, "") == 0) {
         snprintf(res->access_token, sizeof(res->access_token), "%s", jext_get_string_dummy(json, "access_token"));

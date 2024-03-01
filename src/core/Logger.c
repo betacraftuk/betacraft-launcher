@@ -3,11 +3,9 @@
 #include "Account.h"
 #include "StringUtils.h"
 
-#include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <time.h>
-#include <string.h>
 
 void bc_log(const char* format, ...) {
     FILE* fp;
@@ -41,8 +39,8 @@ void bc_log(const char* format, ...) {
     }
 
     // TODO: make a list of forbidden strings at startup and exclude them from logging
-    printf(printbuffer);
-    fprintf(fp, printbuffer);
+    printf("%s", printbuffer);
+    fprintf(fp, "%s", printbuffer);
 
     va_end(args);
     va_end(args2);

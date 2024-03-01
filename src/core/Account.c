@@ -1,6 +1,5 @@
 #include "Account.h"
 #include "JsonExtension.h"
-#include "Network.h"
 #include "AuthMicrosoft.h"
 
 #include <stdio.h>
@@ -183,7 +182,7 @@ void bc_account_register_forbidden_all() {
     free(arr);
 }
 
-void bc_account_register_forbidden(bc_account* account, int uuid) {
+void bc_account_register_forbidden(const bc_account* account, int uuid) {
     snprintf(forbidden_accesstokens[forbidden_accesstokens_size], 2048, "%s", account->minecraft_access_token);
     forbidden_accesstokens_size++;
 

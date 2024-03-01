@@ -209,8 +209,14 @@ int bc_network_status() {
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
 
         res = curl_easy_perform(curl);
+        CURLcode expected_res = CURLE_OK;
 
-        if (res != CURLE_OK) {
+        #ifndef NDEBUG
+            bc_log("%s\n", "DEBUG");
+            expected_res = CURLE_WRITE_ERROR;
+        #endif
+
+        if (res != expected_res) {
             bc_log("Failed: %s\n", curl_easy_strerror(res));
             return 0;
         }
