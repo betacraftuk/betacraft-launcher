@@ -793,6 +793,11 @@ public class Launcher {
 			dest = new File(fil, version.getVersion() + ".jar");
 		}
 
+		// Don't attempt to run 0-byte game jars, try to re-download instead
+		if (dest.exists() && dest.length() == 0L) {
+			dest.delete();
+		}
+
 		if (version.sha1 != null) {
 			if (dest.exists()) {
 				String file_sha1 = Util.getSHA1(dest);
