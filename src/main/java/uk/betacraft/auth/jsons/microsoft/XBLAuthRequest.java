@@ -22,6 +22,7 @@ public class XBLAuthRequest extends Request {
 		PROPERTIES.put("Content-Type", "application/json");
 		PROPERTIES.put("Accept", "application/json");
 		Properties = new XBLProperties(ms_accessToken);
+		type = RequestType.POST;
 	}
 
 	@Override

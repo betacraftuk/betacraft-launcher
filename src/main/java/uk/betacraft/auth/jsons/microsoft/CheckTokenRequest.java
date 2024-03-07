@@ -27,6 +27,7 @@ public class CheckTokenRequest extends Request {
 					"&grant_type=refresh_token" +
 					"&refresh_token=" + refreshtoken;
 		}
+		type = RequestType.POST;
 	}
 
 	@Override

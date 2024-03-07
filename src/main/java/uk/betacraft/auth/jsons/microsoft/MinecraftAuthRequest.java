@@ -20,6 +20,7 @@ public class MinecraftAuthRequest extends Request {
 		PROPERTIES.put("Content-Type", "application/json");
 		PROPERTIES.put("Accept", "application/json");
 		identityToken = "XBL3.0 x=" + uhs + ";" + xsts_token;
+		type = RequestType.POST;
 	}
 
 	@Override

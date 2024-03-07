@@ -17,6 +17,7 @@ public class XSTSAuthRequest extends Request {
 		PROPERTIES.put("Content-Type", "application/json");
 		PROPERTIES.put("Accept", "application/json");
 		Properties = new XSTSProperties(xbl_token);
+		type = RequestType.POST;
 	}
 
 	@Override

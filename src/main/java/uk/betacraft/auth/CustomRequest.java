@@ -3,7 +3,6 @@ package uk.betacraft.auth;
 import java.util.Map;
 
 public class CustomRequest extends Request {
-	private RequestType type;
 
 	public CustomRequest(String url) {
 		this(url, null, null, RequestType.GET);
@@ -25,10 +24,5 @@ public class CustomRequest extends Request {
 		}
 
 		return new CustomResponse(response);
-	}
-
-	public enum RequestType {
-		POST,
-		GET;
 	}
 }

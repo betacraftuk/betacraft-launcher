@@ -10,12 +10,10 @@ import org.betacraft.launcher.DownloadResult;
 import org.betacraft.launcher.Lang;
 import org.betacraft.launcher.Util;
 
-import uk.betacraft.auth.CustomRequest.RequestType;
 import uk.betacraft.util.WebData;
 
 public class DownloadRequest extends Request {
 	public String destination;
-	public RequestType type;
 	public String hash_sha1;
 	public boolean force;
 

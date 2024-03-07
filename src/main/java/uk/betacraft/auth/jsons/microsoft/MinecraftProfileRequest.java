@@ -11,6 +11,7 @@ public class MinecraftProfileRequest extends Request {
 	public MinecraftProfileRequest(String bearer_token) {
 		REQUEST_URL = "https://api.minecraftservices.com/minecraft/profile";
 		PROPERTIES.put("Authorization", "Bearer " + bearer_token);
+		this.type = RequestType.GET;
 	}
 
 	@Override

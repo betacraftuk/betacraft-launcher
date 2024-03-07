@@ -11,6 +11,7 @@ import org.betacraft.launcher.Launcher;
 import org.betacraft.launcher.Window;
 
 import uk.betacraft.auth.Credentials.AccountType;
+import uk.betacraft.auth.Request.RequestType;
 import uk.betacraft.auth.jsons.microsoft.CheckTokenRequest;
 import uk.betacraft.auth.jsons.microsoft.CheckTokenResponse;
 import uk.betacraft.auth.jsons.microsoft.MinecraftAuthRequest;
@@ -47,7 +48,7 @@ public class MicrosoftAuth extends Authenticator {
 
 		if (ctres == null) {
 			// token most likely timed out
-			displayError(null, Lang.LOGIN_RELOGIN, Lang.LOGIN_MICROSOFT_ERROR);
+			displayError(null, Lang.LOGIN_MICROSOFT_ERROR, Lang.LOGIN_RELOGIN);
 			return false;
 		}
 
@@ -67,69 +68,50 @@ public class MicrosoftAuth extends Authenticator {
 		if (xstsres.Identity != null) {
 			if (xstsres.XErr == 2148916233L) {
 				System.out.println("No Xbox account registered");
-				displayError(xstsres, Lang.LOGIN_MICROSOFT_NO_XBOX, Lang.LOGIN_MICROSOFT_ERROR);
+				displayError(xstsres, Lang.LOGIN_MICROSOFT_ERROR, Lang.LOGIN_MICROSOFT_NO_XBOX);
 				// no xbox account registered
 				return false;
 			} else if (xstsres.XErr == 2148916238L) {
 				System.out.println("PARENTAL CONTROL");
-				displayError(xstsres, Lang.LOGIN_MICROSOFT_PARENT, Lang.LOGIN_MICROSOFT_ERROR);
+				displayError(xstsres, Lang.LOGIN_MICROSOFT_ERROR, Lang.LOGIN_MICROSOFT_PARENT);
 				// parental control thingy, user has to be added to a Family by an adult
 				return false;
 			} else {
 				System.out.println("Unexpected error: " + xstsres.XErr);
-				displayError(xstsres, String.format(Lang.UNEXPECTED_ERROR, xstsres.XErr), Lang.LOGIN_MICROSOFT_ERROR);
+				displayError(xstsres, Lang.LOGIN_MICROSOFT_ERROR, String.format(Lang.UNEXPECTED_ERROR, xstsres.XErr));
 			}
 		}
 
 		MinecraftAuthResponse mcres = new MinecraftAuthRequest(xblres.DisplayClaims.xui[0].uhs, xstsres.Token).perform();
 		if (mcres == null || mcres.isEmpty()) {
 			System.out.println("MinecraftAuth failed!");
-			displayError(mcres, Lang.LOGIN_MICROSOFT_NO_MINECRAFT, Lang.LOGIN_MICROSOFT_ERROR);
-			return false;
-		}
-
-		MinecraftGameOwnResponse mcgores = new MinecraftGameOwnRequest(mcres.access_token).perform();
-		if (mcgores == null || mcgores.isEmpty()) {
-			System.out.println("MinecraftOwnership failed!");
-			displayError(mcgores, Lang.LOGIN_MICROSOFT_NO_MINECRAFT, Lang.LOGIN_MICROSOFT_ERROR);
-			return false;
-		}
-
-		if (mcgores.items == null || mcgores.items.length == 0) {
-			if (mcgores.error != null) {
-				displayError(mcgores, Lang.LOGIN_MICROSOFT_NO_MINECRAFT, Lang.LOGIN_MICROSOFT_ERROR);
-			}
+			displayError(mcres, Lang.LOGIN_MICROSOFT_ERROR, Lang.LOGIN_MICROSOFT_NO_MINECRAFT);
 			return false;
 		}
 
 		MinecraftProfileResponse mcpres = new MinecraftProfileRequest(mcres.access_token).perform();
 		if (mcpres == null || mcpres.isEmpty()) {
 			System.out.println("MinecraftProfile failed!");
-			displayError(mcpres, Lang.LOGIN_MICROSOFT_NO_MINECRAFT, Lang.LOGIN_MICROSOFT_ERROR);
+			displayError(mcpres, Lang.LOGIN_MICROSOFT_ERROR, Lang.LOGIN_MICROSOFT_NO_MINECRAFT);
 			return false;
 		}
 
-		if (mcpres.error != null) {
-			displayError(mcpres, Lang.LOGIN_MICROSOFT_NO_MINECRAFT, Lang.LOGIN_MICROSOFT_ERROR);
-			return false;
-		} else {
-			this.clearFields();
-			this.credentials = new Credentials();
-			this.credentials.expires_at = ctres.expires_in*1000 + System.currentTimeMillis();
-			this.credentials.refresh_token = ctres.refresh_token;
-			this.credentials.access_token = mcres.access_token;
-			this.credentials.username = mcpres.name;
-			this.credentials.local_uuid = mcpres.id;
-			this.credentials.account_type = AccountType.MICROSOFT;
-			Launcher.accounts.addAccount(this.credentials);
+		this.clearFields();
+		this.credentials = new Credentials();
+		this.credentials.expires_at = ctres.expires_in*1000 + System.currentTimeMillis();
+		this.credentials.refresh_token = ctres.refresh_token;
+		this.credentials.access_token = mcres.access_token;
+		this.credentials.username = mcpres.name;
+		this.credentials.local_uuid = mcpres.id;
+		this.credentials.account_type = AccountType.MICROSOFT;
+		Launcher.accounts.addAccount(this.credentials);
 
-			Launcher.accounts.setCurrent(this.getCredentials());
-			Launcher.auth = this;
-			this.authSuccess();
+		Launcher.accounts.setCurrent(this.getCredentials());
+		Launcher.auth = this;
+		this.authSuccess();
 
-			System.out.println("USERNAME: " + this.credentials.username);
-			System.out.println("ACC_UUID: " + this.credentials.local_uuid);
-		}
+		System.out.println("USERNAME: " + this.credentials.username);
+		System.out.println("ACC_UUID: " + this.credentials.local_uuid);
 		return true;
 	}
 
@@ -166,7 +148,7 @@ public class MicrosoftAuth extends Authenticator {
 	}
 
 	public static String fireAuthRequest(Request req) {
-		WebData data = RequestUtil.performRawPOSTRequest(req);
+		WebData data = req.type == RequestType.POST ? RequestUtil.performRawPOSTRequest(req) : RequestUtil.performRawGETRequest(req);
 
 		if (data.getResponseCode() == -2) {
 			JOptionPane.showMessageDialog(null, String.format(Lang.JAVA_SSL_NOT_SUPPORTED, Lang.JAVA_SSL_TO_MICROSOFT_ACCOUNT), "", JOptionPane.ERROR_MESSAGE);
