@@ -16,8 +16,6 @@ import uk.betacraft.auth.jsons.microsoft.CheckTokenRequest;
 import uk.betacraft.auth.jsons.microsoft.CheckTokenResponse;
 import uk.betacraft.auth.jsons.microsoft.MinecraftAuthRequest;
 import uk.betacraft.auth.jsons.microsoft.MinecraftAuthResponse;
-import uk.betacraft.auth.jsons.microsoft.MinecraftGameOwnRequest;
-import uk.betacraft.auth.jsons.microsoft.MinecraftGameOwnResponse;
 import uk.betacraft.auth.jsons.microsoft.MinecraftProfileRequest;
 import uk.betacraft.auth.jsons.microsoft.MinecraftProfileResponse;
 import uk.betacraft.auth.jsons.microsoft.XBLAuthRequest;
