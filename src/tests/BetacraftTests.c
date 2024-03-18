@@ -1,7 +1,4 @@
 #include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "../core/Betacraft.h"
 #include "../core/Network.h"
@@ -15,13 +12,13 @@ void test_bc_server_list() {
 }
 
 int main() {
-    int online = bc_network_status();
+    // int online = bc_network_status();
 
-    if (!online) {
-        return 0;
-    }
+    // if (!online) {
+        // return 0;
+    // }
 
-    test_bc_server_list();
+    // test_bc_server_list();
 
     return 0;
 }

@@ -32,7 +32,6 @@ if(WIN32)
 
     add_custom_command(TARGET Betacraft POST_BUILD
         COMMAND ${TOOL_WINDEPLOYQT}
-                --no-translations
                 $<TARGET_FILE:Betacraft>
         COMMENT "Running windeployqt..."
     )
