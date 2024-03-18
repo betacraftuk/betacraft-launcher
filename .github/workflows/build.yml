@@ -62,6 +62,19 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: make
 
+    - name: Cache libs
+      id: cache-libs
+      uses: actions/cache@v3
+      env:
+        cache-name: cache-libs
+      with:
+        path: ${{github.workspace}}/build/lib
+        key: ${{ runner.os }}-build-${{ env.cache-name }}}}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+
     - name: Test
-      working-directory: ${{github.workspace}}/build
+      working-directory: ${{github.workspace}}/build/src
       run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure

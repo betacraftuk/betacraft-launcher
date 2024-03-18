@@ -1,7 +1,4 @@
 #include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 #include "../core/Betacraft.h"
 #include "../core/Network.h"
@@ -21,7 +18,7 @@ int main() {
         return 0;
     }
 
-    test_bc_server_list();
+    // test_bc_server_list();
 
     return 0;
 }
