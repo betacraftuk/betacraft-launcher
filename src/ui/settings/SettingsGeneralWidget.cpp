@@ -4,11 +4,11 @@
 #include <QtWidgets>
 
 extern "C" {
-    #include "../../core/Betacraft.h"
+#include "../../core/Betacraft.h"
 }
 
-SettingsGeneralWidget::SettingsGeneralWidget(QWidget* parent)
-    : QWidget{ parent } {
+SettingsGeneralWidget::SettingsGeneralWidget(QWidget *parent)
+    : QWidget{parent} {
     _layout = new QGridLayout(this);
     _languageLayout = new QVBoxLayout();
     _languageGroup = new QGroupBox(this);
@@ -20,11 +20,11 @@ SettingsGeneralWidget::SettingsGeneralWidget(QWidget* parent)
     _languageGroup->setTitle(bc_translate("settings_general_language_title"));
 
     QDir langDir(":/lang/");
-    foreach(QString lang, langDir.entryList(QDir::Files)) {
+    foreach (QString lang, langDir.entryList(QDir::Files)) {
         _languageCombo->addItem(lang);
     }
 
-    bc_settings* settings = bc_settings_get();
+    bc_settings *settings = bc_settings_get();
     _languageCombo->setCurrentText(QString(settings->language));
     _discordCheckbox->setChecked(settings->discord);
 
@@ -45,14 +45,17 @@ SettingsGeneralWidget::SettingsGeneralWidget(QWidget* parent)
 
     setLayout(_layout);
 
-    connect(_languageCombo, SIGNAL(currentTextChanged(const QString&)), this, SLOT(onLanguageChange(const QString&)));
-    connect(_discordCheckbox, SIGNAL(clicked(bool)), this, SLOT(onDiscordCheckboxClicked(bool)));
+    connect(_languageCombo, SIGNAL(currentTextChanged(const QString &)), this,
+            SLOT(onLanguageChange(const QString &)));
+    connect(_discordCheckbox, SIGNAL(clicked(bool)), this,
+            SLOT(onDiscordCheckboxClicked(bool)));
 }
 
-void SettingsGeneralWidget::onLanguageChange(const QString& lang) {
-    bc_settings* settings = bc_settings_get();
+void SettingsGeneralWidget::onLanguageChange(const QString &lang) {
+    bc_settings *settings = bc_settings_get();
 
-    snprintf(settings->language, sizeof(settings->language), "%s", lang.toStdString().c_str());
+    snprintf(settings->language, sizeof(settings->language), "%s",
+             lang.toStdString().c_str());
     bc_settings_update(settings);
 
     free(settings);
@@ -61,7 +64,7 @@ void SettingsGeneralWidget::onLanguageChange(const QString& lang) {
 }
 
 void SettingsGeneralWidget::onDiscordCheckboxClicked(bool checked) {
-    bc_settings* settings = bc_settings_get();
+    bc_settings *settings = bc_settings_get();
     settings->discord = checked;
 
     bc_settings_update(settings);

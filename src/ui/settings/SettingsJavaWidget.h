@@ -5,7 +5,7 @@
 #include <QtConcurrent>
 
 extern "C" {
-    #include "../../core/JavaInstallations.h"
+#include "../../core/JavaInstallations.h"
 }
 
 class QGridLayout;
@@ -17,15 +17,14 @@ class QStandardItemModel;
 class QProgressBar;
 class QTimer;
 
-class SettingsJavaWidget : public QWidget
-{
+class SettingsJavaWidget : public QWidget {
     Q_OBJECT
-public:
-    explicit SettingsJavaWidget(QWidget* parent = nullptr);
+  public:
+    explicit SettingsJavaWidget(QWidget *parent = nullptr);
     void downloadRecommendedJava(QString javaVersion);
-    QStandardItemModel* _javaTreeItemModel;
+    QStandardItemModel *_javaTreeItemModel;
 
-private slots:
+  private slots:
     void onJavaInstallClicked();
     void onSetAsDefaultClicked();
     void onAddButtonClicked();
@@ -33,22 +32,22 @@ private slots:
     void downloadFinished();
     void JavaInstallProgressUpdate();
 
-signals:
+  signals:
     void signal_toggleTabs();
 
-private:
-    QGridLayout* _layout;
-    QPushButton* _addInstallationButton;
-    QPushButton* _removeInstallationButton;
-    QPushButton* _installJavaButton;
-    QPushButton* _setAsDefaultButton;
-    QPushButton* _cancelDownloadButton;
-    QComboBox* _javaInstallList;
-    QLabel* _javaInstallLabel;
-    QTreeView* _javaTreeView;
+  private:
+    QGridLayout *_layout;
+    QPushButton *_addInstallationButton;
+    QPushButton *_removeInstallationButton;
+    QPushButton *_installJavaButton;
+    QPushButton *_setAsDefaultButton;
+    QPushButton *_cancelDownloadButton;
+    QComboBox *_javaInstallList;
+    QLabel *_javaInstallLabel;
+    QTreeView *_javaTreeView;
     QFutureWatcher<void> _watcher;
-    QProgressBar* _progressBar;
-    QTimer* _progressTimer;
+    QProgressBar *_progressBar;
+    QTimer *_progressTimer;
     void populateJavaTreeView();
 };
 

@@ -6,20 +6,19 @@
 class QGridLayout;
 class QTabWidget;
 
-class AddAccountWidget : public QWidget
-{
+class AddAccountWidget : public QWidget {
     Q_OBJECT
-public:
-    explicit AddAccountWidget(QWidget* parent = nullptr);
+  public:
+    explicit AddAccountWidget(QWidget *parent = nullptr);
 
-signals:
+  signals:
     void signal_accountAddSuccess();
 
-private: 
-    QGridLayout* _layout;
-    QTabWidget* _menu;
-    QWidget* _microsoftWidget;
-    QWidget* _mojangWidget;
+  private:
+    QGridLayout *_layout;
+    QTabWidget *_menu;
+    QWidget *_microsoftWidget;
+    QWidget *_mojangWidget;
 };
 
 #endif

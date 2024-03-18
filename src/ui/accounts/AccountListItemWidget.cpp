@@ -1,13 +1,13 @@
 #include "AccountListItemWidget.h"
 
 extern "C" {
-    #include "../../core/Betacraft.h"
+#include "../../core/Betacraft.h"
 }
 
 #include <QtWidgets>
 
-AccountListItemWidget::AccountListItemWidget(bc_account a, QWidget* parent)
-    : QWidget{ parent } {
+AccountListItemWidget::AccountListItemWidget(bc_account a, QWidget *parent)
+    : QWidget{parent} {
     _layout = new QGridLayout(this);
     _image = new QLabel(this);
     _name = new QLabel(a.username, this);
@@ -18,8 +18,9 @@ AccountListItemWidget::AccountListItemWidget(bc_account a, QWidget* parent)
 
     if (QString(avatar.response).compare("Invalid UUID") != 0) {
         QPixmap pic;
-        pic.loadFromData((const uchar*)avatar.response, avatar.size, "PNG");
-        _image->setPixmap(pic.scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        pic.loadFromData((const uchar *)avatar.response, avatar.size, "PNG");
+        _image->setPixmap(
+            pic.scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
 
     free(avatar.response);

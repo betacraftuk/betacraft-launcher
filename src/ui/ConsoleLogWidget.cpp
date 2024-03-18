@@ -2,7 +2,7 @@
 #include "Betacraft.h"
 
 extern "C" {
-    #include "../core/ProcessHandler.h"
+#include "../core/ProcessHandler.h"
 }
 
 #include <QtWidgets>
@@ -11,18 +11,22 @@ QString _consoleLogString;
 int _consoleLogClearCounter = 0;
 bool _paused = false;
 
-ConsoleLogWidget::ConsoleLogWidget(QWidget* parent)
-    : QWidget(parent) {
+ConsoleLogWidget::ConsoleLogWidget(QWidget *parent) : QWidget(parent) {
     initObjects();
     initLayout();
     connectSignalsToSlots();
 }
 
 void ConsoleLogWidget::connectSignalsToSlots() {
-    connect(_consoleLogTimer, SIGNAL(timeout()), this, SLOT(UpdateConsoleLog()));
-    connect(_copyButton, &QPushButton::released, this, [this]() { QApplication::clipboard()->setText(_consoleLogString); });
-    connect(_clearButton, &QPushButton::released, this, &ConsoleLogWidget::clearConsoleLog);
-    connect(_pauseButton, &QPushButton::released, this, &ConsoleLogWidget::pauseConsoleLog);
+    connect(_consoleLogTimer, SIGNAL(timeout()), this,
+            SLOT(UpdateConsoleLog()));
+    connect(_copyButton, &QPushButton::released, this, [this]() {
+        QApplication::clipboard()->setText(_consoleLogString);
+    });
+    connect(_clearButton, &QPushButton::released, this,
+            &ConsoleLogWidget::clearConsoleLog);
+    connect(_pauseButton, &QPushButton::released, this,
+            &ConsoleLogWidget::pauseConsoleLog);
 }
 
 void ConsoleLogWidget::clearConsoleLog() {
@@ -33,7 +37,8 @@ void ConsoleLogWidget::clearConsoleLog() {
 
 void ConsoleLogWidget::pauseConsoleLog() {
     _paused = !_paused;
-    _paused ? _pauseButton->setText(bc_translate("gamelog_unpause")) : _pauseButton->setText(bc_translate("gamelog_pause"));
+    _paused ? _pauseButton->setText(bc_translate("gamelog_unpause"))
+            : _pauseButton->setText(bc_translate("gamelog_pause"));
 }
 
 void ConsoleLogWidget::initLayout() {
@@ -73,23 +78,24 @@ void ConsoleLogWidget::UpdateConsoleLog() {
 
     if (!_paused && _consoleLogString.compare(log) != 0) {
         _consoleLog->setText(log);
-        _consoleLog->verticalScrollBar()->setValue(_consoleLog->verticalScrollBar()->maximum());
+        _consoleLog->verticalScrollBar()->setValue(
+            _consoleLog->verticalScrollBar()->maximum());
         _consoleLogString = log;
     }
 }
 
-void ConsoleLogWidget::showEvent(QShowEvent* e) {
+void ConsoleLogWidget::showEvent(QShowEvent *e) {
     _consoleLogTimer->start(1000);
     QWidget::showEvent(e);
 }
 
-void ConsoleLogWidget::closeEvent(QCloseEvent* e) {
+void ConsoleLogWidget::closeEvent(QCloseEvent *e) {
     _consoleLogTimer->stop();
     QWidget::closeEvent(e);
 }
 
 void ConsoleLogWidget::keyPressEvent(QKeyEvent *e) {
-    if(e->key() == Qt::Key_Return) {
+    if (e->key() == Qt::Key_Return) {
         QList<QTextEdit::ExtraSelection> extraSelections;
         _consoleLog->moveCursor(QTextCursor::Start);
 

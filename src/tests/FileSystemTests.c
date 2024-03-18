@@ -1,5 +1,5 @@
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -39,16 +39,16 @@ void test_make_path() {
     assert(bc_file_directory_exists("test/innerDir/"));
 }
 
-int test_bc_file_list(const char* dest) {
-    bc_file_list_array* files = bc_file_list(dest);
+int test_bc_file_list(const char *dest) {
+    bc_file_list_array *files = bc_file_list(dest);
     int ret = files->len;
     free(files);
 
     return ret;
 }
 
-void test_bc_file_make_absolute_path(const char* path) {
-    char* absolutePath = bc_file_make_absolute_path(path);
+void test_bc_file_make_absolute_path(const char *path) {
+    char *absolutePath = bc_file_make_absolute_path(path);
 
     assert(absolutePath != NULL);
     free(absolutePath);

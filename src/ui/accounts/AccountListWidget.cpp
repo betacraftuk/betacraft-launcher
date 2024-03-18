@@ -5,11 +5,10 @@
 #include <QtWidgets>
 
 extern "C" {
-    #include "../../core/Betacraft.h"
+#include "../../core/Betacraft.h"
 }
 
-AccountListWidget::AccountListWidget(QWidget *parent)
-    : QWidget{parent} {
+AccountListWidget::AccountListWidget(QWidget *parent) : QWidget{parent} {
     _layout = new QGridLayout(this);
     _accountList = new QListWidget(this);
     _addAccountButton = new QPushButton(this);
@@ -34,9 +33,12 @@ AccountListWidget::AccountListWidget(QWidget *parent)
 
     setLayout(_layout);
 
-    connect(_addAccountWidget, SIGNAL(signal_accountAddSuccess()), this, SLOT(onAccountAdded()));
-    connect(_accountList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onAccountClicked(QListWidgetItem*)));
-    connect(_addAccountButton, &QPushButton::released, this, [this]() { _addAccountWidget->show(); });
+    connect(_addAccountWidget, SIGNAL(signal_accountAddSuccess()), this,
+            SLOT(onAccountAdded()));
+    connect(_accountList, SIGNAL(itemClicked(QListWidgetItem *)), this,
+            SLOT(onAccountClicked(QListWidgetItem *)));
+    connect(_addAccountButton, &QPushButton::released, this,
+            [this]() { _addAccountWidget->show(); });
 }
 
 void AccountListWidget::onAccountAdded() {
@@ -46,7 +48,7 @@ void AccountListWidget::onAccountAdded() {
     populateList();
 }
 
-void AccountListWidget::onAccountClicked(QListWidgetItem* item) {
+void AccountListWidget::onAccountClicked(QListWidgetItem *item) {
     QString uuidNew = item->data(Qt::UserRole).toString();
 
     if (uuidNew.compare(_selectedAccount) != 0) {
@@ -60,8 +62,8 @@ void AccountListWidget::onAccountClicked(QListWidgetItem* item) {
 void AccountListWidget::populateList() {
     _accountList->clear();
 
-    bc_account_array* account_list = bc_account_list();
-    bc_account* account_selected = bc_account_select_get();
+    bc_account_array *account_list = bc_account_list();
+    bc_account *account_selected = bc_account_select_get();
 
     if (account_selected != NULL) {
         _selectedAccount = QString(account_selected->uuid);
@@ -70,8 +72,9 @@ void AccountListWidget::populateList() {
     }
 
     for (int i = 0; i < account_list->len; i++) {
-        QListWidgetItem* item = new QListWidgetItem();
-        AccountListItemWidget* accountItem = new AccountListItemWidget(account_list->arr[i]);
+        QListWidgetItem *item = new QListWidgetItem();
+        AccountListItemWidget *accountItem =
+            new AccountListItemWidget(account_list->arr[i]);
 
         QVariant q;
         QString uuid(account_list->arr[i].uuid);
@@ -84,8 +87,10 @@ void AccountListWidget::populateList() {
         _accountList->setItemWidget(item, accountItem);
 
         if (_selectedAccount.compare(account_list->arr[i].uuid) == 0) {
-            accountItem->_name->setStyleSheet("QLabel { color : rgba(0,0,0,255); }");
-            accountItem->_uuid->setStyleSheet("QLabel { color : rgba(0,0,0,255); }");
+            accountItem->_name->setStyleSheet(
+                "QLabel { color : rgba(0,0,0,255); }");
+            accountItem->_uuid->setStyleSheet(
+                "QLabel { color : rgba(0,0,0,255); }");
             item->setBackground(QBrush(QColor(86, 184, 91, 255)));
         }
     }
@@ -94,11 +99,12 @@ void AccountListWidget::populateList() {
     free(account_selected);
 }
 
-void AccountListWidget::menuTrigger(QAction* action) {
+void AccountListWidget::menuTrigger(QAction *action) {
     QString atype = action->whatsThis();
     QModelIndex modelIndex = action->data().toModelIndex();
 
-    QString uuid = _accountList->itemFromIndex(modelIndex)->data(Qt::UserRole).toString();
+    QString uuid =
+        _accountList->itemFromIndex(modelIndex)->data(Qt::UserRole).toString();
 
     if (atype == "remove") {
         bc_account_remove(uuid.toStdString().c_str());
@@ -107,26 +113,28 @@ void AccountListWidget::menuTrigger(QAction* action) {
     }
 }
 
-bool AccountListWidget::eventFilter(QObject* source, QEvent* event) {
-    if (event->type() == QEvent::MouseButtonRelease && source == _accountList->viewport()) {
-        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+bool AccountListWidget::eventFilter(QObject *source, QEvent *event) {
+    if (event->type() == QEvent::MouseButtonRelease &&
+        source == _accountList->viewport()) {
+        QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
 
         if (mouseEvent->button() == Qt::RightButton) {
-            QListWidgetItem* item = _accountList->itemAt(mouseEvent->position().toPoint());
+            QListWidgetItem *item =
+                _accountList->itemAt(mouseEvent->position().toPoint());
 
             if (item != NULL) {
                 QModelIndex index = _accountList->indexFromItem(item);
 
-                _actRemove = new QAction(bc_translate("accounts_action_remove"), this);
+                _actRemove =
+                    new QAction(bc_translate("accounts_action_remove"), this);
                 _actRemove->setData(index);
                 _actRemove->setWhatsThis("remove");
 
-                QMenu* newMenu = new QMenu();
-                newMenu->addActions({
-                    _actRemove
-                });
+                QMenu *newMenu = new QMenu();
+                newMenu->addActions({_actRemove});
 
-                connect(newMenu, SIGNAL(triggered(QAction*)), this, SLOT(menuTrigger(QAction*)));
+                connect(newMenu, SIGNAL(triggered(QAction *)), this,
+                        SLOT(menuTrigger(QAction *)));
                 newMenu->exec(mouseEvent->globalPosition().toPoint());
 
                 return true;

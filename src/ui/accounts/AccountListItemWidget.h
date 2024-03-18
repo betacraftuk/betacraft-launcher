@@ -4,7 +4,7 @@
 #include <QWidget>
 
 extern "C" {
-    #include "../../core/Account.h"
+#include "../../core/Account.h"
 }
 
 class QGridLayout;
@@ -13,14 +13,14 @@ class QPushButton;
 
 class AccountListItemWidget : public QWidget {
     Q_OBJECT
-public:
-    explicit AccountListItemWidget(bc_account a, QWidget* parent = nullptr);
-    QLabel* _name;
-    QLabel* _uuid;
+  public:
+    explicit AccountListItemWidget(bc_account a, QWidget *parent = nullptr);
+    QLabel *_name;
+    QLabel *_uuid;
 
-private:
-    QGridLayout* _layout;
-    QLabel* _image;
+  private:
+    QGridLayout *_layout;
+    QLabel *_image;
 };
 
 #endif

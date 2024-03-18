@@ -26,15 +26,15 @@ typedef struct bc_account_array {
     int len;
 } bc_account_array;
 
-void bc_account_create(const bc_account* account);
-void bc_account_remove(const char* uuid);
-void bc_account_update(const bc_account* account);
-void bc_account_select(const char* uuid);
-bc_account* bc_account_select_get();
-bc_account* bc_account_get(const char* uuid);
-bc_account_array* bc_account_list();
+void bc_account_create(const bc_account *account);
+void bc_account_remove(const char *uuid);
+void bc_account_update(const bc_account *account);
+void bc_account_select(const char *uuid);
+bc_account *bc_account_select_get();
+bc_account *bc_account_get(const char *uuid);
+bc_account_array *bc_account_list();
 void bc_account_refresh();
 void bc_account_register_forbidden_all();
-void bc_account_register_forbidden(const bc_account* account, int uuid);
+void bc_account_register_forbidden(const bc_account *account, int uuid);
 
 #endif

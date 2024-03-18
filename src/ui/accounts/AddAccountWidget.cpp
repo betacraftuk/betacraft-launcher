@@ -5,11 +5,10 @@
 #include <QtWidgets>
 
 extern "C" {
-    #include "../../core/Betacraft.h"
+#include "../../core/Betacraft.h"
 }
 
-AddAccountWidget::AddAccountWidget(QWidget* parent)
-    : QWidget{ parent } {
+AddAccountWidget::AddAccountWidget(QWidget *parent) : QWidget{parent} {
     _layout = new QGridLayout(this);
     _menu = new QTabWidget(this);
     _microsoftWidget = new AddAccountMicrosoftWidget(this);
@@ -30,7 +29,8 @@ AddAccountWidget::AddAccountWidget(QWidget* parent)
     resize(400, 200);
     setMinimumSize(400, 200);
 
-    connect(_microsoftWidget, SIGNAL(signal_accountAddSuccess()), this, SIGNAL(signal_accountAddSuccess()));
+    connect(_microsoftWidget, SIGNAL(signal_accountAddSuccess()), this,
+            SIGNAL(signal_accountAddSuccess()));
 
     setWindowModality(Qt::ApplicationModal);
 }

@@ -4,11 +4,10 @@
 #include <QtWidgets>
 
 extern "C" {
-    #include "../../core/Betacraft.h"
+#include "../../core/Betacraft.h"
 }
 
-SettingsWidget::SettingsWidget(QWidget* parent)
-    : QWidget{ parent } {
+SettingsWidget::SettingsWidget(QWidget *parent) : QWidget{parent} {
     _layout = new QGridLayout(this);
     _sidebar = new QListWidget(this);
     _menu = new QStackedWidget(this);
@@ -39,12 +38,15 @@ SettingsWidget::SettingsWidget(QWidget* parent)
 
     setLayout(_layout);
 
-    connect(_sidebar, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onSidebarItemClicked(QListWidgetItem*)));
-    connect(_settingsJavaWidget, SIGNAL(signal_toggleTabs()), this, SIGNAL(signal_toggleTabs()));
-    connect(_settingsGeneralWidget, SIGNAL(signal_toggleDiscordRPC()), this, SIGNAL(signal_toggleDiscordRPC()));
+    connect(_sidebar, SIGNAL(itemClicked(QListWidgetItem *)), this,
+            SLOT(onSidebarItemClicked(QListWidgetItem *)));
+    connect(_settingsJavaWidget, SIGNAL(signal_toggleTabs()), this,
+            SIGNAL(signal_toggleTabs()));
+    connect(_settingsGeneralWidget, SIGNAL(signal_toggleDiscordRPC()), this,
+            SIGNAL(signal_toggleDiscordRPC()));
 }
 
-void SettingsWidget::onSidebarItemClicked(QListWidgetItem* item) {
+void SettingsWidget::onSidebarItemClicked(QListWidgetItem *item) {
     _menu->setCurrentIndex(_sidebar->currentRow());
 }
 
@@ -52,10 +54,12 @@ void SettingsWidget::setRecommendedJava(QString javaPath) {
     int rows = _settingsJavaWidget->_javaTreeItemModel->rowCount();
 
     for (int i = 0; i < rows; i++) {
-        QStandardItem* item = _settingsJavaWidget->_javaTreeItemModel->item(i, 1);
+        QStandardItem *item =
+            _settingsJavaWidget->_javaTreeItemModel->item(i, 1);
 
         if (item->text().compare(javaPath) == 0) {
-            QStandardItem* versionTextItem = _settingsJavaWidget->_javaTreeItemModel->item(i, 0);
+            QStandardItem *versionTextItem =
+                _settingsJavaWidget->_javaTreeItemModel->item(i, 0);
             versionTextItem->setBackground(QBrush(QColor(86, 184, 91, 255)));
             item->setBackground(QBrush(QColor(86, 184, 91, 255)));
         }

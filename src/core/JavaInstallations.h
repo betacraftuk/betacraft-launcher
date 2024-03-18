@@ -44,19 +44,19 @@ typedef struct bc_jrepo_download_array {
     int len;
 } bc_jrepo_download_array;
 
-char* bc_java_version(const char* path);
-void bc_java_download(const char* url);
+char *bc_java_version(const char *path);
+void bc_java_download(const char *url);
 
 void bc_jinst_system_check();
-void bc_jinst_add(const char* path);
-void bc_jinst_remove(const char* uuid);
-void bc_jinst_select(const char* uuid);
+void bc_jinst_add(const char *path);
+void bc_jinst_remove(const char *uuid);
+void bc_jinst_select(const char *uuid);
 
-bc_jrepo_download_array* bc_jrepo_get_all_system();
-bc_jinst_array* bc_jinst_get_all();
-char* bc_jinst_select_get();
-bc_jinst* bc_jinst_get(const char* uuid);
-char* bc_jrepo_get_recommended(const char* gameVersion);
-char* bc_jrepo_parse_version(const char* version);
+bc_jrepo_download_array *bc_jrepo_get_all_system();
+bc_jinst_array *bc_jinst_get_all();
+char *bc_jinst_select_get();
+bc_jinst *bc_jinst_get(const char *uuid);
+char *bc_jrepo_get_recommended(const char *gameVersion);
+char *bc_jrepo_parse_version(const char *version);
 
 #endif

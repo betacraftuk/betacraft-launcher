@@ -1,22 +1,22 @@
 #include "Network.h"
-#include "Logger.h"
 #include "Betacraft.h"
+#include "Logger.h"
 
 #include <curl/curl.h>
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 bc_download_progress bc_network_progress;
 int bc_network_cancel = 0;
 
-static size_t cb(void* data, size_t size, size_t nmemb, void* userp) {
+static size_t cb(void *data, size_t size, size_t nmemb, void *userp) {
     size_t realsize = size * nmemb;
-    bc_memory* mem = (bc_memory*)userp;
+    bc_memory *mem = (bc_memory *)userp;
 
-    char* ptr = realloc(mem->response, mem->size + realsize + 1);
+    char *ptr = realloc(mem->response, mem->size + realsize + 1);
     if (ptr == NULL)
         return 0;
 
@@ -28,11 +28,13 @@ static size_t cb(void* data, size_t size, size_t nmemb, void* userp) {
     return realsize;
 }
 
-int progress_callback(void* ptr, double totalToDownload, double nowDownloaded) {
+int progress_callback(void *ptr, double totalToDownload, double nowDownloaded) {
     bc_network_progress.totalToDownload = totalToDownload;
-    bc_network_progress.totalToDownloadMb = totalToDownload > 0 ? ((totalToDownload / 1024.0) / 1024.0) : 0;
+    bc_network_progress.totalToDownloadMb =
+        totalToDownload > 0 ? ((totalToDownload / 1024.0) / 1024.0) : 0;
     bc_network_progress.nowDownloaded = nowDownloaded;
-    bc_network_progress.nowDownloadedMb = nowDownloaded > 0 ? ((nowDownloaded / 1024.0) / 1024.0) : 0;
+    bc_network_progress.nowDownloadedMb =
+        nowDownloaded > 0 ? ((nowDownloaded / 1024.0) / 1024.0) : 0;
 
     if (bc_network_cancel) {
         bc_network_cancel = 0;
@@ -42,11 +44,11 @@ int progress_callback(void* ptr, double totalToDownload, double nowDownloaded) {
     return 0;
 }
 
-bc_memory bc_network_get_chunk(const char* url) {
-    CURL* curl;
+bc_memory bc_network_get_chunk(const char *url) {
+    CURL *curl;
     CURLcode res;
 
-    bc_memory chunk = { 0 };
+    bc_memory chunk = {0};
 
     curl = curl_easy_init();
 
@@ -54,7 +56,7 @@ bc_memory bc_network_get_chunk(const char* url) {
         curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, BETACRAFT_MAX_SIZE);
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&chunk);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
         res = curl_easy_perform(curl);
 
@@ -68,16 +70,16 @@ bc_memory bc_network_get_chunk(const char* url) {
     return chunk;
 }
 
-char* bc_network_get(const char* url, const char* header) {
-    CURL* curl;
+char *bc_network_get(const char *url, const char *header) {
+    CURL *curl;
     CURLcode res;
 
-    bc_memory chunk = { 0 };
+    bc_memory chunk = {0};
 
     curl = curl_easy_init();
 
     if (curl) {
-        struct curl_slist* curl_headers = NULL;
+        struct curl_slist *curl_headers = NULL;
         if (header != NULL) {
             curl_headers = curl_slist_append(curl_headers, header);
             curl_easy_setopt(curl, CURLOPT_HTTPHEADER, curl_headers);
@@ -86,7 +88,7 @@ char* bc_network_get(const char* url, const char* header) {
         curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, BETACRAFT_MAX_SIZE);
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&chunk);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
         res = curl_easy_perform(curl);
 
@@ -103,16 +105,16 @@ char* bc_network_get(const char* url, const char* header) {
     return chunk.response;
 }
 
-char* bc_network_post(const char* url, const char* data, const char* header) {
-    CURL* curl;
+char *bc_network_post(const char *url, const char *data, const char *header) {
+    CURL *curl;
     CURLcode res;
 
-    bc_memory chunk = { 0 };
+    bc_memory chunk = {0};
 
     curl = curl_easy_init();
 
     if (curl) {
-        struct curl_slist* curl_headers = NULL;
+        struct curl_slist *curl_headers = NULL;
         if (header != NULL) {
             curl_headers = curl_slist_append(curl_headers, header);
         }
@@ -122,7 +124,7 @@ char* bc_network_post(const char* url, const char* data, const char* header) {
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_POSTFIELDS, data);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void*)&chunk);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
 
         res = curl_easy_perform(curl);
 
@@ -139,21 +141,21 @@ char* bc_network_post(const char* url, const char* data, const char* header) {
     return chunk.response;
 }
 
-int bc_network_download(const char* url, const char* dest, int isFile) {
-    CURL* curl;
+int bc_network_download(const char *url, const char *dest, int isFile) {
+    CURL *curl;
     CURLcode res;
 
-    FILE* fp;
+    FILE *fp;
 
     curl = curl_easy_init();
 
     if (curl) {
-        char* split = strrchr(url, '/');
+        char *split = strrchr(url, '/');
 
         char filename[PATH_MAX];
         snprintf(filename, sizeof(filename), "%s", split);
 
-        char* dropboxParams = filename + (strlen(filename) - 5);
+        char *dropboxParams = filename + (strlen(filename) - 5);
 
         if (strcmp(dropboxParams, "?dl=1") == 0)
             filename[strlen(filename) - 5] = '\0';
@@ -166,7 +168,8 @@ int bc_network_download(const char* url, const char* dest, int isFile) {
             snprintf(path, sizeof(path), "%s", dest);
         }
 
-        snprintf(bc_network_progress.filename, sizeof(bc_network_progress.filename), "%s", url);
+        snprintf(bc_network_progress.filename,
+                 sizeof(bc_network_progress.filename), "%s", url);
 
         fp = fopen(path, "wb");
 
@@ -195,7 +198,7 @@ int bc_network_download(const char* url, const char* dest, int isFile) {
 }
 
 int bc_network_status() {
-    CURL* curl;
+    CURL *curl;
     CURLcode res;
 
     curl = curl_easy_init();
@@ -203,7 +206,7 @@ int bc_network_status() {
     if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, "http://checkip.amazonaws.com/");
 
-        char* data = 0;
+        char *data = 0;
         curl_easy_setopt(curl, CURLOPT_BUFFERSIZE, BETACRAFT_MAX_SIZE);
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, cb);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &data);
@@ -211,10 +214,10 @@ int bc_network_status() {
         res = curl_easy_perform(curl);
         CURLcode expected_res = CURLE_OK;
 
-        #ifndef NDEBUG
-            bc_log("%s\n", "DEBUG");
-            expected_res = CURLE_WRITE_ERROR;
-        #endif
+#ifndef NDEBUG
+        bc_log("%s\n", "DEBUG");
+        expected_res = CURLE_WRITE_ERROR;
+#endif
 
         if (res != expected_res) {
             bc_log("Failed: %s\n", curl_easy_strerror(res));

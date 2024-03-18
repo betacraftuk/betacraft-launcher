@@ -5,7 +5,7 @@
 #include <QtConcurrent>
 
 extern "C" {
-    #include "../../core/Betacraft.h"
+#include "../../core/Betacraft.h"
 }
 
 class QGridLayout;
@@ -14,31 +14,30 @@ class QListWidget;
 class QListWidgetItem;
 class QPushButton;
 
-class ServerListWidget : public QWidget
-{
+class ServerListWidget : public QWidget {
     Q_OBJECT
-public:
+  public:
     explicit ServerListWidget(QWidget *parent = nullptr);
     void initServerList();
 
-private slots:
+  private slots:
     void onSearchButton();
-    void onServerClicked(QListWidgetItem* item);
+    void onServerClicked(QListWidgetItem *item);
     void populateServerList();
 
-signals:
-    void signal_serverGameLaunch(const char* ip, const char* port);
+  signals:
+    void signal_serverGameLaunch(const char *ip, const char *port);
 
-protected:
-    void keyPressEvent(QKeyEvent* e);
+  protected:
+    void keyPressEvent(QKeyEvent *e);
 
-private:
+  private:
     void addServerItem(bc_server server);
-    QGridLayout* _layout;
-    QLineEdit* _searchTextBox;
-    QListWidget* _serverList;
-    QPushButton* _serverListRefreshButton;
-    QPushButton* _searchButton;
+    QGridLayout *_layout;
+    QLineEdit *_searchTextBox;
+    QListWidget *_serverList;
+    QPushButton *_serverListRefreshButton;
+    QPushButton *_searchButton;
     QFutureWatcher<int> _serverArrayWatcher;
 };
 

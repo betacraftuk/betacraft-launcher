@@ -13,19 +13,19 @@
 
 #if defined(__linux__) || defined(__APPLE__)
 #include <iostream>
-#include <unistd.h>
 #include <pwd.h>
+#include <unistd.h>
 #endif
 
 extern "C" {
-#include "../core/FileSystem.h"
-#include "../core/Betacraft.h"
 #include "../core/Account.h"
+#include "../core/Betacraft.h"
+#include "../core/FileSystem.h"
 #include "../core/JavaInstallations.h"
 }
 
 void copyLanguageFiles() {
-    char* workDir = bc_file_directory_get_working();
+    char *workDir = bc_file_directory_get_working();
 
     QString langRelative("lang/");
 
@@ -52,7 +52,7 @@ void copyLanguageFiles() {
 }
 
 void copyJavaRepo() {
-    char* workDir = bc_file_directory_get_working();
+    char *workDir = bc_file_directory_get_working();
 
     QDir dir = QDir(QString(workDir));
     QString source(":/java_repo.json");
@@ -64,7 +64,8 @@ void copyJavaRepo() {
 
 void setWorkDir() {
 #ifdef __APPLE__
-    QString path = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
+    QString path =
+        QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
 
     strcpy(application_support_path, path.toStdString().c_str());
     path += "/betacraft/";
@@ -73,7 +74,7 @@ void setWorkDir() {
     chdir(path.toStdString().c_str());
 #elif __linux__
     char workDir[PATH_MAX];
-    struct passwd* pw = getpwuid(getuid());
+    struct passwd *pw = getpwuid(getuid());
     strcpy(workDir, pw->pw_dir);
     strcat(workDir, "/.local/share/betacraft/");
 

@@ -3,9 +3,8 @@
 #include "../Betacraft.h"
 #include <QtWidgets>
 
-InstanceEditArgumentsWidget::InstanceEditArgumentsWidget(QWidget* parent)
-    : QWidget{ parent }
-{
+InstanceEditArgumentsWidget::InstanceEditArgumentsWidget(QWidget *parent)
+    : QWidget{parent} {
     _layout = new QGridLayout();
     _javaArgumentsGroup = new QGroupBox();
     _programArgumentsGroup = new QGroupBox();
@@ -13,7 +12,8 @@ InstanceEditArgumentsWidget::InstanceEditArgumentsWidget(QWidget* parent)
     _programArgumentsTextEdit = new QTextEdit();
     _javaArgumentsLayout = new QGridLayout();
     _programArgumentsLayout = new QGridLayout();
-    _separateArgumentsLabel = new QLabel(bc_translate("instance_arguments_advice"), this);
+    _separateArgumentsLabel =
+        new QLabel(bc_translate("instance_arguments_advice"), this);
 
     _javaArgumentsTextEdit->setAcceptRichText(false);
     _programArgumentsTextEdit->setAcceptRichText(false);
@@ -21,7 +21,8 @@ InstanceEditArgumentsWidget::InstanceEditArgumentsWidget(QWidget* parent)
     _separateArgumentsLabel->setStyleSheet(".QLabel { font-weight: bold; }");
 
     _javaArgumentsGroup->setTitle(bc_translate("instance_arguments_jvm_title"));
-    _programArgumentsGroup->setTitle(bc_translate("instance_arguments_program_title"));
+    _programArgumentsGroup->setTitle(
+        bc_translate("instance_arguments_program_title"));
 
     _javaArgumentsLayout->addWidget(_javaArgumentsTextEdit);
     _javaArgumentsGroup->setLayout(_javaArgumentsLayout);
@@ -47,11 +48,13 @@ void InstanceEditArgumentsWidget::setInstance(bc_instance instance) {
     _programArgumentsTextEdit->setText(instance.program_args);
 }
 
-bc_instance* InstanceEditArgumentsWidget::getSettings() {
-    bc_instance* instance = new bc_instance();
+bc_instance *InstanceEditArgumentsWidget::getSettings() {
+    bc_instance *instance = new bc_instance();
 
-    snprintf(instance->jvm_args, sizeof(instance->jvm_args), "%s", _javaArgumentsTextEdit->toPlainText().toStdString().c_str());
-    snprintf(instance->program_args, sizeof(instance->program_args), "%s", _programArgumentsTextEdit->toPlainText().toStdString().c_str());
+    snprintf(instance->jvm_args, sizeof(instance->jvm_args), "%s",
+             _javaArgumentsTextEdit->toPlainText().toStdString().c_str());
+    snprintf(instance->program_args, sizeof(instance->program_args), "%s",
+             _programArgumentsTextEdit->toPlainText().toStdString().c_str());
 
     return instance;
 }

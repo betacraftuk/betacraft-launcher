@@ -1,49 +1,57 @@
 #include "VersionList.h"
 
+#include "Betacraft.h"
+#include "FileSystem.h"
 #include "JsonExtension.h"
 #include "Network.h"
-#include "FileSystem.h"
-#include "Betacraft.h"
 
 #include <stdio.h>
 #include <string.h>
 
-bc_versionlist* bc_versionlist_instance = NULL;
+bc_versionlist *bc_versionlist_instance = NULL;
 
-void bc_versionlist_read_version_json(bc_versionlist_version* version, json_object* obj) {
-    snprintf(version->id, sizeof(version->id), "%s", jext_get_string_dummy(obj, "id"));
-    snprintf(version->type, sizeof(version->type), "%s", jext_get_string_dummy(obj, "type"));
-    snprintf(version->url, sizeof(version->url), "%s", jext_get_string_dummy(obj, "url"));
-    snprintf(version->releaseTime, sizeof(version->releaseTime), "%s", jext_get_string_dummy(obj, "releaseTime"));
+void bc_versionlist_read_version_json(bc_versionlist_version *version,
+                                      json_object *obj) {
+    snprintf(version->id, sizeof(version->id), "%s",
+             jext_get_string_dummy(obj, "id"));
+    snprintf(version->type, sizeof(version->type), "%s",
+             jext_get_string_dummy(obj, "type"));
+    snprintf(version->url, sizeof(version->url), "%s",
+             jext_get_string_dummy(obj, "url"));
+    snprintf(version->releaseTime, sizeof(version->releaseTime), "%s",
+             jext_get_string_dummy(obj, "releaseTime"));
 }
 
-bc_versionlist* bc_versionlist_read_json(json_object* obj, json_object* bcList) {
-    bc_versionlist* vl = malloc(sizeof(bc_versionlist));
-    json_object* tmp;
+bc_versionlist *bc_versionlist_read_json(json_object *obj,
+                                         json_object *bcList) {
+    bc_versionlist *vl = malloc(sizeof(bc_versionlist));
+    json_object *tmp;
 
     vl->versions_len = 0;
 
     json_object_object_get_ex(obj, "latest", &tmp);
 
-    snprintf(vl->latest.release, sizeof(vl->latest.release), "%s", jext_get_string_dummy(tmp, "release"));
-    snprintf(vl->latest.snapshot, sizeof(vl->latest.snapshot), "%s", jext_get_string_dummy(tmp, "snapshot"));
+    snprintf(vl->latest.release, sizeof(vl->latest.release), "%s",
+             jext_get_string_dummy(tmp, "release"));
+    snprintf(vl->latest.snapshot, sizeof(vl->latest.snapshot), "%s",
+             jext_get_string_dummy(tmp, "snapshot"));
 
     json_object_object_get_ex(obj, "versions", &tmp);
-    array_list* verArr = json_object_get_array(tmp);
+    array_list *verArr = json_object_get_array(tmp);
 
     if (verArr == NULL) {
         return vl;
     }
 
-    json_object* verObj;
+    json_object *verObj;
 
-    const char* trimAt = jext_get_string_dummy(bcList, "trim_at");
+    const char *trimAt = jext_get_string_dummy(bcList, "trim_at");
     int max = jext_get_string_array_index(tmp, "id", trimAt);
 
-    json_object* bctmp;
+    json_object *bctmp;
     json_object_object_get_ex(bcList, "versions", &bctmp);
 
-    array_list* bcarr = json_object_get_array(bctmp);
+    array_list *bcarr = json_object_get_array(bctmp);
     int bc_len = bcarr->size;
 
     vl->versions_len = max + bc_len;
@@ -68,32 +76,39 @@ bc_versionlist* bc_versionlist_read_json(json_object* obj, json_object* bcList) 
     return vl;
 }
 
-bc_versionlist* bc_versionlist_fetch() {
-    char* response = bc_network_get("https://launchermeta.mojang.com/mc/game/version_manifest.json", NULL);
-    json_object* obj = json_tokener_parse(response);
+bc_versionlist *bc_versionlist_fetch() {
+    char *response = bc_network_get(
+        "https://launchermeta.mojang.com/mc/game/version_manifest.json", NULL);
+    json_object *obj = json_tokener_parse(response);
     free(response);
 
-    if (obj == NULL) return NULL;
+    if (obj == NULL)
+        return NULL;
 
-    response = bc_network_get("http://files.betacraft.uk/launcher/v2/assets/version_list.json", NULL);
-    json_object* bcList = json_tokener_parse(response);
+    response = bc_network_get(
+        "http://files.betacraft.uk/launcher/v2/assets/version_list.json", NULL);
+    json_object *bcList = json_tokener_parse(response);
     free(response);
 
     return bc_versionlist_read_json(obj, bcList);
 }
 
-bc_versionlist_version* bc_versionlist_find(const char* id) {
-    bc_versionlist* vl = bc_versionlist_fetch();
-    bc_versionlist_version* version = NULL;
+bc_versionlist_version *bc_versionlist_find(const char *id) {
+    bc_versionlist *vl = bc_versionlist_fetch();
+    bc_versionlist_version *version = NULL;
 
     for (int i = 0; i < vl->versions_len; i++) {
         if (strcmp(vl->versions[i].id, id) == 0) {
             version = malloc(sizeof(bc_versionlist_version));
 
-            snprintf(version->id, sizeof(version->id), "%s", vl->versions[i].id);
-            snprintf(version->url, sizeof(version->url), "%s", vl->versions[i].url);
-            snprintf(version->releaseTime, sizeof(version->releaseTime), "%s", vl->versions[i].releaseTime);
-            snprintf(version->type, sizeof(version->type), "%s", vl->versions[i].type);
+            snprintf(version->id, sizeof(version->id), "%s",
+                     vl->versions[i].id);
+            snprintf(version->url, sizeof(version->url), "%s",
+                     vl->versions[i].url);
+            snprintf(version->releaseTime, sizeof(version->releaseTime), "%s",
+                     vl->versions[i].releaseTime);
+            snprintf(version->type, sizeof(version->type), "%s",
+                     vl->versions[i].type);
 
             break;
         }
@@ -103,7 +118,7 @@ bc_versionlist_version* bc_versionlist_find(const char* id) {
     return version;
 }
 
-int bc_versionlist_download(const char* gameVersion) {
+int bc_versionlist_download(const char *gameVersion) {
     if (!betacraft_online) {
         // offline
         return 1;
@@ -112,7 +127,7 @@ int bc_versionlist_download(const char* gameVersion) {
     char jsonLoc[PATH_MAX];
     snprintf(jsonLoc, sizeof(jsonLoc), "versions/%s.json", gameVersion);
 
-    bc_versionlist_version* version = bc_versionlist_find(gameVersion);
+    bc_versionlist_version *version = bc_versionlist_find(gameVersion);
 
     if (version == NULL) {
         if (!bc_file_exists(jsonLoc)) {

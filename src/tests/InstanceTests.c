@@ -1,13 +1,13 @@
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include "../core/Instance.h"
 #include "../core/FileSystem.h"
+#include "../core/Instance.h"
 
 void test_bc_instance_group_name_get_all() {
-    bc_instance_group_name_array* groups = bc_instance_group_name_get_all();
+    bc_instance_group_name_array *groups = bc_instance_group_name_get_all();
     assert(groups->len == 0);
     free(groups);
 }
@@ -15,14 +15,14 @@ void test_bc_instance_group_name_get_all() {
 void test_bc_instance_group_create() {
     bc_instance_group_create("testgroup");
 
-    bc_instance_group_name_array* groups = bc_instance_group_name_get_all();
+    bc_instance_group_name_array *groups = bc_instance_group_name_get_all();
     assert(groups->len > 0);
 
     free(groups);
 }
 
 int test_bc_instance_get_all() {
-    bc_instance_array* arr = bc_instance_get_all();
+    bc_instance_array *arr = bc_instance_get_all();
     int result = arr->len;
     free(arr);
 
@@ -30,7 +30,7 @@ int test_bc_instance_get_all() {
 }
 
 int test_bc_instance_group_get_all() {
-    bc_instance_group_array* arr = bc_instance_group_get_all();
+    bc_instance_group_array *arr = bc_instance_group_get_all();
     int result = arr->len;
 
     for (int i = 0; i < arr->len; i++) {
@@ -44,16 +44,16 @@ int test_bc_instance_group_get_all() {
     return result;
 }
 
-void test_bc_instance_get(const char* path) {
-    bc_instance* i = bc_instance_get(path);
+void test_bc_instance_get(const char *path) {
+    bc_instance *i = bc_instance_get(path);
     assert(i == NULL);
 }
 
-void test_bc_instance_create(const char* name, const char* group) {
+void test_bc_instance_create(const char *name, const char *group) {
     bc_instance_create(name, "b1.7.3", group);
 
-    char* path = bc_instance_get_path(name);
-    bc_instance* i = bc_instance_get(path);
+    char *path = bc_instance_get_path(name);
+    bc_instance *i = bc_instance_get(path);
 
     assert(strcmp(i->name, name) == 0);
     assert(strcmp(i->version, "b1.7.3") == 0);
@@ -63,12 +63,12 @@ void test_bc_instance_create(const char* name, const char* group) {
     free(i);
 }
 
-void test_bc_instance_remove(const char* name) {
-    char* path = bc_instance_get_path(name);
+void test_bc_instance_remove(const char *name) {
+    char *path = bc_instance_get_path(name);
     bc_instance_remove(path);
 
-    bc_instance_array* standalone = bc_instance_get_all();
-    bc_instance_group_array* grouped = bc_instance_group_get_all();
+    bc_instance_array *standalone = bc_instance_get_all();
+    bc_instance_group_array *grouped = bc_instance_group_get_all();
 
     int found = 0;
     for (int i = 0; i < standalone->len; i++) {
@@ -90,11 +90,11 @@ void test_bc_instance_remove(const char* name) {
     free(path);
 }
 
-void test_bc_instance_select(const char* name) {
-    char* path = bc_instance_get_path(name);
+void test_bc_instance_select(const char *name) {
+    char *path = bc_instance_get_path(name);
     bc_instance_select(path);
 
-    bc_instance* i = bc_instance_select_get();
+    bc_instance *i = bc_instance_select_get();
     assert(strcmp(i->name, name) == 0);
     assert(strcmp(i->path, path) == 0);
 
@@ -102,7 +102,7 @@ void test_bc_instance_select(const char* name) {
 }
 
 void test_bc_instance_select_get() {
-    bc_instance* i = bc_instance_select_get();
+    bc_instance *i = bc_instance_select_get();
     assert(i == NULL);
 }
 

@@ -4,16 +4,17 @@
 #include <QtWidgets>
 
 extern "C" {
-    #include "../../../core/Mod.h"
+#include "../../../core/Mod.h"
 }
 
 bc_mod_array _modArray;
 
-InstanceEditModRepoWidget::InstanceEditModRepoWidget(QWidget* parent)
-    : QWidget{ parent } {
+InstanceEditModRepoWidget::InstanceEditModRepoWidget(QWidget *parent)
+    : QWidget{parent} {
     _layout = new QGridLayout(this);
     _searchTextBox = new QLineEdit(this);
-    _searchButton = new QPushButton(bc_translate("general_search_button"), this);
+    _searchButton =
+        new QPushButton(bc_translate("general_search_button"), this);
     _backButton = new QPushButton(bc_translate("mods_repository_back"), this);
     _modList = new QTreeWidget(this);
     _versionsWidget = new InstanceEditModVersionsWidget();
@@ -21,7 +22,8 @@ InstanceEditModRepoWidget::InstanceEditModRepoWidget(QWidget* parent)
     _modList->setIndentation(0);
     _modList->headerItem()->setText(0, bc_translate("mods_mod_name_column"));
 
-    _searchTextBox->setPlaceholderText(bc_translate("general_search_placeholder"));
+    _searchTextBox->setPlaceholderText(
+        bc_translate("general_search_placeholder"));
 
     _modList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     _modList->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
@@ -37,20 +39,26 @@ InstanceEditModRepoWidget::InstanceEditModRepoWidget(QWidget* parent)
 
     setLayout(_layout);
 
-    connect(_modList, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(onModClicked(QTreeWidgetItem*, int)));
-    connect(_searchButton, SIGNAL(released()), this, SLOT(onSearchButtonClicked()));
+    connect(_modList, SIGNAL(itemClicked(QTreeWidgetItem *, int)), this,
+            SLOT(onModClicked(QTreeWidgetItem *, int)));
+    connect(_searchButton, SIGNAL(released()), this,
+            SLOT(onSearchButtonClicked()));
     connect(_backButton, &QPushButton::released, this, [this]() {
         _versionsWidget->close();
         emit signal_BackButtonClicked();
     });
-    connect(_versionsWidget, &InstanceEditModVersionsWidget::signal_ModDownloadStarted, this, [this]() {
-        _versionsWidget->close();
-        emit signal_ModDownloadStarted();
-    });
-    connect(_versionsWidget, &InstanceEditModVersionsWidget::signal_ModDownloadFinished, this, [this]() {
-        _versionsWidget->close();
-        emit signal_ModDownloadFinished();
-    });
+    connect(_versionsWidget,
+            &InstanceEditModVersionsWidget::signal_ModDownloadStarted, this,
+            [this]() {
+                _versionsWidget->close();
+                emit signal_ModDownloadStarted();
+            });
+    connect(_versionsWidget,
+            &InstanceEditModVersionsWidget::signal_ModDownloadFinished, this,
+            [this]() {
+                _versionsWidget->close();
+                emit signal_ModDownloadFinished();
+            });
 }
 
 void InstanceEditModRepoWidget::onSearchButtonClicked() {
@@ -59,7 +67,8 @@ void InstanceEditModRepoWidget::onSearchButtonClicked() {
     QString search = _searchTextBox->text().trimmed().toLower();
 
     for (int i = 0; i < _modArray.len; i++) {
-        if (QString(_modArray.arr[i].name).contains(search, Qt::CaseInsensitive)) {
+        if (QString(_modArray.arr[i].name)
+                .contains(search, Qt::CaseInsensitive)) {
             modListItemAdd(_modArray.arr[i]);
         }
     }
@@ -70,7 +79,7 @@ void InstanceEditModRepoWidget::setInstance(bc_instance instance) {
 
     int rowCount = _modList->model()->rowCount();
     if (rowCount == 0) {
-        bc_mod_array* mods = bc_mod_list(instance.version);
+        bc_mod_array *mods = bc_mod_list(instance.version);
         _modArray.len = mods->len;
 
         for (int i = 0; i < _modArray.len; i++) {
@@ -84,7 +93,7 @@ void InstanceEditModRepoWidget::setInstance(bc_instance instance) {
 }
 
 void InstanceEditModRepoWidget::modListItemAdd(bc_mod mod) {
-    QTreeWidgetItem* item = new QTreeWidgetItem();
+    QTreeWidgetItem *item = new QTreeWidgetItem();
 
     QVariant versions;
     versions.setValue(mod.versions);
@@ -94,15 +103,17 @@ void InstanceEditModRepoWidget::modListItemAdd(bc_mod mod) {
     _modList->addTopLevelItem(item);
 }
 
-void InstanceEditModRepoWidget::onModClicked(QTreeWidgetItem* item, int column) {
-    bc_mod_version_array versions = item->data(0, Qt::UserRole).value<bc_mod_version_array>();
+void InstanceEditModRepoWidget::onModClicked(QTreeWidgetItem *item,
+                                             int column) {
+    bc_mod_version_array versions =
+        item->data(0, Qt::UserRole).value<bc_mod_version_array>();
 
     _versionsWidget->populateList(versions);
     _versionsWidget->setInstance(_instance);
     _versionsWidget->show();
 }
 
-void InstanceEditModRepoWidget::keyPressEvent(QKeyEvent* e) {
+void InstanceEditModRepoWidget::keyPressEvent(QKeyEvent *e) {
     if (e->key() == Qt::Key_Return) {
         onSearchButtonClicked();
     }

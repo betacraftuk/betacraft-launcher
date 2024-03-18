@@ -7,7 +7,7 @@ typedef struct bc_version_javaExec {
     char component[256];
     int majorVersion;
     int advisedMaxVersion; // Betacraft only
-    int minVersion; // Betacraft only
+    int minVersion;        // Betacraft only
 } bc_version_javaExec;
 
 typedef struct bc_version_downloadable {
@@ -124,11 +124,11 @@ typedef struct bc_version {
     char url[256];
 
     // Betacraft only
-    char uuid[48]; // Defaults to 'id' if not specified
+    char uuid[48];                // Defaults to 'id' if not specified
     int modern_server_parameters; // Whether to use --server and --port or not
-    int usesMinecraftArguments; // Whether to force --demo when demo or not
+    int usesMinecraftArguments;   // Whether to force --demo when demo or not
 } bc_version;
 
-bc_version* bc_version_read_json(json_object* obj);
+bc_version *bc_version_read_json(json_object *obj);
 
 #endif

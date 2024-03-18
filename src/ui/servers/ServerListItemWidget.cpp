@@ -2,9 +2,11 @@
 
 #include <QtWidgets>
 
-ServerListItemWidget::ServerListItemWidget(bc_server s, std::unordered_map<QString, QByteArray> serverToIconMap, QWidget *parent)
+ServerListItemWidget::ServerListItemWidget(
+    bc_server s, std::unordered_map<QString, QByteArray> serverToIconMap,
+    QWidget *parent)
     : QWidget{parent} {
-    QString max = QString::number(s.max_players); 
+    QString max = QString::number(s.max_players);
     QString online = QString::number(s.online_players);
     QString finalc = (online + " / " + max);
 
@@ -15,14 +17,16 @@ ServerListItemWidget::ServerListItemWidget(bc_server s, std::unordered_map<QStri
     _players = new QLabel(finalc, this);
     _description = new QLabel(s.description, this);
 
-    if (serverToIconMap.find(QString(s.connect_socket)) != serverToIconMap.end()) {
+    if (serverToIconMap.find(QString(s.connect_socket)) !=
+        serverToIconMap.end()) {
         QByteArray imageEncoded = serverToIconMap[s.connect_socket];
         QByteArray imageBytes = QByteArray::fromBase64(imageEncoded);
 
         QPixmap pic;
         pic.loadFromData(imageBytes, "PNG");
 
-        _image->setPixmap(pic.scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        _image->setPixmap(
+            pic.scaled(64, 64, Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
 
     _image->setStyleSheet(".QLabel { margin-right: 4px; }");

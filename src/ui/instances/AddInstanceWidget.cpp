@@ -4,13 +4,12 @@
 #include <QtWidgets>
 
 extern "C" {
-    #include "../../core/Instance.h"
-    #include "../../core/Betacraft.h"
-    #include "../../core/VersionList.h"
+#include "../../core/Betacraft.h"
+#include "../../core/Instance.h"
+#include "../../core/VersionList.h"
 }
 
-AddInstanceWidget::AddInstanceWidget(QWidget* parent)
-    : QWidget{ parent } {
+AddInstanceWidget::AddInstanceWidget(QWidget *parent) : QWidget{parent} {
     _layout = new QGridLayout(this);
     _instanceNameTextbox = new QLineEdit(this);
     _groupList = new QListWidget(this);
@@ -24,9 +23,11 @@ AddInstanceWidget::AddInstanceWidget(QWidget* parent)
 
     _layout->setAlignment(Qt::AlignTop);
 
-    _layout->addWidget(new QLabel(bc_translate("instance_name"), this, {}), 0, 0, 1, 2);
+    _layout->addWidget(new QLabel(bc_translate("instance_name"), this, {}), 0,
+                       0, 1, 2);
     _layout->addWidget(_instanceNameTextbox, 1, 0, 1, 2);
-    _layout->addWidget(new QLabel(bc_translate("instance_group"), this, {}), 2, 0, 1, 2);
+    _layout->addWidget(new QLabel(bc_translate("instance_group"), this, {}), 2,
+                       0, 1, 2);
     _layout->addWidget(_newGroupTextbox, 3, 0, 1, 1);
     _layout->addWidget(_newGroupButton, 3, 1, 1, 1);
     _layout->addWidget(_groupList, 4, 0, 1, 2);
@@ -47,14 +48,17 @@ AddInstanceWidget::AddInstanceWidget(QWidget* parent)
     resize(650, 500);
     setMinimumSize(650, 500);
 
-    connect(_createButton, SIGNAL(released()), this, SLOT(onCreateButtonClicked()));
-    connect(_newGroupButton, SIGNAL(released()), this, SLOT(onNewGroupButtonClicked()));
+    connect(_createButton, SIGNAL(released()), this,
+            SLOT(onCreateButtonClicked()));
+    connect(_newGroupButton, SIGNAL(released()), this,
+            SLOT(onNewGroupButtonClicked()));
 
     setWindowModality(Qt::ApplicationModal);
 }
 
 void AddInstanceWidget::onCreateButtonClicked() {
-    std::string instanceName = _instanceNameTextbox->text().trimmed().toStdString();
+    std::string instanceName =
+        _instanceNameTextbox->text().trimmed().toStdString();
 
     if (!bc_instance_validate_name(instanceName.c_str())) {
         QMessageBox msg;
@@ -75,10 +79,9 @@ void AddInstanceWidget::onCreateButtonClicked() {
             group = _groupList->currentItem()->text();
         }
 
-        bc_instance_create(
-            name.toStdString().c_str(),
-            versionSelected.toStdString().c_str(),
-            group.isNull() ? NULL : group.toStdString().c_str());
+        bc_instance_create(name.toStdString().c_str(),
+                           versionSelected.toStdString().c_str(),
+                           group.isNull() ? NULL : group.toStdString().c_str());
 
         emit signal_instanceAdded();
     }
@@ -86,14 +89,15 @@ void AddInstanceWidget::onCreateButtonClicked() {
 
 void AddInstanceWidget::onNewGroupButtonClicked() {
     if (!_newGroupTextbox->text().isEmpty()) {
-        bc_instance_group_create(_newGroupTextbox->text().trimmed().toStdString().c_str());
+        bc_instance_group_create(
+            _newGroupTextbox->text().trimmed().toStdString().c_str());
         populateGroupList();
     }
 }
 
 void AddInstanceWidget::populateGroupList() {
     _groupList->clear();
-    bc_instance_group_name_array* groups = bc_instance_group_name_get_all();
+    bc_instance_group_name_array *groups = bc_instance_group_name_get_all();
 
     _newGroupTextbox->setText("");
 
@@ -105,7 +109,7 @@ void AddInstanceWidget::populateGroupList() {
 }
 
 void AddInstanceWidget::keyPressEvent(QKeyEvent *e) {
-    if(e->key() == Qt::Key_Return) {
+    if (e->key() == Qt::Key_Return) {
         onCreateButtonClicked();
     }
 }

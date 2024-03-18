@@ -1,20 +1,20 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QMessageBox>
 #include <QWidget>
 #include <QtConcurrent>
-#include <QMessageBox>
 
-#include "ConsoleLogWidget.h"
 #include "AboutWidget.h"
-#include "instances/InstanceListWidget.h"
-#include "settings/SettingsWidget.h"
-#include "servers/ServerListWidget.h"
+#include "ConsoleLogWidget.h"
 #include "accounts/AccountListWidget.h"
+#include "instances/InstanceListWidget.h"
+#include "servers/ServerListWidget.h"
+#include "settings/SettingsWidget.h"
 
 extern "C" {
-    #include "../core/Instance.h"
-    #include "../core/Account.h"
+#include "../core/Account.h"
+#include "../core/Instance.h"
 }
 
 class QPixmap;
@@ -34,13 +34,13 @@ class InstanceList;
 class MainWindow : public QWidget {
     Q_OBJECT
 
-public:
+  public:
     explicit MainWindow(QWidget *parent = 0);
 
-protected:
-    void keyPressEvent(QKeyEvent* e);
+  protected:
+    void keyPressEvent(QKeyEvent *e);
 
-private slots:
+  private slots:
     void onInstanceUpdate();
     void onAccountUpdate();
     void launchingGameFinished();
@@ -48,33 +48,33 @@ private slots:
     void updateGameProgress();
     void onToggleTabs();
     void onToggleDiscordRPC();
-    void launchGameJoinServer(const char* ip, const char* port);
+    void launchGameJoinServer(const char *ip, const char *port);
     void updateCheck();
     void loadChangelog();
 
-private:
-    QGridLayout* _mainLayout;
-    QTextEdit* _changelog;
-    QLabel* _logo;
-    QPushButton* _playButton;
-    QWidget* _bottomBackground;
-    QTabWidget* _menu;
-    InstanceListWidget* _instanceListWidget;
-    ServerListWidget* _serverListWidget;
-    AccountListWidget* _accountsWidget;
-    SettingsWidget* _settingsWidget;
-    AboutWidget* _aboutWidget;
-    ConsoleLogWidget* _consoleLog;
-    QLabel* _instanceLabel;
-    QLabel* _accountLabel;
-    QProgressBar* _progressBar;
+  private:
+    QGridLayout *_mainLayout;
+    QTextEdit *_changelog;
+    QLabel *_logo;
+    QPushButton *_playButton;
+    QWidget *_bottomBackground;
+    QTabWidget *_menu;
+    InstanceListWidget *_instanceListWidget;
+    ServerListWidget *_serverListWidget;
+    AccountListWidget *_accountsWidget;
+    SettingsWidget *_settingsWidget;
+    AboutWidget *_aboutWidget;
+    ConsoleLogWidget *_consoleLog;
+    QLabel *_instanceLabel;
+    QLabel *_accountLabel;
+    QProgressBar *_progressBar;
     QFutureWatcher<void> _watcher;
-    QFutureWatcher<char*> _changelogWatcher;
+    QFutureWatcher<char *> _changelogWatcher;
     QFutureWatcher<int> _updateWatcher;
-    QTimer* _gameProgressTimer;
-    QTimer* _discordLoopTimer;
-    QProcess* _gameProcess;
-    QMessageBox* _messageBox;
+    QTimer *_gameProgressTimer;
+    QTimer *_discordLoopTimer;
+    QProcess *_gameProcess;
+    QMessageBox *_messageBox;
     QString _username;
     QString _instanceSelectedVersion;
     QString _instanceSelectedName;
@@ -83,7 +83,7 @@ private:
     void updateInstanceLabel();
     bool recommendedJavaCheck();
     void startDiscordRPC();
-    void launchGame(const char* ip, const char* port);
+    void launchGame(const char *ip, const char *port);
     void connectSignalsToSlots();
     void initProgressBar();
     void initMainLayout();

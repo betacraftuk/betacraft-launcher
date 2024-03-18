@@ -3,21 +3,22 @@
 #include "../Betacraft.h"
 #include <QtWidgets>
 
-InstanceEditServerWidget::InstanceEditServerWidget(QWidget* parent)
-    : QWidget{ parent }
-{
+InstanceEditServerWidget::InstanceEditServerWidget(QWidget *parent)
+    : QWidget{parent} {
 
     _layout = new QGridLayout();
     _serverAddressGroup = new QGroupBox();
     _serverIpTextEdit = new QLineEdit();
     _serverPortTextEdit = new QLineEdit();
     _serverAddressLayout = new QGridLayout();
-    _joinServerCheckbox = new QCheckBox(bc_translate("instance_server_join_server_box"), this);
+    _joinServerCheckbox =
+        new QCheckBox(bc_translate("instance_server_join_server_box"), this);
 
     _serverIpTextEdit->setPlaceholderText("Server IP");
     _serverPortTextEdit->setPlaceholderText("Port (25565 by default)");
 
-    _serverAddressGroup->setTitle(bc_translate("instance_server_join_group_title"));
+    _serverAddressGroup->setTitle(
+        bc_translate("instance_server_join_group_title"));
 
     _serverAddressLayout->addWidget(_joinServerCheckbox, 0, 0, 1, 1);
     _serverAddressLayout->addWidget(_serverIpTextEdit, 1, 0, 1, 1);
@@ -41,12 +42,14 @@ void InstanceEditServerWidget::setInstance(bc_instance instance) {
     _serverPortTextEdit->setText(instance.server_port);
 }
 
-bc_instance* InstanceEditServerWidget::getSettings() {
-    bc_instance* instance = new bc_instance();
+bc_instance *InstanceEditServerWidget::getSettings() {
+    bc_instance *instance = new bc_instance();
 
     instance->join_server = _joinServerCheckbox->isChecked();
-    snprintf(instance->server_ip, sizeof(instance->server_ip), "%s", _serverIpTextEdit->text().toStdString().c_str());
-    snprintf(instance->server_port, sizeof(instance->server_port), "%s", _serverPortTextEdit->text().toStdString().c_str());
+    snprintf(instance->server_ip, sizeof(instance->server_ip), "%s",
+             _serverIpTextEdit->text().toStdString().c_str());
+    snprintf(instance->server_port, sizeof(instance->server_port), "%s",
+             _serverPortTextEdit->text().toStdString().c_str());
 
     return instance;
 }

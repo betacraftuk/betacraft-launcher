@@ -19,10 +19,10 @@ typedef struct bc_versionlist {
     } latest;
 } bc_versionlist;
 
-bc_versionlist* bc_versionlist_read_json(json_object* obj, json_object* bcList);
-bc_versionlist* bc_versionlist_fetch();
-bc_versionlist_version* bc_versionlist_find(const char* id);
-int bc_versionlist_download(const char* gameVersion);
-extern bc_versionlist* bc_versionlist_instance;
+bc_versionlist *bc_versionlist_read_json(json_object *obj, json_object *bcList);
+bc_versionlist *bc_versionlist_fetch();
+bc_versionlist_version *bc_versionlist_find(const char *id);
+int bc_versionlist_download(const char *gameVersion);
+extern bc_versionlist *bc_versionlist_instance;
 
 #endif

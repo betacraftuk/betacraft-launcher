@@ -1,28 +1,28 @@
 #include "FileSystem.h"
 
-#include "StringUtils.h"
-#include "Logger.h"
 #include "Betacraft.h"
+#include "Logger.h"
+#include "StringUtils.h"
 
-#include <stdio.h>
-#include <sys/stat.h>
-#include <json.h>
 #include <archive.h>
 #include <archive_entry.h>
+#include <dirent.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <json.h>
+#include <limits.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <dirent.h>
-#include <limits.h>
-#include <fcntl.h>
+#include <sys/stat.h>
 
 #ifdef _WIN32
+#include <direct.h>
 #include <io.h>
 #include <windows.h>
-#include <direct.h>
 #elif __APPLE__
-#include <mach-o/dyld.h>
 #include <TargetConditionals.h>
+#include <mach-o/dyld.h>
 #endif
 
 #if defined(__linux__) || defined(__APPLE__)
@@ -30,9 +30,9 @@
 #include <unistd.h>
 #endif
 
-char* bc_file_make_absolute_path(const char* relative_path) {
-    char* workdir = bc_file_directory_get_working();
-    char* res = malloc(strlen(workdir) + strlen(relative_path) + 1);
+char *bc_file_make_absolute_path(const char *relative_path) {
+    char *workdir = bc_file_directory_get_working();
+    char *res = malloc(strlen(workdir) + strlen(relative_path) + 1);
     sprintf(res, "%s%s", workdir, relative_path);
     free(workdir);
 #ifdef _WIN32
@@ -45,7 +45,7 @@ char* bc_file_make_absolute_path(const char* relative_path) {
     return res;
 }
 
-char* bc_file_absolute_path(const char* relative_path) {
+char *bc_file_absolute_path(const char *relative_path) {
 #ifdef _WIN32
     char path[_MAX_PATH + 2];
     _fullpath(path, relative_path, _MAX_PATH);
@@ -57,7 +57,7 @@ char* bc_file_absolute_path(const char* relative_path) {
         }
     }
 
-    char* pathee = malloc(len + 1);
+    char *pathee = malloc(len + 1);
     strcpy(pathee, path);
 
     return pathee;
@@ -66,27 +66,27 @@ char* bc_file_absolute_path(const char* relative_path) {
     realpath(relative_path, real);
     int len = strlen(real);
 
-    if (bc_file_directory_exists(real) && real[len-1] != '/') {
+    if (bc_file_directory_exists(real) && real[len - 1] != '/') {
         real[len] = '/';
-        real[len+1] = '\0';
+        real[len + 1] = '\0';
         len++;
     }
 
-    char* realee = malloc(len + 1);
+    char *realee = malloc(len + 1);
     strcpy(realee, real);
 
     return realee;
 #endif
 }
 
-off_t bc_file_size(const char* filepath) {
+off_t bc_file_size(const char *filepath) {
     struct stat st;
     stat(filepath, &st);
 
     return st.st_size;
 }
 
-int bc_file_exists(const char* filepath) {
+int bc_file_exists(const char *filepath) {
     if (access(filepath, 0) == 0) {
         return 1;
     }
@@ -94,8 +94,8 @@ int bc_file_exists(const char* filepath) {
     return 0;
 }
 
-void bc_file_copy(const char* filepath, const char* destination) {
-    FILE* source, * target;
+void bc_file_copy(const char *filepath, const char *destination) {
+    FILE *source, *target;
     source = fopen(filepath, "rb");
 
     fseek(source, 0, SEEK_END);
@@ -104,7 +104,8 @@ void bc_file_copy(const char* filepath, const char* destination) {
     fseek(source, 0, SEEK_SET);
     target = fopen(destination, "wb");
 
-    if (target == NULL) fclose(source);
+    if (target == NULL)
+        fclose(source);
 
     for (int i = 0; i < length; i++) {
         fputc(fgetc(source), target);
@@ -114,9 +115,9 @@ void bc_file_copy(const char* filepath, const char* destination) {
     fclose(target);
 }
 
-void bc_file_create(const char* filepath, const char* data) {
+void bc_file_create(const char *filepath, const char *data) {
     if (!bc_file_exists(filepath)) {
-        FILE* fp = fopen(filepath, "w+");
+        FILE *fp = fopen(filepath, "w+");
         if (fp == NULL) {
             bc_log("Error: bc_file_create failed %s\n", strerror(errno));
             return;
@@ -127,12 +128,12 @@ void bc_file_create(const char* filepath, const char* data) {
     }
 }
 
-bc_file_list_array* bc_file_list(const char* path) {
-    bc_file_list_array* arr = malloc(sizeof(bc_file_list_array));
+bc_file_list_array *bc_file_list(const char *path) {
+    bc_file_list_array *arr = malloc(sizeof(bc_file_list_array));
     arr->len = 0;
 
-    DIR* dir;
-    struct dirent* ent;
+    DIR *dir;
+    struct dirent *ent;
 
     if ((dir = opendir(path)) == NULL) {
         bc_log("%s\n", "Error: bc_file_list failed");
@@ -159,7 +160,8 @@ bc_file_list_array* bc_file_list(const char* path) {
         }
 #endif
 
-        snprintf(arr->arr[arr->len].name, sizeof(arr->arr[arr->len].name), "%s", ent->d_name);
+        snprintf(arr->arr[arr->len].name, sizeof(arr->arr[arr->len].name), "%s",
+                 ent->d_name);
 
         arr->arr[arr->len].size = statbuf.st_size;
         arr->arr[arr->len].is_directory = S_ISDIR(statbuf.st_mode);
@@ -176,20 +178,20 @@ bc_file_list_array* bc_file_list(const char* path) {
     return arr;
 }
 
-char* bc_file_minecraft_directory() {
-    char* mcdir;
+char *bc_file_minecraft_directory() {
+    char *mcdir;
 #ifdef __APPLE__
     int size = strlen(application_support_path) + strlen("/minecraft/") + 1;
     mcdir = malloc(size);
     snprintf(mcdir, size, "%s/minecraft/", application_support_path);
 #elif __linux__
-    struct passwd* pw = getpwuid(getuid());
+    struct passwd *pw = getpwuid(getuid());
 
     int size = strlen(pw->pw_dir) + strlen("/.minecraft/") + 1;
     mcdir = malloc(size);
     snprintf(mcdir, size, "%s/.minecraft/", pw->pw_dir);
 #elif _WIN32
-    char* env = getenv("APPDATA");
+    char *env = getenv("APPDATA");
 
     int size = strlen(env) + strlen("/.minecraft/") + 1;
     mcdir = malloc(size);
@@ -198,8 +200,8 @@ char* bc_file_minecraft_directory() {
     return mcdir;
 }
 
-char* bc_file_directory_get_working() {
-    char* real;
+char *bc_file_directory_get_working() {
+    char *real;
 #ifdef _WIN32
     real = _getcwd(NULL, PATH_MAX);
 #elif defined(__linux__) || defined(__APPLE__)
@@ -211,13 +213,13 @@ char* bc_file_directory_get_working() {
     if (bc_file_directory_exists(real) && real[len - 1] != '/') {
         real = realloc(real, len + 2);
         real[len] = '/';
-        real[len+1] = '\0';
+        real[len + 1] = '\0';
     }
 
     return real;
 }
 
-void bc_file_directory_create(const char* name) {
+void bc_file_directory_create(const char *name) {
 #if defined(__linux__) || defined(__APPLE__)
     mode_t mode = 0755;
     mkdir(name, mode);
@@ -226,15 +228,16 @@ void bc_file_directory_create(const char* name) {
 #endif
 }
 
-void bc_file_directory_remove(const char* path) {
+void bc_file_directory_remove(const char *path) {
     int err = rmdir(path);
 
     if (err == -1 && errno == ENOTEMPTY) {
-        bc_file_list_array* arr = bc_file_list(path);
+        bc_file_list_array *arr = bc_file_list(path);
 
         for (int i = 0; i < arr->len; i++) {
             char filepath[PATH_MAX];
-            snprintf(filepath, sizeof(filepath), "%s/%s", path, arr->arr[i].name);
+            snprintf(filepath, sizeof(filepath), "%s/%s", path,
+                     arr->arr[i].name);
 
             if (arr->arr[i].is_directory != 0) {
                 bc_file_directory_remove(filepath);
@@ -248,15 +251,16 @@ void bc_file_directory_remove(const char* path) {
     }
 }
 
-void bc_file_directory_copy(const char* source, const char* destination) {
-    bc_file_list_array* files = bc_file_list(source);
+void bc_file_directory_copy(const char *source, const char *destination) {
+    bc_file_list_array *files = bc_file_list(source);
 
     for (int i = 0; i < files->len; i++) {
         char sPath[PATH_MAX];
         snprintf(sPath, sizeof(sPath), "%s/%s", source, files->arr[i].name);
 
         char dPath[PATH_MAX];
-        snprintf(dPath, sizeof(dPath), "%s/%s", destination, files->arr[i].name);
+        snprintf(dPath, sizeof(dPath), "%s/%s", destination,
+                 files->arr[i].name);
 
         if (files->arr[i].is_directory == 1) {
             make_path(dPath, 0);
@@ -277,7 +281,7 @@ void bc_file_directory_copy(const char* source, const char* destination) {
     free(files);
 }
 
-int bc_file_directory_exists(const char* folder) {
+int bc_file_directory_exists(const char *folder) {
     int result = access(folder, 0);
 
     if (result == 0) {
@@ -290,9 +294,9 @@ int bc_file_directory_exists(const char* folder) {
     return 0;
 }
 
-static int do_mkdir(const char* path) {
+static int do_mkdir(const char *path) {
     struct stat st;
-    int	status = 0;
+    int status = 0;
 
     if (stat(path, &st) != 0) {
         int res;
@@ -310,7 +314,7 @@ static int do_mkdir(const char* path) {
         status = -1;
     }
 
-    return(status);
+    return (status);
 }
 
 /**
@@ -319,11 +323,11 @@ static int do_mkdir(const char* path) {
 ** each directory in path exists, rather than optimistically creating
 ** the last element and working backwards.
 */
-int make_path(const char* path, int onlyParents) {
-    char* pp;
-    char* sp;
-    int	status;
-    char* copypath = strdup(path);
+int make_path(const char *path, int onlyParents) {
+    char *pp;
+    char *sp;
+    int status;
+    char *copypath = strdup(path);
 
     status = 0;
     pp = copypath;
@@ -357,19 +361,22 @@ void bc_file_init() {
     make_path("versions/", 0);
     make_path("libraries/", 0);
 
-    json_object* settings = json_object_new_object();
-    json_object* settings_java = json_object_new_object();
-    json_object* accounts = json_object_new_object();
-    json_object* instance = json_object_new_object();
+    json_object *settings = json_object_new_object();
+    json_object *settings_java = json_object_new_object();
+    json_object *accounts = json_object_new_object();
+    json_object *instance = json_object_new_object();
 
     json_object_object_add(instance, "selected", json_object_new_string(""));
     json_object_object_add(instance, "standalone", json_object_new_array());
     json_object_object_add(instance, "grouped", json_object_new_array());
 
-    json_object_object_add(settings_java, "selected", json_object_new_string(""));
-    json_object_object_add(settings_java, "installations", json_object_new_array());
+    json_object_object_add(settings_java, "selected",
+                           json_object_new_string(""));
+    json_object_object_add(settings_java, "installations",
+                           json_object_new_array());
 
-    json_object_object_add(settings, "language", json_object_new_string("English"));
+    json_object_object_add(settings, "language",
+                           json_object_new_string("English"));
     json_object_object_add(settings, "discord", json_object_new_boolean(1));
     json_object_object_add(settings, "instance", instance);
     json_object_object_add(settings, "java", settings_java);
@@ -388,9 +395,9 @@ void bc_file_init() {
     bc_log("%s\n", "Files initialized");
 }
 
-int copy_data(struct archive* ar, struct archive* aw) {
+int copy_data(struct archive *ar, struct archive *aw) {
     int r;
-    const void* buff;
+    const void *buff;
     size_t size;
     la_int64_t offset;
 
@@ -411,10 +418,10 @@ int copy_data(struct archive* ar, struct archive* aw) {
     }
 }
 
-void bc_file_extract(const char* filepath, const char* dest) {
-    struct archive* a;
-    struct archive* ext;
-    struct archive_entry* entry;
+void bc_file_extract(const char *filepath, const char *dest) {
+    struct archive *a;
+    struct archive *ext;
+    struct archive_entry *entry;
     int flags;
     int r;
 
@@ -439,7 +446,7 @@ void bc_file_extract(const char* filepath, const char* dest) {
     for (;;) {
         r = archive_read_next_header(a, &entry);
 
-        const char* path = archive_entry_pathname(entry);
+        const char *path = archive_entry_pathname(entry);
         char newPath[PATH_MAX];
         snprintf(newPath, sizeof(newPath), "%s/%s", dest, path);
         archive_entry_set_pathname(entry, newPath);
@@ -481,12 +488,13 @@ void bc_file_extract(const char* filepath, const char* dest) {
     archive_write_free(ext);
 }
 
-void bc_file_archive_directory(const char* p, int n, struct archive* a, struct archive_entry* entry) {
+void bc_file_archive_directory(const char *p, int n, struct archive *a,
+                               struct archive_entry *entry) {
     char buff[8192];
     int len;
     int fd;
 
-    bc_file_list_array* files = bc_file_list(p);
+    bc_file_list_array *files = bc_file_list(p);
 
     for (int i = 0; i < files->len; i++) {
         char dirPath[PATH_MAX];
@@ -496,13 +504,14 @@ void bc_file_archive_directory(const char* p, int n, struct archive* a, struct a
             strcat(dirPath, "/");
 
         strcat(dirPath, files->arr[i].name);
-        char* path = dirPath + n;
+        char *path = dirPath + n;
 
         entry = archive_entry_new();
 
         archive_entry_set_pathname(entry, path);
         archive_entry_set_size(entry, files->arr[i].size);
-        archive_entry_set_filetype(entry, files->arr[i].is_directory ? AE_IFDIR : AE_IFREG);
+        archive_entry_set_filetype(
+            entry, files->arr[i].is_directory ? AE_IFDIR : AE_IFREG);
         archive_write_header(a, entry);
 
 #ifdef _WIN32
@@ -530,9 +539,9 @@ void bc_file_archive_directory(const char* p, int n, struct archive* a, struct a
     free(files);
 }
 
-void bc_file_archive(const char* directory, const char* filename) {
-    struct archive* a;
-    struct archive_entry* entry;
+void bc_file_archive(const char *directory, const char *filename) {
+    struct archive *a;
+    struct archive_entry *entry;
 
     a = archive_write_new();
 
@@ -546,10 +555,11 @@ void bc_file_archive(const char* directory, const char* filename) {
     archive_write_free(a);
 }
 
-char* bc_file_uuid() {
-    char v[] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+char *bc_file_uuid() {
+    char v[] = {'0', '1', '2', '3', '4', '5', '6', '7',
+                '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
 
-    char* buf = malloc(37);
+    char *buf = malloc(37);
 
     srand(time(NULL));
     for (int i = 0; i < 36; ++i) {
@@ -565,8 +575,8 @@ char* bc_file_uuid() {
     return buf;
 }
 
-char* bc_file_os() {
-    char* os = malloc(32);
+char *bc_file_os() {
+    char *os = malloc(32);
 #ifdef _WIN64
     strcpy(os, "win64");
 #elif _WIN32

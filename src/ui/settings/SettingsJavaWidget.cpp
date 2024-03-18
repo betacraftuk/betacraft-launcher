@@ -10,15 +10,14 @@ QString _javaExecName = "java (java *.plugin)";
 #endif
 
 extern "C" {
-    #include "../../core/Network.h"
-    #include "../../core/Betacraft.h"
+#include "../../core/Betacraft.h"
+#include "../../core/Network.h"
 }
 
 char _currentDownloadUrl[256];
 bool _downloadRecommendedJava = false;
 
-SettingsJavaWidget::SettingsJavaWidget(QWidget* parent)
-    : QWidget{ parent } {
+SettingsJavaWidget::SettingsJavaWidget(QWidget *parent) : QWidget{parent} {
     _layout = new QGridLayout(this);
     _addInstallationButton = new QPushButton(this);
     _removeInstallationButton = new QPushButton(this);
@@ -33,17 +32,21 @@ SettingsJavaWidget::SettingsJavaWidget(QWidget* parent)
     _progressTimer = new QTimer(this);
 
     _addInstallationButton->setText(bc_translate("settings_java_add_button"));
-    _removeInstallationButton->setText(bc_translate("settings_java_remove_button"));
-    _installJavaButton->setText(bc_translate("settings_java_download_install_button"));
-    _setAsDefaultButton->setText(bc_translate("settings_java_set_default_button"));
+    _removeInstallationButton->setText(
+        bc_translate("settings_java_remove_button"));
+    _installJavaButton->setText(
+        bc_translate("settings_java_download_install_button"));
+    _setAsDefaultButton->setText(
+        bc_translate("settings_java_set_default_button"));
     _javaInstallLabel->setText(bc_translate("settings_java_download_label"));
 
-    bc_jrepo_download_array* javaRepoList = bc_jrepo_get_all_system();
+    bc_jrepo_download_array *javaRepoList = bc_jrepo_get_all_system();
 
     for (int i = 0; i < javaRepoList->len; i++) {
         QVariant q;
         q.setValue(QString(javaRepoList->arr[i].url));
-        _javaInstallList->addItem(QString(javaRepoList->arr[i].full_version), q);
+        _javaInstallList->addItem(QString(javaRepoList->arr[i].full_version),
+                                  q);
     }
 
     free(javaRepoList);
@@ -87,15 +90,20 @@ SettingsJavaWidget::SettingsJavaWidget(QWidget* parent)
 
     setLayout(_layout);
 
-    connect(_installJavaButton, SIGNAL(released()), this, SLOT(onJavaInstallClicked()));
-    connect(_setAsDefaultButton, SIGNAL(released()), this, SLOT(onSetAsDefaultClicked()));
-    connect(_removeInstallationButton, SIGNAL(released()), this, SLOT(onRemoveButtonClicked()));
-    connect(_addInstallationButton, SIGNAL(released()), this, SLOT(onAddButtonClicked()));
-    connect(&_watcher, &QFutureWatcher<void>::finished, this, &SettingsJavaWidget::downloadFinished);
-    connect(_progressTimer, SIGNAL(timeout()), this, SLOT(JavaInstallProgressUpdate()));
-    connect(_cancelDownloadButton, &QPushButton::released, this, [this]() {
-        bc_network_cancel = 1;
-    });
+    connect(_installJavaButton, SIGNAL(released()), this,
+            SLOT(onJavaInstallClicked()));
+    connect(_setAsDefaultButton, SIGNAL(released()), this,
+            SLOT(onSetAsDefaultClicked()));
+    connect(_removeInstallationButton, SIGNAL(released()), this,
+            SLOT(onRemoveButtonClicked()));
+    connect(_addInstallationButton, SIGNAL(released()), this,
+            SLOT(onAddButtonClicked()));
+    connect(&_watcher, &QFutureWatcher<void>::finished, this,
+            &SettingsJavaWidget::downloadFinished);
+    connect(_progressTimer, SIGNAL(timeout()), this,
+            SLOT(JavaInstallProgressUpdate()));
+    connect(_cancelDownloadButton, &QPushButton::released, this,
+            [this]() { bc_network_cancel = 1; });
 }
 
 void SettingsJavaWidget::downloadRecommendedJava(QString javaVersion) {
@@ -119,13 +127,16 @@ void SettingsJavaWidget::JavaInstallProgressUpdate() {
             return;
         }
 
-        progressString += " - " + QString::number(progress.nowDownloadedMb, 'f', 2) + "MB";
-        progressString += " / " + QString::number(progress.totalToDownloadMb, 'f', 2) + "MB";
+        progressString +=
+            " - " + QString::number(progress.nowDownloadedMb, 'f', 2) + "MB";
+        progressString +=
+            " / " + QString::number(progress.totalToDownloadMb, 'f', 2) + "MB";
     } else if (progress.nowDownloaded > 0) {
         _progressBar->setRange(0, 100);
         _progressBar->setValue(100);
 
-        progressString += " - " + QString::number(progress.nowDownloadedMb, 'f', 2) + "MB";
+        progressString +=
+            " - " + QString::number(progress.nowDownloadedMb, 'f', 2) + "MB";
     }
 
     QString filename(progress.filename);
@@ -139,9 +150,11 @@ void SettingsJavaWidget::onJavaInstallClicked() {
     _installJavaButton->setText(bc_translate("settings_java_installing"));
 
     QString url = _javaInstallList->currentData(Qt::UserRole).value<QString>();
-    snprintf(_currentDownloadUrl, sizeof(_currentDownloadUrl), "%s", url.toStdString().c_str());
+    snprintf(_currentDownloadUrl, sizeof(_currentDownloadUrl), "%s",
+             url.toStdString().c_str());
 
-    QFuture<void> future = QtConcurrent::run(bc_java_download, _currentDownloadUrl);
+    QFuture<void> future =
+        QtConcurrent::run(bc_java_download, _currentDownloadUrl);
     _watcher.setFuture(future);
 
     _progressBar->setVisible(1);
@@ -155,7 +168,8 @@ void SettingsJavaWidget::downloadFinished() {
     populateJavaTreeView();
 
     _installJavaButton->setDisabled(false);
-    _installJavaButton->setText(bc_translate("settings_java_download_install_button"));
+    _installJavaButton->setText(
+        bc_translate("settings_java_download_install_button"));
 
     if (_downloadRecommendedJava) {
         _downloadRecommendedJava = false;
@@ -219,22 +233,25 @@ void SettingsJavaWidget::populateJavaTreeView() {
 
     _javaTreeItemModel->setHorizontalHeaderLabels(headers);
 
-    bc_jinst_array* javaInstallationsList = bc_jinst_get_all();
-    char* selected = bc_jinst_select_get();
+    bc_jinst_array *javaInstallationsList = bc_jinst_get_all();
+    char *selected = bc_jinst_select_get();
 
     for (int i = 0; i < javaInstallationsList->len; i++) {
-        QStandardItem* version = new QStandardItem(QString(javaInstallationsList->arr[i].version));
-        QStandardItem* path = new QStandardItem(QString(javaInstallationsList->arr[i].path));
+        QStandardItem *version =
+            new QStandardItem(QString(javaInstallationsList->arr[i].version));
+        QStandardItem *path =
+            new QStandardItem(QString(javaInstallationsList->arr[i].path));
 
         _javaTreeItemModel->setItem(i, 0, version);
         _javaTreeItemModel->setItem(i, 1, path);
 
-        if (selected != NULL && strcmp(selected, javaInstallationsList->arr[i].path) == 0) {
+        if (selected != NULL &&
+            strcmp(selected, javaInstallationsList->arr[i].path) == 0) {
             version->setBackground(QBrush(QColor(86, 184, 91, 255)));
             path->setBackground(QBrush(QColor(86, 184, 91, 255)));
         }
     }
-    
+
     free(javaInstallationsList);
     free(selected);
 }

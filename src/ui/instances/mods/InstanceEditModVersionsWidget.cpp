@@ -8,8 +8,8 @@ char _path[PATH_MAX];
 char _version[32];
 bc_mod_version _selectedModVersion;
 
-InstanceEditModVersionsWidget::InstanceEditModVersionsWidget(QWidget* parent)
-    : QWidget{ parent } {
+InstanceEditModVersionsWidget::InstanceEditModVersionsWidget(QWidget *parent)
+    : QWidget{parent} {
     _layout = new QGridLayout(this);
     _versionList = new QListWidget(this);
 
@@ -23,18 +23,21 @@ InstanceEditModVersionsWidget::InstanceEditModVersionsWidget(QWidget* parent)
     setWindowTitle(bc_translate("mods_mod_version_window_title"));
     resize(250, 400);
     setMinimumSize(250, 400);
-    
-    connect(_versionList, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onVersionClicked(QListWidgetItem*)));
-    connect(&_watcher, SIGNAL(finished()), this, SIGNAL(signal_ModDownloadFinished()));
+
+    connect(_versionList, SIGNAL(itemClicked(QListWidgetItem *)), this,
+            SLOT(onVersionClicked(QListWidgetItem *)));
+    connect(&_watcher, SIGNAL(finished()), this,
+            SIGNAL(signal_ModDownloadFinished()));
 
     setWindowModality(Qt::ApplicationModal);
 }
 
-void InstanceEditModVersionsWidget::populateList(bc_mod_version_array versions) {
-    _versionList->clear(); 
+void InstanceEditModVersionsWidget::populateList(
+    bc_mod_version_array versions) {
+    _versionList->clear();
 
     for (int i = 0; i < versions.len; i++) {
-        QListWidgetItem* item = new QListWidgetItem();
+        QListWidgetItem *item = new QListWidgetItem();
 
         QVariant version;
         version.setValue(versions.arr[i]);
@@ -50,10 +53,11 @@ void InstanceEditModVersionsWidget::setInstance(bc_instance instance) {
     snprintf(_version, sizeof(_version), "%s", instance.version);
 }
 
-void InstanceEditModVersionsWidget::onVersionClicked(QListWidgetItem* item) {
+void InstanceEditModVersionsWidget::onVersionClicked(QListWidgetItem *item) {
     _selectedModVersion = item->data(Qt::UserRole).value<bc_mod_version>();
 
-    QFuture<void> future = QtConcurrent::run(bc_mod_download, &_selectedModVersion, _path, _version);
+    QFuture<void> future = QtConcurrent::run(
+        bc_mod_download, &_selectedModVersion, _path, _version);
     _watcher.setFuture(future);
 
     emit signal_ModDownloadStarted();

@@ -1,27 +1,28 @@
 #include "JavaInstallations.h"
 #include "FileSystem.h"
 #include "JsonExtension.h"
+#include "Logger.h"
 #include "Network.h"
 #include "Version.h"
-#include "Logger.h"
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
 #include <sys/stat.h>
 
 #ifdef __APPLE__
 #include <TargetConditionals.h>
 #endif
 
-char* bc_java_version(const char* path) {
-    FILE* fp;
+char *bc_java_version(const char *path) {
+    FILE *fp;
     char buff[512];
-    char* version;
+    char *version;
 
     char command[512];
-    snprintf(command, sizeof(command), "\"%s\" -version 2>&1", path); // 2>&1 = stderr to stdout
+    snprintf(command, sizeof(command), "\"%s\" -version 2>&1",
+             path); // 2>&1 = stderr to stdout
 
     fp = popen(command, "r");
 
@@ -37,15 +38,15 @@ char* bc_java_version(const char* path) {
 
     pclose(fp);
 
-    char* out = malloc(strlen(version) + 1);
+    char *out = malloc(strlen(version) + 1);
     strcpy(out, version);
 
     return out;
 }
 
-void bc_java_download(const char* url) {
-    char* filename = strrchr(url, '/');
-    char* dir_working = bc_file_directory_get_working();
+void bc_java_download(const char *url) {
+    char *filename = strrchr(url, '/');
+    char *dir_working = bc_file_directory_get_working();
 
     char path_download[PATH_MAX];
     char path_dir[PATH_MAX];
@@ -53,7 +54,7 @@ void bc_java_download(const char* url) {
     snprintf(path_download, sizeof(path_download), "java%s", filename);
     snprintf(path_dir, sizeof(path_dir), "%s", path_download);
 
-    char* fileExtension = strrchr(path_download, '.');
+    char *fileExtension = strrchr(path_download, '.');
 
     if (fileExtension == NULL)
         return;
@@ -78,11 +79,12 @@ void bc_java_download(const char* url) {
     bc_file_extract(path_download, path_dir);
     remove(path_download);
 
-    bc_file_list_array* files = bc_file_list(path_dir);
+    bc_file_list_array *files = bc_file_list(path_dir);
 
     if (files->len == 1 && files->arr[0].is_directory == 1) {
         char inside_dir[PATH_MAX];
-        snprintf(inside_dir, sizeof(inside_dir), "%s%s/", path_dir, files->arr[0].name);
+        snprintf(inside_dir, sizeof(inside_dir), "%s%s/", path_dir,
+                 files->arr[0].name);
 
         bc_file_directory_copy(inside_dir, path_dir);
         bc_file_directory_remove(inside_dir);
@@ -97,7 +99,8 @@ void bc_java_download(const char* url) {
     snprintf(path_bin, sizeof(path_bin), "%sw.exe", path_bin);
 
     for (int i = 0; i <= strlen(path_bin); i++) {
-        if (path_bin[i] == '/') path_bin[i] = '\\';
+        if (path_bin[i] == '/')
+            path_bin[i] = '\\';
     }
 #elif defined(__linux__) || defined(__APPLE__)
     chmod(path_bin, 0777);
@@ -108,26 +111,22 @@ void bc_java_download(const char* url) {
     free(dir_working);
 }
 
-int bc_jrepo_check_os(const char* name, const char* arch) {
+int bc_jrepo_check_os(const char *name, const char *arch) {
 #ifdef _WIN64
-    if (strcmp(name, "windows") == 0
-        && strcmp(arch, "x64") == 0) {
+    if (strcmp(name, "windows") == 0 && strcmp(arch, "x64") == 0) {
         return 0;
     }
 #elif __linux__
-    if (strcmp(name, "linux") == 0
-        && strcmp(arch, "x64") == 0) {
+    if (strcmp(name, "linux") == 0 && strcmp(arch, "x64") == 0) {
         return 0;
     }
 #elif __APPLE__
 #ifdef __aarch64__
-    if (strcmp(name, "macos") == 0
-        && strcmp(arch, "aarch64") == 0) {
+    if (strcmp(name, "macos") == 0 && strcmp(arch, "aarch64") == 0) {
         return 0;
     }
 #elif TARGET_OS_MAC
-    if (strcmp(name, "macos") == 0
-        && strcmp(arch, "x64") == 0) {
+    if (strcmp(name, "macos") == 0 && strcmp(arch, "x64") == 0) {
         return 0;
     }
 #endif
@@ -136,37 +135,43 @@ int bc_jrepo_check_os(const char* name, const char* arch) {
     return 1;
 }
 
-bc_jrepo_array* bc_jrepo_get_all() {
-    bc_jrepo_array* jrepo_array = malloc(sizeof(bc_jrepo_array));
-    json_object* json = json_object_from_file("java_repo.json");
+bc_jrepo_array *bc_jrepo_get_all() {
+    bc_jrepo_array *jrepo_array = malloc(sizeof(bc_jrepo_array));
+    json_object *json = json_object_from_file("java_repo.json");
 
     if (json == NULL) {
         jrepo_array->len = 0;
         return jrepo_array;
     }
 
-    json_object* tmp, * tmp_platform;
+    json_object *tmp, *tmp_platform;
 
     jrepo_array->len = json_object_array_length(json);
 
     for (int i = 0; i < jrepo_array->len; i++) {
         tmp = json_object_array_get_idx(json, i);
-        bc_jrepo* jrepo = &jrepo_array->arr[i];
+        bc_jrepo *jrepo = &jrepo_array->arr[i];
 
         jrepo->version = jext_get_int(tmp, "version");
-        snprintf(jrepo->full_version, sizeof(jrepo->full_version), "%s", jext_get_string_dummy(tmp, "full_version"));
+        snprintf(jrepo->full_version, sizeof(jrepo->full_version), "%s",
+                 jext_get_string_dummy(tmp, "full_version"));
 
         json_object_object_get_ex(tmp, "platforms", &tmp_platform);
 
-        jrepo_array->arr[i].platforms_len = json_object_array_length(tmp_platform);
+        jrepo_array->arr[i].platforms_len =
+            json_object_array_length(tmp_platform);
 
         for (int p = 0; p < jrepo_array->arr[i].platforms_len; p++) {
             tmp = json_object_array_get_idx(tmp_platform, p);
 
-            snprintf(jrepo->platforms[p].name, sizeof(jrepo->platforms[p].name), "%s", jext_get_string_dummy(tmp, "name"));
-            snprintf(jrepo->platforms[p].arch, sizeof(jrepo->platforms[p].arch), "%s", jext_get_string_dummy(tmp, "arch"));
-            snprintf(jrepo->platforms[p].hash, sizeof(jrepo->platforms[p].hash), "%s", jext_get_string_dummy(tmp, "hash"));
-            snprintf(jrepo->platforms[p].url, sizeof(jrepo->platforms[p].url), "%s", jext_get_string_dummy(tmp, "url"));
+            snprintf(jrepo->platforms[p].name, sizeof(jrepo->platforms[p].name),
+                     "%s", jext_get_string_dummy(tmp, "name"));
+            snprintf(jrepo->platforms[p].arch, sizeof(jrepo->platforms[p].arch),
+                     "%s", jext_get_string_dummy(tmp, "arch"));
+            snprintf(jrepo->platforms[p].hash, sizeof(jrepo->platforms[p].hash),
+                     "%s", jext_get_string_dummy(tmp, "hash"));
+            snprintf(jrepo->platforms[p].url, sizeof(jrepo->platforms[p].url),
+                     "%s", jext_get_string_dummy(tmp, "url"));
         };
     }
 
@@ -174,21 +179,25 @@ bc_jrepo_array* bc_jrepo_get_all() {
     return jrepo_array;
 }
 
-bc_jrepo_download_array* bc_jrepo_get_all_system() {
-    bc_jrepo_download_array* jrepo_download_array = malloc(sizeof(bc_jrepo_download_array));
-    bc_jrepo_array* jrepo_array = bc_jrepo_get_all();
+bc_jrepo_download_array *bc_jrepo_get_all_system() {
+    bc_jrepo_download_array *jrepo_download_array =
+        malloc(sizeof(bc_jrepo_download_array));
+    bc_jrepo_array *jrepo_array = bc_jrepo_get_all();
 
     jrepo_download_array->len = 0;
 
     for (int i = 0; i < jrepo_array->len; i++) {
         for (int p = 0; p < jrepo_array->arr[i].platforms_len; p++) {
             if (!bc_jrepo_check_os(jrepo_array->arr[i].platforms[p].name,
-                                  jrepo_array->arr[i].platforms[p].arch)) {
-                bc_jrepo_download* download = &jrepo_download_array->arr[jrepo_download_array->len];
+                                   jrepo_array->arr[i].platforms[p].arch)) {
+                bc_jrepo_download *download =
+                    &jrepo_download_array->arr[jrepo_download_array->len];
 
                 download->version = jrepo_array->arr[i].version;
-                snprintf(download->full_version, sizeof(download->full_version), "%s", jrepo_array->arr[i].full_version);
-                snprintf(download->url, sizeof(download->url), "%s", jrepo_array->arr[i].platforms[p].url);
+                snprintf(download->full_version, sizeof(download->full_version),
+                         "%s", jrepo_array->arr[i].full_version);
+                snprintf(download->url, sizeof(download->url), "%s",
+                         jrepo_array->arr[i].platforms[p].url);
 
                 jrepo_download_array->len++;
 
@@ -202,7 +211,7 @@ bc_jrepo_download_array* bc_jrepo_get_all_system() {
 }
 
 void bc_jinst_system_check() {
-    char* jinstSelected = bc_jinst_select_get();
+    char *jinstSelected = bc_jinst_select_get();
 
     if (jinstSelected == NULL) {
 #if defined(__linux__) || defined(__APPLE__)
@@ -212,8 +221,8 @@ void bc_jinst_system_check() {
             return;
         }
 #elif _WIN32
-        char* path = getenv("PATH");
-        char* token = strtok(path, ";");
+        char *path = getenv("PATH");
+        char *token = strtok(path, ";");
 
         while (token != NULL) {
             if (strstr(token, "java") != NULL) {
@@ -234,32 +243,34 @@ void bc_jinst_system_check() {
     }
 }
 
-void bc_jinst_add(const char* path) {
-    char* version = bc_java_version(path);
+void bc_jinst_add(const char *path) {
+    char *version = bc_java_version(path);
 
     if (version == NULL) {
         bc_log("%s\n", "Error: bc_jinst_add failed - can't read Java version");
         return;
     }
 
-    json_object* settings = json_object_from_file("settings.json");
-    json_object* java_installation = json_object_new_object();
-    json_object* tmp, * java_object;
+    json_object *settings = json_object_from_file("settings.json");
+    json_object *java_installation = json_object_new_object();
+    json_object *tmp, *java_object;
 
     json_object_object_get_ex(settings, "java", &java_object);
     json_object_object_get_ex(java_object, "installations", &tmp);
 
     int jinst_index = jext_get_string_array_index(tmp, "version", version);
 
-    if (jinst_index != -1) {  // if installation already exists
+    if (jinst_index != -1) { // if installation already exists
         free(version);
         json_object_put(settings);
         json_object_put(java_installation);
         return;
     }
 
-    json_object_object_add(java_installation, "version", json_object_new_string(version));
-    json_object_object_add(java_installation, "path", json_object_new_string(path));
+    json_object_object_add(java_installation, "version",
+                           json_object_new_string(version));
+    json_object_object_add(java_installation, "path",
+                           json_object_new_string(path));
 
     json_object_array_add(tmp, java_installation);
 
@@ -269,9 +280,9 @@ void bc_jinst_add(const char* path) {
     json_object_put(settings);
 }
 
-void bc_jinst_select(const char* path) {
-    json_object* json = json_object_from_file("settings.json");
-    json_object* tmp, * java_object;
+void bc_jinst_select(const char *path) {
+    json_object *json = json_object_from_file("settings.json");
+    json_object *tmp, *java_object;
 
     json_object_object_get_ex(json, "java", &java_object);
     json_object_object_get_ex(java_object, "selected", &tmp);
@@ -282,27 +293,28 @@ void bc_jinst_select(const char* path) {
     json_object_put(json);
 }
 
-char* bc_jinst_select_get() {
-    json_object* json = json_object_from_file("settings.json");
-    json_object* tmp;
+char *bc_jinst_select_get() {
+    json_object *json = json_object_from_file("settings.json");
+    json_object *tmp;
 
     json_object_object_get_ex(json, "java", &tmp);
-    char* selected = jext_get_string(tmp, "selected");
+    char *selected = jext_get_string(tmp, "selected");
     json_object_put(json);
 
     return selected;
 }
 
-void bc_jinst_remove(const char* path) {
-    json_object* json = json_object_from_file("settings.json");
-    json_object * arr, * java_object, * tmp;
+void bc_jinst_remove(const char *path) {
+    json_object *json = json_object_from_file("settings.json");
+    json_object *arr, *java_object, *tmp;
 
     json_object_object_get_ex(json, "java", &java_object);
     json_object_object_get_ex(java_object, "installations", &arr);
 
-    json_object_array_del_idx(arr, jext_get_string_array_index(arr, "path", path), 1);
+    json_object_array_del_idx(
+        arr, jext_get_string_array_index(arr, "path", path), 1);
 
-    char* selected = bc_jinst_select_get();
+    char *selected = bc_jinst_select_get();
 
     if (selected != NULL && strcmp(selected, path) == 0) {
         json_object_object_get_ex(java_object, "selected", &tmp);
@@ -315,10 +327,10 @@ void bc_jinst_remove(const char* path) {
     json_object_put(json);
 }
 
-bc_jinst_array* bc_jinst_get_all() {
-    bc_jinst_array* jinst_array = NULL;
+bc_jinst_array *bc_jinst_get_all() {
+    bc_jinst_array *jinst_array = NULL;
 
-    json_object* json = json_object_from_file("settings.json");
+    json_object *json = json_object_from_file("settings.json");
 
     if (json == NULL) {
         jinst_array->len = 0;
@@ -326,7 +338,7 @@ bc_jinst_array* bc_jinst_get_all() {
         return jinst_array;
     }
 
-    json_object* arr, * java_object, * tmp;
+    json_object *arr, *java_object, *tmp;
 
     json_object_object_get_ex(json, "java", &java_object);
     json_object_object_get_ex(java_object, "installations", &arr);
@@ -337,8 +349,11 @@ bc_jinst_array* bc_jinst_get_all() {
     for (int i = 0; i < jinst_array->len; i++) {
         tmp = json_object_array_get_idx(arr, i);
 
-        snprintf(jinst_array->arr[i].version, sizeof(jinst_array->arr[i].version), "%s", jext_get_string_dummy(tmp, "version"));
-        snprintf(jinst_array->arr[i].path, sizeof(jinst_array->arr[i].path), "%s", jext_get_string_dummy(tmp, "path"));
+        snprintf(jinst_array->arr[i].version,
+                 sizeof(jinst_array->arr[i].version), "%s",
+                 jext_get_string_dummy(tmp, "version"));
+        snprintf(jinst_array->arr[i].path, sizeof(jinst_array->arr[i].path),
+                 "%s", jext_get_string_dummy(tmp, "path"));
     }
 
     json_object_put(json);
@@ -346,11 +361,11 @@ bc_jinst_array* bc_jinst_get_all() {
     return jinst_array;
 }
 
-bc_jinst* bc_jinst_get(const char* path) {
-    bc_jinst* jinst = NULL;
+bc_jinst *bc_jinst_get(const char *path) {
+    bc_jinst *jinst = NULL;
 
-    json_object* json = json_object_from_file("settings.json");
-    json_object* arr, * java_object, * tmp;
+    json_object *json = json_object_from_file("settings.json");
+    json_object *arr, *java_object, *tmp;
 
     json_object_object_get_ex(json, "java", &java_object);
     json_object_object_get_ex(java_object, "installations", &arr);
@@ -359,13 +374,15 @@ bc_jinst* bc_jinst_get(const char* path) {
 
     for (int i = 0; i < len; i++) {
         tmp = json_object_array_get_idx(arr, i);
-        const char* tmpPath = jext_get_string_dummy(tmp, "path");
+        const char *tmpPath = jext_get_string_dummy(tmp, "path");
 
         if (strcmp(tmpPath, path) == 0) {
             jinst = malloc(sizeof(bc_jinst));
 
-            snprintf(jinst->path, sizeof(jinst->path), "%s", jext_get_string_dummy(tmp, "path"));
-            snprintf(jinst->version, sizeof(jinst->version), "%s", jext_get_string_dummy(tmp, "version"));
+            snprintf(jinst->path, sizeof(jinst->path), "%s",
+                     jext_get_string_dummy(tmp, "path"));
+            snprintf(jinst->version, sizeof(jinst->version), "%s",
+                     jext_get_string_dummy(tmp, "version"));
 
             break;
         }
@@ -376,7 +393,7 @@ bc_jinst* bc_jinst_get(const char* path) {
     return jinst;
 }
 
-char* bc_jrepo_parse_version(const char* version) {
+char *bc_jrepo_parse_version(const char *version) {
     char ver[8];
     int len = 0;
 
@@ -393,7 +410,8 @@ char* bc_jrepo_parse_version(const char* version) {
             if (version[i] != '.') {
                 ver[i] = version[i];
                 len++;
-            } else break;
+            } else
+                break;
         }
     }
 
@@ -401,30 +419,32 @@ char* bc_jrepo_parse_version(const char* version) {
 
     ver[len] = '\0';
 
-    char* out = malloc(strlen(ver) + 1);
+    char *out = malloc(strlen(ver) + 1);
     strcpy(out, ver);
 
     return out;
 }
 
-char* bc_jrepo_get_recommended(const char* gameVersion) {
-    char* res = NULL;
+char *bc_jrepo_get_recommended(const char *gameVersion) {
+    char *res = NULL;
     char jsonLoc[PATH_MAX];
     snprintf(jsonLoc, sizeof(jsonLoc), "versions/%s.json", gameVersion);
 
-    json_object* json = json_object_from_file(jsonLoc);
+    json_object *json = json_object_from_file(jsonLoc);
     assert(json != NULL);
 
-    bc_version* version = bc_version_read_json(json);
+    bc_version *version = bc_version_read_json(json);
 
-    bc_jrepo_download_array* jrepo = bc_jrepo_get_all_system();
+    bc_jrepo_download_array *jrepo = bc_jrepo_get_all_system();
     assert(jrepo->len > 0);
 
     for (int i = jrepo->len - 1; i >= 0; i--) {
         int maxVersion = jrepo->arr[i].version;
 
-        if ((version->javaVersion.advisedMaxVersion > 0 && version->javaVersion.advisedMaxVersion == maxVersion)
-            || (version->javaVersion.majorVersion > 0 && version->javaVersion.majorVersion == maxVersion)) {
+        if ((version->javaVersion.advisedMaxVersion > 0 &&
+             version->javaVersion.advisedMaxVersion == maxVersion) ||
+            (version->javaVersion.majorVersion > 0 &&
+             version->javaVersion.majorVersion == maxVersion)) {
             res = malloc(strlen(jrepo->arr[i].full_version) + 1);
             strcpy(res, jrepo->arr[i].full_version);
             break;

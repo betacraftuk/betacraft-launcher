@@ -4,11 +4,11 @@
 #include <QtWidgets>
 
 extern "C" {
-    #include "../core/Network.h"
-    #include "../core/Discord.h"
-    #include "../core/Betacraft.h"
-    #include "../core/JavaInstallations.h"
-    #include "../core/VersionList.h"
+#include "../core/Betacraft.h"
+#include "../core/Discord.h"
+#include "../core/JavaInstallations.h"
+#include "../core/Network.h"
+#include "../core/VersionList.h"
 }
 
 char _updateVersion[BETACRAFT_MAX_UPDATE_TAG_SIZE] = "";
@@ -34,10 +34,15 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent) {
 
 void MainWindow::onStartup() {
     if (betacraft_online) {
-        QFuture<char*> future = QtConcurrent::run(bc_network_get, "https://raw.githubusercontent.com/betacraftuk/betacraft-launcher/v2/CHANGELOG.md", "");
+        QFuture<char *> future =
+            QtConcurrent::run(bc_network_get,
+                              "https://raw.githubusercontent.com/betacraftuk/"
+                              "betacraft-launcher/v2/CHANGELOG.md",
+                              "");
         _changelogWatcher.setFuture(future);
 
-        QFuture<int> updateFuture = QtConcurrent::run(bc_update_check, _updateVersion);
+        QFuture<int> updateFuture =
+            QtConcurrent::run(bc_update_check, _updateVersion);
         _updateWatcher.setFuture(updateFuture);
 
         bc_account_refresh();
@@ -97,7 +102,9 @@ void MainWindow::initPlayButton() {
 
 void MainWindow::initChangelog() {
     _changelog->setReadOnly(true);
-    _changelog->setStyleSheet(".QTextEdit { background-image: url(':/assets/stone.png'); border: 0; color: #e0d0d0; font-size: 15px; padding-left: 10px; }");
+    _changelog->setStyleSheet(
+        ".QTextEdit { background-image: url(':/assets/stone.png'); border: 0; "
+        "color: #e0d0d0; font-size: 15px; padding-left: 10px; }");
     _changelog->viewport()->setCursor(Qt::ArrowCursor);
 
     if (!betacraft_online) {
@@ -117,8 +124,10 @@ void MainWindow::initWindow() {
 }
 
 void MainWindow::initMainLayout() {
-    _instanceLabel->setStyleSheet(".QLabel { color: white; padding-bottom: 10px; }");
-    _bottomBackground->setStyleSheet(".QWidget { background-image: url(':/assets/dirt.png'); }");
+    _instanceLabel->setStyleSheet(
+        ".QLabel { color: white; padding-bottom: 10px; }");
+    _bottomBackground->setStyleSheet(
+        ".QWidget { background-image: url(':/assets/dirt.png'); }");
     _logo->setPixmap(QPixmap(":/assets/logo.png"));
 
     _mainLayout->setSpacing(0);
@@ -149,26 +158,39 @@ void MainWindow::initProgressBar() {
 }
 
 void MainWindow::loadChangelog() {
-    char* response = _changelogWatcher.future().result();
+    char *response = _changelogWatcher.future().result();
     _changelog->setMarkdown(QString(response));
     free(response);
 }
 
 void MainWindow::connectSignalsToSlots() {
-    connect(_gameProgressTimer, SIGNAL(timeout()), this, SLOT(updateGameProgress()));
-    connect(_playButton, &QPushButton::released, this, [this]() { launchGame("", ""); });
-    connect(_instanceListWidget, SIGNAL(signal_instanceUpdate()), this, SLOT(onInstanceUpdate()));
-    connect(_menu, SIGNAL(currentChanged(int)), this, SLOT(onMenuIndexChanged(int)));
-    connect(_discordLoopTimer, &QTimer::timeout, this, [this]() { bc_discord_loop(); });
-    connect(_settingsWidget, SIGNAL(signal_toggleTabs()), this, SLOT(onToggleTabs()));
-    connect(_settingsWidget, SIGNAL(signal_toggleDiscordRPC()), this, SLOT(onToggleDiscordRPC()));
-    connect(&_watcher, &QFutureWatcher<void>::finished, this, &MainWindow::launchingGameFinished);
-    connect(&_updateWatcher, &QFutureWatcher<int>::finished, this, &MainWindow::updateCheck);
+    connect(_gameProgressTimer, SIGNAL(timeout()), this,
+            SLOT(updateGameProgress()));
+    connect(_playButton, &QPushButton::released, this,
+            [this]() { launchGame("", ""); });
+    connect(_instanceListWidget, SIGNAL(signal_instanceUpdate()), this,
+            SLOT(onInstanceUpdate()));
+    connect(_menu, SIGNAL(currentChanged(int)), this,
+            SLOT(onMenuIndexChanged(int)));
+    connect(_discordLoopTimer, &QTimer::timeout, this,
+            [this]() { bc_discord_loop(); });
+    connect(_settingsWidget, SIGNAL(signal_toggleTabs()), this,
+            SLOT(onToggleTabs()));
+    connect(_settingsWidget, SIGNAL(signal_toggleDiscordRPC()), this,
+            SLOT(onToggleDiscordRPC()));
+    connect(&_watcher, &QFutureWatcher<void>::finished, this,
+            &MainWindow::launchingGameFinished);
+    connect(&_updateWatcher, &QFutureWatcher<int>::finished, this,
+            &MainWindow::updateCheck);
 
     if (betacraft_online) {
-        connect(&_changelogWatcher, &QFutureWatcher<char*>::finished, this, &MainWindow::loadChangelog);
-        connect(_serverListWidget, SIGNAL(signal_serverGameLaunch(const char*, const char*)), this, SLOT(launchGameJoinServer(const char*, const char*)));
-        connect(_accountsWidget, SIGNAL(signal_accountUpdate()), this, SLOT(onAccountUpdate()));
+        connect(&_changelogWatcher, &QFutureWatcher<char *>::finished, this,
+                &MainWindow::loadChangelog);
+        connect(_serverListWidget,
+                SIGNAL(signal_serverGameLaunch(const char *, const char *)),
+                this, SLOT(launchGameJoinServer(const char *, const char *)));
+        connect(_accountsWidget, SIGNAL(signal_accountUpdate()), this,
+                SLOT(onAccountUpdate()));
     }
 }
 
@@ -183,7 +205,8 @@ void MainWindow::updateCheck() {
     }
 
     if (_updateVersion[0] != '\0') {
-        QString url = "https://github.com/betacraftuk/betacraft-launcher/releases";
+        QString url =
+            "https://github.com/betacraftuk/betacraft-launcher/releases";
         QString message = bc_translate("update_notice_message");
 
         _messageBox->setWindowTitle("Betacraft");
@@ -195,7 +218,7 @@ void MainWindow::updateCheck() {
     }
 }
 
-void MainWindow::launchGameJoinServer(const char* ip, const char* port) {
+void MainWindow::launchGameJoinServer(const char *ip, const char *port) {
     onInstanceUpdate();
     launchGame(ip, port);
 }
@@ -224,7 +247,8 @@ void MainWindow::onMenuIndexChanged(int index) {
             _serverListWidget->initServerList();
             break;
         case 6:
-            QDesktopServices::openUrl(QUrl("https://www.patreon.com/BetacraftLauncher"));
+            QDesktopServices::openUrl(
+                QUrl("https://www.patreon.com/BetacraftLauncher"));
             _menu->setCurrentIndex(0);
             break;
         default:
@@ -250,7 +274,7 @@ void MainWindow::launchingGameFinished() {
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *e) {
-    if(e->key() == Qt::Key_Return) {
+    if (e->key() == Qt::Key_Return) {
         launchGame("", "");
     }
 }
@@ -297,15 +321,23 @@ void MainWindow::updateGameProgress() {
         progressString += QString(downloadProgress.filename).split('/').last();
 
         if (downloadProgress.nowDownloaded > 0) {
-            progressString += " - " + QString::number(downloadProgress.nowDownloadedMb, 'f', 2) + "MB";
+            progressString +=
+                " - " +
+                QString::number(downloadProgress.nowDownloadedMb, 'f', 2) +
+                "MB";
         }
 
         if (downloadProgress.totalToDownload > 0) {
-            progressString += " / " + QString::number(downloadProgress.totalToDownloadMb, 'f', 2) + "MB";
+            progressString +=
+                " / " +
+                QString::number(downloadProgress.totalToDownloadMb, 'f', 2) +
+                "MB";
         }
 
         if (gameProgress.cur > 0 && gameProgress.total > 0) {
-            progressString += QString(" (%1 / %2)").arg(gameProgress.cur).arg(gameProgress.total);
+            progressString += QString(" (%1 / %2)")
+                                  .arg(gameProgress.cur)
+                                  .arg(gameProgress.total);
         }
 
         _progressBar->setFormat(progressString);
@@ -313,27 +345,30 @@ void MainWindow::updateGameProgress() {
 }
 
 bool MainWindow::recommendedJavaCheck() {
-    char* recommendedJavaVersion = bc_jrepo_get_recommended(_instanceSelectedVersion.toStdString().c_str());
-    char* selectedJava = bc_jinst_select_get();
+    char *recommendedJavaVersion = bc_jrepo_get_recommended(
+        _instanceSelectedVersion.toStdString().c_str());
+    char *selectedJava = bc_jinst_select_get();
 
-    char* parsedRecommended = bc_jrepo_parse_version(recommendedJavaVersion);
-    char* parsedSelected = NULL;
+    char *parsedRecommended = bc_jrepo_parse_version(recommendedJavaVersion);
+    char *parsedSelected = NULL;
 
     bool startGame = true;
 
     if (selectedJava != NULL) {
-        bc_jinst* jinst = bc_jinst_get(selectedJava);
+        bc_jinst *jinst = bc_jinst_get(selectedJava);
         parsedSelected = bc_jrepo_parse_version(jinst->version);
         free(jinst);
-    } 
-    
-    if (selectedJava == NULL || strcmp(parsedRecommended, parsedSelected) != 0) {
-        bc_jinst_array* jinstList = bc_jinst_get_all();
+    }
 
-        char* matchingJavaInstallationPath = NULL;
+    if (selectedJava == NULL ||
+        strcmp(parsedRecommended, parsedSelected) != 0) {
+        bc_jinst_array *jinstList = bc_jinst_get_all();
+
+        char *matchingJavaInstallationPath = NULL;
 
         for (int i = 0; i < jinstList->len; i++) {
-            char* parsedVersion = bc_jrepo_parse_version(jinstList->arr[i].version);
+            char *parsedVersion =
+                bc_jrepo_parse_version(jinstList->arr[i].version);
 
             if (strcmp(parsedRecommended, parsedVersion) == 0) {
                 matchingJavaInstallationPath = jinstList->arr[i].path;
@@ -346,10 +381,12 @@ bool MainWindow::recommendedJavaCheck() {
 
         QMessageBox messageBox;
         QString message = bc_translate("java_version_not_supported");
-        
+
         message += matchingJavaInstallationPath == NULL
-            ? bc_translate("java_version_install_recommended").arg(recommendedJavaVersion)
-            : bc_translate("java_version_switch_to_recommended").arg(parsedRecommended);
+                       ? bc_translate("java_version_install_recommended")
+                             .arg(recommendedJavaVersion)
+                       : bc_translate("java_version_switch_to_recommended")
+                             .arg(parsedRecommended);
 
         messageBox.setWindowTitle("Betacraft");
         messageBox.setText(message);
@@ -363,7 +400,8 @@ bool MainWindow::recommendedJavaCheck() {
                 bc_jinst_select(matchingJavaInstallationPath);
             } else {
                 _menu->setCurrentIndex(4);
-                _settingsWidget->downloadRecommendedJava(QString(recommendedJavaVersion));
+                _settingsWidget->downloadRecommendedJava(
+                    QString(recommendedJavaVersion));
                 startGame = false;
             }
         }
@@ -382,8 +420,10 @@ bool MainWindow::recommendedJavaCheck() {
     return startGame;
 }
 
-void MainWindow::launchGame(const char* ip, const char* port) {
-    if (!bc_versionlist_download(_instanceSelectedVersion.toStdString().c_str()) || !recommendedJavaCheck()) {
+void MainWindow::launchGame(const char *ip, const char *port) {
+    if (!bc_versionlist_download(
+            _instanceSelectedVersion.toStdString().c_str()) ||
+        !recommendedJavaCheck()) {
         return;
     }
 
@@ -404,11 +444,12 @@ void MainWindow::launchGame(const char* ip, const char* port) {
         userStatus = _username;
     }
 
-    bc_discord_activity_update(userStatus.toStdString().c_str(), _instanceSelectedVersion.toStdString().c_str());
+    bc_discord_activity_update(userStatus.toStdString().c_str(),
+                               _instanceSelectedVersion.toStdString().c_str());
 }
 
 void MainWindow::onInstanceUpdate() {
-    bc_instance* instance = bc_instance_select_get();
+    bc_instance *instance = bc_instance_select_get();
 
     if (instance != NULL) {
         _instanceSelectedVersion = QString(instance->version);
@@ -430,12 +471,13 @@ void MainWindow::onInstanceUpdate() {
 }
 
 void MainWindow::onAccountUpdate() {
-    bc_account* account = bc_account_select_get();
+    bc_account *account = bc_account_select_get();
 
     if (account != NULL) {
         _username = QString(account->username);
 
-        bc_discord_activity_update(_username.toStdString().c_str(), "Testing Betacraft v2");
+        bc_discord_activity_update(_username.toStdString().c_str(),
+                                   "Testing Betacraft v2");
         free(account);
     } else {
         bc_discord_activity_update("", "Testing Betacraft v2");
@@ -456,7 +498,9 @@ void MainWindow::updateInstanceLabel() {
             label += " | ";
         }
 
-        label += QString("%1 (%2)").arg(_instanceSelectedName).arg(_instanceSelectedVersion);
+        label += QString("%1 (%2)")
+                     .arg(_instanceSelectedName)
+                     .arg(_instanceSelectedVersion);
     }
 
     _instanceLabel->setText(label);

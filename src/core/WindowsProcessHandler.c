@@ -1,12 +1,12 @@
 #ifdef _WIN32
 #include "WindowsProcessHandler.h"
 
-#include "Logger.h"
 #include "Game.h"
+#include "Logger.h"
 #include "StringUtils.h"
 
-#include <windows.h>
 #include <stdio.h>
+#include <windows.h>
 
 #define BUFSIZE 4096
 
@@ -15,11 +15,11 @@ HANDLE g_hChildStd_OUT_Wr = NULL;
 HANDLE g_hChildStd_ERR_Rd = NULL;
 HANDLE g_hChildStd_ERR_Wr = NULL;
 
-PROCESS_INFORMATION CreateChildProcess(bc_process_args* args);
-void ReadFromPipe(PROCESS_INFORMATION, bc_account* account);
+PROCESS_INFORMATION CreateChildProcess(bc_process_args *args);
+void ReadFromPipe(PROCESS_INFORMATION, bc_account *account);
 
-char* bc_winprocess_get_args(bc_process_args* args) {
-    char* cmd = malloc(args->size + (args->len * 3));
+char *bc_winprocess_get_args(bc_process_args *args) {
+    char *cmd = malloc(args->size + (args->len * 3));
     strcpy(cmd, "\"");
     strcat(cmd, args->arr[0]);
     strcat(cmd, "\"");
@@ -33,7 +33,7 @@ char* bc_winprocess_get_args(bc_process_args* args) {
     return cmd;
 }
 
-void bc_winprocess_create(bc_process_args* args) {
+void bc_winprocess_create(bc_process_args *args) {
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
 
@@ -41,20 +41,9 @@ void bc_winprocess_create(bc_process_args* args) {
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
 
-    char* cmd = bc_winprocess_get_args(args);
+    char *cmd = bc_winprocess_get_args(args);
 
-    if (!CreateProcess(NULL,
-                       cmd,
-                       NULL,
-                       NULL,
-                       FALSE,
-                       0,
-                       NULL,
-                       NULL,
-                       &si,
-                       &pi)
-        )
-    {
+    if (!CreateProcess(NULL, cmd, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) {
         free(cmd);
         bc_log("CreateProcess failed (%d).\n", GetLastError());
         return;
@@ -68,7 +57,7 @@ void bc_winprocess_create(bc_process_args* args) {
     CloseHandle(pi.hThread);
 }
 
-void bc_winprocess_create_log(bc_process_args* args, bc_account* account) {
+void bc_winprocess_create_log(bc_process_args *args, bc_account *account) {
     SECURITY_ATTRIBUTES sa;
 
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
@@ -96,7 +85,7 @@ void bc_winprocess_create_log(bc_process_args* args, bc_account* account) {
     ReadFromPipe(piProcInfo, account);
 }
 
-PROCESS_INFORMATION CreateChildProcess(bc_process_args* args) {
+PROCESS_INFORMATION CreateChildProcess(bc_process_args *args) {
     PROCESS_INFORMATION piProcInfo;
     STARTUPINFO siStartInfo;
     int bSuccess = FALSE;
@@ -109,18 +98,10 @@ PROCESS_INFORMATION CreateChildProcess(bc_process_args* args) {
     siStartInfo.hStdOutput = g_hChildStd_OUT_Wr;
     siStartInfo.dwFlags |= STARTF_USESTDHANDLES;
 
-    char* cmd = bc_winprocess_get_args(args);
+    char *cmd = bc_winprocess_get_args(args);
 
-    bSuccess = CreateProcess(NULL,
-                             cmd,
-                             NULL,
-                             NULL,
-                             TRUE,
-                             0,
-                             NULL,
-                             NULL,
-                             &siStartInfo,
-                             &piProcInfo);
+    bSuccess = CreateProcess(NULL, cmd, NULL, NULL, TRUE, 0, NULL, NULL,
+                             &siStartInfo, &piProcInfo);
     CloseHandle(g_hChildStd_ERR_Wr);
     CloseHandle(g_hChildStd_OUT_Wr);
 
@@ -134,24 +115,25 @@ PROCESS_INFORMATION CreateChildProcess(bc_process_args* args) {
     return piProcInfo;
 }
 
-void ReadFromPipe(PROCESS_INFORMATION piProcInfo, bc_account* account) {
+void ReadFromPipe(PROCESS_INFORMATION piProcInfo, bc_account *account) {
     DWORD dwRead;
     CHAR chBuf[BUFSIZE];
     int bSuccess = FALSE;
 
     for (;;) {
         bSuccess = ReadFile(g_hChildStd_OUT_Rd, chBuf, BUFSIZE, &dwRead, NULL);
-        if (!bSuccess || dwRead == 0) break;
+        if (!bSuccess || dwRead == 0)
+            break;
         chBuf[dwRead] = '\0';
 
-        if (account->minecraft_access_token[0] != '-'
-            || strcmp(account->uuid, DEMO_ACCOUNT_UUID) != 0) {
+        if (account->minecraft_access_token[0] != '-' ||
+            strcmp(account->uuid, DEMO_ACCOUNT_UUID) != 0) {
             repl_str(chBuf, account->minecraft_access_token, "<ACCESS TOKEN>");
             repl_str(chBuf, account->uuid, "<PROFILE ID>");
         }
 
         if (bc_process_log != NULL) {
-            char* newLog = malloc(strlen(bc_process_log) + dwRead + 1);
+            char *newLog = malloc(strlen(bc_process_log) + dwRead + 1);
             strcpy(newLog, bc_process_log);
             strcat(newLog, chBuf);
 

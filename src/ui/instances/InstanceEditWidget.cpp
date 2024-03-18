@@ -4,14 +4,12 @@
 #include <QtWidgets>
 
 extern "C" {
-    #include "../../core/Network.h"
+#include "../../core/Network.h"
 }
 
 bc_instance instance;
 
-InstanceEditWidget::InstanceEditWidget(QWidget* parent)
-    : QWidget{ parent }
-{
+InstanceEditWidget::InstanceEditWidget(QWidget *parent) : QWidget{parent} {
     char tr[256];
 
     _layout = new QGridLayout(this);
@@ -32,18 +30,23 @@ InstanceEditWidget::InstanceEditWidget(QWidget* parent)
 
     _menu->setStyleSheet("QTabWidget::pane { border: 0; }");
 
-    _menu->addTab(_instanceEditAppearanceWidget, bc_translate("instance_tab_appearance"));
+    _menu->addTab(_instanceEditAppearanceWidget,
+                  bc_translate("instance_tab_appearance"));
 
     if (betacraft_online) {
         _instanceEditVersionWidget = new InstanceEditVersionWidget();
         _instanceEditModsWidget = new InstanceEditModsWidget();
 
-        _menu->addTab(_instanceEditVersionWidget, bc_translate("instance_tab_version"));
-        _menu->addTab(_instanceEditModsWidget, bc_translate("instance_tab_mods"));
+        _menu->addTab(_instanceEditVersionWidget,
+                      bc_translate("instance_tab_version"));
+        _menu->addTab(_instanceEditModsWidget,
+                      bc_translate("instance_tab_mods"));
     }
 
-    _menu->addTab(_instanceEditArgumentsWidget, bc_translate("instance_tab_arguments"));
-    _menu->addTab(_instanceEditServerWidget, bc_translate("instance_tab_server"));
+    _menu->addTab(_instanceEditArgumentsWidget,
+                  bc_translate("instance_tab_arguments"));
+    _menu->addTab(_instanceEditServerWidget,
+                  bc_translate("instance_tab_server"));
 
     _layout->addWidget(_menu, 0, 0, 1, 11);
     _layout->addWidget(_instanceSaveButtonWidget, 1, 0, 1, 11);
@@ -57,14 +60,15 @@ InstanceEditWidget::InstanceEditWidget(QWidget* parent)
     setMinimumSize(600, 500);
     setLayout(_layout);
 
-    connect(_instanceSaveButton, SIGNAL(released()), this, SLOT(onInstanceSaveButtonClicked()));
+    connect(_instanceSaveButton, SIGNAL(released()), this,
+            SLOT(onInstanceSaveButtonClicked()));
 
     setWindowModality(Qt::ApplicationModal);
 }
 
-void InstanceEditWidget::onInstanceSaveButtonClicked()
-{
-    bc_instance* appearanceSettings = _instanceEditAppearanceWidget->getSettings();
+void InstanceEditWidget::onInstanceSaveButtonClicked() {
+    bc_instance *appearanceSettings =
+        _instanceEditAppearanceWidget->getSettings();
 
     if (!bc_instance_validate_name(appearanceSettings->name)) {
         QMessageBox msg;
@@ -77,11 +81,12 @@ void InstanceEditWidget::onInstanceSaveButtonClicked()
     }
 
     QString versionSelected = _instanceEditVersionWidget->getSettings();
-    bc_mod_version_array* mods = _instanceEditModsWidget->getSettings();
-    bc_instance* arguments = _instanceEditArgumentsWidget->getSettings();
-    bc_instance* server = _instanceEditServerWidget->getSettings();
+    bc_mod_version_array *mods = _instanceEditModsWidget->getSettings();
+    bc_instance *arguments = _instanceEditArgumentsWidget->getSettings();
+    bc_instance *server = _instanceEditServerWidget->getSettings();
 
-    snprintf(instance.name, sizeof(instance.name), "%s", appearanceSettings->name);
+    snprintf(instance.name, sizeof(instance.name), "%s",
+             appearanceSettings->name);
     instance.width = appearanceSettings->width;
     instance.height = appearanceSettings->height;
     instance.maximized = appearanceSettings->maximized;
@@ -89,12 +94,16 @@ void InstanceEditWidget::onInstanceSaveButtonClicked()
     instance.show_log = appearanceSettings->show_log;
     instance.keep_open = appearanceSettings->keep_open;
 
-    snprintf(instance.program_args, sizeof(instance.program_args), "%s", arguments->program_args);
-    snprintf(instance.jvm_args, sizeof(instance.jvm_args), "%s", arguments->jvm_args);
+    snprintf(instance.program_args, sizeof(instance.program_args), "%s",
+             arguments->program_args);
+    snprintf(instance.jvm_args, sizeof(instance.jvm_args), "%s",
+             arguments->jvm_args);
 
     instance.join_server = server->join_server;
-    snprintf(instance.server_ip, sizeof(instance.server_ip), "%s", server->server_ip);
-    snprintf(instance.server_port, sizeof(instance.server_port), "%s", server->server_port);
+    snprintf(instance.server_ip, sizeof(instance.server_ip), "%s",
+             server->server_ip);
+    snprintf(instance.server_port, sizeof(instance.server_port), "%s",
+             server->server_port);
 
     bc_mod_list_installed_move(mods, instance.path);
 
@@ -104,7 +113,8 @@ void InstanceEditWidget::onInstanceSaveButtonClicked()
         }
     }
 
-    snprintf(instance.version, sizeof(instance.version), "%s", versionSelected.toStdString().c_str());
+    snprintf(instance.version, sizeof(instance.version), "%s",
+             versionSelected.toStdString().c_str());
 
     bc_instance_update(&instance);
 
@@ -116,8 +126,7 @@ void InstanceEditWidget::onInstanceSaveButtonClicked()
     emit signal_instanceSettingsSaved();
 }
 
-void InstanceEditWidget::setInstance(bc_instance i)
-{
+void InstanceEditWidget::setInstance(bc_instance i) {
     _menu->setCurrentIndex(0);
     instance = i;
 

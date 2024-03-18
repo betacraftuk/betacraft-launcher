@@ -10,7 +10,7 @@ typedef struct bc_settings {
     int discord;
 } bc_settings;
 
-void bc_settings_update(bc_settings* settings);
-bc_settings* bc_settings_get();
+void bc_settings_update(bc_settings *settings);
+bc_settings *bc_settings_get();
 
 #endif

@@ -4,7 +4,7 @@
 #include <QWidget>
 
 extern "C" {
-    #include "../../core/Settings.h"
+#include "../../core/Settings.h"
 }
 
 class QGridLayout;
@@ -13,27 +13,26 @@ class QComboBox;
 class QVBoxLayout;
 class QCheckBox;
 
-class SettingsGeneralWidget : public QWidget
-{
+class SettingsGeneralWidget : public QWidget {
     Q_OBJECT
-public:
-    explicit SettingsGeneralWidget(QWidget* parent = nullptr);
+  public:
+    explicit SettingsGeneralWidget(QWidget *parent = nullptr);
 
-private slots:
-    void onLanguageChange(const QString& lang);
+  private slots:
+    void onLanguageChange(const QString &lang);
     void onDiscordCheckboxClicked(bool checked);
 
-signals:
+  signals:
     void signal_toggleDiscordRPC();
 
-private:
-    QGridLayout* _layout;
-    QVBoxLayout* _languageLayout;
-    QGroupBox* _languageGroup;
-    QVBoxLayout* _discordLayout;
-    QGroupBox* _discordGroup;
-    QComboBox* _languageCombo;
-    QCheckBox* _discordCheckbox;
+  private:
+    QGridLayout *_layout;
+    QVBoxLayout *_languageLayout;
+    QGroupBox *_languageGroup;
+    QVBoxLayout *_discordLayout;
+    QGroupBox *_discordGroup;
+    QComboBox *_languageCombo;
+    QCheckBox *_discordCheckbox;
 };
 
 #endif

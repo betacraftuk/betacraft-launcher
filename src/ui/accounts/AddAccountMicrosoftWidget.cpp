@@ -4,13 +4,13 @@
 #include <QtWidgets>
 
 extern "C" {
-    #include "../../core/AuthMicrosoft.h"
+#include "../../core/AuthMicrosoft.h"
 }
 
 bc_auth_microsoftDeviceResponse _authDeviceRes;
 
-AddAccountMicrosoftWidget::AddAccountMicrosoftWidget(QWidget* parent)
-    : QWidget{ parent } {
+AddAccountMicrosoftWidget::AddAccountMicrosoftWidget(QWidget *parent)
+    : QWidget{parent} {
     _layout = new QGridLayout(this);
     _microsoftLink = new QLabel(this);
     _code = new QLabel(this);
@@ -27,9 +27,12 @@ AddAccountMicrosoftWidget::AddAccountMicrosoftWidget(QWidget* parent)
     _typeCodeText->setFont(font);
     _microsoftLink->setFont(font);
 
-    _microsoftLink->setText("<a href=\"https://www.microsoft.com/link\">https://www.microsoft.com/link</a>");
+    _microsoftLink->setText("<a "
+                            "href=\"https://www.microsoft.com/link\">https://"
+                            "www.microsoft.com/link</a>");
     _microsoftLink->setTextFormat(Qt::RichText);
-    _microsoftLink->setTextInteractionFlags(Qt::TextBrowserInteraction | Qt::TextSelectableByMouse);
+    _microsoftLink->setTextInteractionFlags(Qt::TextBrowserInteraction |
+                                            Qt::TextSelectableByMouse);
     _microsoftLink->setOpenExternalLinks(true);
 
     font.setBold(true);
@@ -50,10 +53,11 @@ AddAccountMicrosoftWidget::AddAccountMicrosoftWidget(QWidget* parent)
 
     setLayout(_layout);
 
-    connect(&_watcher, SIGNAL(finished()), this, SIGNAL(signal_accountAddSuccess()));
+    connect(&_watcher, SIGNAL(finished()), this,
+            SIGNAL(signal_accountAddSuccess()));
 }
 
-void AddAccountMicrosoftWidget::showEvent(QShowEvent* event) {
+void AddAccountMicrosoftWidget::showEvent(QShowEvent *event) {
     QWidget::showEvent(event);
 
     if (_code->text().isEmpty()) {
@@ -62,12 +66,13 @@ void AddAccountMicrosoftWidget::showEvent(QShowEvent* event) {
 }
 
 void AddAccountMicrosoftWidget::Authenticate() {
-    bc_auth_microsoftDeviceResponse* res = bc_auth_microsoft_device();
+    bc_auth_microsoftDeviceResponse *res = bc_auth_microsoft_device();
     _authDeviceRes = *res;
     free(res);
 
     _code->setText(_authDeviceRes.user_code);
 
-    QFuture<void> future = QtConcurrent::run(bc_auth_microsoft_handle_device_flow, &_authDeviceRes);
+    QFuture<void> future = QtConcurrent::run(
+        bc_auth_microsoft_handle_device_flow, &_authDeviceRes);
     _watcher.setFuture(future);
 }

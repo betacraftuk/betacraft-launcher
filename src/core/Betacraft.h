@@ -60,8 +60,8 @@ typedef struct bc_server_array {
     size_t len;
 } bc_server_array;
 
-int bc_server_list(bc_server_array* server_list);
-bc_memory bc_avatar_get(const char* uuid);
-int bc_update_check(char* updateVersion);
+int bc_server_list(bc_server_array *server_list);
+bc_memory bc_avatar_get(const char *uuid);
+int bc_update_check(char *updateVersion);
 
 #endif

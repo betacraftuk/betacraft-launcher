@@ -4,13 +4,12 @@
 #include <QtWidgets>
 
 extern "C" {
-    #include "../core/Network.h"
-    #include "../core/FileSystem.h"
-    #include "../core/Betacraft.h"
+#include "../core/Betacraft.h"
+#include "../core/FileSystem.h"
+#include "../core/Network.h"
 }
 
-AboutWidget::AboutWidget(QWidget *parent)
-    : QWidget{parent} {
+AboutWidget::AboutWidget(QWidget *parent) : QWidget{parent} {
     initObjects();
 
     initAboutLayout();
@@ -30,7 +29,8 @@ void AboutWidget::initMenu() {
     _menu->addTab(_aboutSection, bc_translate("about_about_tab"));
     _menu->addTab(_creditsSection, bc_translate("about_credits_tab"));
     _menu->addTab(_licenseSection, bc_translate("about_license_tab"));
-    _menu->setStyleSheet("QTabWidget::tab-bar { alignment: center; } QTabWidget:pane { border-top: 1px solid gray; }");
+    _menu->setStyleSheet("QTabWidget::tab-bar { alignment: center; } "
+                         "QTabWidget:pane { border-top: 1px solid gray; }");
 }
 
 void AboutWidget::initCreditsLayout() {
@@ -53,7 +53,7 @@ void AboutWidget::initLicenseLayout() {
 }
 
 void AboutWidget::initAboutLayoutLogo() {
-    QFrame* line = new QFrame();
+    QFrame *line = new QFrame();
     line->setFrameShape(QFrame::HLine);
     line->setFrameShadow(QFrame::Sunken);
     line->setLineWidth(1);
@@ -73,17 +73,19 @@ void AboutWidget::initAboutLayout() {
     initAboutLayoutLogo();
     initAboutLayoutLinks();
 
-    char* os = bc_file_os();
+    char *os = bc_file_os();
     QString versionString = QString("Version: %1 %2 %3")
-        .arg(BETACRAFT_VERSION)
-        .arg(QString(os))
-        .arg("master");
+                                .arg(BETACRAFT_VERSION)
+                                .arg(QString(os))
+                                .arg("master");
 
     free(os);
 
     _aboutSectionLayout->addWidget(_links, 0, 0, Qt::AlignCenter);
-    _aboutSectionLayout->addWidget(new QLabel(versionString), 1, 0, Qt::AlignCenter);
-    _aboutSectionLayout->addWidget(new QLabel("© Betacraft 2018-2023"), 2, 0, Qt::AlignCenter);
+    _aboutSectionLayout->addWidget(new QLabel(versionString), 1, 0,
+                                   Qt::AlignCenter);
+    _aboutSectionLayout->addWidget(new QLabel("© Betacraft 2018-2023"), 2, 0,
+                                   Qt::AlignCenter);
 
     _aboutSectionLayout->setAlignment(Qt::AlignTop);
     _aboutSectionLayout->setSpacing(10);
@@ -125,16 +127,34 @@ QString AboutWidget::getCreditsHtml() {
     stream << "<center>\n";
 
     stream << "<h3>" << QObject::tr("Developers", "About Credits") << "</h3>\n";
-    stream << "<p>Moresteck &lt;<a href='https://github.com/Moresteck'>https://github.com/Moresteck</a>&gt;</p>\n";
-    stream << "<p>Kazu &lt;<a href='https://github.com/KazuOfficial'>https://github.com/KazuOfficial</a>&gt;</p>\n";
+    stream << "<p>Moresteck &lt;<a "
+              "href='https://github.com/Moresteck'>https://github.com/"
+              "Moresteck</a>&gt;</p>\n";
+    stream << "<p>Kazu &lt;<a "
+              "href='https://github.com/KazuOfficial'>https://github.com/"
+              "KazuOfficial</a>&gt;</p>\n";
     stream << "<h3>Translators</h3>\n";
-    stream << "<p>TheClashFruit &lt;<a href='https://github.com/TheClashFruit'>https://github.com/TheClashFruit</a>&gt;</p>\n";
-    stream << "<p>Edvardvs &lt;<a href='https://github.com/Edvardvs'>https://github.com/Edvardvs</a>&gt;</p>\n";
-    stream << "<p>xitieshiz2 &lt;<a href='https://github.com/xitieshiz2'>https://github.com/xitieshiz2</a>&gt;</p>\n";
-    stream << "<p>m-burani &lt;<a href='https://github.com/m-burani'>https://github.com/m-burani</a>&gt;</p>\n";
-    stream << "<p>Don-Leandro &lt;<a href='https://github.com/Don-Leandro'>https://github.com/Don-Leandro</a>&gt;</p>\n";
-    stream << "<p>TheEntropyShard &lt;<a href='https://github.com/TheEntropyShard'>https://github.com/TheEntropyShard</a>&gt;</p>\n";
-    stream << "<p>Zormein &lt;<a href='https://github.com/Zormein'>https://github.com/Zormein</a>&gt;</p>\n";
+    stream << "<p>TheClashFruit &lt;<a "
+              "href='https://github.com/TheClashFruit'>https://github.com/"
+              "TheClashFruit</a>&gt;</p>\n";
+    stream << "<p>Edvardvs &lt;<a "
+              "href='https://github.com/Edvardvs'>https://github.com/Edvardvs</"
+              "a>&gt;</p>\n";
+    stream << "<p>xitieshiz2 &lt;<a "
+              "href='https://github.com/xitieshiz2'>https://github.com/"
+              "xitieshiz2</a>&gt;</p>\n";
+    stream << "<p>m-burani &lt;<a "
+              "href='https://github.com/m-burani'>https://github.com/m-burani</"
+              "a>&gt;</p>\n";
+    stream << "<p>Don-Leandro &lt;<a "
+              "href='https://github.com/Don-Leandro'>https://github.com/"
+              "Don-Leandro</a>&gt;</p>\n";
+    stream << "<p>TheEntropyShard &lt;<a "
+              "href='https://github.com/TheEntropyShard'>https://github.com/"
+              "TheEntropyShard</a>&gt;</p>\n";
+    stream << "<p>Zormein &lt;<a "
+              "href='https://github.com/Zormein'>https://github.com/Zormein</"
+              "a>&gt;</p>\n";
 
     stream << "</center>\n";
 
@@ -147,7 +167,9 @@ QString AboutWidget::getLinksHtml() {
 
     stream << "<a href=\"https://betacraft.uk/\">Website</a>&nbsp;&nbsp;";
     stream << "<a href=\"https://discord.gg/d4WvXeQ\">Discord</a>&nbsp;&nbsp;";
-    stream << "<a href=\"https://github.com/betacraftuk/betacraft-launcher/\">GitHub</a>";
+    stream << "<a "
+              "href=\"https://github.com/betacraftuk/betacraft-launcher/"
+              "\">GitHub</a>";
 
     return output;
 }

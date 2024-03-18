@@ -11,12 +11,12 @@ typedef struct bc_assetindex_asset {
 } bc_assetindex_asset;
 
 typedef struct bc_assetindex {
-    bc_assetindex_asset* objects;
+    bc_assetindex_asset *objects;
     int len;
     int virtual;
     int mapToResources;
 } bc_assetindex;
 
-bc_assetindex* bc_assetindex_load(bc_version_assetIndexData* data);
+bc_assetindex *bc_assetindex_load(bc_version_assetIndexData *data);
 
 #endif

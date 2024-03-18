@@ -10,22 +10,22 @@ class QTextBrowser;
 
 class AboutWidget : public QWidget {
     Q_OBJECT
-public:
+  public:
     explicit AboutWidget(QWidget *parent = nullptr);
 
-private:
-    QGridLayout* _layout;
-    QLabel* _logo;
-    QTabWidget* _menu;
-    QGridLayout* _aboutSectionLayout;
-    QGridLayout* _creditsSectionLayout;
-    QGridLayout* _licenseSectionLayout;
-    QWidget* _aboutSection;
-    QWidget* _creditsSection;
-    QWidget* _licenseSection;
-    QLabel* _links;
-    QTextBrowser* _licenseList;
-    QTextBrowser* _creditsList;
+  private:
+    QGridLayout *_layout;
+    QLabel *_logo;
+    QTabWidget *_menu;
+    QGridLayout *_aboutSectionLayout;
+    QGridLayout *_creditsSectionLayout;
+    QGridLayout *_licenseSectionLayout;
+    QWidget *_aboutSection;
+    QWidget *_creditsSection;
+    QWidget *_licenseSection;
+    QLabel *_links;
+    QTextBrowser *_licenseList;
+    QTextBrowser *_creditsList;
     QString getCreditsHtml();
     QString getLinksHtml();
     void initObjects();

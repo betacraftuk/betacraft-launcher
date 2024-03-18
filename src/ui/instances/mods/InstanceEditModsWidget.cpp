@@ -9,18 +9,24 @@ extern "C" {
 
 bool isRepoWidgetVisible = false;
 
-InstanceEditModsWidget::InstanceEditModsWidget(QWidget* parent)
-    : QWidget{ parent } {
+InstanceEditModsWidget::InstanceEditModsWidget(QWidget *parent)
+    : QWidget{parent} {
     _layout = new QGridLayout(this);
     _modList = new QTreeWidget(this);
     _moveUpButton = new QPushButton(bc_translate("mods_control_move_up"), this);
-    _moveDownButton = new QPushButton(bc_translate("mods_control_move_down"), this);
+    _moveDownButton =
+        new QPushButton(bc_translate("mods_control_move_down"), this);
     _removeButton = new QPushButton(bc_translate("mods_control_remove"), this);
-    _modRepoButton = new QPushButton(bc_translate("mods_control_mod_repository"), this);
-    _installFabricButton = new QPushButton(bc_translate("mods_control_install_fabric"), this);
-    _addToMinecraftJarButton = new QPushButton(bc_translate("mods_control_add_to_minecraftjar"), this);
-    _replaceMinecraftJarButton = new QPushButton(bc_translate("mods_control_replace_minecraftjar"), this);
-    _openMinecraftDirectoryButton = new QPushButton(bc_translate("mods_control_open_dotminecraft"), this);
+    _modRepoButton =
+        new QPushButton(bc_translate("mods_control_mod_repository"), this);
+    _installFabricButton =
+        new QPushButton(bc_translate("mods_control_install_fabric"), this);
+    _addToMinecraftJarButton =
+        new QPushButton(bc_translate("mods_control_add_to_minecraftjar"), this);
+    _replaceMinecraftJarButton = new QPushButton(
+        bc_translate("mods_control_replace_minecraftjar"), this);
+    _openMinecraftDirectoryButton =
+        new QPushButton(bc_translate("mods_control_open_dotminecraft"), this);
     _editModGroup = new QGroupBox(this);
     _modLoaderGroup = new QGroupBox(this);
     _gameDirectoryGroup = new QGroupBox(this);
@@ -76,42 +82,65 @@ InstanceEditModsWidget::InstanceEditModsWidget(QWidget* parent)
 
     setLayout(_layout);
 
-    QSignalMapper* mapper = new QSignalMapper();
+    QSignalMapper *mapper = new QSignalMapper();
     mapper->setMapping(_moveUpButton, -1);
     mapper->setMapping(_moveDownButton, 1);
 
-    connect(mapper, &QSignalMapper::mappedInt, this, &InstanceEditModsWidget::onMoveButtonClicked);
-    connect(_modRepoButton, SIGNAL(released()), this, SLOT(onModRepoButtonClicked()));
-    connect(_openMinecraftDirectoryButton, SIGNAL(released()), this, SLOT(onOpenMinecraftDirectoryClicked()));
-    connect(_replaceMinecraftJarButton, SIGNAL(released()), this, SLOT(onReplaceMinecraftJarButtonClicked()));
-    connect(_removeButton, SIGNAL(released()), this, SLOT(onRemoveButtonClicked()));
-    connect(_addToMinecraftJarButton, SIGNAL(released()), this, SLOT(onAddToMinecraftJarButtonClicked()));
+    connect(mapper, &QSignalMapper::mappedInt, this,
+            &InstanceEditModsWidget::onMoveButtonClicked);
+    connect(_modRepoButton, SIGNAL(released()), this,
+            SLOT(onModRepoButtonClicked()));
+    connect(_openMinecraftDirectoryButton, SIGNAL(released()), this,
+            SLOT(onOpenMinecraftDirectoryClicked()));
+    connect(_replaceMinecraftJarButton, SIGNAL(released()), this,
+            SLOT(onReplaceMinecraftJarButtonClicked()));
+    connect(_removeButton, SIGNAL(released()), this,
+            SLOT(onRemoveButtonClicked()));
+    connect(_addToMinecraftJarButton, SIGNAL(released()), this,
+            SLOT(onAddToMinecraftJarButtonClicked()));
     connect(_moveUpButton, SIGNAL(released()), mapper, SLOT(map()));
     connect(_moveDownButton, SIGNAL(released()), mapper, SLOT(map()));
-    connect(_instanceEditModRepoWidget, SIGNAL(signal_BackButtonClicked()), this, SLOT(onModRepoButtonClicked()));
-    connect(_instanceEditModRepoWidget, SIGNAL(signal_ModDownloadStarted()), this, SLOT(onModDownloadStarted()));
-    connect(_progressTimer, SIGNAL(timeout()), this, SLOT(ModInstallProgressBarUpdate()));
-    connect(_instanceEditModRepoWidget, &InstanceEditModRepoWidget::signal_ModDownloadFinished, this, [this]() {
-        _progressBar->setVisible(0);
-        _progressTimer->stop();
-        populateModList();
-    });
+    connect(_instanceEditModRepoWidget, SIGNAL(signal_BackButtonClicked()),
+            this, SLOT(onModRepoButtonClicked()));
+    connect(_instanceEditModRepoWidget, SIGNAL(signal_ModDownloadStarted()),
+            this, SLOT(onModDownloadStarted()));
+    connect(_progressTimer, SIGNAL(timeout()), this,
+            SLOT(ModInstallProgressBarUpdate()));
+    connect(_instanceEditModRepoWidget,
+            &InstanceEditModRepoWidget::signal_ModDownloadFinished, this,
+            [this]() {
+                _progressBar->setVisible(0);
+                _progressTimer->stop();
+                populateModList();
+            });
 }
 
 void InstanceEditModsWidget::onReplaceMinecraftJarButtonClicked() {
-    QString path = QFileDialog::getOpenFileName(this, tr(bc_translate("mods_control_replace_minecraftjar").toStdString().c_str()), "/", tr("Jar Files (*.jar)"));
+    QString path = QFileDialog::getOpenFileName(
+        this,
+        tr(bc_translate("mods_control_replace_minecraftjar")
+               .toStdString()
+               .c_str()),
+        "/", tr("Jar Files (*.jar)"));
 
     if (!path.isNull()) {
-        bc_mod_replace_jar(path.toStdString().c_str(), _instance.path, _instance.version);
+        bc_mod_replace_jar(path.toStdString().c_str(), _instance.path,
+                           _instance.version);
         populateModList();
     }
 }
 
 void InstanceEditModsWidget::onAddToMinecraftJarButtonClicked() {
-    QString path = QFileDialog::getOpenFileName(this, tr(bc_translate("mods_control_add_to_minecraftjar").toStdString().c_str()), "/", tr("Zip Files (*.zip)"));
+    QString path = QFileDialog::getOpenFileName(
+        this,
+        tr(bc_translate("mods_control_add_to_minecraftjar")
+               .toStdString()
+               .c_str()),
+        "/", tr("Zip Files (*.zip)"));
 
     if (!path.isNull()) {
-        bc_mod_add(path.toStdString().c_str(), _instance.path, _instance.version);
+        bc_mod_add(path.toStdString().c_str(), _instance.path,
+                   _instance.version);
         populateModList();
     }
 }
@@ -121,11 +150,11 @@ void InstanceEditModsWidget::onMoveButtonClicked(int direction) {
     int rowCount = _modList->model()->rowCount();
     int moveDirection = row + direction;
 
-    if (moveDirection > -1 && moveDirection != rowCount)
-    {
-        if (rowCount > 2 && direction == 1) moveDirection--;
-        QTreeWidgetItem* item = _modList->takeTopLevelItem(row);
-        QTreeWidgetItem* itemPrev = _modList->takeTopLevelItem(moveDirection);
+    if (moveDirection > -1 && moveDirection != rowCount) {
+        if (rowCount > 2 && direction == 1)
+            moveDirection--;
+        QTreeWidgetItem *item = _modList->takeTopLevelItem(row);
+        QTreeWidgetItem *itemPrev = _modList->takeTopLevelItem(moveDirection);
 
         _modList->insertTopLevelItem(moveDirection, item);
         _modList->insertTopLevelItem(row, itemPrev);
@@ -133,13 +162,15 @@ void InstanceEditModsWidget::onMoveButtonClicked(int direction) {
     };
 }
 
-bc_mod_version_array* InstanceEditModsWidget::getSettings() {
-    bc_mod_version_array* order = new bc_mod_version_array;
+bc_mod_version_array *InstanceEditModsWidget::getSettings() {
+    bc_mod_version_array *order = new bc_mod_version_array;
     order->len = _modList->model()->rowCount();
 
     for (int i = 0; i < order->len; i++) {
         QModelIndex index = _modList->model()->index(i, 0);
-        bc_mod_version mod = _modList->itemFromIndex(index)->data(0, Qt::UserRole).value<bc_mod_version>();
+        bc_mod_version mod = _modList->itemFromIndex(index)
+                                 ->data(0, Qt::UserRole)
+                                 .value<bc_mod_version>();
         order->arr[i] = mod;
     }
 
@@ -148,7 +179,9 @@ bc_mod_version_array* InstanceEditModsWidget::getSettings() {
 
 void InstanceEditModsWidget::onRemoveButtonClicked() {
     if (_modList->currentIndex().row() > -1) {
-        bc_mod_version v = _modList->currentItem()->data(0, Qt::UserRole).value<bc_mod_version>();
+        bc_mod_version v = _modList->currentItem()
+                               ->data(0, Qt::UserRole)
+                               .value<bc_mod_version>();
         bc_mod_list_remove(_instance.path, v.path);
         populateModList();
     }
@@ -167,12 +200,15 @@ void InstanceEditModsWidget::ModInstallProgressBarUpdate() {
     if (progress.totalToDownload > 0) {
         _progressBar->setRange(0, progress.totalToDownload);
         _progressBar->setValue(progress.nowDownloaded);
-        progressString += " - " + QString::number(progress.nowDownloadedMb, 'f', 2) + "MB";
-        progressString += " / " + QString::number(progress.totalToDownloadMb, 'f', 2) + "MB";
+        progressString +=
+            " - " + QString::number(progress.nowDownloadedMb, 'f', 2) + "MB";
+        progressString +=
+            " / " + QString::number(progress.totalToDownloadMb, 'f', 2) + "MB";
     } else if (progress.nowDownloaded > 0) {
         _progressBar->setRange(0, 100);
         _progressBar->setValue(100);
-        progressString += " - " + QString::number(progress.nowDownloadedMb, 'f', 2) + "MB";
+        progressString +=
+            " - " + QString::number(progress.nowDownloadedMb, 'f', 2) + "MB";
     }
 
     QString filename(progress.filename);
@@ -224,10 +260,10 @@ void InstanceEditModsWidget::setInstance(bc_instance instance) {
 
 void InstanceEditModsWidget::populateModList() {
     _modList->clear();
-    bc_mod_version_array* mods = bc_mod_list_installed(_instance.path);
+    bc_mod_version_array *mods = bc_mod_list_installed(_instance.path);
 
     for (int i = 0; i < mods->len; i++) {
-        QTreeWidgetItem* item = new QTreeWidgetItem();
+        QTreeWidgetItem *item = new QTreeWidgetItem();
         item->setText(0, QString(mods->arr[i].name));
         item->setText(1, QString(mods->arr[i].version));
 
