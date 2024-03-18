@@ -1,7 +1,6 @@
 #include "Version.h"
 #include "JsonExtension.h"
 #include "StringUtils.h"
-#include "Logger.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -149,11 +148,12 @@ void bc_game_version_json_read_logging(json_object* obj, json_object* tmp, bc_ve
 }
 
 void bc_game_version_json_read_minecraft_arguments(json_object* tmp, bc_version* v) {
-    char* mcargs = json_object_get_string(tmp);
-    int size = count_substring(mcargs, ' ') + 1 + /* width, height */ 4;
+    const char* mcargs = json_object_get_string(tmp);
+    char* mcargs_heap = malloc(strlen(mcargs) + 1);
+    int size = count_substring(mcargs_heap, ' ') + 1 + /* width, height */ 4;
     char split[128][1024];
 
-    char* token = strtok(mcargs, " ");
+    char* token = strtok(mcargs_heap, " ");
     int counter = 0;
 
     while (token != NULL) {
@@ -161,6 +161,8 @@ void bc_game_version_json_read_minecraft_arguments(json_object* tmp, bc_version*
         token = strtok(NULL, " ");
         counter++;
     }
+
+    free(mcargs_heap);
 
     v->arguments.game_len = 1;
     v->arguments.game->rules_len = 0;

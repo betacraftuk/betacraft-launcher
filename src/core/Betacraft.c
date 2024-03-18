@@ -1,19 +1,21 @@
 #include "Betacraft.h"
 #include "JsonExtension.h"
-#include "Settings.h"
 
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
 
 int betacraft_online = 0;
 char application_support_path[PATH_MAX] = "";
-const char CRAFATAR_ENDPOINT[] = "https://crafatar.com/avatars/";
-const char API_SERVER_LIST[] = "https://api.betacraft.uk/v2/server_list";
 
-int bc_server_list(bc_server_array* server_list) {
+#define CRAFATAR_ENDPOINT "https://crafatar.com/avatars/"
+#define API_SERVER_LIST "https://api.betacraft.uk/v2/server_list"
+#define BC_AVATAR_ENDPOINT_SIZE 256
+
+int bc_server_list(bc_server_array* server_list)
+{
     char* response = bc_network_get(API_SERVER_LIST, NULL);
     json_object* json = json_tokener_parse(response);
-    json_object* tmp;
+    json_object* tmp = NULL;
 
     if (response == NULL) {
         return 0;
@@ -47,7 +49,7 @@ int bc_server_list(bc_server_array* server_list) {
 }
 
 bc_memory bc_avatar_get(const char* uuid) {
-    char endpoint[256];
+    char endpoint[BC_AVATAR_ENDPOINT_SIZE];
     snprintf(endpoint, sizeof(endpoint), "%s%s?overlay", CRAFATAR_ENDPOINT, uuid);
 
     return bc_network_get_chunk(endpoint);
