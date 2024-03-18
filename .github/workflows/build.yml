@@ -2,9 +2,9 @@ name: betacraft-build
 
 on:
   push:
-    branches: [ "v2" ]
+    branches: [ "ci-fix" ]
   pull_request:
-    branches: [ "v2" ]
+    branches: [ "ci-fix" ]
 
 env:
   BUILD_TYPE: Release
