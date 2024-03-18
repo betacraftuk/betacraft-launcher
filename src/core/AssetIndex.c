@@ -78,7 +78,7 @@ bc_assetindex *bc_assetindex_load(bc_version_assetIndexData *data) {
         json = json_object_from_file(jsonLoc);
         const char *json_str = json_object_to_json_string(json);
 
-        assetsData = malloc(sizeof(char) * strlen(json_str));
+        assetsData = malloc(sizeof(char) * strlen(json_str) + 1);
         strcpy(assetsData, json_str);
     }
 
