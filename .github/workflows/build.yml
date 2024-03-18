@@ -2,9 +2,9 @@ name: betacraft-build
 
 on:
   push:
-    branches: [ "ci-fix" ]
+    branches: [ "v2" ]
   pull_request:
-    branches: [ "ci-fix" ]
+    branches: [ "v2" ]
 
 env:
   BUILD_TYPE: Release
@@ -58,10 +58,6 @@ jobs:
         fi
       shell: bash
 
-    - name: Build
-      working-directory: ${{github.workspace}}/build
-      run: make
-
     - name: Cache libs
       id: cache-libs
       uses: actions/cache@v3
@@ -74,6 +70,10 @@ jobs:
           ${{ runner.os }}-build-${{ env.cache-name }}-
           ${{ runner.os }}-build-
           ${{ runner.os }}-
+
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: make
 
     - name: Test
       working-directory: ${{github.workspace}}/build/src
