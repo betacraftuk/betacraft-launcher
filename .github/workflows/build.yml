@@ -8,6 +8,8 @@ on:
 
 env:
   BUILD_TYPE: Release
+  BETACRAFT_API_MICROSOFT_CLIENT_ID: ""
+  BETACRAFT_DISCORD_CLIENT_ID: 0
 
 jobs:
   build:
@@ -24,11 +26,6 @@ jobs:
           submodules: recursive
 
     - uses: lukka/get-cmake@latest
-
-    - name: Setup vcpkg (it does not install any package yet)
-      uses: lukka/run-vcpkg@v11.1
-      with:
-          vcpkgDirectory: '${{github.workspace}}/lib/vcpkg'
 
     - if: ${{ (matrix.os == 'ubuntu-latest') || (matrix.os == 'macos-latest') }}
       name: Install Qt (ubuntu-latest || macos-latest)
@@ -49,13 +46,17 @@ jobs:
           set-env: 'true'
           arch: 'win64_mingw'
 
-    - name: Run CMake consuming CMakePresets.json and vcpkg.json by mean of vcpkg.
-      uses: lukka/run-cmake@v10
-      with:
-          configurePreset: 'betacraft'
-          buildPreset: 'betacraft'
-          buildPresetAdditionalArgs: "['--config Release']"
+    - name: CMake
+      working-directory: ${{github.workspace}}
+      run: |
+        mkdir build
+        cd build
+        cmake ..
+
+    - name: Build
+      working-directory: ${{github.workspace}}/build
+      run: make
 
     - name: Test
-      working-directory: ${{github.workspace}}/build/betacraft
+      working-directory: ${{github.workspace}}/build
       run: ctest -C ${{env.BUILD_TYPE}} --output-on-failure
