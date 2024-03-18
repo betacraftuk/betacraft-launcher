@@ -7,27 +7,33 @@
 #include <stdio.h>
 #include <time.h>
 
-void bc_log(const char* format, ...) {
-    FILE* fp;
-    fp = fopen("betacraft.log", "a");
+#define OUT_FORMAT_SIZE 256
+#define PRINT_BUFFER_SIZE 8192
+#define TIME_STRING_SIZE 9
 
-    va_list args, args2;
+void bc_log(const char* format, ...) {
+    FILE* file = NULL;
+    file = fopen("betacraft.log", "a");
+
+    va_list args = NULL;
+    va_list args2 = NULL;
+
     va_start(args, format);
     va_copy(args2, args);
 
-    char timeString[9];
-    struct tm* tm_info;
-    time_t now;
+    char timeString[TIME_STRING_SIZE];
+    struct tm* tm_info = NULL;
+    time_t now = 0;
 
-    time(&now);
+    time_t _cur_calendar_time = time(&now);
     tm_info = localtime(&now);
 
-    strftime(timeString, sizeof(timeString), "%H:%M:%S", tm_info);
+    size_t _copied_chars_len = strftime(timeString, sizeof(timeString), "%H:%M:%S", tm_info);
 
-    char outFormat[256];
+    char outFormat[OUT_FORMAT_SIZE];
     snprintf(outFormat, sizeof(outFormat), "[%s] %s", timeString, format);
 
-    char printbuffer[8192];
+    char printbuffer[PRINT_BUFFER_SIZE];
     vsprintf(printbuffer, outFormat, args);
 
     for (int i = 0; i < forbidden_accesstokens_size; i++) {
@@ -40,10 +46,12 @@ void bc_log(const char* format, ...) {
 
     // TODO: make a list of forbidden strings at startup and exclude them from logging
     printf("%s", printbuffer);
-    fprintf(fp, "%s", printbuffer);
+    int _written_chars_len = fprintf(file, "%s", printbuffer);
 
     va_end(args);
     va_end(args2);
 
-    fclose(fp);
+    if (fclose(file) != 0) {
+        printf("%s\n", "LOGGER ERROR");
+    }
 }

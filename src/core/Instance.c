@@ -1,19 +1,18 @@
 #include "Instance.h"
 #include "FileSystem.h"
-#include "JsonExtension.h"
-#include "VersionList.h"
-#include "JavaInstallations.h"
-#include "Network.h"
-#include "Settings.h"
-#include "Version.h"
-#include "Logger.h"
-#include "Mod.h"
 #include "Game.h"
+#include "JavaInstallations.h"
+#include "JsonExtension.h"
+#include "Mod.h"
+#include "Version.h"
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+
+#define INSTANCE_HEIGHT_DEFAULT_SIZE 480
+#define INSTANCE_WIDTH_DEFAULT_SIZE 854
 
 char* bc_instance_get_path(const char* instance_name) {
     char path[PATH_MAX];
@@ -50,8 +49,8 @@ json_object* bc_instance_create_default_config(const char* name, const char* ver
     json_object_object_add(config, "version", json_object_new_string(version));
     json_object_object_add(config, "jvm_args", json_object_new_string("-Xmx1G\n-XX:HeapDumpPath=java.exe_minecraft.exe.heapdump"));
     json_object_object_add(config, "program_args", json_object_new_string(""));
-    json_object_object_add(config, "height", json_object_new_int(480));
-    json_object_object_add(config, "width", json_object_new_int(854));
+    json_object_object_add(config, "height", json_object_new_int(INSTANCE_HEIGHT_DEFAULT_SIZE));
+    json_object_object_add(config, "width", json_object_new_int(INSTANCE_WIDTH_DEFAULT_SIZE));
     json_object_object_add(config, "maximized", json_object_new_boolean(0));
     json_object_object_add(config, "fullscreen", json_object_new_boolean(0));
     json_object_object_add(config, "show_log", json_object_new_boolean(0));
@@ -66,7 +65,7 @@ json_object* bc_instance_create_default_config(const char* name, const char* ver
 
 json_object* bc_instance_create_config(const bc_instance* instance) {
     json_object* json = json_object_from_file(instance->path);
-    json_object* tmp;
+    json_object* tmp = NULL;
 
     jext_replace_or_create_option_str(json, "name", instance->name);
     jext_replace_or_create_option_str(json, "version", instance->version);
@@ -87,7 +86,8 @@ json_object* bc_instance_create_config(const bc_instance* instance) {
 
 void bc_instance_group_create(const char* name) {
     json_object* settings = json_object_from_file("settings.json");
-    json_object* tmp, * instance_tmp;
+    json_object* tmp = NULL;
+    json_object* instance_tmp = NULL;
     json_object* group_object = json_object_new_object();
 
     json_object_object_get_ex(settings, "instance", &instance_tmp);
@@ -101,26 +101,36 @@ void bc_instance_group_create(const char* name) {
     json_object_put(settings);
 }
 
-int bc_instance_validate_name(const char* name) {
+static bool bc_instance_name_char_meets_constraints(const char name_char) {
+    if (!isalnum(name_char) && !isspace(name_char) && name_char != '-' && name_char != '_' && name_char != '.') {
+        return false;
+    }
+
+    return true;
+}
+
+bool bc_instance_validate_name(const char* name) {
     if (name[0] == '.') {
-        return 0;
+        return false;
     }
 
     for (int i = 0; i < strlen(name); i++) {
-        char ch = name[i];
+        char name_char = name[i];
 
-        if (!isalnum(ch) && !isspace(ch) && ch != '-' && ch != '_' && ch != '.') {
-            return 0;
+        if (!bc_instance_name_char_meets_constraints(name_char)) {
+            return false;
         }
     }
 
-    return 1;
+    return true;
 }
 
 void bc_instance_move(bc_instance_array* standard, bc_instance_group_array* grouped, const char* instanceSelected) {
     json_object* json = json_object_from_file("settings.json");
     json_object* instance = json_object_new_object();
-    json_object* tmp, * tmpArr, * tmpArrGrouped;
+    json_object* tmp = NULL;
+    json_object* tmpArr = NULL;
+    json_object* tmpArrGrouped = NULL;
 
     json_object_object_del(json, "instance");
 
@@ -168,7 +178,9 @@ bc_instance_group_name_array* bc_instance_group_name_get_all() {
         return group_array;
     }
 
-    json_object* tmp, * instance_tmp, * group_tmp;
+    json_object* tmp = NULL;
+    json_object* instance_tmp = NULL;
+    json_object* group_tmp = NULL;
     json_object_object_get_ex(settings, "instance", &instance_tmp);
     json_object_object_get_ex(instance_tmp, "grouped", &tmp);
 
@@ -186,7 +198,10 @@ bc_instance_group_name_array* bc_instance_group_name_get_all() {
 
 void bc_instance_update_settings(const char* instance_path, const char* group_name) {
     json_object* settings = json_object_from_file("settings.json");
-    json_object* instance_tmp, * tmp, * val_tmp, * val_arr_tmp;
+    json_object* instance_tmp = NULL;
+    json_object* tmp = NULL;
+    json_object* val_tmp = NULL;
+    json_object* val_arr_tmp = NULL;
 
     json_object_object_get_ex(settings, "instance", &instance_tmp);
 
@@ -216,7 +231,7 @@ bc_instance* bc_instance_select_get() {
     bc_instance* instance_selected = NULL;
 
     json_object* json = json_object_from_file("settings.json");
-    json_object* tmp;
+    json_object* tmp = NULL;
 
     json_object_object_get_ex(json, "instance", &tmp);
 
@@ -233,7 +248,8 @@ bc_instance* bc_instance_select_get() {
 
 void bc_instance_select(const char* path) {
     json_object* json = json_object_from_file("settings.json");
-    json_object* tmp, *tmp_selected;
+    json_object* tmp = NULL;
+    json_object* tmp_selected = NULL;
 
     json_object_object_get_ex(json, "instance", &tmp);
     json_object_object_get_ex(tmp, "selected", &tmp_selected);
@@ -246,7 +262,9 @@ void bc_instance_select(const char* path) {
 
 void bc_instance_remove_group(const char* name) {
     json_object* settings = json_object_from_file("settings.json");
-    json_object* tmp, * instance_tmp, * arr_tmp;
+    json_object* tmp = NULL;
+    json_object* instance_tmp = NULL;
+    json_object* arr_tmp = NULL;
 
     json_object_object_get_ex(settings, "instance", &instance_tmp);
     json_object_object_get_ex(instance_tmp, "grouped", &tmp);
@@ -265,22 +283,23 @@ void bc_instance_remove_group(const char* name) {
 }
 
 void bc_instance_create(const char* name, const char* version, const char* group_name) {
-    char n[64];
-    snprintf(n, sizeof(n), "%s", name);
+    char instance_name[BC_INSTANCE_NAME_MAX_SIZE];
+    snprintf(instance_name, sizeof(instance_name), "%s", name);
 
-    char* path = bc_instance_get_path(n);
+    char* path = bc_instance_get_path(instance_name);
     int counter = 1;
 
     while (bc_file_exists(path)) {
-        for (int i = 0; i < counter; i++)
-            snprintf(n, sizeof(n), "%s-", n);
+        for (int i = 0; i < counter; i++) {
+            snprintf(instance_name, sizeof(instance_name), "%s-", instance_name);
+        }
 
         free(path);
-        path = bc_instance_get_path(n);
+        path = bc_instance_get_path(instance_name);
         counter++;
     }
 
-    json_object* config = bc_instance_create_default_config(n, version);
+    json_object* config = bc_instance_create_default_config(instance_name, version);
     bc_instance_update_settings(path, group_name);
 
     make_path(path, 1);
@@ -299,7 +318,12 @@ void bc_instance_update(const bc_instance* instance) {
 
 void bc_instance_remove(const char* instance_path) {
     json_object* settings = json_object_from_file("settings.json");
-    json_object* instance_tmp, * tmp, * val_tmp, * val_arr_tmp, * val_grouped_arr_tmp, * tmp_selected;
+    json_object* instance_tmp = NULL;
+    json_object* tmp = NULL;
+    json_object* val_tmp = NULL;
+    json_object* val_arr_tmp = NULL;
+    json_object* val_grouped_arr_tmp = NULL;
+    json_object* tmp_selected = NULL;
 
     json_object_object_get_ex(settings, "instance", &instance_tmp);
     json_object_object_get_ex(instance_tmp, "standalone", &tmp);
@@ -319,7 +343,7 @@ void bc_instance_remove(const char* instance_path) {
         val_tmp = json_object_array_get_idx(tmp, i);
         json_object_object_get_ex(val_tmp, "instances", &val_arr_tmp);
 
-        for (int y = 0; y < json_object_array_length(val_arr_tmp); y++) {
+        for (int j = 0; j < json_object_array_length(val_arr_tmp); j++) {
             val_grouped_arr_tmp = json_object_array_get_idx(val_arr_tmp, i);
 
             if (strcmp(json_object_get_string(val_grouped_arr_tmp), instance_path) == 0) {
@@ -363,7 +387,10 @@ bc_instance_array* bc_instance_get_all() {
         return instance_array;
     }
 
-    json_object* tmp, * instance_tmp, * arr_tmp, * instance_file_tmp;
+    json_object* tmp = NULL;
+    json_object* instance_tmp = NULL;
+    json_object* arr_tmp = NULL;
+    json_object* instance_file_tmp = NULL;
 
     json_object_object_get_ex(settings, "instance", &instance_tmp);
     json_object_object_get_ex(instance_tmp, "standalone", &tmp);
@@ -395,7 +422,11 @@ bc_instance_group_array* bc_instance_group_get_all() {
         return instance_array;
     }
 
-    json_object* tmp, * instance_tmp, * arr_tmp, * group_instances_tmp, * instance_file_tmp;
+    json_object* tmp = NULL;
+    json_object* instance_tmp = NULL;
+    json_object* arr_tmp = NULL;
+    json_object* group_instances_tmp = NULL;
+    json_object* instance_file_tmp = NULL;
 
     json_object_object_get_ex(settings, "instance", &instance_tmp);
     json_object_object_get_ex(instance_tmp, "grouped", &tmp);
@@ -410,12 +441,12 @@ bc_instance_group_array* bc_instance_group_get_all() {
         json_object_object_get_ex(arr_tmp, "instances", &group_instances_tmp);
         instance_array->arr[i].len = json_object_array_length(group_instances_tmp);
 
-        for (int y = 0; y < instance_array->arr[i].len; y++) {
-            arr_tmp = json_object_array_get_idx(group_instances_tmp, y);
+        for (int j = 0; j < instance_array->arr[i].len; j++) {
+            arr_tmp = json_object_array_get_idx(group_instances_tmp, j);
             const char* instance_path = json_object_get_string(arr_tmp);
             instance_file_tmp = json_object_from_file(instance_path);
 
-            bc_instance_fill_object_from_json(&instance_array->arr[i].instances[y], instance_path, instance_file_tmp);
+            bc_instance_fill_object_from_json(&instance_array->arr[i].instances[j], instance_path, instance_file_tmp);
         }
     }
 
@@ -424,22 +455,24 @@ bc_instance_group_array* bc_instance_group_get_all() {
     return instance_array;
 }
 
-bc_progress bc_instance_run_progress() { return bc_game_run_progress; }
+bc_progress bc_instance_run_progress() {
+    return bc_game_run_progress; 
+}
 
 void bc_instance_run(const char* server_ip, const char* server_port) {
-    bc_instance* in = bc_instance_select_get();
-    bc_mod_version_array* mods = bc_mod_list_installed(in->path);
+    bc_instance* selected_instance = bc_instance_select_get();
+    bc_mod_version_array* mods = bc_mod_list_installed(selected_instance->path);
 
     // makes the path be not of the json, but of the instance directory
-    int pathSize = strlen(in->path) - strlen("bc_instance.json");
-    in->path[pathSize] = '\0';
+    unsigned long pathSize = strlen(selected_instance->path) - strlen("bc_instance.json");
+    selected_instance->path[pathSize] = '\0';
 
     char* selectedJinst = bc_jinst_select_get();
-    snprintf(in->java_path, sizeof(in->java_path), "%s", selectedJinst);
+    snprintf(selected_instance->java_path, sizeof(selected_instance->java_path), "%s", selectedJinst);
     free(selectedJinst);
 
     char jsonLoc[PATH_MAX];
-    snprintf(jsonLoc, sizeof(jsonLoc), "versions/%s.json", in->version);
+    snprintf(jsonLoc, sizeof(jsonLoc), "versions/%s.json", selected_instance->version);
 
     json_object* jsonObj = json_object_from_file(jsonLoc);
     bc_version* ver = bc_version_read_json(jsonObj);
@@ -458,7 +491,7 @@ void bc_instance_run(const char* server_ip, const char* server_port) {
     }
 
     bc_game_data* data = malloc(sizeof(bc_game_data));
-    data->instance = in;
+    data->instance = selected_instance;
     data->version = ver;
     data->account = acc;
     data->mods = mods;
@@ -466,7 +499,7 @@ void bc_instance_run(const char* server_ip, const char* server_port) {
     strcpy(data->server_port, server_port);
 
     char* random_uuid = bc_file_uuid();
-    snprintf(data->natives_folder, sizeof(data->natives_folder), "%snatives-%s/", in->path, random_uuid);
+    snprintf(data->natives_folder, sizeof(data->natives_folder), "%snatives-%s/", selected_instance->path, random_uuid);
     free(random_uuid);
 
     bc_game_run(data);
