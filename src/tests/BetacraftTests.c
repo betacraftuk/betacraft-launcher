@@ -12,11 +12,11 @@ void test_bc_server_list() {
 }
 
 int main() {
-    int online = bc_network_status();
+    // int online = bc_network_status();
 
-    if (!online) {
-        return 0;
-    }
+    // if (!online) {
+        // return 0;
+    // }
 
     // test_bc_server_list();
 

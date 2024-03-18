@@ -69,7 +69,7 @@ jobs:
         cache-name: cache-libs
       with:
         path: ${{github.workspace}}/build/lib
-        key: ${{ runner.os }}-build-${{ env.cache-name }}}}
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-
         restore-keys: |
           ${{ runner.os }}-build-${{ env.cache-name }}-
           ${{ runner.os }}-build-

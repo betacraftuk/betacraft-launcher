@@ -198,7 +198,7 @@ int bc_network_download(const char *url, const char *dest, int isFile) {
 }
 
 int bc_network_status() {
-    CURL *curl;
+    CURL *curl = NULL;
     CURLcode res;
 
     curl = curl_easy_init();
