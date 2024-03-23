@@ -397,10 +397,9 @@ public class Util {
 		File[] entries = dir.listFiles();
 
 		for (File potentialDir : entries) {
+			full.add(potentialDir);
 			if (potentialDir.isDirectory()) {
 				full.addAll(listRecursively(potentialDir));
-			} else {
-				full.add(potentialDir);
 			}
 		}
 
