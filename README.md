@@ -53,7 +53,7 @@ Report bugs in [issues](https://github.com/betacraftuk/betacraft-launcher/issues
 
 ## Contact:
 - Website: https://betacraft.uk
+- Bluesky: https://bsky.app/profile/betacraft.uk
 - Mastodon: https://mastodon.social/@betacraft
 - Telegram: https://t.me/betacraftukgroup
-- Twitter: https://twitter.com/betacraftuk
 - Discord: https://discord.gg/d4WvXeQ
