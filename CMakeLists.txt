@@ -12,20 +12,12 @@ if(APPLE)
 
     if(CMAKE_APPLE_SILICON_PROCESSOR STREQUAL "arm64")
         set(CMAKE_OSX_ARCHITECTURES "arm64")
-        file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/aarch64/discord_game_sdk.dylib
-            DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
+
     elseif(CMAKE_APPLE_SILICON_PROCESSOR STREQUAL "x86_64")
         set(CMAKE_OSX_ARCHITECTURES "x86_64")
-        file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.dylib
-            DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
-    endif()
-elseif (WIN32)
-    file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.dll
-        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
-elseif (UNIX AND NOT APPLE) # Linux
-    file(COPY ${CMAKE_SOURCE_DIR}/lib/discord_game_sdk/x86_64/discord_game_sdk.so
-        DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/src/ui/)
 
+    endif()
+elseif (UNIX AND NOT APPLE) # Linux
     if (CMAKE_BUILD_TYPE STREQUAL "Release")
         set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_SOURCE_DIR}/build/release)
     endif()
@@ -39,14 +31,8 @@ else()
     set(API_MICROSOFT_CLIENT_ID $ENV{BETACRAFT_API_MICROSOFT_CLIENT_ID})
 endif()
 
-if (NOT DEFINED ENV{BETACRAFT_DISCORD_CLIENT_ID})
-    set(DISCORD_CLIENT_ID 0)
-else()
-    set(DISCORD_CLIENT_ID $ENV{BETACRAFT_DISCORD_CLIENT_ID})
-endif()
 
 add_compile_definitions(API_MICROSOFT_CLIENT_ID="${API_MICROSOFT_CLIENT_ID}")
-add_compile_definitions(DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID})
 
 include(CTest)
 include(FetchContent)

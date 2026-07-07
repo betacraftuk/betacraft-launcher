@@ -42,7 +42,6 @@ class MainWindow : public QWidget {
     void onMenuIndexChanged(int index);
     void updateGameProgress();
     void onToggleTabs();
-    void onToggleDiscordRPC();
     void launchGameJoinServer(const char *ip, const char *port);
     void updateCheck();
 
@@ -75,7 +74,6 @@ class MainWindow : public QWidget {
     int _instanceSelectedKeepOpen;
     void updateInstanceLabel();
     bool recommendedJavaCheck();
-    void startDiscordRPC();
     void launchGame(const char *ip, const char *port);
     void connectSignalsToSlots();
     void initProgressBar();

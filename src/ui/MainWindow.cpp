@@ -5,7 +5,6 @@
 #include <cpr/cpr.h>
 
 #include "../core/Betacraft.h"
-#include "../core/Discord.h"
 #include "../core/JavaInstallations.h"
 #include "../core/VersionList.h"
 #include "../core/Account.h"
@@ -23,7 +22,6 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent) {
     initWindow();
 
     connectSignalsToSlots();
-    startDiscordRPC();
     onInstanceUpdate();
     onAccountUpdate();
     updateInstanceLabel();
@@ -165,8 +163,6 @@ void MainWindow::connectSignalsToSlots() {
             SLOT(onInstanceUpdate()));
     connect(_menu, SIGNAL(currentChanged(int)), this,
             SLOT(onMenuIndexChanged(int)));
-    connect(_discordLoopTimer, &QTimer::timeout, this,
-            [this]() { bc_discord_loop(); });
     connect(_settingsWidget, SIGNAL(signal_toggleTabs()), this,
             SLOT(onToggleTabs()));
     connect(_settingsWidget, SIGNAL(signal_toggleDiscordRPC()), this,
@@ -212,23 +208,6 @@ void MainWindow::updateCheck() {
 void MainWindow::launchGameJoinServer(const char *ip, const char *port) {
     onInstanceUpdate();
     launchGame(ip, port);
-}
-
-void MainWindow::startDiscordRPC() {
-    int discord = bc_discord_init();
-
-    if (discord) {
-        _discordLoopTimer->start(2000);
-    }
-}
-
-void MainWindow::onToggleDiscordRPC() {
-    if (_discordLoopTimer->isActive()) {
-        _discordLoopTimer->stop();
-        bc_discord_stop();
-    } else {
-        startDiscordRPC();
-    }
 }
 
 void MainWindow::onMenuIndexChanged(int index) {
@@ -435,8 +414,6 @@ void MainWindow::launchGame(const char *ip, const char *port) {
         userStatus = _username;
     }
 
-    bc_discord_activity_update(userStatus.toStdString().c_str(),
-                               _instanceSelectedVersion.toStdString().c_str());
 }
 
 void MainWindow::onInstanceUpdate() {
@@ -467,11 +444,8 @@ void MainWindow::onAccountUpdate() {
     if (account != NULL) {
         _username = QString(account->username);
 
-        bc_discord_activity_update(_username.toStdString().c_str(),
-                                   "Testing Betacraft v2");
         free(account);
     } else {
-        bc_discord_activity_update("", "Testing Betacraft v2");
     }
 
     updateInstanceLabel();
